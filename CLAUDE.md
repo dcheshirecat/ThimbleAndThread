@@ -93,6 +93,10 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
 - Players can sell patterns and items to friends via share codes (a short code, QR or small file
   the friend imports). No backend, accounts or networking packages. An online friends marketplace
   may come later; real-time multiplayer is not planned.
+  Eventually (owner, 2026-10-30): players trade SUPPLIES with each other too, and buy each other's
+  patterns. Keep this possible: supplies and patterns are plain data keyed by permanent ids
+  (supplyId + amount; a Pattern's grid + thread supplyIds), so a share code can carry them. A gift or
+  trade code must remove the items from the sender's save when it's made, so nothing gets duplicated.
 - The owner makes ALL final illustrations in Procreate (raster), exported as high-res PNG.
   Stay with PNG (no SVG). Art should be drawn at or above its target size since raster can't scale up cleanly.
   Do NOT generate final art. Use placeholder sprites only (see Art workflow).
@@ -241,14 +245,12 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
 ## Status
 Done and on main: project setup, save slots + autosave, order book with resumable work, day/night,
 pattern shelf (sales + pattern orders), book patterns, content library, portrait layout, thread colours,
-undo, Pattern Studio designer, owner guides. Everything is placeholder art and Unity default UI.
-Materials (task 1 below) are done on branch crafting-steps (not merged yet; the owner wants one build
-when there's something to try). Still stand-ins: every item is made with the cross stitch board;
-Journal and Settings screens are empty.
-CI: build of main failed with exit code 137 (out of memory on the ~7 GB runner). Fix (12 GB swap step)
-is on branch ci-memory, not merged; the owner should run the workflow on ci-memory to confirm.
-A later run failed with "no space left on device" while pulling the Unity image; ci-memory now also deletes
-more preinstalled runner tools (hostedtoolcache, JVMs, browsers, PowerShell...) and logs df for / and /mnt.
+undo, Pattern Studio designer, owner guides, materials (counted supplies, starter kit), rotating Supply
+Market with shelves, tools that gate work. Everything is placeholder art and Unity default UI.
+Still stand-ins: every item is made with the cross stitch board; Journal and Settings screens are empty.
+CI: main once failed with exit code 137 (out of memory) and later with "no space left on device" while
+pulling the Unity image. The workflow now adds 12 GB swap on /mnt and deletes more preinstalled runner
+tools; merged to main 2026-10-29 (commit d2d3ee9), first build with it not yet confirmed.
 
 ## Next tasks (in this order)
 1. DONE (crafting-steps): Materials: thread colours, yarns, fabrics, toy eyes, stuffing as supplies with realistic quantities
