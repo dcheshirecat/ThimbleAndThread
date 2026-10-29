@@ -83,6 +83,9 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
   file with the same name, or its assets lose their script link.
 - Data/CustomerDef.cs: Expression enum, CustomerDef (portraits, requestable items by relationship level).
 - Data/SupplyDef.cs: supply with craft, price, tier.
+- Data/PatternDef.cs: book pattern (grid drawn as text). Data/ContentLibrary.cs: all content in one asset,
+  kept in sync automatically by Editor/ContentLibraryRefresher.cs. Runtime code reads content from it.
+- Docs/ADDING_CONTENT.md: how the owner adds supplies, items, customers, portraits and patterns.
 - Crafts/CrossStitchCanvas.cs: stitch mode and pattern-fill mode, Accuracy(target) method.
 - Core/GameManager.cs: singleton with ScreenId state, coins, relationships, day, events.
 - Core/SaveSystem.cs: JSON save to persistentDataPath.
