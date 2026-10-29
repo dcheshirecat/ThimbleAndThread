@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c7901b20ad305e48a66e74441e500f0, type: 3}
   m_Name: item_sampler
   m_EditorClassIdentifier: Assembly-CSharp::CraftItemDef
+  itemId: sampler
   itemName: Sampler
   craft: 0
   icon: {fileID: 21300000, guid: 7f2199616aeefb84390d7958aebce7cb, type: 3}

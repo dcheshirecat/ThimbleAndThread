@@ -81,7 +81,7 @@ public static class PlaceholderGenerator
         var existing = AssetDatabase.LoadAssetAtPath<CraftItemDef>(assetPath);
         if (existing != null) return existing;
         var def = ScriptableObject.CreateInstance<CraftItemDef>();
-        def.itemName = name; def.craft = craft; def.basePrice = price; def.patternPrice = patternPrice;
+        def.itemId = id; def.itemName = name; def.craft = craft; def.basePrice = price; def.patternPrice = patternPrice;
         def.icon = MakeSprite($"{Root}/Art/Items/item_{id}_icon.png", 512, 512, c);
         def.requiredSupplyIds = new string[0];
         AssetDatabase.CreateAsset(def, assetPath);

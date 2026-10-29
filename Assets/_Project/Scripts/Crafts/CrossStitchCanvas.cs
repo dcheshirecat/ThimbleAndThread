@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 /// Cross stitch minigame.
 /// Two modes:
@@ -17,10 +18,14 @@ public class CrossStitchCanvas : MonoBehaviour
     public int width = 16, height = 16;
     public float cellSize = 0.5f;
     public Mode mode = Mode.Stitch;
+    public Material material;          // sprite material for cells and threads; falls back to Sprites/Default
 
     [Header("State")]
     public Pattern pattern = new Pattern();
+    public Pattern target;             // optional: shown as a faint guide to stitch over
     public int currentColor = 0;
+    public List<StitchMark> restore;   // optional: work saved earlier, redrawn when the board starts
+    public bool Ready { get; private set; }   // true once the grid is built and restored
 
     // Which cells are fully / half stitched by the player
     readonly Dictionary<Vector2Int, int> stitchProgress = new Dictionary<Vector2Int, int>(); // 0,1,2 diagonals done
@@ -32,10 +37,35 @@ public class CrossStitchCanvas : MonoBehaviour
 
     void Start()
     {
+        if (material == null) material = new Material(Shader.Find("Sprites/Default"));
         if (pattern.palette.Count == 0)
-            pattern.palette.AddRange(new[] { Color.red, Color.blue, Color.green, Color.black });
+        {
+            if (target != null && target.palette.Count > 0) pattern.palette.AddRange(target.palette);
+            else pattern.palette.AddRange(new[] { Color.red, Color.blue, Color.green, Color.black });
+        }
         pattern.width = width; pattern.height = height;
         BuildGrid();
+        if (restore != null)
+            foreach (var m in restore)
+            {
+                var cell = new Vector2Int(m.x, m.y);
+                if (!cellViews.ContainsKey(cell)) continue;
+                if (mode == Mode.PatternFill) { if (m.mask == 3) Paint(cell); continue; }
+                if ((m.mask & 1) != 0) AddStitch(cell, 1);
+                if ((m.mask & 2) != 0) AddStitch(cell, 2);
+            }
+        Ready = true;
+    }
+
+    /// The work so far, for saving.
+    public List<StitchMark> Marks()
+    {
+        var marks = new List<StitchMark>();
+        if (mode == Mode.PatternFill)
+            foreach (var c in pattern.cells) marks.Add(new StitchMark { x = c.x, y = c.y, mask = 3 });
+        else
+            foreach (var kv in stitchProgress) marks.Add(new StitchMark { x = kv.Key.x, y = kv.Key.y, mask = kv.Value });
+        return marks;
     }
 
     void BuildGrid()
@@ -49,9 +79,19 @@ public class CrossStitchCanvas : MonoBehaviour
                 go.transform.localScale = Vector3.one * cellSize * 0.95f;
                 var sr = go.AddComponent<SpriteRenderer>();
                 sr.sprite = cellSprite;
-                sr.color = new Color(1, 1, 1, 0.15f);
+                sr.sharedMaterial = material;
+                sr.color = GuideColor(x, y);
                 cellViews[new Vector2Int(x, y)] = sr;
             }
+    }
+
+    Color GuideColor(int x, int y)
+    {
+        var t = target?.cells.Find(c => c.x == x && c.y == y);
+        if (t == null) return new Color(1, 1, 1, 0.15f);
+        var c = target.palette[t.colorIndex];
+        c.a = 0.4f;
+        return c;
     }
 
     Vector3 CellCenter(int x, int y) => new Vector3((x + 0.5f) * cellSize, (y + 0.5f) * cellSize, 0);
@@ -61,6 +101,8 @@ public class CrossStitchCanvas : MonoBehaviour
     // with the legacy Input Manager; for the new Input System, swap in Pointer.current).
     void Update()
     {
+        // Presses that start on a UI button (e.g. Finish) are not stitches.
+        if (Input.GetMouseButtonDown(0) && EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
         if (Input.GetMouseButtonDown(0)) OnPress(WorldPoint());
         else if (Input.GetMouseButton(0)) OnDrag(WorldPoint());
         else if (Input.GetMouseButtonUp(0)) OnRelease(WorldPoint());
@@ -113,16 +155,20 @@ public class CrossStitchCanvas : MonoBehaviour
         var cell = new Vector2Int(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y));
         // Which diagonal? "/" connects (0,0)-(1,1) ; "\" connects (0,1)-(1,0)
         bool isSlash = (dx * dy) > 0;
-        int bit = isSlash ? 1 : 2;
+        AddStitch(cell, isSlash ? 1 : 2);
+    }
 
+    void AddStitch(Vector2Int cell, int bit)
+    {
         stitchProgress.TryGetValue(cell, out int done);
         if ((done & bit) != 0) return; // already stitched that diagonal
         done |= bit;
         stitchProgress[cell] = done;
 
         var line = MakeLine(pattern.palette[currentColor], 0.08f);
-        line.SetPosition(0, CornerPos(a));
-        line.SetPosition(1, CornerPos(b));
+        bool slash = bit == 1;
+        line.SetPosition(0, CornerPos(new Vector2Int(cell.x, slash ? cell.y : cell.y + 1)));
+        line.SetPosition(1, CornerPos(new Vector2Int(cell.x + 1, slash ? cell.y + 1 : cell.y)));
         stitchLines.Add(line);
 
         if (done == 3) CompleteCell(cell);
@@ -150,7 +196,7 @@ public class CrossStitchCanvas : MonoBehaviour
         lr.positionCount = 2;
         lr.startWidth = lr.endWidth = w;
         lr.useWorldSpace = true;
-        lr.material = new Material(Shader.Find("Sprites/Default"));
+        lr.sharedMaterial = material;
         lr.startColor = lr.endColor = color;
         lr.sortingOrder = 5;
         lr.numCapVertices = 4;
@@ -158,13 +204,18 @@ public class CrossStitchCanvas : MonoBehaviour
     }
 
     /// How close the player's work matches a target pattern (0..1) - use for quality/price.
-    public float Accuracy(Pattern target)
+    public float Accuracy(Pattern target) => Score(Marks(), target);
+
+    /// Counts finished cells in the target; cells finished outside it count against the score.
+    public static float Score(List<StitchMark> marks, Pattern target)
     {
         if (target.cells.Count == 0) return 1f;
-        int correct = 0;
-        foreach (var t in target.cells)
-            if (stitchProgress.TryGetValue(new Vector2Int(t.x, t.y), out int d) && d == 3)
-                correct++;
-        return (float)correct / target.cells.Count;
+        var wanted = new HashSet<Vector2Int>();
+        foreach (var t in target.cells) wanted.Add(new Vector2Int(t.x, t.y));
+
+        int correct = 0, extra = 0;
+        foreach (var m in marks)
+            if (m.mask == 3) { if (wanted.Contains(new Vector2Int(m.x, m.y))) correct++; else extra++; }
+        return (float)correct / (wanted.Count + extra);
     }
 }

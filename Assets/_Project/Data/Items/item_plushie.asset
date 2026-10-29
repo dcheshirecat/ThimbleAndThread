@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c7901b20ad305e48a66e74441e500f0, type: 3}
   m_Name: item_plushie
   m_EditorClassIdentifier: Assembly-CSharp::CraftItemDef
+  itemId: plushie
   itemName: Plushie
   craft: 4
   icon: {fileID: 21300000, guid: 99031b56b37fc18429ab263009a477d5, type: 3}

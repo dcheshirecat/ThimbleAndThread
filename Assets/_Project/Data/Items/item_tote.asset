@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c7901b20ad305e48a66e74441e500f0, type: 3}
   m_Name: item_tote
   m_EditorClassIdentifier: Assembly-CSharp::CraftItemDef
+  itemId: tote
   itemName: Tote Bag
   craft: 3
   icon: {fileID: 21300000, guid: fcb312135bd0025498c152dadd06f1f7, type: 3}

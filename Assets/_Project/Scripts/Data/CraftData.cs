@@ -24,15 +24,32 @@ public class Pattern
     public List<StitchCell> cells = new List<StitchCell>();
 }
 
-// Player-owned state. Save/load this as JSON to Application.persistentDataPath.
+// Work done on a grid cell. mask: 1 = "/" diagonal, 2 = "\" diagonal, 3 = full X (or a painted pattern cell).
+[Serializable]
+public class StitchMark
+{
+    public int x, y, mask;
+}
+
+// Player-owned state, one per save slot. Saved as JSON to Application.persistentDataPath.
+// When adding fields: give them safe defaults, bump CurrentVersion and upgrade old saves in SaveSystem.Upgrade.
 [Serializable]
 public class SaveData
 {
+    public const int CurrentVersion = 1;
+
+    public int version = CurrentVersion;
+    public string lastPlayed;                 // ISO 8601, for the save select screen
     public int coins = 50;
     public int day = 1;
     public List<string> ownedSupplies = new List<string>();
     public List<string> unlockedItems = new List<string>();
     public List<CustomerRelationship> relationships = new List<CustomerRelationship>();
+
+    public List<Order> orders = new List<Order>();             // the order book: accepted, not yet delivered
+    public List<string> visitorsToday = new List<string>();    // customerIds still to arrive today
+    public int deliveredToday;
+    public int coinsToday;
 }
 
 [Serializable]

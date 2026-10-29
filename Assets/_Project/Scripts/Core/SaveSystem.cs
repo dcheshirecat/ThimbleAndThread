@@ -1,23 +1,53 @@
+using System;
 using System.IO;
 using UnityEngine;
 
+/// Three save slots as JSON files in persistentDataPath.
+/// Writes go to a temp file first and then replace the real one, so a crash mid-save can't corrupt a slot.
 public static class SaveSystem
 {
+    public const int SlotCount = 3;
+
     static string PathFor(int slot) => Path.Combine(Application.persistentDataPath, $"save_{slot}.json");
 
-    public static bool Exists(int slot = 0) => File.Exists(PathFor(slot));
+    public static bool Exists(int slot) => File.Exists(PathFor(slot));
 
-    public static SaveData NewGame() => new SaveData { coins = 50, day = 1 };
+    public static SaveData NewGame() => new SaveData();
 
-    public static void Save(SaveData data, int slot = 0)
+    public static void Save(SaveData data, int slot)
     {
-        File.WriteAllText(PathFor(slot), JsonUtility.ToJson(data, true));
+        data.version = SaveData.CurrentVersion;
+        data.lastPlayed = DateTime.Now.ToString("o");
+        string path = PathFor(slot), temp = path + ".tmp";
+        File.WriteAllText(temp, JsonUtility.ToJson(data, true));
+        if (File.Exists(path)) File.Replace(temp, path, null);
+        else File.Move(temp, path);
     }
 
-    public static SaveData Load(int slot = 0)
+    /// Returns null if the slot is empty or unreadable.
+    public static SaveData Load(int slot)
     {
-        if (!Exists(slot)) return NewGame();
-        try { return JsonUtility.FromJson<SaveData>(File.ReadAllText(PathFor(slot))) ?? NewGame(); }
-        catch { Debug.LogWarning("Save file unreadable, starting new game."); return NewGame(); }
+        if (!Exists(slot)) return null;
+        try { return Upgrade(JsonUtility.FromJson<SaveData>(File.ReadAllText(PathFor(slot)))); }
+        catch (Exception e) { Debug.LogWarning($"Save slot {slot} unreadable: {e.Message}"); return null; }
+    }
+
+    public static void Delete(int slot)
+    {
+        if (Exists(slot)) File.Delete(PathFor(slot));
+    }
+
+    /// Brings saves from older versions up to date. Add a step here whenever SaveData.CurrentVersion goes up.
+    static SaveData Upgrade(SaveData data)
+    {
+        if (data == null) return null;
+        // Version 0 (before versioning) had no order book or day tracking; the defaults are correct.
+        data.orders ??= new System.Collections.Generic.List<Order>();
+        data.visitorsToday ??= new System.Collections.Generic.List<string>();
+        data.ownedSupplies ??= new System.Collections.Generic.List<string>();
+        data.unlockedItems ??= new System.Collections.Generic.List<string>();
+        data.relationships ??= new System.Collections.Generic.List<CustomerRelationship>();
+        data.version = SaveData.CurrentVersion;
+        return data;
     }
 }

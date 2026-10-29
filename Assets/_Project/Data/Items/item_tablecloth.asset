@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c7901b20ad305e48a66e74441e500f0, type: 3}
   m_Name: item_tablecloth
   m_EditorClassIdentifier: Assembly-CSharp::CraftItemDef
+  itemId: tablecloth
   itemName: Tablecloth
   craft: 0
   icon: {fileID: 21300000, guid: 3946ae863ab0f5641bf547fbd714f1bd, type: 3}

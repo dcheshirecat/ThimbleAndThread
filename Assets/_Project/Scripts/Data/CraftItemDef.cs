@@ -6,6 +6,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Craft/Item Definition")]
 public class CraftItemDef : ScriptableObject
 {
+    public string itemId;               // stable id used in save files, e.g. "scarf"
     public string itemName;
     public CraftType craft;
     public Sprite icon;                 // your vector art, exported as sprite

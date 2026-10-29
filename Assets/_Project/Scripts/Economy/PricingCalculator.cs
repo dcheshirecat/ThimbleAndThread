@@ -19,11 +19,8 @@ public static class PricingCalculator
     }
 
     /// Relationship points awarded for a delivered order.
-    public static int RelationshipReward(float accuracy, bool onTime)
-    {
-        int pts = Mathf.RoundToInt(10 + 20 * Mathf.Clamp01(accuracy));
-        return onTime ? pts : pts / 2;
-    }
+    /// No deadlines, so there is no lateness penalty.
+    public static int RelationshipReward(float accuracy) => Mathf.RoundToInt(10 + 20 * Mathf.Clamp01(accuracy));
 
     /// 1-3 stars for the result screen.
     public static int Stars(float accuracy) => accuracy >= 0.95f ? 3 : accuracy >= 0.75f ? 2 : 1;

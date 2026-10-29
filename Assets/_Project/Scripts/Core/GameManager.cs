@@ -4,7 +4,8 @@ using UnityEngine;
 public enum ScreenId
 {
     Title, Shop, Dialogue, Workbench, Minigame, Result,
-    Market, PatternStudio, Journal, Settings, DaySummary
+    Market, PatternStudio, Journal, Settings, DaySummary,
+    SaveSelect, OrderBook   // new values go at the end so saved scene references keep their numbers
 }
 
 /// Central game state: current screen, save data, coins, relationships.
@@ -26,16 +27,51 @@ public class GameManager : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void ResetStatics() => Instance = null;
 
+    /// Save slot in play, or -1 before one is chosen.
+    public int Slot { get; private set; } = -1;
+
+    /// Raised after a slot is started or loaded, so other systems can rebuild from Save.
+    public event Action<bool> OnGameLoaded;   // true for a brand-new game
+
     void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
-        Save = SaveSystem.Load();
     }
 
-    public void StartNewGame() { Save = SaveSystem.NewGame(); Persist(); ChangeScreen(ScreenId.Shop); }
-    public void Continue() { Save = SaveSystem.Load(); ChangeScreen(ScreenId.Shop); }
+    public void StartNewGame(int slot)
+    {
+        Slot = slot;
+        Save = SaveSystem.NewGame();
+        OnGameLoaded?.Invoke(true);
+        Persist();
+        ChangeScreen(ScreenId.Shop);
+    }
+
+    /// Loads the slot, or starts a new game there if it is empty.
+    /// Returns false (and changes nothing) if the slot has a file that can't be read, so it is never overwritten.
+    public bool PlaySlot(int slot)
+    {
+        if (!SaveSystem.Exists(slot)) { StartNewGame(slot); return true; }
+        var data = SaveSystem.Load(slot);
+        if (data == null) return false;
+        Slot = slot;
+        Save = data;
+        OnGameLoaded?.Invoke(false);
+        Persist();   // refreshes "last played"
+        ChangeScreen(ScreenId.Shop);
+        return true;
+    }
+
+    /// Saves and returns to the title screen.
+    public void QuitToTitle()
+    {
+        Persist();
+        Slot = -1;
+        Save = null;
+        ChangeScreen(ScreenId.Title);
+    }
 
     public void ChangeScreen(ScreenId next)
     {
@@ -79,8 +115,12 @@ public class GameManager : MonoBehaviour
     // ---- Days ----
     public void NextDay() { Save.day++; Persist(); }
 
-    public void Persist() => SaveSystem.Save(Save);
+    /// Autosave: call after every meaningful change. Does nothing before a slot is chosen.
+    public void Persist()
+    {
+        if (Save != null && Slot >= 0) SaveSystem.Save(Save, Slot);
+    }
 
-    void OnApplicationPause(bool paused) { if (paused && Save != null) Persist(); }   // iPad/Android backgrounding
-    void OnApplicationQuit() { if (Save != null) Persist(); }
+    void OnApplicationPause(bool paused) { if (paused) Persist(); }   // iPad/Android backgrounding
+    void OnApplicationQuit() => Persist();
 }
