@@ -247,6 +247,8 @@ when there's something to try). Still stand-ins: every item is made with the cro
 Journal and Settings screens are empty.
 CI: build of main failed with exit code 137 (out of memory on the ~7 GB runner). Fix (12 GB swap step)
 is on branch ci-memory, not merged; the owner should run the workflow on ci-memory to confirm.
+A later run failed with "no space left on device" while pulling the Unity image; ci-memory now also deletes
+more preinstalled runner tools (hostedtoolcache, JVMs, browsers, PowerShell...) and logs df for / and /mnt.
 
 ## Next tasks (in this order)
 1. DONE (crafting-steps): Materials: thread colours, yarns, fabrics, toy eyes, stuffing as supplies with realistic quantities
