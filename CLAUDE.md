@@ -8,8 +8,16 @@ and makes and sells finished crafts AND patterns (sold independently of each oth
 cross stitch, knitting, embroidery, sewing, crochet.
 Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and more.
 
-- Each craft has a minigame that mimics the real action. A separate Pattern mode
-  fills in grid pixels to design a pattern.
+- Making an item mimics how it's really made, step by step. Each item has its own sequence of steps
+  (a "recipe"), and each step is a small minigame of the real action. Items never reuse another
+  craft's minigame as a stand-in once their own steps exist. Examples:
+  - Sewn plushie: choose fabric, cut the pieces along the pattern lines, pin, sew the seams, turn it
+    right side out, stuff it, attach the eyes, close the opening.
+  - Crocheted plushie (amigurumi): magic ring, crochet the rounds, stuff, add eyes, sew the parts together.
+  - Tote bag: cut the panels, sew the sides, hem the top, attach the handles.
+  - Tablecloth: cross stitch the motif, then hem the edges.
+  The player can stop between (or during) steps and pick up later; progress is saved per step.
+  The basic actions per craft:
   - Cross stitch: drag corner-to-corner to make a half stitch, drag the opposite diagonal to finish the X.
   - Knitting: alternate two-needle swipes, one per stitch; rhythm affects quality. Knit and purl rows
     make the texture.
@@ -45,6 +53,10 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
 - Techniques: story chapters unlock each craft; smaller techniques (French knots, cables...) come
   from technique books bought at the market or from recovered pattern-book pages.
 - Supplies are used up per project, so the player restocks: cheap basics, pricier premium materials.
+- Materials: the player can only craft with materials they own (bought). Minigames offer only owned
+  threads, yarns, fabrics and notions (eyes, stuffing...). Designing is free: the Pattern Studio shows
+  every colour/material the market sells, owned or not, and a design may use any of them; to make it,
+  the player must first buy what's missing (the game lists it and points to the Supply Market).
 - Save files: 3 slots on a Save select screen (day, coins, last played; New Game / Continue / Delete,
   with an in-game confirm, never an editor or OS pop-up). Autosave on every meaningful change and when
   the app is backgrounded; no manual save button. The save holds everything: order book, in-progress
@@ -152,7 +164,9 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
 2. Workbench flow: Order book, save slots with autosave, resumable work, Result screen
    (pricing, stars, relationship points). Then, in stages: day/night mode; pattern shelf and
    pattern orders; supplies used per project; commissions.
-3. ICraftMinigame interface so every craft plugs in the same way; refactor CrossStitchCanvas to implement it.
+3. Materials (threads/yarn/fabric as owned, used-up supplies; Supply Market buying; crafting gated on
+   owned materials), then item recipes: an ICraftStep interface so every step plugs in the same way,
+   CrossStitchCanvas as the first step, then sewing steps (cut, sew, stuff, eyes) for the plushie.
 4. Dialogue system (Ink or Yarn Spinner) with portrait and expression hooks, including indirect
    requests: the player picks which item fits, scored by how well it matches.
 5. Knitting and crochet minigames, then embroidery and sewing.
