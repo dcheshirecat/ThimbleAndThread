@@ -30,25 +30,68 @@ public static class PlaceholderGenerator
         var tote      = Item("tote",      "Tote Bag",  CraftType.Sewing,      35, 10, new Color(0.80f, 0.60f, 0.35f));
 
         // ---- Supplies ----
-        // Fabric: Aida comes in pieces of 400 squares; a project uses its pattern's width x height.
-        Supply("aida_14ct",   "White Aida 14ct", SupplyKind.Fabric, CraftType.CrossStitch, 10, 1, new Color(0.95f, 0.95f, 0.90f), 400, "squares", 1);
-        Supply("aida_18ct",   "Fine Aida 18ct",  SupplyKind.Fabric, CraftType.CrossStitch, 25, 2, new Color(0.90f, 0.90f, 0.95f), 400, "squares");
-        // Yarn: balls of 300 stitches.
-        Supply("wool_basic",  "Basic Wool",      SupplyKind.Yarn, CraftType.Knitting, 8,  1, new Color(0.75f, 0.55f, 0.45f), 300, "stitches");
-        Supply("wool_merino", "Merino Wool",     SupplyKind.Yarn, CraftType.Knitting, 20, 3, new Color(0.55f, 0.45f, 0.75f), 300, "stitches");
-        Supply("cotton_yarn", "Cotton Yarn",     SupplyKind.Yarn, CraftType.Crochet,  6,  1, new Color(0.60f, 0.80f, 0.70f), 300, "stitches");
+        // Market slots: Always = basics always for sale; Rotating = the selection that changes every 4 days;
+        // Rare = now and then one special item. The last number is starter packs (the new-game kit).
+        const MarketSlot A = MarketSlot.Always, R = MarketSlot.Rotating, X = MarketSlot.Rare;
+        var cs = CraftType.CrossStitch;
+
+        // Cross stitch fabric: pieces of 400 squares; a project uses its pattern's width x height.
+        Supply("aida_14ct",  "White Aida 14ct",        SupplyKind.Fabric, cs, 10, 1, new Color(0.95f, 0.95f, 0.90f), 400, "squares", A, 1);
+        Supply("aida_cream", "Cream Aida 14ct",        SupplyKind.Fabric, cs, 12, 1, new Color(0.96f, 0.91f, 0.78f), 400, "squares", R);
+        Supply("aida_18ct",  "Fine Aida 18ct",         SupplyKind.Fabric, cs, 25, 2, new Color(0.90f, 0.90f, 0.95f), 400, "squares", R);
+        Supply("linen_28ct", "Linen Evenweave 28ct",   SupplyKind.Fabric, cs, 45, 3, new Color(0.88f, 0.82f, 0.70f), 400, "squares", X);
+        // Sewing fabric, in pieces (recipes will say how many pieces an item needs).
+        Supply("felt_cream",      "Cream Felt",          SupplyKind.Fabric, CraftType.Sewing, 5,  1, new Color(0.97f, 0.93f, 0.82f), 4, "pieces", R);
+        Supply("felt_brown",      "Brown Felt",          SupplyKind.Fabric, CraftType.Sewing, 5,  1, new Color(0.55f, 0.38f, 0.25f), 4, "pieces", R);
+        Supply("quilting_floral", "Floral Quilting Cotton", SupplyKind.Fabric, CraftType.Sewing, 9, 1, new Color(0.95f, 0.75f, 0.70f), 2, "pieces", R);
+        Supply("fleece_blue",     "Blue Fleece",         SupplyKind.Fabric, CraftType.Sewing, 12, 2, new Color(0.55f, 0.70f, 0.90f), 2, "pieces", R);
+        Supply("canvas_natural",  "Natural Canvas",      SupplyKind.Fabric, CraftType.Sewing, 14, 1, new Color(0.85f, 0.78f, 0.62f), 2, "pieces", R);
+        Supply("minky_pink",      "Pink Minky",          SupplyKind.Fabric, CraftType.Sewing, 30, 3, new Color(0.98f, 0.78f, 0.85f), 2, "pieces", X);
+
+        // Yarn: balls of 300 stitches. size = yarn weight (3 = DK, 4 = worsted); hooks and needles must match.
+        Supply("acrylic_yarn", "Acrylic Yarn",     SupplyKind.Yarn, CraftType.Knitting, 5,  1, new Color(0.85f, 0.45f, 0.40f), 300, "stitches", R, 0, "", 4);
+        Supply("wool_basic",   "Basic Wool",       SupplyKind.Yarn, CraftType.Knitting, 8,  1, new Color(0.75f, 0.55f, 0.45f), 300, "stitches", R, 0, "", 4);
+        Supply("wool_merino",  "Merino Wool",      SupplyKind.Yarn, CraftType.Knitting, 20, 3, new Color(0.55f, 0.45f, 0.75f), 300, "stitches", R, 0, "", 4);
+        Supply("cotton_yarn",  "Cotton Yarn",      SupplyKind.Yarn, CraftType.Crochet,  6,  1, new Color(0.60f, 0.80f, 0.70f), 300, "stitches", R, 0, "", 4);
+        Supply("alpaca_yarn",  "100% Alpaca Yarn", SupplyKind.Yarn, CraftType.Knitting, 35, 3, new Color(0.90f, 0.86f, 0.80f), 300, "stitches", X, 0, "", 3);
+        Supply("mohair_yarn",  "Mohair Yarn",      SupplyKind.Yarn, CraftType.Knitting, 30, 3, new Color(0.80f, 0.70f, 0.85f), 300, "stitches", X, 0, "", 3);
+
         // Floss: a skein covers 30 squares. These are also the Pattern Studio's colours.
-        var red      = Supply("floss_red",      "Red Floss",      SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.85f, 0.25f, 0.30f), 30, "squares", 1);
-        var pink     = Supply("floss_pink",     "Pink Floss",     SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.95f, 0.70f, 0.80f), 30, "squares");
-        Supply("floss_gold",     "Gold Floss",     SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.95f, 0.65f, 0.15f), 30, "squares");
-        Supply("floss_green",    "Green Floss",    SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.30f, 0.65f, 0.40f), 30, "squares");
-        var sky      = Supply("floss_sky",      "Sky Blue Floss", SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.55f, 0.75f, 0.95f), 30, "squares");
-        var navy     = Supply("floss_navy",     "Navy Floss",     SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.20f, 0.30f, 0.55f), 30, "squares", 1);
-        Supply("floss_purple",   "Purple Floss",   SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.55f, 0.40f, 0.70f), 30, "squares");
-        var charcoal = Supply("floss_charcoal", "Charcoal Floss", SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.25f, 0.20f, 0.25f), 30, "squares", 1);
-        // Notions for plushies (used once item recipes arrive).
-        Supply("stuffing",           "Polyester Stuffing", SupplyKind.Stuffing, CraftType.Sewing, 6, 1, new Color(0.97f, 0.97f, 0.97f), 3, "plushies");
-        Supply("safety_eyes_black",  "Black Safety Eyes",  SupplyKind.Eyes,     CraftType.Sewing, 4, 1, new Color(0.10f, 0.10f, 0.10f), 4, "pairs");
+        var red      = Supply("floss_red",      "Red Floss",      SupplyKind.Thread, cs, 3, 1, new Color(0.85f, 0.25f, 0.30f), 30, "squares", A, 1);
+        var pink     = Supply("floss_pink",     "Pink Floss",     SupplyKind.Thread, cs, 3, 1, new Color(0.95f, 0.70f, 0.80f), 30, "squares", R);
+        Supply("floss_gold",     "Gold Floss",     SupplyKind.Thread, cs, 3, 1, new Color(0.95f, 0.65f, 0.15f), 30, "squares", R);
+        Supply("floss_green",    "Green Floss",    SupplyKind.Thread, cs, 3, 1, new Color(0.30f, 0.65f, 0.40f), 30, "squares", R);
+        var sky      = Supply("floss_sky",      "Sky Blue Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.55f, 0.75f, 0.95f), 30, "squares", R);
+        var navy     = Supply("floss_navy",     "Navy Floss",     SupplyKind.Thread, cs, 3, 1, new Color(0.20f, 0.30f, 0.55f), 30, "squares", A, 1);
+        Supply("floss_purple",   "Purple Floss",   SupplyKind.Thread, cs, 3, 1, new Color(0.55f, 0.40f, 0.70f), 30, "squares", R);
+        var charcoal = Supply("floss_charcoal", "Charcoal Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.25f, 0.20f, 0.25f), 30, "squares", A, 1);
+        Supply("floss_white",    "White Floss",    SupplyKind.Thread, cs, 3, 1, new Color(0.98f, 0.98f, 0.96f), 30, "squares", A);
+        Supply("floss_brown",    "Brown Floss",    SupplyKind.Thread, cs, 3, 1, new Color(0.50f, 0.32f, 0.20f), 30, "squares", R);
+        Supply("floss_orange",   "Orange Floss",   SupplyKind.Thread, cs, 3, 1, new Color(0.95f, 0.50f, 0.20f), 30, "squares", R);
+        Supply("floss_teal",     "Teal Floss",     SupplyKind.Thread, cs, 3, 1, new Color(0.15f, 0.55f, 0.55f), 30, "squares", R);
+        Supply("floss_lavender", "Lavender Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.78f, 0.70f, 0.90f), 30, "squares", R);
+        Supply("floss_metallic_gold", "Metallic Gold Floss", SupplyKind.Thread, cs, 8, 3, new Color(0.85f, 0.72f, 0.35f), 30, "squares", X);
+
+        // Tools: bought once and kept. Hoop size = the largest pattern side it fits.
+        Supply("hoop_4in", "4\" Embroidery Hoop", SupplyKind.Tool, cs, 6,  1, new Color(0.80f, 0.65f, 0.45f), 1, "hoop", R, 0, "hoop", 10);
+        Supply("hoop_6in", "6\" Embroidery Hoop", SupplyKind.Tool, cs, 8,  1, new Color(0.78f, 0.62f, 0.42f), 1, "hoop", R, 1, "hoop", 12);
+        Supply("hoop_8in", "8\" Embroidery Hoop", SupplyKind.Tool, cs, 12, 1, new Color(0.75f, 0.60f, 0.40f), 1, "hoop", R, 0, "hoop", 16);
+        Supply("tapestry_needle",   "Tapestry Needle",   SupplyKind.Tool, cs, 2, 1, new Color(0.75f, 0.75f, 0.80f), 1, "needle", A, 1, "tapestry_needle");
+        Supply("embroidery_needle", "Embroidery Needle", SupplyKind.Tool, CraftType.Embroidery, 2, 1, new Color(0.70f, 0.70f, 0.78f), 1, "needle", R, 0, "embroidery_needle");
+        Supply("crochet_hook_5mm",  "5mm Crochet Hook",  SupplyKind.Tool, CraftType.Crochet, 6, 1, new Color(0.55f, 0.75f, 0.85f), 1, "hook", R, 0, "crochet_hook", 4);
+        Supply("knitting_needles_4mm", "4mm Knitting Needles", SupplyKind.Tool, CraftType.Knitting, 8, 1, new Color(0.70f, 0.55f, 0.40f), 1, "pair", R, 0, "knitting_needles", 3);
+        Supply("knitting_needles_5mm", "5mm Knitting Needles", SupplyKind.Tool, CraftType.Knitting, 8, 1, new Color(0.65f, 0.50f, 0.35f), 1, "pair", R, 0, "knitting_needles", 4);
+        Supply("fabric_scissors", "Fabric Scissors",    SupplyKind.Tool, CraftType.Sewing, 15, 1, new Color(0.60f, 0.60f, 0.65f), 1, "pair", R, 0, "scissors");
+        Supply("pins",            "Box of Pins",        SupplyKind.Tool, CraftType.Sewing, 3,  1, new Color(0.90f, 0.40f, 0.45f), 1, "box", R, 0, "pins");
+        Supply("marking_pen",     "Fabric Marking Pen", SupplyKind.Tool, CraftType.Sewing, 4,  1, new Color(0.35f, 0.55f, 0.85f), 1, "pen", R, 0, "marking_pen");
+
+        // Notions: used up by sewn and crocheted items (once item recipes arrive).
+        Supply("stuffing",          "Polyester Stuffing", SupplyKind.Stuffing, CraftType.Sewing, 6, 1, new Color(0.97f, 0.97f, 0.97f), 3, "plushies", A);
+        Supply("safety_eyes_black", "Black Safety Eyes",  SupplyKind.Eyes,     CraftType.Sewing, 4, 1, new Color(0.10f, 0.10f, 0.10f), 4, "pairs", R);
+        Supply("buttons_wood",      "Wooden Buttons",     SupplyKind.Notion,   CraftType.Sewing, 4, 1, new Color(0.65f, 0.48f, 0.30f), 8, "buttons", R);
+        Supply("ribbon_satin",      "Satin Ribbon",       SupplyKind.Notion,   CraftType.Sewing, 3, 1, new Color(0.90f, 0.35f, 0.50f), 2, "lengths", R);
+        Supply("zip_20cm",          "20cm Zip",           SupplyKind.Notion,   CraftType.Sewing, 3, 1, new Color(0.30f, 0.30f, 0.35f), 1, "zips", R);
+        Supply("interfacing",       "Interfacing",        SupplyKind.Notion,   CraftType.Sewing, 5, 1, new Color(0.92f, 0.92f, 0.92f), 2, "pieces", R);
 
         // ---- Customers ----
         Customer("mara",   "Mara",        "A nervous new parent who loves anything soft.",
@@ -136,10 +179,13 @@ public static class PlaceholderGenerator
         return def;
     }
 
-    /// Creates the supply, or fills in the pack details on an older supply asset that doesn't have them
-    /// yet (perPack still 1, unit still "uses"). Never touches its art.
+    // Bump when the catalogue's details change, so supplies made by an older generator get updated.
+    const int SupplyGeneratorVersion = 2;
+
+    /// Creates the supply, or updates the details of one an older generator made. Supplies the owner
+    /// edits by hand keep their changes once they're at this version. Never touches its art.
     static SupplyDef Supply(string id, string name, SupplyKind kind, CraftType craft, int price, int tier, Color c,
-                            int perPack, string unit, int starterPacks = 0)
+                            int perPack, string unit, MarketSlot market, int starterPacks = 0, string toolType = "", int size = 0)
     {
         string assetPath = $"{Root}/Data/Supplies/supply_{id}.asset";
         var def = AssetDatabase.LoadAssetAtPath<SupplyDef>(assetPath);
@@ -150,10 +196,11 @@ public static class PlaceholderGenerator
             def.supplyId = id; def.displayName = name; def.craft = craft; def.tier = tier;
             def.icon = MakeSprite($"{Root}/Art/Supplies/supply_{id}.png", 256, 256, c);
         }
-        if (isNew || (def.perPack <= 1 && def.unit == "uses"))
+        if (isNew || def.generatorVersion < SupplyGeneratorVersion)
         {
             def.kind = kind; def.color = c; def.price = price; def.perPack = perPack; def.unit = unit;
-            def.starterPacks = starterPacks;
+            def.starterPacks = starterPacks; def.market = market; def.toolType = toolType; def.size = size;
+            def.generatorVersion = SupplyGeneratorVersion;
             EditorUtility.SetDirty(def);
         }
         if (isNew) AssetDatabase.CreateAsset(def, assetPath);

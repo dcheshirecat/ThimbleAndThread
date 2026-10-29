@@ -1,10 +1,15 @@
 using UnityEngine;
 
-public enum SupplyKind { Other, Fabric, Thread, Yarn, Stuffing, Eyes }
+// Append new values at the end: assets store these as numbers.
+public enum SupplyKind { Other, Fabric, Thread, Yarn, Stuffing, Eyes, Tool, Notion }
 
-// Cloth, floss, yarn, stuffing, toy eyes... Create via Assets > Create > Craft > Supply.
-// Supplies are bought in packs and used up: a pack adds "perPack" units (e.g. a skein of floss
+// When the Supply Market sells it: always, in the 4-day rotation, only now and then, or never.
+public enum MarketSlot { Rotating, Always, Rare, NotSold }
+
+// Cloth, floss, yarn, tools, stuffing, toy eyes... Create via Assets > Create > Craft > Supply.
+// Most supplies are bought in packs and used up: a pack adds "perPack" units (e.g. a skein of floss
 // covers 30 squares, a piece of Aida 400 squares, a bag of stuffing 3 plushies).
+// Tools (kind Tool) are bought once and kept; recipes check you own the right type and size.
 [CreateAssetMenu(menuName = "Craft/Supply")]
 public class SupplyDef : ScriptableObject
 {
@@ -19,4 +24,11 @@ public class SupplyDef : ScriptableObject
     public int perPack = 1;                // units one purchase gives
     public string unit = "uses";           // what a unit is: "squares", "stitches", "plushies", "pairs"...
     public int starterPacks;               // packs a new game starts with (the starter kit)
+    public MarketSlot market = MarketSlot.Rotating;
+
+    [Header("Tools and sizes")]
+    public string toolType;                // tools: "hoop", "tapestry_needle", "crochet_hook", "knitting_needles", "scissors"...
+    public int size;                       // hoops: largest pattern side that fits (squares); hooks, needles, yarn: yarn weight
+
+    [HideInInspector] public int generatorVersion;   // placeholder data only: lets the generator update its own supplies
 }

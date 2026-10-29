@@ -21,6 +21,7 @@ public static class TestSceneBuilder
 {
     const string ScenePath = "Assets/_Project/Scenes/TestRouter.unity";
     const string Root = "Assets/_Project";
+    const float ReferenceHeight = 2732;   // canvas units; taller phones only add height, so fractions err on the safe side
     const string SpriteMaterialPath = "Packages/com.unity.render-pipelines.universal/Runtime/Materials/Sprite-Unlit-Default.mat";
 
     static readonly Color Ink = new Color(0.20f, 0.15f, 0.20f);
@@ -200,8 +201,10 @@ public static class TestSceneBuilder
         // Side screens
         p = Panel(ScreenId.Market, "Supply Market", new Color(0.85f, 0.70f, 0.60f));
         ui.marketStatus = Label(p, "Status", new Vector2(0.06f, 0.82f), new Vector2(0.94f, 0.92f), 60, TextAnchor.MiddleCenter);
-        ui.marketTemplate = Button(ScrollList(p, 0.14f, 0.81f), "Supply Template", null, 1840);
-        ui.marketTemplate.GetComponentInChildren<Text>().fontSize = 52;
+        var shelves = ScrollList(p, 0.14f, 0.81f);
+        ui.shelfTitleTemplate = ShelfTitle(shelves);
+        ui.shelfTemplate = Shelf(shelves);
+        ui.marketTemplate = SupplyTile(ui.shelfTemplate);
         Button(Column(p, 0.5f, 0.04f), "Back", router.GoToHub);
 
         p = Panel(ScreenId.Journal, "Journal", new Color(0.80f, 0.93f, 0.74f));
@@ -241,7 +244,7 @@ public static class TestSceneBuilder
         p = Panel(ScreenId.PatternDesigner, "", Color.clear);
         p.GetComponent<Image>().raycastTarget = false;
         designer.nameField = NameField(p, new Vector2(0.5f, 0.925f));
-        designer.swatches = Swatches(p, 0.315f, Materials.Threads(content).Count, true);
+        designer.swatches = Swatches(p, 0.32f, Materials.Threads(content).Count, true, 130);
         designer.swatches.label.color = Color.white;
         UnityEventTools.AddPersistentListener(designer.swatches.onPick, designer.SelectColour);
         b = Row(p, 0.5f, 0.235f);
@@ -329,6 +332,68 @@ public static class TestSceneBuilder
         return crt;
     }
 
+    // ---- Supply Market shelves (OrderFlowUI copies these templates) ----
+
+    static Text ShelfTitle(Transform list)
+    {
+        var t = MakeText(list, "Shelf Title Template", "Shelf", 64);
+        t.alignment = TextAnchor.LowerLeft;
+        t.fontStyle = FontStyle.Bold;
+        var le = t.gameObject.AddComponent<LayoutElement>();
+        le.preferredWidth = 1840; le.preferredHeight = 100;
+        return t;
+    }
+
+    /// A wooden shelf: a grid of tiles, 3 per row.
+    static RectTransform Shelf(Transform list)
+    {
+        var go = new GameObject("Shelf Template", typeof(RectTransform), typeof(Image), typeof(GridLayoutGroup));
+        go.transform.SetParent(list, false);
+        go.GetComponent<Image>().color = new Color(0.62f, 0.45f, 0.30f);
+        var grid = go.GetComponent<GridLayoutGroup>();
+        grid.cellSize = new Vector2(580, 720);
+        grid.spacing = new Vector2(30, 40);
+        grid.padding = new RectOffset(25, 25, 30, 30);
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = 3;
+        grid.childAlignment = TextAnchor.UpperLeft;
+        return (RectTransform)go.transform;
+    }
+
+    /// One supply on the shelf: its icon, then its name, then price and how many you have.
+    static Button SupplyTile(Transform shelf)
+    {
+        var go = new GameObject("Supply Template", typeof(RectTransform), typeof(Image), typeof(Button));
+        go.transform.SetParent(shelf, false);
+        var img = go.GetComponent<Image>();
+        img.sprite = uiSprite;
+        img.type = Image.Type.Sliced;
+
+        var icon = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+        var irt = (RectTransform)icon.transform;
+        irt.SetParent(go.transform, false);
+        irt.anchorMin = new Vector2(0.1f, 0.40f); irt.anchorMax = new Vector2(0.9f, 0.96f);
+        irt.offsetMin = irt.offsetMax = Vector2.zero;
+        var iimg = icon.GetComponent<Image>();
+        iimg.preserveAspect = true;
+        iimg.raycastTarget = false;
+
+        TileText(go.transform, "Name", 44, 0.21f, 0.40f, FontStyle.Bold);
+        TileText(go.transform, "Info", 38, 0.02f, 0.21f, FontStyle.Normal);
+        return go.GetComponent<Button>();
+    }
+
+    static void TileText(Transform tile, string name, int size, float bottom, float top, FontStyle style)
+    {
+        var t = MakeText(tile, name, "", size);
+        t.fontStyle = style;
+        t.horizontalOverflow = HorizontalWrapMode.Wrap;
+        t.verticalOverflow = VerticalWrapMode.Overflow;
+        var rt = (RectTransform)t.transform;
+        rt.anchorMin = new Vector2(0.04f, bottom); rt.anchorMax = new Vector2(0.96f, top);
+        rt.offsetMin = rt.offsetMax = Vector2.zero;
+    }
+
     /// A vertical stack of buttons centred on (x, y); near the bottom edge it grows upwards instead.
     static Transform Column(Transform panel, float x, float y) => Group<VerticalLayoutGroup>(panel, x, y, 40);
 
@@ -381,11 +446,28 @@ public static class TestSceneBuilder
         return t;
     }
 
-    /// A row of colour buttons (optionally with an eraser) and a label above it, all at height y.
-    static ThreadSwatches Swatches(Transform panel, float y, int count, bool eraser)
+    /// A grid of colour buttons (optionally with an eraser), centred at height y, with a label above it.
+    /// Up to 8 per row; "cell" is the button size, smaller when there are many colours.
+    static ThreadSwatches Swatches(Transform panel, float y, int count, bool eraser, float cell = 170)
     {
-        var row = Row(panel, 0.5f, y);
-        var ts = row.gameObject.AddComponent<ThreadSwatches>();
+        const int columns = 8;
+        const float spacing = 20;
+        var go = new GameObject("Swatches", typeof(RectTransform), typeof(GridLayoutGroup), typeof(ContentSizeFitter));
+        var row = (RectTransform)go.transform;
+        row.SetParent(panel, false);
+        row.anchorMin = row.anchorMax = new Vector2(0.5f, y);
+        var grid = go.GetComponent<GridLayoutGroup>();
+        grid.cellSize = new Vector2(cell, cell);
+        grid.spacing = new Vector2(spacing, spacing);
+        grid.childAlignment = TextAnchor.MiddleCenter;
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = Mathf.Min(columns, count + (eraser ? 1 : 0));
+        var fitter = go.GetComponent<ContentSizeFitter>();
+        fitter.horizontalFit = fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        int rows = Mathf.CeilToInt((count + (eraser ? 1 : 0)) / (float)columns);
+        float top = y + (rows * cell + (rows - 1) * spacing) / 2f / ReferenceHeight;
+
+        var ts = go.AddComponent<ThreadSwatches>();
         ts.swatches = new Image[count];
         for (int i = 0; i < count; i++)
         {
@@ -401,7 +483,7 @@ public static class TestSceneBuilder
             UnityEventTools.AddIntPersistentListener(b.onClick, ts.Pick, -1);
             ts.eraser = b.GetComponent<Image>();
         }
-        ts.label = Label(panel, "ThreadName", new Vector2(0.1f, y + 0.035f), new Vector2(0.9f, y + 0.07f), 56, TextAnchor.MiddleCenter);
+        ts.label = Label(panel, "ThreadName", new Vector2(0.1f, top + 0.004f), new Vector2(0.9f, top + 0.034f), 56, TextAnchor.MiddleCenter);
         return ts;
     }
 

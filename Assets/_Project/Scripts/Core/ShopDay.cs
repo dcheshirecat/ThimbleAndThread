@@ -312,10 +312,10 @@ public class ShopDay : MonoBehaviour
     public void BuyPack(string supplyId)
     {
         var s = content.Supply(supplyId);
-        if (s == null || Save.night) return;
-        LastMessage = shop.Buy(s)
-            ? $"Bought {s.displayName}: +{s.perPack} {s.unit} (you have {shop.Stock(supplyId)})."
-            : $"Not enough coins for {s.displayName} ({s.price} coins).";
+        if (s == null || Save.night || !shop.IsOnSale(s)) return;
+        LastMessage = !shop.Buy(s) ? $"Not enough coins for {s.displayName} ({s.price} coins)."
+            : s.kind == SupplyKind.Tool ? $"Bought {s.displayName}. Tools are yours to keep."
+            : $"Bought {s.displayName}: +{s.perPack} {s.unit} (you have {shop.Stock(supplyId)}).";
         GM.ChangeScreen(ScreenId.Market);   // refresh the list
     }
 
@@ -331,17 +331,27 @@ public class ShopDay : MonoBehaviour
     /// What an order still needs from the cupboard before work can start (nothing once started).
     public List<MaterialNeed> NeedsFor(Order o)
     {
-        if (o.materialsUsed) return new List<MaterialNeed>();
+        if (o.materialsUsed || o.patternOnly) return new List<MaterialNeed>();   // designing is free
         return Materials.For(o.target, Materials.FabricFor(o.target, content, shop), content);
     }
 
     public List<MaterialNeed> MissingFor(Order o) => shop.Missing(NeedsFor(o));
+
+    /// Tools the order needs every time it's worked on (they're kept, so once owned they stay owned).
+    public List<ToolNeed> ToolsFor(Order o) => o.patternOnly ? new List<ToolNeed>() : Materials.ToolsFor(o.target);
+    public List<ToolNeed> MissingToolsFor(Order o) => shop.MissingTools(ToolsFor(o));
 
     /// Night only: crafting happens in the workroom. The first time, the fabric is cut and the
     /// floss set aside, so everything must be in the cupboard.
     public void StartCrafting()
     {
         if (!Save.night || Selected == null) return;
+        if (MissingToolsFor(Selected).Count > 0)
+        {
+            LastMessage = "You're missing a tool for this. Look for it at the Supply Market.";
+            GM.ChangeScreen(ScreenId.Workbench);
+            return;
+        }
         if (!Selected.materialsUsed)
         {
             var needs = NeedsFor(Selected);

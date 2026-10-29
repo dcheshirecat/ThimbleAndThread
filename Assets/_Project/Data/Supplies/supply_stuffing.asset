@@ -23,3 +23,7 @@ MonoBehaviour:
   perPack: 3
   unit: plushies
   starterPacks: 0
+  market: 1
+  toolType: 
+  size: 0
+  generatorVersion: 2

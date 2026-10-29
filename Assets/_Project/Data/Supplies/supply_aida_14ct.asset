@@ -23,3 +23,7 @@ MonoBehaviour:
   perPack: 400
   unit: squares
   starterPacks: 1
+  market: 1
+  toolType: 
+  size: 0
+  generatorVersion: 2

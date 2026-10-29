@@ -65,6 +65,9 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
     each period, and now and then a RARE special item appears (e.g. 100% alpaca, linen evenweave,
     metallic floss), useful for commissions. The selection is seeded per save, so saves differ. The
     market shows how many days until new stock.
+  - Looks like a store, not a list (owner's choice): shelves per kind (Fabric, Embroidery Floss, Yarn,
+    Notions, Tools), each a grid of tiles with the supply's icon (SupplyDef.icon, 512 x 512), name,
+    price and how many you have. Rare items get a gold tile.
   - Real variety: fabrics (Aida counts, evenweave linen, felt, quilting cotton, fleece/minky, canvas),
     threads (many floss colours, metallic), yarns (acrylic, wool, merino, cotton, 100% alpaca, mohair,
     by weight and colour), tools (embroidery hoops by size, tapestry/embroidery needles, crochet hooks and

@@ -8,7 +8,7 @@ The game is portrait. UI reference canvas: 2048 x 2732 (width is fixed; taller p
 | Dialogue portraits | 1024 x 1024 |
 | Finished-item art | 1024 x 1024 |
 | Item / pattern icons | 512 x 512 |
-| Supply icons | 256 x 256 |
+| Supply icons (Supply Market shelves) | 512 x 512 |
 | Tileable textures | 1024 x 1024 |
 | Stitch / loop / needle sprites | 256 x 256 |
 | UI buttons | ~512 x 192 |

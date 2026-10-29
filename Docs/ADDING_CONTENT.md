@@ -34,12 +34,13 @@ Filenames: `category_name_variant.png`, lowercase, e.g. `supply_yarn_alpaca_crea
 
 ## Yarns, threads, fabrics (supplies)
 
-1. Art: a 256 x 256 icon in `Art/Supplies/`.
+1. Art: a 512 x 512 icon in `Art/Supplies/`. It's the picture on the Supply Market shelf.
 2. In `Data/Supplies/`: right-click > **Create > Craft > Supply**. Name the file `supply_<id>`.
 3. Fill in:
    - **Supply Id**: e.g. `alpaca_yarn_cream`
    - **Display Name**: what players see, e.g. "100% Alpaca Yarn (Cream)"
-   - **Kind**: Fabric, Thread (embroidery floss), Yarn, Stuffing, Eyes, or Other
+   - **Kind**: Fabric, Thread (embroidery floss), Yarn, Stuffing, Eyes, Tool, Notion (buttons,
+     ribbon, zips...) or Other. It also decides which market shelf it sits on.
    - **Craft**: which craft uses it (Knitting, Crochet, Cross Stitch...)
    - **Icon**: drag in your sprite
    - **Color**: the thread/yarn/fabric colour. Floss colours appear in the Pattern Studio and on the
@@ -49,10 +50,18 @@ Filenames: `category_name_variant.png`, lowercase, e.g. `supply_yarn_alpaca_crea
    - **Per Pack** and **Unit**: how much one pack gives, e.g. floss 30 "squares", Aida 400
      "squares", yarn 300 "stitches", stuffing 3 "plushies", eyes 4 "pairs".
    - **Starter Packs**: how many packs a new game begins with (0 for most things).
+   - **Market**: when the Supply Market sells it. *Always* (basics, every day), *Rotating* (the
+     selection that changes every 4 days, about 14 of these at a time), *Rare* (now and then one
+     special item turns up) or *Not Sold*.
+   - **Tool Type** and **Size** (tools only): e.g. hoops are type `hoop` with Size = the largest
+     pattern side they fit (4" = 10, 6" = 12, 8" = 16). For yarn, Size is the yarn weight
+     (3 = DK, 4 = worsted), which hooks and needles will need to match.
 
 Supplies are used up: a cross stitch project uses one square of Aida per grid square and one square
-of floss per stitched square of that colour. Every Thread you add becomes a new colour in the
-Pattern Studio automatically, and appears in the Supply Market.
+of floss per stitched square of that colour. Tools are bought once and kept: stitching needs a hoop
+big enough for the pattern and a tapestry needle. Every Thread you add becomes a new colour in the
+Pattern Studio automatically. On the market, each supply shows its icon on its shelf (Fabric,
+Embroidery Floss, Yarn, Notions, Tools).
 
 ## Things you can make (items)
 
@@ -101,9 +110,8 @@ Keep the first patterns small (8 x 8 or so); each square is two drags to stitch.
 
 These need a bit of code first. You can start the art now:
 
-- **Embroidery hoops and other tools** (hoops, needles, hooks). Plan: a "Tool" asset like supplies,
-  but bought once and kept, with a 256 x 256 icon plus an in-minigame sprite (e.g. the hoop frame,
-  2048 x 2048 with a transparent middle). Bigger or nicer hoops could allow bigger patterns.
+- **Tools in the minigames.** Tools already exist as supplies (above). Later each one gets an
+  in-minigame sprite too, e.g. the hoop frame, 2048 x 2048 with a transparent middle.
 - **Character customization.** Plan: layered sprites. Draw each layer (body, skin tone, hair, outfit,
   accessories) on the **same canvas size** with a transparent background, lined up exactly, so the
   layers stack. Name them `player_<layer>_<name>_<colour>.png`, e.g. `player_hair_bob_brown.png`.

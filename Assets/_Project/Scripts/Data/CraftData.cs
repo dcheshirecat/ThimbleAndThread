@@ -41,6 +41,15 @@ public class MaterialNeed
     public int amount;
 }
 
+// A tool a piece of work needs: any owned tool of this type that is at least this size.
+[Serializable]
+public class ToolNeed
+{
+    public string toolType;
+    public int minSize;
+    public string label;        // e.g. "Embroidery hoop for 16 x 16 or bigger"
+}
+
 // Work done on a grid cell. mask: 1 = "/" diagonal, 2 = "\" diagonal, 3 = full X (or a painted pattern cell).
 // color: the thread used, an index into the pattern's palette.
 [Serializable]
@@ -77,6 +86,7 @@ public class SaveData
     public int day = 1;
     public bool night;                        // false = shop open (day), true = workroom (night)
     public List<SupplyStock> stock = new List<SupplyStock>();   // the supply cupboard
+    public int marketSeed;                    // picks this save's rotating market stock (0 = not set yet)
     public List<string> ownedSupplies = new List<string>();     // version 3 and older; converted into stock on load
     public List<string> unlockedItems = new List<string>();
     public List<CustomerRelationship> relationships = new List<CustomerRelationship>();

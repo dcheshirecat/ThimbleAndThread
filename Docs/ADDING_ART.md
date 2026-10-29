@@ -36,7 +36,7 @@ Or just send the PNGs to Claude with a note saying what each one is.
 | Player character | `Art/Characters/Player/` | `player_<layer>_<name>.png` | same canvas for all layers |
 | Item icons | `Art/Items/` | `item_scarf_icon.png` | 512 x 512 |
 | Finished-item art | `Art/Items/` | `item_scarf_finished.png` | 1024 x 1024 |
-| Supply icons (yarn balls, skeins, fabric) | `Art/Supplies/` | `supply_alpaca_yarn_cream.png` | 256 x 256 |
+| Supply icons (yarn balls, skeins, fabric) | `Art/Supplies/` | `supply_alpaca_yarn_cream.png` | 512 x 512 (shown on the market shelves) |
 | Tileable textures (yarn, fabric, wood) | `Art/Textures/` | `tex_aida_white.png`, `tex_knit_wool.png` | 1024 x 1024 |
 | Stitch, loop, needle sprites | `Art/Crafts/<Craft>/` | `stitch_cross_half.png` | 256 x 256 |
 | UI | `Art/UI/` | see below | see below |

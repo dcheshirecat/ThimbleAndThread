@@ -23,6 +23,69 @@ public class ShopManager : MonoBehaviour
         s.amount += amount;
     }
 
+    // ---- Market: always-on basics, a selection that changes every 4 days, and now and then a rare item ----
+
+    public const int DaysPerRotation = 4;
+    public const int RotatingCount = 14;
+    const float RareChance = 0.4f;
+
+    public int DaysUntilRestock => DaysPerRotation - (Save.day - 1) % DaysPerRotation;
+
+    /// What the Supply Market sells today. The same all through a 4-day period, different per save.
+    public List<SupplyDef> OnSale()
+    {
+        if (Save.marketSeed == 0)
+        {
+            Save.marketSeed = Random.Range(1, int.MaxValue);
+            GameManager.Instance.Persist();   // keep this save's market the same after a restart
+        }
+        int period = (Save.day - 1) / DaysPerRotation;
+        var rng = new System.Random(unchecked(Save.marketSeed * 31 + period));
+
+        var sale = new List<SupplyDef>();
+        var rotating = new List<SupplyDef>();
+        var rare = new List<SupplyDef>();
+        foreach (var s in content.supplies)
+        {
+            if (s == null) continue;
+            if (s.market == MarketSlot.Always) sale.Add(s);
+            else if (s.market == MarketSlot.Rotating) rotating.Add(s);
+            else if (s.market == MarketSlot.Rare) rare.Add(s);
+        }
+        for (int i = rotating.Count - 1; i > 0; i--)   // shuffle, then take the first few
+        {
+            int j = rng.Next(i + 1);
+            (rotating[i], rotating[j]) = (rotating[j], rotating[i]);
+        }
+        sale.AddRange(rotating.GetRange(0, Mathf.Min(RotatingCount, rotating.Count)));
+        if (rare.Count > 0 && rng.NextDouble() < RareChance) sale.Add(rare[rng.Next(rare.Count)]);
+        return sale;
+    }
+
+    public bool IsOnSale(SupplyDef s) => OnSale().Contains(s);
+
+    // ---- Tools ----
+
+    /// The best owned tool of this type (null if none).
+    public SupplyDef BestTool(string toolType)
+    {
+        SupplyDef best = null;
+        foreach (var s in content.supplies)
+            if (s != null && s.kind == SupplyKind.Tool && s.toolType == toolType && Owns(s.supplyId) && (best == null || s.size > best.size))
+                best = s;
+        return best;
+    }
+
+    public bool HasTool(ToolNeed need)
+    {
+        foreach (var s in content.supplies)
+            if (s != null && s.kind == SupplyKind.Tool && s.toolType == need.toolType && s.size >= need.minSize && Owns(s.supplyId))
+                return true;
+        return false;
+    }
+
+    public List<ToolNeed> MissingTools(List<ToolNeed> needs) => needs.FindAll(n => !HasTool(n));
+
     /// Buys one pack. Returns false if the player can't afford it.
     public bool Buy(SupplyDef s)
     {

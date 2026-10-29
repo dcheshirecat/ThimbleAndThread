@@ -23,3 +23,7 @@ MonoBehaviour:
   perPack: 300
   unit: stitches
   starterPacks: 0
+  market: 0
+  toolType: 
+  size: 4
+  generatorVersion: 2

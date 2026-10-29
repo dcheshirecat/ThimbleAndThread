@@ -63,6 +63,17 @@ public static class Materials
         return needs;
     }
 
+    /// Tools for stitching a pattern: a hoop big enough for it, and a tapestry needle.
+    public static List<ToolNeed> ToolsFor(Pattern p)
+    {
+        int side = Mathf.Max(p.width, p.height);
+        return new List<ToolNeed>
+        {
+            new ToolNeed { toolType = "hoop", minSize = side, label = $"Embroidery hoop that fits {side} x {side}" },
+            new ToolNeed { toolType = "tapestry_needle", minSize = 0, label = "Tapestry needle" },
+        };
+    }
+
     /// e.g. "Red Floss: need 20, have 12"
     public static string Describe(MaterialNeed n, ContentLibrary content, ShopManager shop)
     {

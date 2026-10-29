@@ -16,7 +16,10 @@ public class OrderFlowUI : MonoBehaviour
     [Header("Result")] public Text resultText; public Image resultPortrait;
     [Header("Day summary")] public Text summaryText;
     [Header("Pattern Studio")] public Button patternTemplate;
-    [Header("Supply Market")] public Button marketTemplate; public Text marketStatus;
+    [Header("Supply Market")] public Text marketStatus;
+    public Text shelfTitleTemplate;       // a shelf's name, e.g. "Yarn"
+    public RectTransform shelfTemplate;   // a grid of supply tiles
+    public Button marketTemplate;         // one supply tile (children Icon, Name, Info), inside shelfTemplate
     [Header("Pattern edit")] public Text patternText, shelfLabel, deleteLabel; public RawImage patternPreview;
     public GameObject editDesignButton, deleteButton;
 
@@ -171,28 +174,87 @@ public class OrderFlowUI : MonoBehaviour
 
     readonly List<GameObject> marketRows = new List<GameObject>();
 
+    // The market's shelves, top to bottom, and the kinds of supply each one holds.
+    static readonly (string title, SupplyKind[] kinds)[] Shelves =
+    {
+        ("Fabric", new[] { SupplyKind.Fabric }),
+        ("Embroidery Floss", new[] { SupplyKind.Thread }),
+        ("Yarn", new[] { SupplyKind.Yarn }),
+        ("Notions", new[] { SupplyKind.Stuffing, SupplyKind.Eyes, SupplyKind.Notion, SupplyKind.Other }),
+        ("Tools", new[] { SupplyKind.Tool }),
+    };
+
+    static readonly Color TileColor = new Color(0.98f, 0.95f, 0.88f), RareTileColor = new Color(1f, 0.88f, 0.55f);
+
+    /// The Supply Market as shelves: one per kind of supply, each a grid of tiles showing the supply's icon.
     void BuildMarketList(SaveData save)
     {
         foreach (var row in marketRows) Destroy(row);
         marketRows.Clear();
+        shelfTitleTemplate.gameObject.SetActive(false);
+        shelfTemplate.gameObject.SetActive(false);
         marketTemplate.gameObject.SetActive(false);
-        marketStatus.text = $"{save.coins} coins. Tap to buy a pack.\n{day.LastMessage}";
+        int restock = day.shop.DaysUntilRestock;
+        marketStatus.text = $"{save.coins} coins. Tap something to buy it.  " +
+                            (restock == 1 ? "New stock tomorrow." : $"New stock in {restock} days.") + $"\n{day.LastMessage}";
 
-        foreach (var s in day.content.supplies)
+        var sale = day.shop.OnSale();
+        foreach (var (title, kinds) in Shelves)
         {
-            if (s == null) continue;
-            string id = s.supplyId;
-            var row = AddRow(marketTemplate, $"Supply_{id}",
-                $"{s.displayName}  ·  {s.price} coins for {s.perPack} {s.unit}  ·  you have {day.shop.Stock(id)}",
-                () => day.BuyPack(id));
-            row.GetComponent<Image>().color = Color.Lerp(Color.white, s.color, 0.35f);
-            marketRows.Add(row);
+            var onShelf = sale.FindAll(s => System.Array.IndexOf(kinds, s.kind) >= 0);
+            if (onShelf.Count == 0) continue;
+
+            var heading = Instantiate(shelfTitleTemplate, shelfTitleTemplate.transform.parent);
+            heading.gameObject.SetActive(true);
+            heading.text = title;
+            marketRows.Add(heading.gameObject);
+            var shelf = Instantiate(shelfTemplate, shelfTemplate.parent);
+            shelf.gameObject.SetActive(true);
+            shelf.name = $"Shelf_{title.Replace(" ", "")}";
+            marketRows.Add(shelf.gameObject);
+
+            foreach (var s in onShelf) AddTile(shelf, s);
         }
     }
 
-    /// The materials an order needs, and what's still missing before work can start.
-    string MaterialsText(Order order)
+    void AddTile(RectTransform shelf, SupplyDef s)
     {
+        string id = s.supplyId;
+        var tile = Instantiate(marketTemplate, shelf);
+        tile.gameObject.SetActive(true);
+        tile.name = $"Supply_{id}";
+        tile.onClick.AddListener(() => day.BuyPack(id));
+        bool rare = s.market == MarketSlot.Rare;
+        tile.GetComponent<Image>().color = rare ? RareTileColor : TileColor;
+
+        var icon = tile.transform.Find("Icon").GetComponent<Image>();
+        icon.sprite = s.icon;
+        icon.color = s.icon != null ? Color.white : s.color;   // no art yet: a swatch of its colour
+
+        tile.transform.Find("Name").GetComponent<Text>().text = (rare ? "Rare find!\n" : "") + s.displayName;
+        tile.transform.Find("Info").GetComponent<Text>().text = s.kind == SupplyKind.Tool
+            ? $"{s.price} coins\n{(day.shop.Owns(id) ? "Owned" : "Yours to keep")}"
+            : $"{s.price} coins for {s.perPack} {s.unit}\nYou have {day.shop.Stock(id)}";
+    }
+
+    /// The materials an order needs, and what's still missing before work can start.
+    string MaterialsText(Order order) => ToolsText(order) + NeedsText(order);
+
+    /// The tools an order needs, and which ones the player doesn't own yet.
+    string ToolsText(Order order)
+    {
+        var tools = day.ToolsFor(order);
+        if (tools.Count == 0) return "";
+        var missing = day.shop.MissingTools(tools);   // same list, so Contains below matches
+        var text = "\n\nTools:";
+        foreach (var t in tools) text += $"\n{(missing.Contains(t) ? "Missing" : "Have")}: {t.label}";
+        if (missing.Count > 0) text += "\nLook for missing tools at the Supply Market (its stock changes every 4 days).";
+        return text;
+    }
+
+    string NeedsText(Order order)
+    {
+        if (order.patternOnly) return "";
         if (order.materialsUsed)
         {
             var fabric = day.content.Supply(order.fabricId);
@@ -209,7 +271,8 @@ public class OrderFlowUI : MonoBehaviour
             {
                 var s = day.content.Supply(n.supplyId);
                 int packs = day.shop.PacksFor(n);
-                text += $"\n  {packs} x {(s != null ? s.displayName : n.supplyId)} ({packs * (s != null ? s.price : 0)} coins)";
+                text += $"\n  {packs} x {(s != null ? s.displayName : n.supplyId)} ({packs * (s != null ? s.price : 0)} coins)" +
+                        (s != null && !day.shop.IsOnSale(s) ? ", not in stock right now" : "");
             }
         }
         return text;
