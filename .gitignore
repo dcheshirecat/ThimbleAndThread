@@ -1,0 +1,41 @@
+# Unity generated
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+# Keep the README placeholder out of the ignore
+!Builds/README.txt
+
+# IDE
+.vs/
+.idea/
+.vscode/
+*.csproj
+*.sln
+*.suo
+*.user
+*.pidb
+*.booproj
+
+# Builds and crash files
+*.apk
+*.aab
+*.ipa
+*.unitypackage
+*.app
+sysinfo.txt
+crashlytics-build.properties
+
+# Secrets - NEVER commit
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+
+# OS
+.DS_Store
+Thumbs.db
