@@ -69,21 +69,29 @@ public class OrderFlowUI : MonoBehaviour
 
         bool night = save.night;
         workbenchText.text = $"{order.item.itemName} for {who}\n\n" +
-            (order.patternOnly ? "Pattern only: fill in the squares to design it." : "Finished piece: stitch each square.") +
+            (order.patternOnly ? "Pattern only: fill in the squares to design it." : RecipeText(order)) +
             (order.finished ? $"\nFinished ({Mathf.RoundToInt(order.accuracy * 100)}% accuracy)." : $"\nProgress: {progress}%") +
             MaterialsText(order) +
             (night ? "" : order.finished ? $"\n\n{who} is here to collect it." : "\n\nYou can work on this tonight, in the workroom.");
         if (!string.IsNullOrEmpty(day.LastMessage) && screen == ScreenId.Workbench) workbenchText.text += $"\n\n{day.LastMessage}";
-        startLabel.text = order.finished ? "Rework It" : order.work.Count > 0 ? "Keep Working" : "Start Crafting";
+        bool started = order.work.Count > 0 || order.step > 0;
+        startLabel.text = order.finished ? "Rework It"
+            : order.Steps.Length > 1 ? (started ? "Keep Working: " : "Start: ") + order.CurrentStep.label
+            : started ? "Keep Working" : "Start Crafting";
         startButton.SetActive(night);
         handOverButton.SetActive(!night && order.finished);
 
-        minigameHint.text = order.patternOnly
-            ? "Tap or drag over the faint squares to fill them in."
-            : "Drag corner to corner across a square, then the other diagonal to finish the X. Match each square's thread colour.";
-        if (order.item.craft != CraftType.CrossStitch)
+        var step = order.CurrentStep;
+        bool stitching = step.kind == StepKind.CrossStitch;
+        minigameHint.text = order.patternOnly ? "Tap or drag over the faint squares to fill them in."
+            : stitching ? "Drag corner to corner across a square, then the other diagonal to finish the X. Match each square's thread colour."
+            : StepHint(step.kind);
+        if (order.Steps.Length > 1) minigameHint.text = $"{step.label}. {minigameHint.text}";
+        if (stitching && order.item.craft != CraftType.CrossStitch && order.Steps.Length == 1)
             minigameHint.text += $" (The {CraftName(order.item.craft)} minigame is coming soon; cross stitch stands in.)";
-        if (screen == ScreenId.Minigame)
+        minigameThreads.gameObject.SetActive(stitching);
+        minigameThreads.label.gameObject.SetActive(stitching);
+        if (screen == ScreenId.Minigame && stitching)
         {
             var names = new List<string>();
             foreach (var id in order.target.threads) { var t = day.content.Supply(id); names.Add(t != null ? t.displayName : "Thread"); }
@@ -236,6 +244,26 @@ public class OrderFlowUI : MonoBehaviour
             ? $"{s.price} coins\n{(day.shop.Owns(id) ? "Owned" : "Yours to keep")}"
             : $"{s.price} coins for {s.perPack} {s.unit}\nYou have {day.shop.Stock(id)}";
     }
+
+    /// The recipe as a checklist: steps done, the one being worked on, and the ones still to come.
+    static string RecipeText(Order order)
+    {
+        var steps = order.Steps;
+        if (steps.Length == 1) return "Finished piece: stitch each square.";
+        var text = "How it's made:";
+        for (int i = 0; i < steps.Length; i++)
+        {
+            string mark = order.finished || i < order.step ? "Done" : i == order.step ? "Now" : "Then";
+            text += $"\n{mark}: {steps[i].label}";
+        }
+        return text;
+    }
+
+    static string StepHint(StepKind kind) => kind switch
+    {
+        StepKind.Hem => "Drag along the dashed line to sew the hem all the way round. Lift your finger and carry on wherever you like.",
+        _ => "",
+    };
 
     /// The materials an order needs, and what's still missing before work can start.
     string MaterialsText(Order order) => ToolsText(order) + NeedsText(order);

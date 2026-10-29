@@ -337,18 +337,43 @@ public class ShopDay : MonoBehaviour
 
     public List<MaterialNeed> MissingFor(Order o) => shop.Missing(NeedsFor(o));
 
-    /// Tools the order needs every time it's worked on (they're kept, so once owned they stay owned).
-    public List<ToolNeed> ToolsFor(Order o) => o.patternOnly ? new List<ToolNeed>() : Materials.ToolsFor(o.target);
+    /// Tools one recipe step needs: a cross stitch step needs a hoop that fits and a tapestry needle,
+    /// plus whatever the step itself lists. Designing (pattern-only orders) needs none.
+    public List<ToolNeed> ToolsForStep(Order o, int index)
+    {
+        var tools = new List<ToolNeed>();
+        if (o.patternOnly) return tools;
+        var step = o.Steps[Mathf.Clamp(index, 0, o.Steps.Length - 1)];
+        if (step.kind == StepKind.CrossStitch) tools.AddRange(Materials.ToolsFor(o.target));
+        if (step.tools != null) tools.AddRange(step.tools);
+        return tools;
+    }
+
+    /// Tools for the steps still to do, each type once (the largest size needed).
+    public List<ToolNeed> ToolsFor(Order o)
+    {
+        var tools = new List<ToolNeed>();
+        for (int i = Mathf.Max(0, o.step); i < o.Steps.Length; i++)
+            foreach (var t in ToolsForStep(o, i))
+            {
+                int same = tools.FindIndex(x => x.toolType == t.toolType);
+                if (same < 0) tools.Add(t);
+                else if (t.minSize > tools[same].minSize) tools[same] = t;
+            }
+        return tools;
+    }
+
     public List<ToolNeed> MissingToolsFor(Order o) => shop.MissingTools(ToolsFor(o));
 
     /// Night only: crafting happens in the workroom. The first time, the fabric is cut and the
-    /// floss set aside, so everything must be in the cupboard.
+    /// floss set aside, so everything must be in the cupboard. Each step needs its own tools
+    /// (tools are kept, so once owned they stay owned).
     public void StartCrafting()
     {
         if (!Save.night || Selected == null) return;
-        if (MissingToolsFor(Selected).Count > 0)
+        if (shop.MissingTools(ToolsForStep(Selected, Selected.step)).Count > 0)
         {
-            LastMessage = "You're missing a tool for this. Look for it at the Supply Market.";
+            LastMessage = "You're missing a tool for this step. Look for it at the Supply Market.";
             GM.ChangeScreen(ScreenId.Workbench);
             return;
         }
@@ -367,7 +392,8 @@ public class ShopDay : MonoBehaviour
             GM.Persist();
         }
         Selected.finished = false;   // reopening a set-aside piece makes it a work in progress again
-        minigame.Open(Selected);
+        var fabric = content.Supply(Selected.fabricId);
+        minigame.Open(Selected, fabric != null ? fabric.color : new Color(0.95f, 0.95f, 0.90f));
         GM.ChangeScreen(ScreenId.Minigame);
     }
 
@@ -388,11 +414,26 @@ public class ShopDay : MonoBehaviour
         GM.ChangeScreen(ScreenId.OrderBook);
     }
 
-    /// Shows how the piece turned out and what the customer will pay.
+    /// Finishes the step being worked on. If more steps follow, it's back to the Workbench with the
+    /// next one ready (the player can stop between steps). After the last step, shows how the piece
+    /// turned out and what the customer will pay: the quality is the average over all steps.
     public void FinishCrafting()
     {
-        LastAccuracy = minigame.SaveWork();
+        var state = Selected.StepState(Selected.step);
+        state.score = minigame.SaveWork();
+        state.done = true;
+        state.progress = 1f;
         minigame.Close();
+        if (!Selected.IsLastStep)
+        {
+            string done = Selected.CurrentStep.label;
+            Selected.step++;
+            GM.Persist();
+            LastMessage = $"{done}: done! Next: {Selected.CurrentStep.label}.";
+            GM.ChangeScreen(ScreenId.Workbench);
+            return;
+        }
+        LastAccuracy = Selected.RecipeScore();
         GM.Persist();
 
         int level = GM.GetRelationship(Selected.customerId).level;

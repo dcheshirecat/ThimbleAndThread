@@ -123,7 +123,7 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
 ## Code that already exists (all compiles and is smoke-tested; Assets/_Project/Scripts)
 - Data/CraftData.cs: CraftType, StitchCell, Pattern (grid + palette), StitchMark (x, y, mask, color),
   Pattern.threads (supplyId per palette colour), SupplyStock, MaterialNeed, OwnedPattern,
-  SaveData (version 4: coins, day, night, stock, orders, visitorsToday, patterns, today counters,
+  SaveData (version 5: coins, day, night, stock, orders, visitorsToday, patterns, today counters,
   relationships; ownedSupplies is legacy, converted into stock on load), CustomerRelationship.
 - Data/CraftItemDef.cs, CustomerDef.cs, SupplyDef.cs, PatternDef.cs (book pattern; grid drawn as text),
   ContentLibrary.cs (every content asset; Editor/ContentLibraryRefresher.cs keeps Data/ContentLibrary.asset
@@ -135,8 +135,10 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
 - Core/ShopDay.cs: the game loop: visitors, shelf sales and pattern orders, day/night, order book,
   crafting, set aside / hand over, Pattern Studio actions (price, shelf, new/edit/save/delete design).
 - Crafts/CrossStitchCanvas.cs: stitch and paint modes, thread colour per stitch, undo per drag,
-  Score() counts right-colour squares. Crafts/MinigameHost.cs places the board in the screen band
-  0.40-0.86 of a portrait screen and also opens it as the designer canvas. Crafts/PlaceholderPatterns.cs.
+  Score() counts right-colour squares. Crafts/MinigameHost.cs opens the order's current recipe step
+  (ICraftStep: CrossStitchStep, HemStep via TracingStep) in the screen band 0.40-0.86 of a portrait screen,
+  and also opens the board as the designer canvas. New step kinds: append to StepKind (Data/Recipe.cs),
+  implement ICraftStep, add to MinigameHost.Create and a hint in OrderFlowUI.StepHint. Crafts/PlaceholderPatterns.cs.
 - Economy/OrderSystem.cs (Order with saved work, materialsUsed, fabricId; OrderGenerator), PricingCalculator.cs,
   ShopManager.cs (counted stock, Buy packs, starter kit, Missing/Use), Materials.cs (what a pattern needs:
   Aida = width x height squares, floss = squares per colour; EnsureThreads maps old colours to floss).
@@ -253,14 +255,14 @@ pulling the Unity image. The workflow now adds 12 GB swap on /mnt and deletes mo
 tools; merged to main 2026-10-29 (commit d2d3ee9), first build with it not yet confirmed.
 
 ## Next tasks (in this order)
-1. DONE (crafting-steps): Materials: thread colours, yarns, fabrics, toy eyes, stuffing as supplies with realistic quantities
-   (floss covers N squares, etc.); Supply Market screen to buy them (day only); starter kit in new games;
-   designer shows all market colours and marks owned ones; patterns record which thread supplies they
-   use; stitching offers only owned threads; Start Crafting locked until the needed materials are owned,
-   with a list of what to buy; materials consumed as work is done. Update ADDING_CONTENT.md.
-2. Item recipes: each CraftItemDef gets an ordered list of steps; an ICraftStep interface so steps plug
-   in the same way; per-step progress saved in the Order; the cross stitch board becomes one step.
-3. Sewing steps for the sewn plushie: choose fabric, cut along lines, pin, sew seam (machine), turn,
-   stuff, attach eyes, close. Then tote bag, tablecloth hem, and a separate crocheted plushie.
+1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
+2. DONE (branch item-recipes, not merged): item recipes. CraftItemDef.steps (RecipeStep: StepKind, label,
+   extra tools); Order.step + Order.steps (StepProgress: done, score, progress, traced points); ICraftStep
+   (Begin/SaveWork/Undo) with CrossStitchStep and TracingStep (drag along a dashed guide; HemStep is the
+   first). Finishing a step returns to the Workbench with the next one; quality = average of step scores.
+   Tools are checked per step. The tablecloth is now "Stitch the motif" then "Hem the edges".
+3. Sewing steps for the sewn plushie: choose fabric, cut along lines (a TracingStep), pin, sew seam
+   (machine: TracingStep plus press-to-run speed), turn, stuff, attach eyes, close. Then tote bag and a
+   separate crocheted plushie.
 4. Then: knitting and crochet actions, embroidery; commissions; dialogue system (Ink or Yarn Spinner)
    with indirect requests; Journal; friend share codes; audio, settings, touch input wrapper.

@@ -69,6 +69,14 @@ Embroidery Floss, Yarn, Notions, Tools).
 2. In `Data/Items/`: **Create > Craft > Item Definition**, file `item_<id>`.
 3. Fill in **Item Id**, **Item Name**, **Craft**, **Icon**, **Base Price** (finished piece) and
    **Pattern Price**.
+4. **Steps**: how it's made, in order. Press **+** for each step and pick its **Kind** (the minigame)
+   and a **Label** the player sees, e.g. the tablecloth is *Cross Stitch: "Stitch the motif"* then
+   *Hem: "Hem the edges"*. **Tools** lists anything extra the step needs (Tool Type and Min Size, as
+   on the supply, plus a Label like "Fabric scissors"). Leave Steps empty for a single cross stitch step.
+   Kinds so far: Cross Stitch and Hem; more come with the sewing, knitting and crochet minigames.
+
+The player can stop between steps or partway through one; every step's work is saved. The piece's
+quality is the average over its steps.
 
 ## Customers and portraits
 

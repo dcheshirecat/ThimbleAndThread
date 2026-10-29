@@ -78,7 +78,7 @@ public class OwnedPattern
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 4;   // 2: added night. 3: added patterns. 4: counted stock
+    public const int CurrentVersion = 5;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen

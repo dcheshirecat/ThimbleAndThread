@@ -23,7 +23,15 @@ MonoBehaviour:
     width: 0
     height: 0
     palette: []
+    threads: []
     cells: []
   basePrice: 50
   patternPrice: 14
   requiredSupplyIds: []
+  steps:
+  - kind: 0
+    label: Stitch the motif
+    tools: []
+  - kind: 1
+    label: Hem the edges
+    tools: []

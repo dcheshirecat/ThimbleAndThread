@@ -29,6 +29,9 @@ public static class PlaceholderGenerator
         var sampler   = Item("sampler",   "Sampler",   CraftType.CrossStitch, 25, 8,  new Color(0.60f, 0.85f, 0.60f));
         var tote      = Item("tote",      "Tote Bag",  CraftType.Sewing,      35, 10, new Color(0.80f, 0.60f, 0.35f));
 
+        // ---- Recipes (items without one are a single cross stitch step for now) ----
+        Recipe(tablecloth, (StepKind.CrossStitch, "Stitch the motif"), (StepKind.Hem, "Hem the edges"));
+
         // ---- Supplies ----
         // Market slots: Always = basics always for sale; Rotating = the selection that changes every 4 days;
         // Rare = now and then one special item. The last number is starter packs (the new-game kit).
@@ -181,6 +184,14 @@ public static class PlaceholderGenerator
 
     // Bump when the catalogue's details change, so supplies made by an older generator get updated.
     const int SupplyGeneratorVersion = 2;
+
+    /// Gives an item its steps, unless it already has some (so steps set by hand are kept).
+    static void Recipe(CraftItemDef item, params (StepKind kind, string label)[] steps)
+    {
+        if (item.steps != null && item.steps.Length > 0) return;
+        item.steps = System.Array.ConvertAll(steps, s => new RecipeStep { kind = s.kind, label = s.label });
+        EditorUtility.SetDirty(item);
+    }
 
     /// Creates the supply, or updates the details of one an older generator made. Supplies the owner
     /// edits by hand keep their changes once they're at this version. Never touches its art.

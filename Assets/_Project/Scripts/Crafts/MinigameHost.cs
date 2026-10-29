@@ -1,8 +1,7 @@
 using UnityEngine;
 
-/// Spawns the craft minigame for an order, restoring any work saved earlier, and reads the work back.
-/// Also opens the same grid as a paint canvas for the Pattern Studio.
-/// Cross stitch stands in for every craft until each one has its own minigame.
+/// Opens the minigame for the step an order is on (see ICraftStep), restoring the work saved earlier,
+/// and reads the work back. Also opens the cross stitch grid as a paint canvas for the Pattern Studio.
 public class MinigameHost : MonoBehaviour
 {
     public Camera cam;
@@ -13,80 +12,79 @@ public class MinigameHost : MonoBehaviour
     [Range(0, 1)] public float bandTop = 0.86f;      // title/hint above this
     [Range(0, 1)] public float maxWidth = 0.92f;
 
-    CrossStitchCanvas board;
-    Order order;
-    Sprite cellSprite;
+    ICraftStep step;
+    GameObject stepObject;
+    CrossStitchCanvas designBoard;
+    Sprite square;
 
-    public CrossStitchCanvas Board => board;
+    /// The cross stitch board on screen (stitching or designing), or null.
+    public CrossStitchCanvas Board => designBoard != null ? designBoard : (step as CrossStitchStep)?.Board;
 
-    public void Open(Order forOrder)
+    public ICraftStep Step => step;
+
+    /// Opens the order's current step.
+    public void Open(Order order, Color fabricColor)
     {
         Close();
-        order = forOrder;
-        var target = order.target;
-        board = NewBoard(target.width, target.height);
-        board.mode = order.patternOnly ? CrossStitchCanvas.Mode.PatternFill : CrossStitchCanvas.Mode.Stitch;
-        board.target = target;
-        board.restore = order.work;
+        var area = Area(fabricColor);
+        stepObject = new GameObject($"Step_{order.CurrentStep.kind}");
+        stepObject.transform.SetParent(transform, false);
+        step = Create(order.CurrentStep.kind, stepObject);
+        step.Begin(order, Mathf.Clamp(order.step, 0, order.Steps.Length - 1), area);
     }
+
+    /// Adds the MonoBehaviour that plays a step kind. New step kinds go here.
+    static ICraftStep Create(StepKind kind, GameObject go) => kind switch
+    {
+        StepKind.Hem => go.AddComponent<HemStep>(),
+        _ => go.AddComponent<CrossStitchStep>(),
+    };
 
     /// Pattern Studio: a paint grid for designing. Read the result from Board.pattern before Close().
     public void OpenDesign(Pattern design)
     {
         Close();
-        board = NewBoard(design.width, design.height);
-        board.mode = CrossStitchCanvas.Mode.PatternFill;
-        board.design = design;
+        designBoard = CrossStitchStep.MakeBoard(transform, Area(Color.white), design.width, design.height);
+        designBoard.mode = CrossStitchCanvas.Mode.PatternFill;
+        designBoard.design = design;
     }
 
     public void SelectColour(int index)
     {
+        var board = Board;
         if (board == null) return;
         board.erase = index < 0;
         if (index >= 0) board.currentColor = index;
     }
 
-    public void Undo()
-    {
-        if (board != null) board.Undo();
-    }
+    public void Undo() => step?.Undo();
 
-    /// Copies the work on the board into the order (for saving). Returns accuracy (0..1) against the target.
-    public float SaveWork()
-    {
-        if (order == null) return 0f;
-        if (board != null && board.Ready) order.work = board.Marks();   // before Ready the board is still empty
-        return CrossStitchCanvas.Score(order.work, order.target);
-    }
+    /// Copies the work into the order (for saving). Returns the step's quality so far (0..1).
+    public float SaveWork() => step != null ? step.SaveWork() : 0f;
 
     public void Close()
     {
-        if (board != null) Destroy(board.gameObject);
-        board = null;
-        order = null;
+        if (stepObject != null) Destroy(stepObject);
+        if (designBoard != null) Destroy(designBoard.gameObject);
+        stepObject = null;
+        step = null;
+        designBoard = null;
     }
 
-    /// Fits the grid into the band of the screen set above, as big as it can be while staying square.
-    CrossStitchCanvas NewBoard(int width, int height)
+    /// The square band of the screen that steps draw in.
+    StepArea Area(Color fabricColor)
     {
-        if (cellSprite == null)
-            cellSprite = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), 4);
-
+        if (square == null)
+            square = Sprite.Create(Texture2D.whiteTexture, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), 4);
         float viewH = cam.orthographicSize * 2f, viewW = viewH * cam.aspect;
-        float size = Mathf.Min(viewW * maxWidth, viewH * (bandTop - bandBottom));
-        float cell = size / Mathf.Max(width, height);
-        var center = new Vector2(cam.transform.position.x, cam.transform.position.y + viewH * ((bandTop + bandBottom) / 2f - 0.5f));
-
-        var go = new GameObject("CrossStitchBoard");
-        go.transform.SetParent(transform, false);
-        go.transform.position = (Vector3)(center - new Vector2(width * cell, height * cell) / 2f);
-        var b = go.AddComponent<CrossStitchCanvas>();
-        b.cam = cam;
-        b.material = material;
-        b.cellSprite = cellSprite;
-        b.width = width;
-        b.height = height;
-        b.cellSize = cell;
-        return b;
+        return new StepArea
+        {
+            cam = cam,
+            material = material,
+            square = square,
+            size = Mathf.Min(viewW * maxWidth, viewH * (bandTop - bandBottom)),
+            center = new Vector2(cam.transform.position.x, cam.transform.position.y + viewH * ((bandTop + bandBottom) / 2f - 0.5f)),
+            fabricColor = fabricColor,
+        };
     }
 }

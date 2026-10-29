@@ -14,4 +14,12 @@ public class CraftItemDef : ScriptableObject
     public int basePrice = 20;
     public int patternPrice = 8;        // price when selling just the pattern
     public string[] requiredSupplyIds;  // e.g. "aida_14ct", "wool_yarn_red"
+
+    [Tooltip("How it's made, in order. Leave empty for a single cross stitch step.")]
+    public RecipeStep[] steps = new RecipeStep[0];
+
+    static readonly RecipeStep[] StitchOnly = { new RecipeStep { kind = StepKind.CrossStitch, label = "Stitch the pattern" } };
+
+    /// The recipe: its steps, or a single cross stitch step when none are set.
+    public RecipeStep[] Steps => steps != null && steps.Length > 0 ? steps : StitchOnly;
 }
