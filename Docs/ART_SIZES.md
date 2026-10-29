@@ -1,8 +1,8 @@
 # Art sizes (PNG, transparent, 2x oversampled where possible)
-Reference canvas: 2732 x 2048 landscape (consider 3840 x 2160 for future PC).
+The game is portrait. UI reference canvas: 2048 x 2732 (width is fixed; taller phones show more height).
 | Asset | px |
 |---|---|
-| Full backgrounds | 2732 x 2048 |
+| Full backgrounds | 2048 x 4440 (keep important things in the middle 2048 x 2732) |
 | Pannable backgrounds | 4096 x 3072 |
 | Customer full-body | 1500 x 2000 |
 | Dialogue portraits | 1024 x 1024 |

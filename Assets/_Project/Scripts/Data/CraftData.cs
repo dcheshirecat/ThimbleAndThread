@@ -25,10 +25,12 @@ public class Pattern
 }
 
 // Work done on a grid cell. mask: 1 = "/" diagonal, 2 = "\" diagonal, 3 = full X (or a painted pattern cell).
+// color: the thread used, an index into the pattern's palette.
 [Serializable]
 public class StitchMark
 {
     public int x, y, mask;
+    public int color;
 }
 
 // A pattern the player owns. Book patterns point at a PatternDef (patternId); patterns the player

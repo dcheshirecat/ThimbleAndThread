@@ -12,11 +12,12 @@ public class OrderFlowUI : MonoBehaviour
     [Header("Dialogue")] public Text dialogueName, dialogueText, acceptLabel; public Image dialoguePortrait; public RawImage dialoguePattern;
     [Header("Order book")] public Button orderTemplate; public Text orderBookEmpty;
     [Header("Workbench")] public Text workbenchText; public Text startLabel; public GameObject startButton, handOverButton;
-    [Header("Minigame")] public Text minigameHint;
+    [Header("Minigame")] public Text minigameHint; public ThreadSwatches minigameThreads;
     [Header("Result")] public Text resultText; public Image resultPortrait;
     [Header("Day summary")] public Text summaryText;
     [Header("Pattern Studio")] public Button patternTemplate;
-    [Header("Pattern edit")] public Text patternText, shelfLabel; public RawImage patternPreview;
+    [Header("Pattern edit")] public Text patternText, shelfLabel, deleteLabel; public RawImage patternPreview;
+    public GameObject editDesignButton, deleteButton;
 
     readonly List<GameObject> orderRows = new List<GameObject>();
     readonly List<GameObject> patternRows = new List<GameObject>();
@@ -71,11 +72,11 @@ public class OrderFlowUI : MonoBehaviour
         handOverButton.SetActive(!night && order.finished);
 
         minigameHint.text = order.patternOnly
-            ? "Tap or drag over the faint squares to fill in the pattern."
-            : "Drag from one corner of a faint square to the opposite corner, then drag the other diagonal to finish the X.";
-        minigameHint.text += "\n\nDone for now keeps your work for later.";
+            ? "Tap or drag over the faint squares to fill them in."
+            : "Drag corner to corner across a square, then the other diagonal to finish the X. Match each square's thread colour.";
         if (order.item.craft != CraftType.CrossStitch)
-            minigameHint.text += $"\n\n(The {CraftName(order.item.craft)} minigame is coming soon. Cross stitch stands in for now.)";
+            minigameHint.text += $" (The {CraftName(order.item.craft)} minigame is coming soon; cross stitch stands in.)";
+        if (screen == ScreenId.Minigame) minigameThreads.Show(order.target.palette);
 
         resultText.text = $"{order.item.itemName} for {who}\n\n" +
                           $"Accuracy: {Mathf.RoundToInt(day.LastAccuracy * 100)}%\n" +
@@ -116,7 +117,11 @@ public class OrderFlowUI : MonoBehaviour
                            (p.designed ? "Your own design" : "From your great-aunt's pattern book") + "\n\n" +
                            (p.onShelf ? "On the shelf: customers can buy it or order the finished piece."
                                       : "Not on the shelf: customers won't see it.");
-        shelfLabel.text = p.onShelf ? "Take Off the Shelf" : "Put on the Shelf";
+        if (!string.IsNullOrEmpty(day.LastMessage)) patternText.text += $"\n\n{day.LastMessage}";
+        shelfLabel.text = p.onShelf ? "Take Off Shelf" : "Put on Shelf";
+        editDesignButton.SetActive(p.designed);
+        deleteButton.SetActive(p.designed);
+        deleteLabel.text = day.ConfirmingDelete ? "Tap Again to Delete" : "Delete";
         SetPreview(patternPreview, day.DesignFor(p));
     }
 

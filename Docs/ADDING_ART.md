@@ -30,7 +30,7 @@ Or just send the PNGs to Claude with a note saying what each one is.
 
 | Art | Folder | Filename | Size |
 |---|---|---|---|
-| Backgrounds | `Art/Backgrounds/` | `bg_shop_day.png`, `bg_workroom_night.png`, `bg_workbench.png` | 2732 x 2048 |
+| Backgrounds | `Art/Backgrounds/` | `bg_shop_day.png`, `bg_workroom_night.png`, `bg_workbench.png` | 2048 x 4440, portrait (see below) |
 | Customer, full body | `Art/Characters/Customers/` | `customer_mara_body.png` | 1500 x 2000 |
 | Customer portraits | `Art/Characters/Customers/` | `customer_mara_happy.png` (neutral, happy, sad, surprised, thoughtful) | 1024 x 1024 |
 | Player character | `Art/Characters/Player/` | `player_<layer>_<name>.png` | same canvas for all layers |
@@ -41,6 +41,16 @@ Or just send the PNGs to Claude with a note saying what each one is.
 | Stitch, loop, needle sprites | `Art/Crafts/<Craft>/` | `stitch_cross_half.png` | 256 x 256 |
 | UI | `Art/UI/` | see below | see below |
 | Logo | `Art/Logo/` | `logo_title.png` | 2048 wide |
+
+## Backgrounds (portrait)
+
+The game is portrait, and phones come in many heights. Backgrounds are drawn tall, **2048 x 4440**,
+and the game fills the screen with them, trimming whatever doesn't fit; it never stretches them.
+
+- Keep anything important (the counter, the shop sign, faces) inside the **middle 2048 x 2732**:
+  that part shows on every phone and iPad.
+- Let the top and bottom be "extra" (ceiling, floorboards, sky) that only tall phones show.
+- Leave calm areas where the buttons sit (the bottom third) so text stays readable.
 
 ## Characters
 

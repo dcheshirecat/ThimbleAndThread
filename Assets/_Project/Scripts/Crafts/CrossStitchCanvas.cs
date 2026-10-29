@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 ///  - Stitch: drag from one grid corner to the diagonal corner to make a half stitch;
 ///            drag the opposite diagonal to complete the X.
 ///  - PatternFill: tap/drag cells to paint pixels (pattern-making mode).
+/// Each stitch uses the current thread colour. Undo steps back one drag at a time.
 /// Attach to an empty GameObject. Assign a Camera and a 1x1 square Sprite.
 public class CrossStitchCanvas : MonoBehaviour
 {
@@ -23,21 +24,31 @@ public class CrossStitchCanvas : MonoBehaviour
     [Header("State")]
     public Pattern pattern = new Pattern();
     public Pattern target;             // optional: shown as a faint guide to stitch over
-    public int currentColor = 0;
+    public int currentColor = 0;       // thread colour: index into pattern.palette
     public List<StitchMark> restore;   // optional: work saved earlier, redrawn when the board starts
+    public Pattern design;             // optional, PatternFill: a design to keep editing (palette and coloured cells)
+    public bool erase;                 // PatternFill: painting clears squares instead
     public bool Ready { get; private set; }   // true once the grid is built and restored
 
-    // Which cells are fully / half stitched by the player
-    readonly Dictionary<Vector2Int, int> stitchProgress = new Dictionary<Vector2Int, int>(); // 0,1,2 diagonals done
+    // Which cells are fully / half stitched by the player, and in which thread colour
+    readonly Dictionary<Vector2Int, int> stitchProgress = new Dictionary<Vector2Int, int>(); // bits: 1 = "/", 2 = "\"
+    readonly Dictionary<Vector2Int, int> stitchColor = new Dictionary<Vector2Int, int>();
     readonly Dictionary<Vector2Int, SpriteRenderer> cellViews = new Dictionary<Vector2Int, SpriteRenderer>();
     readonly List<LineRenderer> stitchLines = new List<LineRenderer>();
+
+    // Undo: the work as it was before each drag that changed something
+    readonly Stack<List<StitchMark>> history = new Stack<List<StitchMark>>();
+    List<StitchMark> strokeStart;
 
     Vector2Int? dragStartCorner;
     LineRenderer previewLine;
 
+    public bool CanUndo => history.Count > 0;
+
     void Start()
     {
         if (material == null) material = new Material(Shader.Find("Sprites/Default"));
+        if (design != null) pattern.palette.AddRange(design.palette);
         if (pattern.palette.Count == 0)
         {
             if (target != null && target.palette.Count > 0) pattern.palette.AddRange(target.palette);
@@ -45,15 +56,11 @@ public class CrossStitchCanvas : MonoBehaviour
         }
         pattern.width = width; pattern.height = height;
         BuildGrid();
-        if (restore != null)
-            foreach (var m in restore)
-            {
-                var cell = new Vector2Int(m.x, m.y);
-                if (!cellViews.ContainsKey(cell)) continue;
-                if (mode == Mode.PatternFill) { if (m.mask == 3) Paint(cell); continue; }
-                if ((m.mask & 1) != 0) AddStitch(cell, 1);
-                if ((m.mask & 2) != 0) AddStitch(cell, 2);
-            }
+
+        var start = restore ?? new List<StitchMark>();
+        if (design != null)
+            foreach (var c in design.cells) start.Add(new StitchMark { x = c.x, y = c.y, mask = 3, color = c.colorIndex });
+        Apply(start);
         Ready = true;
     }
 
@@ -62,10 +69,43 @@ public class CrossStitchCanvas : MonoBehaviour
     {
         var marks = new List<StitchMark>();
         if (mode == Mode.PatternFill)
-            foreach (var c in pattern.cells) marks.Add(new StitchMark { x = c.x, y = c.y, mask = 3 });
+            foreach (var c in pattern.cells) marks.Add(new StitchMark { x = c.x, y = c.y, mask = 3, color = c.colorIndex });
         else
-            foreach (var kv in stitchProgress) marks.Add(new StitchMark { x = kv.Key.x, y = kv.Key.y, mask = kv.Value });
+            foreach (var kv in stitchProgress)
+                marks.Add(new StitchMark { x = kv.Key.x, y = kv.Key.y, mask = kv.Value, color = stitchColor[kv.Key] });
         return marks;
+    }
+
+    /// Steps back one drag.
+    public void Undo()
+    {
+        if (history.Count == 0) return;
+        var previous = history.Pop();
+        Clear();
+        Apply(previous);
+    }
+
+    void Clear()
+    {
+        foreach (var l in stitchLines) if (l) Destroy(l.gameObject);
+        stitchLines.Clear();
+        stitchProgress.Clear();
+        stitchColor.Clear();
+        pattern.cells.Clear();
+        foreach (var kv in cellViews) kv.Value.color = GuideColor(kv.Key.x, kv.Key.y);
+    }
+
+    void Apply(List<StitchMark> marks)
+    {
+        foreach (var m in marks)
+        {
+            var cell = new Vector2Int(m.x, m.y);
+            if (!cellViews.ContainsKey(cell)) continue;
+            int color = Mathf.Clamp(m.color, 0, pattern.palette.Count - 1);
+            if (mode == Mode.PatternFill) { if (m.mask == 3) PaintCell(cell, color); continue; }
+            if ((m.mask & 1) != 0) AddStitch(cell, 1, color);
+            if ((m.mask & 2) != 0) AddStitch(cell, 2, color);
+        }
     }
 
     void BuildGrid()
@@ -125,6 +165,7 @@ public class CrossStitchCanvas : MonoBehaviour
 
     void OnPress(Vector3 local)
     {
+        strokeStart = Marks();
         if (mode == Mode.PatternFill) { Paint(CellAt(local)); return; }
         dragStartCorner = NearestCorner(local);
         previewLine = MakeLine(Color.gray, 0.04f);
@@ -141,51 +182,82 @@ public class CrossStitchCanvas : MonoBehaviour
 
     void OnRelease(Vector3 local)
     {
-        if (mode != Mode.Stitch || dragStartCorner == null) return;
+        if (mode == Mode.Stitch && dragStartCorner != null)
+        {
+            var a = dragStartCorner.Value;
+            var b = NearestCorner(local);
+            dragStartCorner = null;
+            if (previewLine) Destroy(previewLine.gameObject);
 
-        var a = dragStartCorner.Value;
-        var b = NearestCorner(local);
-        dragStartCorner = null;
-        if (previewLine) Destroy(previewLine.gameObject);
-
-        // Valid stitch = diagonal across exactly one cell
-        int dx = b.x - a.x, dy = b.y - a.y;
-        if (Mathf.Abs(dx) != 1 || Mathf.Abs(dy) != 1) return; // missed: gentle fail feedback here
-
-        var cell = new Vector2Int(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y));
-        // Which diagonal? "/" connects (0,0)-(1,1) ; "\" connects (0,1)-(1,0)
-        bool isSlash = (dx * dy) > 0;
-        AddStitch(cell, isSlash ? 1 : 2);
+            // Valid stitch = diagonal across exactly one cell
+            int dx = b.x - a.x, dy = b.y - a.y;
+            if (Mathf.Abs(dx) == 1 && Mathf.Abs(dy) == 1)   // otherwise missed: gentle fail feedback here
+            {
+                var cell = new Vector2Int(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y));
+                // Which diagonal? "/" connects (0,0)-(1,1) ; "\" connects (0,1)-(1,0)
+                bool isSlash = (dx * dy) > 0;
+                AddStitch(cell, isSlash ? 1 : 2, currentColor);
+            }
+        }
+        EndStroke();
     }
 
-    void AddStitch(Vector2Int cell, int bit)
+    /// Remembers the work from before this drag, if the drag changed anything.
+    void EndStroke()
+    {
+        if (strokeStart != null && Key(strokeStart) != Key(Marks())) history.Push(strokeStart);
+        strokeStart = null;
+    }
+
+    static string Key(List<StitchMark> marks)
+    {
+        var parts = new List<string>();
+        foreach (var m in marks) parts.Add($"{m.x},{m.y},{m.mask},{m.color}");
+        parts.Sort();
+        return string.Join(";", parts);
+    }
+
+    void AddStitch(Vector2Int cell, int bit, int color)
     {
         stitchProgress.TryGetValue(cell, out int done);
         if ((done & bit) != 0) return; // already stitched that diagonal
         done |= bit;
         stitchProgress[cell] = done;
+        stitchColor[cell] = color;
 
-        var line = MakeLine(pattern.palette[currentColor], 0.08f);
+        var line = MakeLine(pattern.palette[color], 0.08f);
         bool slash = bit == 1;
         line.SetPosition(0, CornerPos(new Vector2Int(cell.x, slash ? cell.y : cell.y + 1)));
         line.SetPosition(1, CornerPos(new Vector2Int(cell.x + 1, slash ? cell.y + 1 : cell.y)));
         stitchLines.Add(line);
 
-        if (done == 3) CompleteCell(cell);
+        if (done == 3) CompleteCell(cell, color);
     }
 
-    void CompleteCell(Vector2Int cell)
+    void CompleteCell(Vector2Int cell, int color)
     {
-        cellViews[cell].color = pattern.palette[currentColor];
-        pattern.cells.Add(new StitchCell { x = cell.x, y = cell.y, colorIndex = currentColor });
+        cellViews[cell].color = pattern.palette[color];
+        pattern.cells.RemoveAll(c => c.x == cell.x && c.y == cell.y);
+        pattern.cells.Add(new StitchCell { x = cell.x, y = cell.y, colorIndex = color });
         // TODO: play satisfying "pop" sound, award tiny progress to the commission
     }
 
     void Paint(Vector2Int cell)
     {
-        cellViews[cell].color = pattern.palette[currentColor];
+        if (erase)
+        {
+            pattern.cells.RemoveAll(c => c.x == cell.x && c.y == cell.y);
+            cellViews[cell].color = GuideColor(cell.x, cell.y);
+            return;
+        }
+        PaintCell(cell, currentColor);
+    }
+
+    void PaintCell(Vector2Int cell, int color)
+    {
         pattern.cells.RemoveAll(c => c.x == cell.x && c.y == cell.y);
-        pattern.cells.Add(new StitchCell { x = cell.x, y = cell.y, colorIndex = currentColor });
+        cellViews[cell].color = pattern.palette[color];
+        pattern.cells.Add(new StitchCell { x = cell.x, y = cell.y, colorIndex = color });
     }
 
     LineRenderer MakeLine(Color color, float w)
@@ -206,16 +278,21 @@ public class CrossStitchCanvas : MonoBehaviour
     /// How close the player's work matches a target pattern (0..1) - use for quality/price.
     public float Accuracy(Pattern target) => Score(Marks(), target);
 
-    /// Counts finished cells in the target; cells finished outside it count against the score.
+    /// A finished square counts when it's in the target and in the right thread colour.
+    /// Squares finished outside the target count against the score.
     public static float Score(List<StitchMark> marks, Pattern target)
     {
         if (target.cells.Count == 0) return 1f;
-        var wanted = new HashSet<Vector2Int>();
-        foreach (var t in target.cells) wanted.Add(new Vector2Int(t.x, t.y));
+        var wanted = new Dictionary<Vector2Int, int>();
+        foreach (var t in target.cells) wanted[new Vector2Int(t.x, t.y)] = t.colorIndex;
 
         int correct = 0, extra = 0;
         foreach (var m in marks)
-            if (m.mask == 3) { if (wanted.Contains(new Vector2Int(m.x, m.y))) correct++; else extra++; }
+        {
+            if (m.mask != 3) continue;
+            if (!wanted.TryGetValue(new Vector2Int(m.x, m.y), out int color)) extra++;
+            else if (color == m.color) correct++;
+        }
         return (float)correct / (wanted.Count + extra);
     }
 }

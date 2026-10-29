@@ -115,7 +115,10 @@ Starter customers: Mara (new parent, soft items), Old Tobias (fisherman, wants h
 pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
 
 ## Art workflow (important)
-- Reference canvas 2732 x 2048 landscape. Sizes are in Docs/ART_SIZES.md.
+- The game is PORTRAIT only (phones first). UI reference canvas 2048 x 2732, scaled by width, so taller
+  phones get extra height; lay screens out with anchors as fractions of the screen.
+- Backgrounds are 2048 x 4440 (tall phone shape) and fill the screen by cropping, never stretching;
+  important content stays in the middle 2048 x 2732, which shows on every device. Sizes: Docs/ART_SIZES.md.
 - The artist replaces placeholders by overwriting a PNG with the SAME filename and SAME aspect ratio.
   Keep the .meta files. Never rename or move assets outside Unity.
 - Do not delete or regenerate existing art files.

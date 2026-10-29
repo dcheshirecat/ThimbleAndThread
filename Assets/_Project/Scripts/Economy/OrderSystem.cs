@@ -25,7 +25,7 @@ public class Order
         if (target == null || target.cells.Count == 0) return 0f;
         int done = 0;
         foreach (var c in target.cells)
-            if (work.Exists(w => w.x == c.x && w.y == c.y && w.mask == 3)) done++;
+            if (work.Exists(w => w.x == c.x && w.y == c.y && w.mask == 3 && w.color == c.colorIndex)) done++;
         return (float)done / target.cells.Count;
     }
 }

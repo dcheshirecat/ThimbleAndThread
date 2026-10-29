@@ -190,6 +190,8 @@ public class ShopDay : MonoBehaviour
     public void SelectPattern(string patternId)
     {
         SelectedPattern = Save.patterns.Find(p => p.id == patternId);
+        ConfirmingDelete = false;
+        LastMessage = "";
         if (SelectedPattern != null) GM.ChangeScreen(ScreenId.PatternEdit);
     }
 
@@ -199,15 +201,97 @@ public class ShopDay : MonoBehaviour
     void SetPrice(int price)
     {
         SelectedPattern.price = Mathf.Clamp(price, 1, 999);
+        ConfirmingDelete = false;
         GM.Persist();
         GM.ChangeScreen(ScreenId.PatternEdit);   // refresh the screen
     }
 
     public void ToggleShelf()
     {
+        if (!SelectedPattern.onShelf && SelectedPattern.designed && SelectedPattern.design.cells.Count == 0)
+        {
+            LastMessage = "Draw something first: an empty pattern can't go on the shelf.";
+            GM.ChangeScreen(ScreenId.PatternEdit);
+            return;
+        }
         SelectedPattern.onShelf = !SelectedPattern.onShelf;
+        LastMessage = "";
         GM.Persist();
         GM.ChangeScreen(ScreenId.PatternEdit);
+    }
+
+    // ---- Pattern Studio (night): designing ----
+
+    /// Thread colours offered in the designer. Each new design keeps its own copy of the palette.
+    public static readonly Color[] DesignerPalette =
+    {
+        new Color(0.85f, 0.25f, 0.30f), new Color(0.95f, 0.70f, 0.80f), new Color(0.95f, 0.65f, 0.15f), new Color(0.30f, 0.65f, 0.40f),
+        new Color(0.55f, 0.75f, 0.95f), new Color(0.20f, 0.30f, 0.55f), new Color(0.55f, 0.40f, 0.70f), new Color(0.25f, 0.20f, 0.25f),
+    };
+
+    public bool ConfirmingDelete { get; private set; }
+
+    public void NewPattern()
+    {
+        var item = System.Array.Find(content.items, i => i != null && i.craft == CraftType.CrossStitch) ?? content.items[0];
+        int n = Save.patterns.FindAll(p => p.designed).Count + 1;
+        var design = new Pattern { displayName = $"My Pattern {n}", craft = item.craft, width = 8, height = 8 };
+        design.palette.AddRange(DesignerPalette);
+        SelectedPattern = new OwnedPattern
+        {
+            id = System.Guid.NewGuid().ToString("N"), name = design.displayName, itemId = item.itemId,
+            price = Mathf.Max(1, item.patternPrice), designed = true, design = design,
+        };
+        // Not added to the book until the player saves it.
+        GM.ChangeScreen(ScreenId.PatternDesigner);
+    }
+
+    public void EditDesign()
+    {
+        if (SelectedPattern != null && SelectedPattern.designed) GM.ChangeScreen(ScreenId.PatternDesigner);
+    }
+
+    /// Called by the designer's Save button with what's on the board.
+    public void SaveDesign(Pattern design, string name, string itemId, int price)
+    {
+        var p = SelectedPattern;
+        p.name = string.IsNullOrWhiteSpace(name) ? p.name : name.Trim();
+        p.itemId = itemId;
+        p.price = Mathf.Clamp(price, 1, 999);
+        design.displayName = p.name;
+        design.craft = ItemFor(itemId).craft;
+        p.design = design;
+        if (design.cells.Count == 0) p.onShelf = false;
+        if (!Save.patterns.Contains(p)) Save.patterns.Add(p);
+        GM.Persist();
+        LastMessage = $"Saved \"{p.name}\" to your pattern book.";
+        GM.ChangeScreen(ScreenId.PatternEdit);
+    }
+
+    /// Designer's Cancel: back without saving (a brand-new pattern is simply dropped).
+    public void CancelDesign()
+    {
+        bool isNew = !Save.patterns.Contains(SelectedPattern);
+        if (isNew) SelectedPattern = null;
+        GM.ChangeScreen(isNew ? ScreenId.PatternStudio : ScreenId.PatternEdit);
+    }
+
+    /// Your own designs only. First tap asks, second tap deletes.
+    public void DeletePattern()
+    {
+        if (SelectedPattern == null || !SelectedPattern.designed) return;
+        if (!ConfirmingDelete)
+        {
+            ConfirmingDelete = true;
+            GM.ChangeScreen(ScreenId.PatternEdit);
+            return;
+        }
+        ConfirmingDelete = false;
+        Save.patterns.Remove(SelectedPattern);
+        LastMessage = $"Deleted \"{SelectedPattern.name}\".";
+        SelectedPattern = null;
+        GM.Persist();
+        GM.ChangeScreen(ScreenId.PatternStudio);
     }
 
     // ---- Order book and workbench ----
