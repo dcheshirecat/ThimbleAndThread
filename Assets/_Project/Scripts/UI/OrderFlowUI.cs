@@ -16,6 +16,7 @@ public class OrderFlowUI : MonoBehaviour
     [Header("Result")] public Text resultText; public Image resultPortrait;
     [Header("Day summary")] public Text summaryText;
     [Header("Pattern Studio")] public Button patternTemplate;
+    [Header("Supply Market")] public Button marketTemplate; public Text marketStatus;
     [Header("Pattern edit")] public Text patternText, shelfLabel, deleteLabel; public RawImage patternPreview;
     public GameObject editDesignButton, deleteButton;
 
@@ -52,6 +53,7 @@ public class OrderFlowUI : MonoBehaviour
                            $"Coins earned today: {save.coinsToday}\nTotal coins: {save.coins}";
 
         if (screen == ScreenId.OrderBook) BuildOrderList();
+        if (screen == ScreenId.Market) BuildMarketList(save);
         if (screen == ScreenId.PatternStudio) BuildPatternList();
         if (screen == ScreenId.PatternEdit && day.SelectedPattern != null) ShowPattern(day.SelectedPattern);
         if (screen == ScreenId.Dialogue && day.Visitor != null) ShowVisitor();
@@ -66,7 +68,9 @@ public class OrderFlowUI : MonoBehaviour
         workbenchText.text = $"{order.item.itemName} for {who}\n\n" +
             (order.patternOnly ? "Pattern only: fill in the squares to design it." : "Finished piece: stitch each square.") +
             (order.finished ? $"\nFinished ({Mathf.RoundToInt(order.accuracy * 100)}% accuracy)." : $"\nProgress: {progress}%") +
+            MaterialsText(order) +
             (night ? "" : order.finished ? $"\n\n{who} is here to collect it." : "\n\nYou can work on this tonight, in the workroom.");
+        if (!string.IsNullOrEmpty(day.LastMessage) && screen == ScreenId.Workbench) workbenchText.text += $"\n\n{day.LastMessage}";
         startLabel.text = order.finished ? "Rework It" : order.work.Count > 0 ? "Keep Working" : "Start Crafting";
         startButton.SetActive(night);
         handOverButton.SetActive(!night && order.finished);
@@ -76,7 +80,12 @@ public class OrderFlowUI : MonoBehaviour
             : "Drag corner to corner across a square, then the other diagonal to finish the X. Match each square's thread colour.";
         if (order.item.craft != CraftType.CrossStitch)
             minigameHint.text += $" (The {CraftName(order.item.craft)} minigame is coming soon; cross stitch stands in.)";
-        if (screen == ScreenId.Minigame) minigameThreads.Show(order.target.palette);
+        if (screen == ScreenId.Minigame)
+        {
+            var names = new List<string>();
+            foreach (var id in order.target.threads) { var t = day.content.Supply(id); names.Add(t != null ? t.displayName : "Thread"); }
+            minigameThreads.Show(order.target.palette, names);
+        }
 
         resultText.text = $"{order.item.itemName} for {who}\n\n" +
                           $"Accuracy: {Mathf.RoundToInt(day.LastAccuracy * 100)}%\n" +
@@ -158,6 +167,52 @@ public class OrderFlowUI : MonoBehaviour
                 $"{p.name}  ·  {(item != null ? item.itemName : p.itemId)}  ·  {p.price} coins  ·  {(p.onShelf ? "On shelf" : "In the book")}",
                 () => day.SelectPattern(id)));
         }
+    }
+
+    readonly List<GameObject> marketRows = new List<GameObject>();
+
+    void BuildMarketList(SaveData save)
+    {
+        foreach (var row in marketRows) Destroy(row);
+        marketRows.Clear();
+        marketTemplate.gameObject.SetActive(false);
+        marketStatus.text = $"{save.coins} coins. Tap to buy a pack.\n{day.LastMessage}";
+
+        foreach (var s in day.content.supplies)
+        {
+            if (s == null) continue;
+            string id = s.supplyId;
+            var row = AddRow(marketTemplate, $"Supply_{id}",
+                $"{s.displayName}  ·  {s.price} coins for {s.perPack} {s.unit}  ·  you have {day.shop.Stock(id)}",
+                () => day.BuyPack(id));
+            row.GetComponent<Image>().color = Color.Lerp(Color.white, s.color, 0.35f);
+            marketRows.Add(row);
+        }
+    }
+
+    /// The materials an order needs, and what's still missing before work can start.
+    string MaterialsText(Order order)
+    {
+        if (order.materialsUsed)
+        {
+            var fabric = day.content.Supply(order.fabricId);
+            return $"\nMaterials: ready{(fabric != null ? $" (on {fabric.displayName})" : "")}.";
+        }
+        var needs = day.NeedsFor(order);
+        var missing = day.shop.Missing(needs);
+        var text = "\n\nMaterials:";
+        foreach (var n in needs) text += $"\n{(missing.Contains(n) ? "Missing" : "Have")}: {Materials.Describe(n, day.content, day.shop)}";
+        if (missing.Count > 0)
+        {
+            text += "\nTo buy at the Supply Market:";
+            foreach (var n in missing)
+            {
+                var s = day.content.Supply(n.supplyId);
+                int packs = day.shop.PacksFor(n);
+                text += $"\n  {packs} x {(s != null ? s.displayName : n.supplyId)} ({packs * (s != null ? s.price : 0)} coins)";
+            }
+        }
+        return text;
     }
 
     static GameObject AddRow(Button template, string name, string label, UnityEngine.Events.UnityAction onClick)

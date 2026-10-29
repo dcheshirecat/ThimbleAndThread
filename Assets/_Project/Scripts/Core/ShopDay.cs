@@ -59,6 +59,11 @@ public class ShopDay : MonoBehaviour
             return o.item == null;
         });
 
+        // Supplies: starter kit for new games; older saves get counted stock and threads on their patterns.
+        shop.SetUpStock(isNewGame);
+        foreach (var o in Save.orders) Materials.EnsureThreads(o.target, content);
+        foreach (var p in Save.patterns) if (p.designed) Materials.EnsureThreads(p.design, content);
+
         if (isNewGame)
         {
             InviteVisitors();
@@ -222,13 +227,6 @@ public class ShopDay : MonoBehaviour
 
     // ---- Pattern Studio (night): designing ----
 
-    /// Thread colours offered in the designer. Each new design keeps its own copy of the palette.
-    public static readonly Color[] DesignerPalette =
-    {
-        new Color(0.85f, 0.25f, 0.30f), new Color(0.95f, 0.70f, 0.80f), new Color(0.95f, 0.65f, 0.15f), new Color(0.30f, 0.65f, 0.40f),
-        new Color(0.55f, 0.75f, 0.95f), new Color(0.20f, 0.30f, 0.55f), new Color(0.55f, 0.40f, 0.70f), new Color(0.25f, 0.20f, 0.25f),
-    };
-
     public bool ConfirmingDelete { get; private set; }
 
     public void NewPattern()
@@ -236,7 +234,6 @@ public class ShopDay : MonoBehaviour
         var item = System.Array.Find(content.items, i => i != null && i.craft == CraftType.CrossStitch) ?? content.items[0];
         int n = Save.patterns.FindAll(p => p.designed).Count + 1;
         var design = new Pattern { displayName = $"My Pattern {n}", craft = item.craft, width = 8, height = 8 };
-        design.palette.AddRange(DesignerPalette);
         SelectedPattern = new OwnedPattern
         {
             id = System.Guid.NewGuid().ToString("N"), name = design.displayName, itemId = item.itemId,
@@ -260,7 +257,7 @@ public class ShopDay : MonoBehaviour
         p.price = Mathf.Clamp(price, 1, 999);
         design.displayName = p.name;
         design.craft = ItemFor(itemId).craft;
-        p.design = design;
+        p.design = Compact(design);
         if (design.cells.Count == 0) p.onShelf = false;
         if (!Save.patterns.Contains(p)) Save.patterns.Add(p);
         GM.Persist();
@@ -294,21 +291,81 @@ public class ShopDay : MonoBehaviour
         GM.ChangeScreen(ScreenId.PatternStudio);
     }
 
+    /// Keeps only the threads a design actually uses, so its swatches and shopping list stay short.
+    static Pattern Compact(Pattern d)
+    {
+        var used = new List<int>();
+        foreach (var c in d.cells) if (!used.Contains(c.colorIndex)) used.Add(c.colorIndex);
+        used.Sort();
+        var p = new Pattern { id = d.id, displayName = d.displayName, craft = d.craft, width = d.width, height = d.height };
+        foreach (var i in used)
+        {
+            p.palette.Add(d.palette[i]);
+            p.threads.Add(i < d.threads.Count ? d.threads[i] : "");
+        }
+        foreach (var c in d.cells) p.cells.Add(new StitchCell { x = c.x, y = c.y, colorIndex = used.IndexOf(c.colorIndex) });
+        return p;
+    }
+
+    // ---- Supply Market (day) ----
+
+    public void BuyPack(string supplyId)
+    {
+        var s = content.Supply(supplyId);
+        if (s == null || Save.night) return;
+        LastMessage = shop.Buy(s)
+            ? $"Bought {s.displayName}: +{s.perPack} {s.unit} (you have {shop.Stock(supplyId)})."
+            : $"Not enough coins for {s.displayName} ({s.price} coins).";
+        GM.ChangeScreen(ScreenId.Market);   // refresh the list
+    }
+
     // ---- Order book and workbench ----
 
     public void SelectOrder(string orderId)
     {
         Selected = Save.orders.Find(o => o.id == orderId);
+        LastMessage = "";
         if (Selected != null) GM.ChangeScreen(ScreenId.Workbench);
     }
 
-    /// Night only: crafting happens in the workroom.
+    /// What an order still needs from the cupboard before work can start (nothing once started).
+    public List<MaterialNeed> NeedsFor(Order o)
+    {
+        if (o.materialsUsed) return new List<MaterialNeed>();
+        return Materials.For(o.target, Materials.FabricFor(o.target, content, shop), content);
+    }
+
+    public List<MaterialNeed> MissingFor(Order o) => shop.Missing(NeedsFor(o));
+
+    /// Night only: crafting happens in the workroom. The first time, the fabric is cut and the
+    /// floss set aside, so everything must be in the cupboard.
     public void StartCrafting()
     {
         if (!Save.night || Selected == null) return;
+        if (!Selected.materialsUsed)
+        {
+            var needs = NeedsFor(Selected);
+            if (shop.Missing(needs).Count > 0)
+            {
+                LastMessage = "You don't have all the materials yet. Buy them at the Supply Market tomorrow.";
+                GM.ChangeScreen(ScreenId.Workbench);
+                return;
+            }
+            Selected.fabricId = Materials.FabricFor(Selected.target, content, shop)?.supplyId;
+            shop.Use(needs);
+            Selected.materialsUsed = true;
+            GM.Persist();
+        }
         Selected.finished = false;   // reopening a set-aside piece makes it a work in progress again
         minigame.Open(Selected);
         GM.ChangeScreen(ScreenId.Minigame);
+    }
+
+    /// Material tier for pricing: the fabric the piece was stitched on.
+    int TierOf(Order o)
+    {
+        var fabric = content.Supply(o.fabricId);
+        return fabric != null ? fabric.tier : 1;
     }
 
     /// Stop for now: the work is kept in the order and saved.
@@ -330,7 +387,7 @@ public class ShopDay : MonoBehaviour
 
         int level = GM.GetRelationship(Selected.customerId).level;
         LastStars = PricingCalculator.Stars(LastAccuracy);
-        LastPrice = PricingCalculator.Compute(Selected.item, LastAccuracy, shop.BestTier(Selected.item.craft), level, Selected.patternOnly);
+        LastPrice = PricingCalculator.Compute(Selected.item, LastAccuracy, TierOf(Selected), level, Selected.patternOnly);
         LastPoints = PricingCalculator.RelationshipReward(LastAccuracy);
         GM.ChangeScreen(ScreenId.Result);
     }
@@ -356,7 +413,7 @@ public class ShopDay : MonoBehaviour
         var customer = CustomerFor(Selected.customerId);
         string name = customer != null ? customer.displayName : Selected.customerId;
         int level = GM.GetRelationship(Selected.customerId).level;
-        int price = PricingCalculator.Compute(Selected.item, Selected.accuracy, shop.BestTier(Selected.item.craft), level, Selected.patternOnly);
+        int price = PricingCalculator.Compute(Selected.item, Selected.accuracy, TierOf(Selected), level, Selected.patternOnly);
         int points = PricingCalculator.RelationshipReward(Selected.accuracy);
 
         GM.AddCoins(price);

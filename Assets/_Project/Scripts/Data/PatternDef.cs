@@ -17,7 +17,8 @@ public class PatternDef : ScriptableObject
     public CraftItemDef item;           // what this pattern makes
     public int price = 10;              // starting shelf price; the player can change it
     public bool startsOnShelf = true;   // part of the great-aunt's book at the start of the game
-    public Color[] palette = { new Color(0.85f, 0.25f, 0.30f) };
+    public SupplyDef[] threads = new SupplyDef[0];   // the floss for '1', '2'... (sets the colours)
+    public Color[] palette = { new Color(0.85f, 0.25f, 0.30f) };   // only used when no threads are set
     [TextArea(8, 20)] public string grid;
 
     /// The grid as pattern data. Falls back to a placeholder shape if the grid is empty.
@@ -29,14 +30,16 @@ public class PatternDef : ScriptableObject
         int height = rows.Length, width = 0;
         foreach (var r in rows) width = Mathf.Max(width, r.Trim().Length);
         var p = new Pattern { id = patternId, displayName = displayName, craft = item.craft, width = width, height = height };
-        p.palette.AddRange(palette);
+        if (threads != null && threads.Length > 0)
+            foreach (var t in threads) { p.palette.Add(t != null ? t.color : Color.magenta); p.threads.Add(t != null ? t.supplyId : ""); }
+        else p.palette.AddRange(palette);
         for (int row = 0; row < height; row++)
         {
             var line = rows[row].Trim();
             for (int x = 0; x < line.Length; x++)
             {
                 int index = line[x] - '1';
-                if (index >= 0 && index < palette.Length)
+                if (index >= 0 && index < p.palette.Count)
                     p.cells.Add(new StitchCell { x = x, y = height - 1 - row, colorIndex = index });
             }
         }

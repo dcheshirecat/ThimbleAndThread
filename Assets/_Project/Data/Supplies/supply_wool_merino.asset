@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SupplyDef
   supplyId: wool_merino
   displayName: Merino Wool
+  kind: 3
   craft: 1
   icon: {fileID: 21300000, guid: 3ae7fe221d7e716488d81ffd3c53f0af, type: 3}
-  price: 60
+  color: {r: 0.55, g: 0.45, b: 0.75, a: 1}
+  price: 20
   tier: 3
+  perPack: 300
+  unit: stitches
+  starterPacks: 0

@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SupplyDef
   supplyId: wool_basic
   displayName: Basic Wool
+  kind: 3
   craft: 1
   icon: {fileID: 21300000, guid: b7a4256b83cd1074c95f349cc2283a17, type: 3}
-  price: 0
+  color: {r: 0.75, g: 0.55, b: 0.45, a: 1}
+  price: 8
   tier: 1
+  perPack: 300
+  unit: stitches
+  starterPacks: 0

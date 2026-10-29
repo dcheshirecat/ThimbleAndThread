@@ -50,6 +50,9 @@ public static class SaveSystem
         data.unlockedItems ??= new System.Collections.Generic.List<string>();
         data.relationships ??= new System.Collections.Generic.List<CustomerRelationship>();
         data.patterns ??= new System.Collections.Generic.List<OwnedPattern>();
+        // Version 3 only listed owned supply ids; ShopManager.SetUpStock turns each into one pack of stock.
+        // Patterns from before threads were recorded get matching threads from Materials.EnsureThreads.
+        data.stock ??= new System.Collections.Generic.List<SupplyStock>();
         data.version = SaveData.CurrentVersion;
         return data;
     }

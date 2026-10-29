@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -13,7 +14,9 @@ public class PatternDesignerUI : MonoBehaviour
     public ThreadSwatches swatches;   // its onPick calls SelectColour
 
     static readonly int[] Sizes = { 8, 10, 12, 16 };
-    static readonly string[] ColourNames = { "Red", "Pink", "Gold", "Green", "Sky Blue", "Navy", "Purple", "Charcoal" };
+
+    // The designer always offers every floss the market sells, in catalogue order; owned or not.
+    List<SupplyDef> threads = new List<SupplyDef>();
 
     int itemIndex, price, colour;
     bool erasing, open;
@@ -41,17 +44,44 @@ public class PatternDesignerUI : MonoBehaviour
         nameField.text = p.name;
         itemIndex = Mathf.Max(0, System.Array.FindIndex(day.content.items, i => i != null && i.itemId == p.itemId));
         price = p.price;
-        OpenBoard(Copy(p.design, p.design.width, p.design.height));
+        threads = Materials.Threads(day.content);
+        OpenBoard(ToCatalogue(p.design));
         open = true;
-        swatches.Show(ShopDay.DesignerPalette, ColourNames);   // picks the first colour
+
+        var colours = new List<Color>();
+        var names = new List<string>();
+        foreach (var t in threads)
+        {
+            colours.Add(t.color);
+            int have = day.shop.Stock(t.supplyId);
+            names.Add(have > 0 ? $"{t.displayName} (you have {have} {t.unit})" : $"{t.displayName} (not owned yet: buy it to stitch this)");
+        }
+        swatches.Show(colours, names);   // picks the first colour
         Refresh();
     }
 
-    /// The design as it is on the board right now.
+    /// The design with the full thread catalogue as its palette, so every market colour can be painted.
+    Pattern ToCatalogue(Pattern design)
+    {
+        Materials.EnsureThreads(design, day.content);
+        var p = new Pattern { id = design.id, displayName = design.displayName, craft = design.craft, width = design.width, height = design.height };
+        foreach (var t in threads) { p.palette.Add(t.color); p.threads.Add(t.supplyId); }
+        foreach (var c in design.cells)
+        {
+            int i = c.colorIndex < design.threads.Count ? threads.FindIndex(t => t.supplyId == design.threads[c.colorIndex]) : -1;
+            if (i >= 0) p.cells.Add(new StitchCell { x = c.x, y = c.y, colorIndex = i });
+        }
+        return p;
+    }
+
+    /// The design as it is on the board right now (catalogue palette and threads).
     Pattern Current()
     {
         var b = host.Board;
-        return b != null && b.Ready ? b.pattern : opened;
+        if (b == null || !b.Ready) return opened;
+        var p = b.pattern;
+        if (p.threads.Count != threads.Count) { p.threads.Clear(); foreach (var t in threads) p.threads.Add(t.supplyId); }
+        return p;
     }
 
     void OpenBoard(Pattern design)
@@ -63,7 +93,8 @@ public class PatternDesignerUI : MonoBehaviour
     static Pattern Copy(Pattern src, int width, int height)
     {
         var p = new Pattern { id = src.id, displayName = src.displayName, craft = src.craft, width = width, height = height };
-        p.palette.AddRange(src.palette.Count > 0 ? src.palette : new System.Collections.Generic.List<Color>(ShopDay.DesignerPalette));
+        p.palette.AddRange(src.palette);
+        p.threads.AddRange(src.threads);
         foreach (var c in src.cells)
             if (c.x < width && c.y < height) p.cells.Add(new StitchCell { x = c.x, y = c.y, colorIndex = c.colorIndex });
         return p;
@@ -91,7 +122,7 @@ public class PatternDesignerUI : MonoBehaviour
     public void SelectColour(int index)
     {
         erasing = index < 0;
-        if (!erasing) colour = Mathf.Clamp(index, 0, ShopDay.DesignerPalette.Length - 1);
+        if (!erasing) colour = Mathf.Clamp(index, 0, threads.Count - 1);
         ApplyTool();
     }
 

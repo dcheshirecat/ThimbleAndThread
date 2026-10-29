@@ -151,7 +151,7 @@ public static class TestSceneBuilder
 
         // Order book
         p = Panel(ScreenId.OrderBook, "Order Book", new Color(0.96f, 0.92f, 0.84f));
-        ui.orderTemplate = Button(Column(p, 0.5f, 0.6f), "Order Template", null, 1840);
+        ui.orderTemplate = Button(ScrollList(p, 0.14f, 0.88f), "Order Template", null, 1840);
         ui.orderBookEmpty = Label(p, "Empty", new Vector2(0.1f, 0.5f), new Vector2(0.9f, 0.7f), 64, TextAnchor.MiddleCenter);
         ui.orderBookEmpty.text = "No orders yet. Customers visit the shop during the day.";
         Button(Column(p, 0.5f, 0.06f), "Back", router.GoToHub);
@@ -168,8 +168,8 @@ public static class TestSceneBuilder
 
         // Workbench
         p = Panel(ScreenId.Workbench, "Workbench", new Color(0.80f, 0.66f, 0.50f), "Art/Backgrounds/bg_workbench.png");
-        ui.workbenchText = Label(p, "Order", new Vector2(0.08f, 0.5f), new Vector2(0.92f, 0.84f), 72, TextAnchor.MiddleCenter);
-        b = Column(p, 0.5f, 0.3f);
+        ui.workbenchText = Label(p, "Order", new Vector2(0.08f, 0.42f), new Vector2(0.92f, 0.9f), 60, TextAnchor.MiddleCenter);
+        b = Column(p, 0.5f, 0.24f);
         var start = Button(b, "Start Crafting", day.StartCrafting, 1100);
         ui.startLabel = start.GetComponentInChildren<Text>();
         ui.startButton = start.gameObject;
@@ -199,7 +199,10 @@ public static class TestSceneBuilder
 
         // Side screens
         p = Panel(ScreenId.Market, "Supply Market", new Color(0.85f, 0.70f, 0.60f));
-        Button(Column(p, 0.5f, 0.45f), "Back", router.GoToHub);
+        ui.marketStatus = Label(p, "Status", new Vector2(0.06f, 0.82f), new Vector2(0.94f, 0.92f), 60, TextAnchor.MiddleCenter);
+        ui.marketTemplate = Button(ScrollList(p, 0.14f, 0.81f), "Supply Template", null, 1840);
+        ui.marketTemplate.GetComponentInChildren<Text>().fontSize = 52;
+        Button(Column(p, 0.5f, 0.04f), "Back", router.GoToHub);
 
         p = Panel(ScreenId.Journal, "Journal", new Color(0.80f, 0.93f, 0.74f));
         Button(Column(p, 0.5f, 0.45f), "Back", router.GoToHub);
@@ -215,7 +218,7 @@ public static class TestSceneBuilder
 
         // Pattern Studio
         p = Panel(ScreenId.PatternStudio, "Pattern Studio", new Color(0.93f, 0.78f, 0.90f));
-        ui.patternTemplate = Button(Column(p, 0.5f, 0.6f), "Pattern Template", null, 1840);
+        ui.patternTemplate = Button(ScrollList(p, 0.14f, 0.88f), "Pattern Template", null, 1840);
         b = Row(p, 0.5f, 0.06f);
         Button(b, "New Pattern", day.NewPattern, 860);
         Button(b, "Back", router.GoToHub, 860);
@@ -238,7 +241,7 @@ public static class TestSceneBuilder
         p = Panel(ScreenId.PatternDesigner, "", Color.clear);
         p.GetComponent<Image>().raycastTarget = false;
         designer.nameField = NameField(p, new Vector2(0.5f, 0.925f));
-        designer.swatches = Swatches(p, 0.315f, ShopDay.DesignerPalette.Length, true);
+        designer.swatches = Swatches(p, 0.315f, Materials.Threads(content).Count, true);
         designer.swatches.label.color = Color.white;
         UnityEventTools.AddPersistentListener(designer.swatches.onPick, designer.SelectColour);
         b = Row(p, 0.5f, 0.235f);
@@ -293,6 +296,37 @@ public static class TestSceneBuilder
         lrt.anchoredPosition = new Vector2(0, -120);
         lrt.sizeDelta = new Vector2(0, 200);
         return rt;
+    }
+
+    /// A vertical list that scrolls when it's longer than the band between y = bottom and y = top.
+    /// Returns the list's content, where rows (or a row template) go.
+    static Transform ScrollList(Transform panel, float bottom, float top)
+    {
+        var view = new GameObject("List", typeof(RectTransform), typeof(RectMask2D), typeof(ScrollRect), typeof(Image));
+        var vrt = (RectTransform)view.transform;
+        vrt.SetParent(panel, false);
+        vrt.anchorMin = new Vector2(0.03f, bottom); vrt.anchorMax = new Vector2(0.97f, top);
+        vrt.offsetMin = vrt.offsetMax = Vector2.zero;
+        view.GetComponent<Image>().color = new Color(1, 1, 1, 0.001f);   // catches drags for scrolling
+
+        var content = new GameObject("Content", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+        var crt = (RectTransform)content.transform;
+        crt.SetParent(vrt, false);
+        crt.anchorMin = new Vector2(0, 1); crt.anchorMax = new Vector2(1, 1);
+        crt.pivot = new Vector2(0.5f, 1);
+        crt.offsetMin = crt.offsetMax = Vector2.zero;
+        var layout = content.GetComponent<VerticalLayoutGroup>();
+        layout.spacing = 30;
+        layout.childAlignment = TextAnchor.UpperCenter;
+        layout.childControlWidth = layout.childControlHeight = true;
+        layout.childForceExpandWidth = layout.childForceExpandHeight = false;
+        content.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        var scroll = view.GetComponent<ScrollRect>();
+        scroll.content = crt;
+        scroll.horizontal = false;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        return crt;
     }
 
     /// A vertical stack of buttons centred on (x, y); near the bottom edge it grows upwards instead.

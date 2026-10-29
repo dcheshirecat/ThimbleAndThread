@@ -21,7 +21,24 @@ public class Pattern
     public CraftType craft;
     public int width, height;
     public List<Color> palette = new List<Color>();
+    public List<string> threads = new List<string>();   // supplyId of the thread for each palette colour
     public List<StitchCell> cells = new List<StitchCell>();
+}
+
+// How much of a supply the player has, in that supply's units (squares of floss, squares of Aida...).
+[Serializable]
+public class SupplyStock
+{
+    public string supplyId;
+    public int amount;
+}
+
+// How much of a supply a piece of work needs.
+[Serializable]
+public class MaterialNeed
+{
+    public string supplyId;
+    public int amount;
 }
 
 // Work done on a grid cell. mask: 1 = "/" diagonal, 2 = "\" diagonal, 3 = full X (or a painted pattern cell).
@@ -52,14 +69,15 @@ public class OwnedPattern
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 3;   // 2: added night. 3: added patterns
+    public const int CurrentVersion = 4;   // 2: added night. 3: added patterns. 4: counted stock
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
     public int coins = 50;
     public int day = 1;
     public bool night;                        // false = shop open (day), true = workroom (night)
-    public List<string> ownedSupplies = new List<string>();
+    public List<SupplyStock> stock = new List<SupplyStock>();   // the supply cupboard
+    public List<string> ownedSupplies = new List<string>();     // version 3 and older; converted into stock on load
     public List<string> unlockedItems = new List<string>();
     public List<CustomerRelationship> relationships = new List<CustomerRelationship>();
 

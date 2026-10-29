@@ -17,6 +17,8 @@ MonoBehaviour:
   item: {fileID: 11400000, guid: 624106ae6949e67438c1436949d015e1, type: 2}
   price: 8
   startsOnShelf: 1
+  threads:
+  - {fileID: 11400000, guid: f7f361f7b490f5647a90f7a8aa82daa5, type: 2}
   palette:
   - {r: 0.85, g: 0.25, b: 0.3, a: 1}
   grid: '........

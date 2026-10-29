@@ -30,11 +30,25 @@ public static class PlaceholderGenerator
         var tote      = Item("tote",      "Tote Bag",  CraftType.Sewing,      35, 10, new Color(0.80f, 0.60f, 0.35f));
 
         // ---- Supplies ----
-        Supply("aida_14ct",   "Aida 14ct",     CraftType.CrossStitch, 0,  1, new Color(0.95f, 0.95f, 0.90f));
-        Supply("aida_18ct",   "Aida 18ct",     CraftType.CrossStitch, 40, 2, new Color(0.90f, 0.90f, 0.95f));
-        Supply("wool_basic",  "Basic Wool",    CraftType.Knitting,    0,  1, new Color(0.75f, 0.55f, 0.45f));
-        Supply("wool_merino", "Merino Wool",   CraftType.Knitting,    60, 3, new Color(0.55f, 0.45f, 0.75f));
-        Supply("cotton_yarn", "Cotton Yarn",   CraftType.Crochet,     0,  1, new Color(0.60f, 0.80f, 0.70f));
+        // Fabric: Aida comes in pieces of 400 squares; a project uses its pattern's width x height.
+        Supply("aida_14ct",   "White Aida 14ct", SupplyKind.Fabric, CraftType.CrossStitch, 10, 1, new Color(0.95f, 0.95f, 0.90f), 400, "squares", 1);
+        Supply("aida_18ct",   "Fine Aida 18ct",  SupplyKind.Fabric, CraftType.CrossStitch, 25, 2, new Color(0.90f, 0.90f, 0.95f), 400, "squares");
+        // Yarn: balls of 300 stitches.
+        Supply("wool_basic",  "Basic Wool",      SupplyKind.Yarn, CraftType.Knitting, 8,  1, new Color(0.75f, 0.55f, 0.45f), 300, "stitches");
+        Supply("wool_merino", "Merino Wool",     SupplyKind.Yarn, CraftType.Knitting, 20, 3, new Color(0.55f, 0.45f, 0.75f), 300, "stitches");
+        Supply("cotton_yarn", "Cotton Yarn",     SupplyKind.Yarn, CraftType.Crochet,  6,  1, new Color(0.60f, 0.80f, 0.70f), 300, "stitches");
+        // Floss: a skein covers 30 squares. These are also the Pattern Studio's colours.
+        var red      = Supply("floss_red",      "Red Floss",      SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.85f, 0.25f, 0.30f), 30, "squares", 1);
+        var pink     = Supply("floss_pink",     "Pink Floss",     SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.95f, 0.70f, 0.80f), 30, "squares");
+        Supply("floss_gold",     "Gold Floss",     SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.95f, 0.65f, 0.15f), 30, "squares");
+        Supply("floss_green",    "Green Floss",    SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.30f, 0.65f, 0.40f), 30, "squares");
+        var sky      = Supply("floss_sky",      "Sky Blue Floss", SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.55f, 0.75f, 0.95f), 30, "squares");
+        var navy     = Supply("floss_navy",     "Navy Floss",     SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.20f, 0.30f, 0.55f), 30, "squares", 1);
+        Supply("floss_purple",   "Purple Floss",   SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.55f, 0.40f, 0.70f), 30, "squares");
+        var charcoal = Supply("floss_charcoal", "Charcoal Floss", SupplyKind.Thread, CraftType.CrossStitch, 3, 1, new Color(0.25f, 0.20f, 0.25f), 30, "squares", 1);
+        // Notions for plushies (used once item recipes arrive).
+        Supply("stuffing",           "Polyester Stuffing", SupplyKind.Stuffing, CraftType.Sewing, 6, 1, new Color(0.97f, 0.97f, 0.97f), 3, "plushies");
+        Supply("safety_eyes_black",  "Black Safety Eyes",  SupplyKind.Eyes,     CraftType.Sewing, 4, 1, new Color(0.10f, 0.10f, 0.10f), 4, "pairs");
 
         // ---- Customers ----
         Customer("mara",   "Mara",        "A nervous new parent who loves anything soft.",
@@ -45,13 +59,13 @@ public static class PlaceholderGenerator
                  new Color(0.70f, 0.90f, 0.60f), new[] { (sampler, 0), (tote, 1), (sweater, 3) });
 
         // ---- The great-aunt's pattern book (starter shelf) ----
-        BookPattern("seaside_heart", "Seaside Heart", sampler, 8, new[] { new Color(0.85f, 0.25f, 0.30f) },
+        BookPattern("seaside_heart", "Seaside Heart", sampler, 8, new[] { red },
             "........\n..1..1..\n.111111.\n.111111.\n..1111..\n...11...\n........\n........");
-        BookPattern("anchor_border", "Anchor", tablecloth, 12, new[] { new Color(0.20f, 0.30f, 0.55f) },
+        BookPattern("anchor_border", "Anchor", tablecloth, 12, new[] { navy },
             "...1....\n..111...\n...1....\n...1....\n1..1..1.\n.1.1.1..\n..111...\n........");
-        BookPattern("little_bunny", "Little Bunny", plushie, 10, new[] { new Color(0.95f, 0.70f, 0.80f), new Color(0.25f, 0.20f, 0.25f) },
+        BookPattern("little_bunny", "Little Bunny", plushie, 10, new[] { pink, charcoal },
             ".1...1..\n.1...1..\n.11111..\n.12121..\n.11111..\n..111...\n.11111..\n........");
-        BookPattern("wave_stripes", "Wave Stripes", scarf, 9, new[] { new Color(0.55f, 0.75f, 0.95f), new Color(0.15f, 0.35f, 0.65f) },
+        BookPattern("wave_stripes", "Wave Stripes", scarf, 9, new[] { sky, navy },
             "........\n1...1...\n.1.1.1.1\n..1...1.\n........\n2...2...\n.2.2.2.2\n..2...2.");
 
         AssetDatabase.SaveAssets();
@@ -60,15 +74,24 @@ public static class PlaceholderGenerator
         Debug.Log("Placeholder art and data generated.");
     }
 
-    static PatternDef BookPattern(string id, string name, CraftItemDef item, int price, Color[] palette, string grid)
+    /// Creates the book pattern, or gives an older one its threads if it has none yet.
+    static PatternDef BookPattern(string id, string name, CraftItemDef item, int price, SupplyDef[] threads, string grid)
     {
         Directory.CreateDirectory($"{Root}/Data/Patterns");
         string assetPath = $"{Root}/Data/Patterns/pattern_{id}.asset";
         var existing = AssetDatabase.LoadAssetAtPath<PatternDef>(assetPath);
-        if (existing != null) return existing;
+        if (existing != null)
+        {
+            if (existing.threads == null || existing.threads.Length == 0)
+            {
+                existing.threads = threads;
+                EditorUtility.SetDirty(existing);
+            }
+            return existing;
+        }
         var def = ScriptableObject.CreateInstance<PatternDef>();
         def.patternId = id; def.displayName = name; def.item = item; def.price = price;
-        def.palette = palette; def.grid = grid; def.startsOnShelf = true;
+        def.threads = threads; def.grid = grid; def.startsOnShelf = true;
         AssetDatabase.CreateAsset(def, assetPath);
         return def;
     }
@@ -113,15 +136,27 @@ public static class PlaceholderGenerator
         return def;
     }
 
-    static SupplyDef Supply(string id, string name, CraftType craft, int price, int tier, Color c)
+    /// Creates the supply, or fills in the pack details on an older supply asset that doesn't have them
+    /// yet (perPack still 1, unit still "uses"). Never touches its art.
+    static SupplyDef Supply(string id, string name, SupplyKind kind, CraftType craft, int price, int tier, Color c,
+                            int perPack, string unit, int starterPacks = 0)
     {
         string assetPath = $"{Root}/Data/Supplies/supply_{id}.asset";
-        var existing = AssetDatabase.LoadAssetAtPath<SupplyDef>(assetPath);
-        if (existing != null) return existing;
-        var def = ScriptableObject.CreateInstance<SupplyDef>();
-        def.supplyId = id; def.displayName = name; def.craft = craft; def.price = price; def.tier = tier;
-        def.icon = MakeSprite($"{Root}/Art/Supplies/supply_{id}.png", 256, 256, c);
-        AssetDatabase.CreateAsset(def, assetPath);
+        var def = AssetDatabase.LoadAssetAtPath<SupplyDef>(assetPath);
+        bool isNew = def == null;
+        if (isNew)
+        {
+            def = ScriptableObject.CreateInstance<SupplyDef>();
+            def.supplyId = id; def.displayName = name; def.craft = craft; def.tier = tier;
+            def.icon = MakeSprite($"{Root}/Art/Supplies/supply_{id}.png", 256, 256, c);
+        }
+        if (isNew || (def.perPack <= 1 && def.unit == "uses"))
+        {
+            def.kind = kind; def.color = c; def.price = price; def.perPack = perPack; def.unit = unit;
+            def.starterPacks = starterPacks;
+            EditorUtility.SetDirty(def);
+        }
+        if (isNew) AssetDatabase.CreateAsset(def, assetPath);
         return def;
     }
 

@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SupplyDef
   supplyId: cotton_yarn
   displayName: Cotton Yarn
+  kind: 3
   craft: 4
   icon: {fileID: 21300000, guid: b942c2fe761508e41850263aba75d03b, type: 3}
-  price: 0
+  color: {r: 0.6, g: 0.8, b: 0.7, a: 1}
+  price: 6
   tier: 1
+  perPack: 300
+  unit: stitches
+  starterPacks: 0

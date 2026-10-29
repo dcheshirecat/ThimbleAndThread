@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SupplyDef
   supplyId: aida_18ct
   displayName: Aida 18ct
+  kind: 1
   craft: 0
   icon: {fileID: 21300000, guid: 07ba41914fa8a564e9097eef51383481, type: 3}
-  price: 40
+  color: {r: 0.9, g: 0.9, b: 0.95, a: 1}
+  price: 25
   tier: 2
+  perPack: 400
+  unit: squares
+  starterPacks: 0
