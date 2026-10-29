@@ -24,20 +24,6 @@ public class Pattern
     public List<StitchCell> cells = new List<StitchCell>();
 }
 
-// Defines something that can be made (sweater, plushie, tablecloth...).
-// Create via Assets > Create > Craft > Item Definition.
-[CreateAssetMenu(menuName = "Craft/Item Definition")]
-public class CraftItemDef : ScriptableObject
-{
-    public string itemName;
-    public CraftType craft;
-    public Sprite icon;                 // your vector art, exported as sprite
-    public Pattern requiredPattern;     // optional: pattern the item is built from
-    public int basePrice = 20;
-    public int patternPrice = 8;        // price when selling just the pattern
-    public string[] requiredSupplyIds;  // e.g. "aida_14ct", "wool_yarn_red"
-}
-
 // Player-owned state. Save/load this as JSON to Application.persistentDataPath.
 [Serializable]
 public class SaveData
