@@ -20,6 +20,10 @@ public class GameManager : MonoBehaviour
     public event Action<int> OnCoinsChanged;
     public event Action<string, int> OnRelationshipLevelUp;   // customerId, new level
 
+    // Fast Enter Play Mode keeps statics between Play sessions; clear the stale instance.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetStatics() => Instance = null;
+
     void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }

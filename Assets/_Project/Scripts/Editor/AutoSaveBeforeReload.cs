@@ -9,8 +9,14 @@ public static class AutoSaveBeforeReload
     {
         AssemblyReloadEvents.beforeAssemblyReload += () =>
         {
-            if (!EditorApplication.isPlaying)
-                EditorSceneManager.SaveOpenScenes();
+            if (EditorApplication.isPlaying) return;
+            // Only save scenes that already have a file; an untitled scene would open a Save As dialog.
+            for (int i = 0; i < EditorSceneManager.sceneCount; i++)
+            {
+                var scene = EditorSceneManager.GetSceneAt(i);
+                if (scene.isDirty && !string.IsNullOrEmpty(scene.path))
+                    EditorSceneManager.SaveScene(scene);
+            }
         };
     }
 }
