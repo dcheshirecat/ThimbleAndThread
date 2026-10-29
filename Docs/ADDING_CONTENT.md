@@ -23,7 +23,7 @@ changed or removed. If something ever seems missing, run
    Lowercase with underscores: `alpaca_yarn_cream`.
 2. **Never rename or move files outside Unity.** Do it inside Unity's Project window, so the
    `.meta` files (which hold the links between files) move with them.
-3. **Replacing art:** overwrite the PNG with the same filename and the same size. See
+3. **Replacing art:** overwrite the PNG with the same filename and the same size. See [ADDING_ART.md](ADDING_ART.md),
    [ART_SWAP.md](ART_SWAP.md). Sizes are in [ART_SIZES.md](ART_SIZES.md).
 
 ## Importing a PNG as a sprite
