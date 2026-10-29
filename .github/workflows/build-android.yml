@@ -18,6 +18,16 @@ jobs:
                       /opt/hostedtoolcache/CodeQL /usr/local/share/boost /usr/share/swift
           sudo docker image prune --all --force
           df -h /
+      # Unity's Android (IL2CPP) build can need more memory than the runner's ~7 GB; without extra swap
+      # the build gets killed (exit code 137). /mnt is a separate disk with free space.
+      - name: Add swap space
+        run: |
+          sudo swapoff -a || true
+          sudo fallocate -l 12G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          free -h
       - uses: actions/checkout@v4
         with:
           lfs: true
