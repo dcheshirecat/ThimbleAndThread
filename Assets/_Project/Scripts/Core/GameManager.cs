@@ -9,6 +9,8 @@ public enum ScreenId
 
 /// Central game state: current screen, save data, coins, relationships.
 /// Put one in your first scene. It persists across scene loads.
+/// Runs before other scripts so listeners like ScreenRouter find Instance in OnEnable.
+[DefaultExecutionOrder(-100)]
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }

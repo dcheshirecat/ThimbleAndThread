@@ -31,7 +31,12 @@ public class ScreenRouter : MonoBehaviour
     }
 
     // For UnityEvents on buttons (the Inspector can't pass enums easily to every version of Button)
+    public void GoToTitle() => GameManager.Instance.ChangeScreen(ScreenId.Title);
     public void GoToShop() => GameManager.Instance.ChangeScreen(ScreenId.Shop);
+    public void GoToDialogue() => GameManager.Instance.ChangeScreen(ScreenId.Dialogue);
+    public void GoToMinigame() => GameManager.Instance.ChangeScreen(ScreenId.Minigame);
+    public void GoToResult() => GameManager.Instance.ChangeScreen(ScreenId.Result);
+    public void GoToDaySummary() => GameManager.Instance.ChangeScreen(ScreenId.DaySummary);
     public void GoToMarket() => GameManager.Instance.ChangeScreen(ScreenId.Market);
     public void GoToPatternStudio() => GameManager.Instance.ChangeScreen(ScreenId.PatternStudio);
     public void GoToJournal() => GameManager.Instance.ChangeScreen(ScreenId.Journal);
