@@ -39,13 +39,20 @@ Filenames: `category_name_variant.png`, lowercase, e.g. `supply_yarn_alpaca_crea
 3. Fill in:
    - **Supply Id**: e.g. `alpaca_yarn_cream`
    - **Display Name**: what players see, e.g. "100% Alpaca Yarn (Cream)"
+   - **Kind**: Fabric, Thread (embroidery floss), Yarn, Stuffing, Eyes, or Other
    - **Craft**: which craft uses it (Knitting, Crochet, Cross Stitch...)
    - **Icon**: drag in your sprite
-   - **Price**: in coins
+   - **Color**: the thread/yarn/fabric colour. Floss colours appear in the Pattern Studio and on the
+     stitching screen, so pick it carefully.
+   - **Price**: coins for one pack
    - **Tier**: 1 basic, 2 nicer, 3 premium. Higher tiers raise sale prices.
+   - **Per Pack** and **Unit**: how much one pack gives, e.g. floss 30 "squares", Aida 400
+     "squares", yarn 300 "stitches", stuffing 3 "plushies", eyes 4 "pairs".
+   - **Starter Packs**: how many packs a new game begins with (0 for most things).
 
-Coming in the supplies stage: supplies get used up per project, and get more detail (fibre, weight,
-colour) so commissions can ask for exactly "100% alpaca". Supplies you make now will carry over.
+Supplies are used up: a cross stitch project uses one square of Aida per grid square and one square
+of floss per stitched square of that colour. Every Thread you add becomes a new colour in the
+Pattern Studio automatically, and appears in the Supply Market.
 
 ## Things you can make (items)
 
@@ -75,9 +82,10 @@ Patterns you design in the game's Pattern Studio are saved with your game. To ad
 1. In `Data/Patterns/`: **Create > Craft > Pattern**, file `pattern_<id>`.
 2. Fill in **Pattern Id**, **Display Name**, **Item** (what it makes), **Price**, and tick
    **Starts On Shelf** if it's in the book from the beginning.
-3. **Palette**: the colours, in order.
+3. **Threads**: drag in the floss supplies it uses, in order. They set the colours, and they're
+   what the player must own to stitch it. (Palette is only a fallback for patterns without threads.)
 4. **Grid**: draw it as text, one line per row, top row first. `.` is empty, `1` is the first
-   palette colour, `2` the second, and so on:
+   thread, `2` the second, and so on:
 
    ```
    .1...1..

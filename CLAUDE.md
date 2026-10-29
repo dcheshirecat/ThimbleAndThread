@@ -99,8 +99,9 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
 
 ## Code that already exists (all compiles and is smoke-tested; Assets/_Project/Scripts)
 - Data/CraftData.cs: CraftType, StitchCell, Pattern (grid + palette), StitchMark (x, y, mask, color),
-  OwnedPattern, SaveData (version 3: coins, day, night, orders, visitorsToday, patterns, today counters,
-  relationships, ownedSupplies), CustomerRelationship.
+  Pattern.threads (supplyId per palette colour), SupplyStock, MaterialNeed, OwnedPattern,
+  SaveData (version 4: coins, day, night, stock, orders, visitorsToday, patterns, today counters,
+  relationships; ownedSupplies is legacy, converted into stock on load), CustomerRelationship.
 - Data/CraftItemDef.cs, CustomerDef.cs, SupplyDef.cs, PatternDef.cs (book pattern; grid drawn as text),
   ContentLibrary.cs (every content asset; Editor/ContentLibraryRefresher.cs keeps Data/ContentLibrary.asset
   in sync on any change under Data/). A ScriptableObject class must live in a file with the same name,
@@ -113,7 +114,12 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
 - Crafts/CrossStitchCanvas.cs: stitch and paint modes, thread colour per stitch, undo per drag,
   Score() counts right-colour squares. Crafts/MinigameHost.cs places the board in the screen band
   0.40-0.86 of a portrait screen and also opens it as the designer canvas. Crafts/PlaceholderPatterns.cs.
-- Economy/OrderSystem.cs (Order with saved work, OrderGenerator), PricingCalculator.cs, ShopManager.cs.
+- Economy/OrderSystem.cs (Order with saved work, materialsUsed, fabricId; OrderGenerator), PricingCalculator.cs,
+  ShopManager.cs (counted stock, Buy packs, starter kit, Missing/Use), Materials.cs (what a pattern needs:
+  Aida = width x height squares, floss = squares per colour; EnsureThreads maps old colours to floss).
+- SupplyDef has kind, color, price per pack, perPack, unit, starterPacks. Floss supplies (kind Thread)
+  are the Pattern Studio's colours. Materials are used when work first starts (fabric cut, floss set aside);
+  starting is refused until everything is owned; the Workbench lists what to buy.
 - UI/ScreenRouter.cs, OrderFlowUI.cs (shop/workroom/order/pattern screens), SaveSlotsUI.cs,
   PatternDesignerUI.cs, ThreadSwatches.cs.
 - Editor/TestSceneBuilder.cs generates Scenes/TestRouter.unity (Tools > Thimble & Thread > Rebuild Test
@@ -217,11 +223,14 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
 Done and on main: project setup, save slots + autosave, order book with resumable work, day/night,
 pattern shelf (sales + pattern orders), book patterns, content library, portrait layout, thread colours,
 undo, Pattern Studio designer, owner guides. Everything is placeholder art and Unity default UI.
-Still stand-ins: every item is made with the cross stitch board; Supply Market, Journal and Settings
-screens are empty; designer colours and stitching threads are free (breaks the materials rule).
+Materials (task 1 below) are done on branch crafting-steps (not merged yet; the owner wants one build
+when there's something to try). Still stand-ins: every item is made with the cross stitch board;
+Journal and Settings screens are empty.
+CI: build of main failed with exit code 137 (out of memory on the ~7 GB runner). Fix (12 GB swap step)
+is on branch ci-memory, not merged; the owner should run the workflow on ci-memory to confirm.
 
 ## Next tasks (in this order)
-1. Materials: thread colours, yarns, fabrics, toy eyes, stuffing as supplies with realistic quantities
+1. DONE (crafting-steps): Materials: thread colours, yarns, fabrics, toy eyes, stuffing as supplies with realistic quantities
    (floss covers N squares, etc.); Supply Market screen to buy them (day only); starter kit in new games;
    designer shows all market colours and marks owned ones; patterns record which thread supplies they
    use; stitching offers only owned threads; Start Crafting locked until the needed materials are owned,
