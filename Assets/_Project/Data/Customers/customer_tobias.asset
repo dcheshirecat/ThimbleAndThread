@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af2bf79f2df3bdf48932578e82012d62, type: 3}
+  m_Name: customer_tobias
+  m_EditorClassIdentifier: Assembly-CSharp::CustomerDef
+  customerId: tobias
+  displayName: Old Tobias
+  bio: A retired fisherman searching for his late wife's tablecloth pattern.
+  fullBody: {fileID: 21300000, guid: d8aa31bf469611c438053ad20dd9d8c9, type: 3}
+  portraits:
+  - expression: 0
+    sprite: {fileID: 21300000, guid: 974c15e5989fe124daf40b20c8900846, type: 3}
+  - expression: 1
+    sprite: {fileID: 21300000, guid: 4af10c8505f58d240b2889839edbac6f, type: 3}
+  - expression: 2
+    sprite: {fileID: 21300000, guid: 0d7064d0183438142bb01e723fd6116c, type: 3}
+  - expression: 3
+    sprite: {fileID: 21300000, guid: 17a781b187342bf4b92de1ab4f7fdddb, type: 3}
+  - expression: 4
+    sprite: {fileID: 21300000, guid: 9435fd1c048b9004f86b8f6da4ef9698, type: 3}
+  requestable:
+  - item: {fileID: 11400000, guid: 759bb51d40664bf49943bb326c33d641, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: e7e94861e1dcdf847ba6112533c4cabe, type: 2}
+    minRelationshipLevel: 2

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af2bf79f2df3bdf48932578e82012d62, type: 3}
+  m_Name: customer_juno
+  m_EditorClassIdentifier: Assembly-CSharp::CustomerDef
+  customerId: juno
+  displayName: Juno
+  bio: A teen who wants knitwear that doesn't look grandma-made.
+  fullBody: {fileID: 21300000, guid: df7b88d0c8227a7418def404092ffc5b, type: 3}
+  portraits:
+  - expression: 0
+    sprite: {fileID: 21300000, guid: 43b6d607148102741bb9a90446e742a0, type: 3}
+  - expression: 1
+    sprite: {fileID: 21300000, guid: b31c4c0345be18f4cba7b7ad91fff7a4, type: 3}
+  - expression: 2
+    sprite: {fileID: 21300000, guid: 8d3a5ba5b4ae7f64b95282b43ef770c6, type: 3}
+  - expression: 3
+    sprite: {fileID: 21300000, guid: d96164c5b90f001469d606af834595f2, type: 3}
+  - expression: 4
+    sprite: {fileID: 21300000, guid: 17de0cc049adf8749ab81a1596f15ada, type: 3}
+  requestable:
+  - item: {fileID: 11400000, guid: 624106ae6949e67438c1436949d015e1, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: c290e0d30e10d3a43b2e345eaef53cd3, type: 2}
+    minRelationshipLevel: 1
+  - item: {fileID: 11400000, guid: e7e94861e1dcdf847ba6112533c4cabe, type: 2}
+    minRelationshipLevel: 3
