@@ -1,6 +1,6 @@
 # Thimble & Thread: project context for Claude Code
 
-Read this first. It is the full handoff from earlier planning chats.
+Read this first. It is the full handoff from earlier planning chats and sessions.
 
 ## What we're building
 A cozy, Coffee Talk-style game in Unity. Instead of serving coffee, the player runs a craft shop
@@ -8,6 +8,8 @@ and makes and sells finished crafts AND patterns (sold independently of each oth
 cross stitch, knitting, embroidery, sewing, crochet.
 Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and more.
 
+- Each craft is its own thing, whatever you're making: a sewn plushie and a crocheted plushie are
+  different items with different steps (both will exist; build the sewn one first).
 - Making an item mimics how it's really made, step by step. Each item has its own sequence of steps
   (a "recipe"), and each step is a small minigame of the real action. Items never reuse another
   craft's minigame as a stand-in once their own steps exist. Examples:
@@ -53,6 +55,10 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
 - Techniques: story chapters unlock each craft; smaller techniques (French knots, cables...) come
   from technique books bought at the market or from recovered pattern-book pages.
 - Supplies are used up per project, so the player restocks: cheap basics, pricier premium materials.
+  Realistic amounts (owner's choice, for depth): supplies are counted, e.g. a skein of floss covers a
+  fixed number of squares, a ball of yarn a number of stitches, fabric is cut by size; designs show
+  how much of each material they need. New games start with a small kit (white Aida, a few basic
+  thread colours) so the first order can be made right away; everything else is bought.
 - Materials: the player can only craft with materials they own (bought). Minigames offer only owned
   threads, yarns, fabrics and notions (eyes, stuffing...). Designing is free: the Pattern Studio shows
   every colour/material the market sells, owned or not, and a design may use any of them; to make it,
@@ -77,44 +83,52 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
 - Dev machine is Windows; shell commands are run in Git Bash (use bash syntax and /c/Users/... paths, not PowerShell).
 - Platform order: Android first (sideloadable APK, built by GitHub Actions), then PC, iOS later.
   Reason: Apple developer costs. Switch is a possible later port.
+- Portrait only, phone first (owner's choice: landscape is too small to read).
 - Touch-first. Keep all input in one wrapper so PC mouse support comes cheaply.
 - Dialogue: plan to use Ink or Yarn Spinner.
+- UI is Unity UI (uGUI) with the legacy Text component for now (TextMeshPro's essentials importer pops
+  up a dialog). Will be restyled once the owner's UI art exists.
 - Backup and sync via GitHub with Git LFS for art and audio.
 
 ## Repo layout
 - Assets/_Project/{Art,Audio,Data,Dialogue,Prefabs,Scenes,Scripts,Settings}
 - Assets/_Project/Scripts/{Core,Crafts,Data,Dialogue,Economy,UI,Utility,Editor}
 - SourceArt/ holds the artist's masters (.procreate etc.). It is OUTSIDE Assets on purpose.
-- Docs/ holds ART_SIZES.md, ART_SWAP.md, STORYLINE.md.
-- .github/workflows/build-android.yml builds an APK (needs secrets UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD).
+- Docs/: ART_SIZES.md, ART_SWAP.md, ADDING_ART.md, ADDING_CONTENT.md, STORYLINE.md.
+- .github/workflows/build-android.yml builds an APK.
 
-## Code that already exists
-- Data/CraftData.cs: CraftType enum, StitchCell, Pattern,
-  SaveData (coins, day, ownedSupplies, unlockedItems, relationships), CustomerRelationship.
-- Data/CraftItemDef.cs: CraftItemDef (ScriptableObject). A ScriptableObject class must live in a
-  file with the same name, or its assets lose their script link.
-- Data/CustomerDef.cs: Expression enum, CustomerDef (portraits, requestable items by relationship level).
-- Data/SupplyDef.cs: supply with craft, price, tier.
-- Data/PatternDef.cs: book pattern (grid drawn as text). Data/ContentLibrary.cs: all content in one asset,
-  kept in sync automatically by Editor/ContentLibraryRefresher.cs. Runtime code reads content from it.
-- Docs/ADDING_CONTENT.md: how the owner adds supplies, items, customers, portraits and patterns.
-- Crafts/CrossStitchCanvas.cs: stitch mode and pattern-fill mode, Accuracy(target) method.
-- Core/GameManager.cs: singleton with ScreenId state, coins, relationships, day, events.
-- Core/SaveSystem.cs: JSON save to persistentDataPath.
-- Economy/PricingCalculator.cs, OrderSystem.cs (Order, OrderGenerator), ShopManager.cs.
-- UI/ScreenRouter.cs: shows or hides screen panels for the current ScreenId.
-- Editor/PlaceholderGenerator.cs: menu Tools > Thimble & Thread > Generate Placeholder Art And Data.
-  Makes placeholder PNGs at real target sizes plus sample data. Never overwrites existing files.
-
-IMPORTANT: this code was written without being compiled. First job in any new session:
-open the project, check the console, and fix any compile errors.
+## Code that already exists (all compiles and is smoke-tested; Assets/_Project/Scripts)
+- Data/CraftData.cs: CraftType, StitchCell, Pattern (grid + palette), StitchMark (x, y, mask, color),
+  OwnedPattern, SaveData (version 3: coins, day, night, orders, visitorsToday, patterns, today counters,
+  relationships, ownedSupplies), CustomerRelationship.
+- Data/CraftItemDef.cs, CustomerDef.cs, SupplyDef.cs, PatternDef.cs (book pattern; grid drawn as text),
+  ContentLibrary.cs (every content asset; Editor/ContentLibraryRefresher.cs keeps Data/ContentLibrary.asset
+  in sync on any change under Data/). A ScriptableObject class must live in a file with the same name,
+  or its assets lose their script link (m_Script fileID 0); this bit CraftItemDef once.
+- Core/GameManager.cs: singleton (DefaultExecutionOrder -100), ScreenId enum (append new values at the
+  end), save slot, HubScreen (Shop by day / Workroom by night), Persist() = autosave.
+- Core/SaveSystem.cs: 3 slots, temp-file writes, version upgrade, never overwrites an unreadable slot.
+- Core/ShopDay.cs: the game loop: visitors, shelf sales and pattern orders, day/night, order book,
+  crafting, set aside / hand over, Pattern Studio actions (price, shelf, new/edit/save/delete design).
+- Crafts/CrossStitchCanvas.cs: stitch and paint modes, thread colour per stitch, undo per drag,
+  Score() counts right-colour squares. Crafts/MinigameHost.cs places the board in the screen band
+  0.40-0.86 of a portrait screen and also opens it as the designer canvas. Crafts/PlaceholderPatterns.cs.
+- Economy/OrderSystem.cs (Order with saved work, OrderGenerator), PricingCalculator.cs, ShopManager.cs.
+- UI/ScreenRouter.cs, OrderFlowUI.cs (shop/workroom/order/pattern screens), SaveSlotsUI.cs,
+  PatternDesignerUI.cs, ThreadSwatches.cs.
+- Editor/TestSceneBuilder.cs generates Scenes/TestRouter.unity (Tools > Thimble & Thread > Rebuild Test
+  Scene). The scene is fully generated: change the builder and rebuild; don't hand-edit the scene.
+- Editor/PlaceholderGenerator.cs: placeholder PNGs + sample data + 4 book patterns; never overwrites.
+- Editor/AutoSaveBeforeReload.cs: saves only scenes that have a path (no Save As pop-up).
+- Docs/ADDING_CONTENT.md and Docs/ADDING_ART.md are the owner's guides. Keep them current.
 
 ## Screen flow
 Title > Save select > Shop (day hub).
 - Day: Greet a customer > Dialogue > buy a pattern / accept an order or commission / Not today > Shop.
   Order book > a finished order > Hand over. Supply Market. "Close the shop" > End-of-day summary > Workroom.
 - Night (Workroom hub): Order book > pick an order > Workbench > Minigame > "Done for now" (keeps the work)
-  or Finish > Result (set aside for hand-over tomorrow, or keep working). Pattern Studio. "Go to bed" > next day.
+  or Finish > Result (set aside for hand-over tomorrow, or keep working). Pattern Studio
+  (list > pattern page > designer). "Go to bed" > next day.
 Side screens from either hub: Journal (relationships and unlocks), Settings.
 
 ## Storyline: "Thimble & Thread"
@@ -131,46 +145,90 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
   phones get extra height; lay screens out with anchors as fractions of the screen.
 - Backgrounds are 2048 x 4440 (tall phone shape) and fill the screen by cropping, never stretching;
   important content stays in the middle 2048 x 2732, which shows on every device. Sizes: Docs/ART_SIZES.md.
+- Procreate canvases should be sRGB (Display P3 shifts colours in Unity). See Docs/ADDING_ART.md.
 - The artist replaces placeholders by overwriting a PNG with the SAME filename and SAME aspect ratio.
   Keep the .meta files. Never rename or move assets outside Unity.
 - Do not delete or regenerate existing art files.
 
 ## Conventions and gotchas
-- Data-driven: new items, customers and supplies are ScriptableObjects, not hard-coded.
+- Data-driven: new items, customers, supplies and patterns are ScriptableObjects, not hard-coded.
+- IDs (itemId, supplyId, customerId, patternId) are permanent once saves exist: saves store ids.
+- Bump SaveData.CurrentVersion and add an upgrade step in SaveSystem.Upgrade when adding save fields.
 - New Unity projects may default to the new Input System. CrossStitchCanvas uses classic Input,
-  so Active Input Handling must be set to Both (or Input Manager Old).
+  so Active Input Handling is set to Both.
 - Always commit .meta files. Never commit Library/, keystores, or build output.
 - Track PNG, PSD, .procreate and audio files with Git LFS (see .gitattributes).
 - Avoid anything that raises modal pop-ups in the Unity editor. The owner often works remotely
-  from a phone and cannot click dialogs. Editor/AutoSaveBeforeReload.cs saves scenes before reloads.
+  from a phone and cannot click dialogs.
 - Edit scenes through Unity MCP tools, not by editing .unity files on disk while the scene is open.
+- Bash heredocs containing Python with quotes have broken several times; for multi-line patches prefer
+  the Edit/Write tools or a script file written with Write.
 
 ## Working style
 - Work on a git branch and commit after each meaningful change, with a clear message.
 - Keep changes small and easy to review. The owner may be reviewing on a phone.
 - Explain what changed in a few plain sentences.
 - Ask before big refactors or deleting files.
+- Write important decisions into this file as they are made (context gets compressed).
 
-## Remote setup (already planned)
-- Claude Code Remote Control: run `claude remote-control` in the project folder, keep the terminal open.
-- Unity MCP bridge: MCP for Unity by CoplayDev. Register with
-  `claude mcp add --transport http UnityMCP http://localhost:8080/mcp`
-  Unity must be open with the project loaded and the MCP server started.
-- Headless alternative: Unity batch mode (-batchmode -nographics -quit -projectPath <folder>)
-  for compile, tests and builds. It cannot run while the editor has the same project open.
+## Environment
+- Repo: C:\Users\julie\ThimbleAndThread (GitHub dcheshirecat/ThimbleAndThread, private). Unity 6.6 editor:
+  D:\6000.6.0f1\Editor\Unity.exe (Unity Hub installs to D:\). Android Build Support is NOT installed
+  locally yet (only Windows standalone), so APKs come from GitHub Actions.
+- App: product "Thimble & Thread", company "cheshirecat", id com.cheshirecat.thimbleandthread, portrait
+  only. Saves: %USERPROFILE%/AppData/LocalLow/cheshirecat/Thimble & Thread/save_<slot>.json.
+- D:\temp-unity was the throwaway project used to create settings; no longer needed.
+- Claude Code Remote Control: `claude remote-control` in the project folder.
+- Unity MCP bridge (not installed yet; the owner will set it up): Package Manager > Add package from git
+  URL `https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main`; its wizard configures Claude
+  Code (HTTP http://localhost:8080/mcp), then restart Claude. Once the editor has the project open, batch
+  mode can't run on it; work through the bridge instead. Check the package is editor-only before committing.
 
-## Next tasks (suggested order)
-1. Verify everything compiles; run the placeholder generator; build a test scene with ScreenRouter.
-2. Workbench flow: Order book, save slots with autosave, resumable work, Result screen
-   (pricing, stars, relationship points). Then, in stages: day/night mode; pattern shelf and
-   pattern orders; supplies used per project; commissions.
-3. Materials (threads/yarn/fabric as owned, used-up supplies; Supply Market buying; crafting gated on
-   owned materials), then item recipes: an ICraftStep interface so every step plugs in the same way,
-   CrossStitchCanvas as the first step, then sewing steps (cut, sew, stuff, eyes) for the plushie.
-4. Dialogue system (Ink or Yarn Spinner) with portrait and expression hooks, including indirect
-   requests: the player picks which item fits, scored by how well it matches.
-5. Knitting and crochet minigames, then embroidery and sewing.
-6. Pattern Studio and pattern marketplace (create, name, price, sell patterns).
-   Include friend share codes: export a pattern or item as a code, import a friend's code.
-7. Supply market UI, Journal (relationships), End-of-day summary.
-8. Audio manager, touch input wrapper, settings (volume, text speed).
+## Build and release
+- Pushing to main runs .github/workflows/build-android.yml (GameCI, about an hour; it frees runner disk
+  space first, which is required). APK: Actions > Build Android > run > Artifacts. Workflows can also be
+  run on a branch via Run workflow. Secrets UNITY_LICENSE/EMAIL/PASSWORD are set (Personal license).
+- Merging: the owner approves merges to main. Fast-forward main from the feature branch
+  (git push origin origin/<branch>:refs/heads/main); never force-push. The owner wants a new build only
+  when there is something to try, so hold merges until a feature is complete.
+- The package-added define APP_UI_EDITOR_ONLY is committed in ProjectSettings on purpose (without it the
+  first Play triggers a recompile).
+
+## How Claude tests (headless, while the editor is closed)
+- Compile: Unity.exe -batchmode -nographics -quit -projectPath <repo> -logFile <file>; grep "error CS".
+- Rebuild scene / generate data: add -executeMethod TestSceneBuilder.Rebuild or PlaceholderGenerator.Generate.
+- Play-mode smoke tests: a temporary Editor/TempSmokeTest.cs (never committed; delete it and its .meta
+  after). Run WITHOUT -nographics and WITHOUT -quit, with -executeMethod TempSmokeTest.Run. Required
+  tricks: batch mode doesn't advance frames, so on each EditorApplication.update set isPaused = true and
+  call EditorApplication.Step(); a domain reload can happen right after entering Play, so keep a
+  SessionState "running" flag and an [InitializeOnLoad] static ctor that exits and re-enters Play mode
+  and restarts the steps. Click buttons with GameObject.Find("Button_<LabelWithoutSpaces>") and
+  onClick.Invoke(); drive the board via reflection (OnPress/OnRelease). Screenshots: Canvas to
+  ScreenSpaceCamera, camera targetTexture = RenderTexture at phone size (1080x2400), ReadPixels, save
+  PNG, then view it. Use `timeout` so a hung editor can't block.
+- Move the owner's real save files aside before a test and restore them after.
+
+## Open questions for the owner
+- Replace the three landscape placeholder backgrounds with portrait-sized placeholders? (Ask first:
+  "do not regenerate art files".)
+- Player character customization: player only, or customers too? Separate colour drawings or tints?
+
+## Status
+Done and on main: project setup, save slots + autosave, order book with resumable work, day/night,
+pattern shelf (sales + pattern orders), book patterns, content library, portrait layout, thread colours,
+undo, Pattern Studio designer, owner guides. Everything is placeholder art and Unity default UI.
+Still stand-ins: every item is made with the cross stitch board; Supply Market, Journal and Settings
+screens are empty; designer colours and stitching threads are free (breaks the materials rule).
+
+## Next tasks (in this order)
+1. Materials: thread colours, yarns, fabrics, toy eyes, stuffing as supplies with realistic quantities
+   (floss covers N squares, etc.); Supply Market screen to buy them (day only); starter kit in new games;
+   designer shows all market colours and marks owned ones; patterns record which thread supplies they
+   use; stitching offers only owned threads; Start Crafting locked until the needed materials are owned,
+   with a list of what to buy; materials consumed as work is done. Update ADDING_CONTENT.md.
+2. Item recipes: each CraftItemDef gets an ordered list of steps; an ICraftStep interface so steps plug
+   in the same way; per-step progress saved in the Order; the cross stitch board becomes one step.
+3. Sewing steps for the sewn plushie: choose fabric, cut along lines, pin, sew seam (machine), turn,
+   stuff, attach eyes, close. Then tote bag, tablecloth hem, and a separate crocheted plushie.
+4. Then: knitting and crochet actions, embroidery; commissions; dialogue system (Ink or Yarn Spinner)
+   with indirect requests; Journal; friend share codes; audio, settings, touch input wrapper.
