@@ -59,13 +59,22 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
   fixed number of squares, a ball of yarn a number of stitches, fabric is cut by size; designs show
   how much of each material they need. New games start with a small kit (white Aida, a few basic
   thread colours) so the first order can be made right away; everything else is bought.
-- Supply Market stock changes every 4 days (owner's request) and has real variety, not just floss:
-  fabrics (Aida counts, evenweave linen, felt, quilting cotton, fleece/minky, canvas), threads (many
-  floss colours, metallic, variegated), yarns (acrylic, wool, merino, cotton, 100% alpaca, mohair, in
-  colours), tools (embroidery hoops by size, tapestry/embroidery needles, crochet hooks and knitting
-  needles by size, fabric scissors, pins, machine needles, marking pen) and notions (stuffing, safety
-  eyes, buttons, ribbon, zips, interfacing). Tools are bought once and kept; the rest is used up.
-  Details still to confirm with the owner: see Open questions.
+- Supply Market (owner's decisions):
+  - Stock changes every 4 days (days 1-4, 5-8, ...). Three tiers: a few basics are ALWAYS for sale
+    (white Aida, basic floss colours, stuffing, a basic needle), a rotating selection (~10 items) changes
+    each period, and now and then a RARE special item appears (e.g. 100% alpaca, linen evenweave,
+    metallic floss), useful for commissions. The selection is seeded per save, so saves differ. The
+    market shows how many days until new stock.
+  - Real variety: fabrics (Aida counts, evenweave linen, felt, quilting cotton, fleece/minky, canvas),
+    threads (many floss colours, metallic), yarns (acrylic, wool, merino, cotton, 100% alpaca, mohair,
+    by weight and colour), tools (embroidery hoops by size, tapestry/embroidery needles, crochet hooks and
+    knitting needles by size, fabric scissors, pins, marking pen) and notions (stuffing, safety eyes,
+    buttons, ribbon, zips, interfacing).
+- Tools are bought once and kept, UNLESS a project uses one up as part of the product (e.g. a customer
+  wants framed embroidery in a special hoop: that hoop is a material of that order and is consumed).
+- Tools gate work: each step lists the tools it needs (e.g. a cross stitch pattern bigger than the
+  hoop needs a bigger hoop: 4" hoop up to 10x10, 6" up to 12x12, 8" up to 16x16; knitting needles and
+  crochet hooks must match the yarn weight). The Workbench lists missing tools like missing materials.
 - Materials: the player can only craft with materials they own (bought). Minigames offer only owned
   threads, yarns, fabrics and notions (eyes, stuffing...). Designing is free: the Pattern Studio shows
   every colour/material the market sells, owned or not, and a design may use any of them; to make it,
@@ -222,11 +231,6 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
 - Move the owner's real save files aside before a test and restore them after.
 
 ## Open questions for the owner
-- Market rotation: should a few basics always be on sale (white Aida, basic floss, stuffing) with the
-  rest rotating every 4 days, or should everything rotate? (Claude suggested basics always available,
-  so an order can never be stuck for long.) How many rotating items at a time?
-- Tools: bought once and kept forever, or do some wear out (needles)? Do tools gate work (e.g. a
-  pattern bigger than 10x10 needs an 8" hoop; knitting needs needles matching the yarn weight)?
 - Replace the three landscape placeholder backgrounds with portrait-sized placeholders? (Ask first:
   "do not regenerate art files".)
 - Player character customization: player only, or customers too? Separate colour drawings or tints?
