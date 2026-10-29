@@ -26,9 +26,25 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
   - Order book: accepted requests go into a list. Several can be open at once. No deadlines,
     nothing expires, no late penalty.
   - Pause and resume: leaving a minigame keeps the work (e.g. every stitch), even across app restarts.
-  - Days still pass for story and atmosphere (the player ends the day when they choose). New customers
-    visit each day; unfinished orders simply carry over.
+  - Unfinished orders simply carry over to the next day.
   - Story quests (e.g. find Tobias's tablecloth pattern, a quilt patch) live in the same list as orders.
+- Day and night. Neither is timed; each lasts as long as the player likes.
+  - Day (shop open, day background): customers visit; sell patterns from the shelf; take new orders;
+    hand over finished orders (coins + friendship); buy supplies. No crafting during the day.
+  - "Close the shop" switches to night (one way, ends the day's trading) with an end-of-day summary.
+  - Night (shop closed, workroom background): work on orders in the minigames (pause/resume as above);
+    design patterns in the Pattern Studio. "Go to bed" starts the next day.
+- What customers want (each visitor does one of these):
+  - Buy a pattern off the shelf: instant sale.
+  - Pattern order: pick a pattern from the shelf and have the finished item made.
+  - Commission: a rarer special quest. It needs a brand-new pattern designed for it (not judged or
+    scored), and may need supplies or a technique the player doesn't have yet, or rarer materials
+    (e.g. 100% alpaca yarn instead of regular). After delivery its pattern can go on the shelf.
+- Pattern shelf: starts with a few patterns from the great-aunt's book (recovered pages add more);
+  patterns designed at night can be shelved at a price the player sets.
+- Techniques: story chapters unlock each craft; smaller techniques (French knots, cables...) come
+  from technique books bought at the market or from recovered pattern-book pages.
+- Supplies are used up per project, so the player restocks: cheap basics, pricier premium materials.
 - Save files: 3 slots on a Save select screen (day, coins, last played; New Game / Continue / Delete,
   with an in-game confirm, never an editor or OS pop-up). Autosave on every meaningful change and when
   the app is backgrounded; no manual save button. The save holds everything: order book, in-progress
@@ -79,12 +95,12 @@ IMPORTANT: this code was written without being compiled. First job in any new se
 open the project, check the console, and fix any compile errors.
 
 ## Screen flow
-Title > Save select > Shop (hub).
-- Greet a customer > Dialogue > Accept (goes into the Order book) or Not today > Shop.
-- Order book > pick an order > Workbench > Minigame > "Done for now" (keeps the work) or Finish > Result >
-  Deliver (or keep working).
-Side screens from the shop: Supply Market, Pattern Studio (create and price patterns), Journal
-(relationships and unlocks), Settings. End Day (whenever the player likes): End-of-day summary, then next day.
+Title > Save select > Shop (day hub).
+- Day: Greet a customer > Dialogue > buy a pattern / accept an order or commission / Not today > Shop.
+  Order book > a finished order > Hand over. Supply Market. "Close the shop" > End-of-day summary > Workroom.
+- Night (Workroom hub): Order book > pick an order > Workbench > Minigame > "Done for now" (keeps the work)
+  or Finish > Result (set aside for hand-over tomorrow, or keep working). Pattern Studio. "Go to bed" > next day.
+Side screens from either hub: Journal (relationships and unlocks), Settings.
 
 ## Storyline: "Thimble & Thread"
 The player inherits their great-aunt's haberdashery in a seaside town. It opens at dusk.
@@ -128,7 +144,8 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
 ## Next tasks (suggested order)
 1. Verify everything compiles; run the placeholder generator; build a test scene with ScreenRouter.
 2. Workbench flow: Order book, save slots with autosave, resumable work, Result screen
-   (pricing, stars, relationship points).
+   (pricing, stars, relationship points). Then, in stages: day/night mode; pattern shelf and
+   pattern orders; supplies used per project; commissions.
 3. ICraftMinigame interface so every craft plugs in the same way; refactor CrossStitchCanvas to implement it.
 4. Dialogue system (Ink or Yarn Spinner) with portrait and expression hooks, including indirect
    requests: the player picks which item fits, scored by how well it matches.
