@@ -2,7 +2,8 @@ using UnityEngine;
 
 public class ShopManager : MonoBehaviour
 {
-    public SupplyDef[] catalog;
+    public ContentLibrary content;
+    SupplyDef[] catalog => content.supplies;
 
     public bool Owns(string supplyId) => GameManager.Instance.Save.ownedSupplies.Contains(supplyId);
 
