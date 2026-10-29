@@ -8,16 +8,27 @@ and makes and sells finished crafts AND patterns (sold independently of each oth
 cross stitch, knitting, embroidery, sewing, crochet.
 Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and more.
 
-- Each craft has a minigame that mimics the real action. Cross stitch: drag corner-to-corner
-  to make a half stitch, drag the opposite diagonal to finish the X. A separate Pattern mode
+- Each craft has a minigame that mimics the real action. A separate Pattern mode
   fills in grid pixels to design a pattern.
+  - Cross stitch: drag corner-to-corner to make a half stitch, drag the opposite diagonal to finish the X.
+  - Knitting: alternate two-needle swipes, one per stitch; rhythm affects quality. Knit and purl rows
+    make the texture.
+  - Crochet: hook and pull. Tap to hook a loop, flick to pull it through. Rounds spiral outward (good for plushies).
+  - Embroidery: trace a printed outline with the needle; accuracy along the line sets quality. Stitch types
+    (backstitch, satin fill, French knot) use different gestures.
+  - Sewing: cut pattern pieces, then guide fabric under the machine needle along the seam line,
+    pressing to run the machine and controlling speed.
+- Coffee Talk-style requests: customers often describe what they want indirectly ("something warm,
+  like my mother used to make") and the player interprets it. Several items can fit; a better match
+  earns more relationship points.
 - Economy: sales earn coins. Coins buy supplies (cloth, yarn, thread). Higher material tier
   gives higher sale prices.
 - Customers have relationship levels. Higher levels unlock new requests, dialogue, and story.
 - Players can sell patterns and items to friends via share codes (a short code, QR or small file
   the friend imports). No backend, accounts or networking packages. An online friends marketplace
   may come later; real-time multiplayer is not planned.
-- The owner makes ALL final illustrations (Procreate / vector apps, exported as high-res PNG).
+- The owner makes ALL final illustrations in Procreate (raster), exported as high-res PNG.
+  Stay with PNG (no SVG). Art should be drawn at or above its target size since raster can't scale up cleanly.
   Do NOT generate final art. Use placeholder sprites only (see Art workflow).
 
 ## Tech decisions
@@ -100,7 +111,8 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
 1. Verify everything compiles; run the placeholder generator; build a test scene with ScreenRouter.
 2. Workbench flow: connect an Order to a craft minigame to a Result screen (pricing, stars, relationship points).
 3. ICraftMinigame interface so every craft plugs in the same way; refactor CrossStitchCanvas to implement it.
-4. Dialogue system (Ink or Yarn Spinner) with portrait and expression hooks.
+4. Dialogue system (Ink or Yarn Spinner) with portrait and expression hooks, including indirect
+   requests: the player picks which item fits, scored by how well it matches.
 5. Knitting and crochet minigames, then embroidery and sewing.
 6. Pattern Studio and pattern marketplace (create, name, price, sell patterns).
    Include friend share codes: export a pattern or item as a code, import a friend's code.
