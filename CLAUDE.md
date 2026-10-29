@@ -14,6 +14,9 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
 - Economy: sales earn coins. Coins buy supplies (cloth, yarn, thread). Higher material tier
   gives higher sale prices.
 - Customers have relationship levels. Higher levels unlock new requests, dialogue, and story.
+- Players can sell patterns and items to friends via share codes (a short code, QR or small file
+  the friend imports). No backend, accounts or networking packages. An online friends marketplace
+  may come later; real-time multiplayer is not planned.
 - The owner makes ALL final illustrations (Procreate / vector apps, exported as high-res PNG).
   Do NOT generate final art. Use placeholder sprites only (see Art workflow).
 
@@ -100,5 +103,6 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
 4. Dialogue system (Ink or Yarn Spinner) with portrait and expression hooks.
 5. Knitting and crochet minigames, then embroidery and sewing.
 6. Pattern Studio and pattern marketplace (create, name, price, sell patterns).
+   Include friend share codes: export a pattern or item as a code, import a friend's code.
 7. Supply market UI, Journal (relationships), End-of-day summary.
 8. Audio manager, touch input wrapper, settings (volume, text speed).
