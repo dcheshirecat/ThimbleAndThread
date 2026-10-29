@@ -21,6 +21,19 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
 - Coffee Talk-style requests: customers often describe what they want indirectly ("something warm,
   like my mother used to make") and the player interprets it. Several items can fit; a better match
   earns more relationship points.
+- Relaxed pacing, not a timed minigame gauntlet. Work is a set of tasks the player picks up or puts
+  down at any time:
+  - Order book: accepted requests go into a list. Several can be open at once. No deadlines,
+    nothing expires, no late penalty.
+  - Pause and resume: leaving a minigame keeps the work (e.g. every stitch), even across app restarts.
+  - Days still pass for story and atmosphere (the player ends the day when they choose). New customers
+    visit each day; unfinished orders simply carry over.
+  - Story quests (e.g. find Tobias's tablecloth pattern, a quilt patch) live in the same list as orders.
+- Save files: 3 slots on a Save select screen (day, coins, last played; New Game / Continue / Delete,
+  with an in-game confirm, never an editor or OS pop-up). Autosave on every meaningful change and when
+  the app is backgrounded; no manual save button. The save holds everything: order book, in-progress
+  work, quests, relationships, supplies, coins, designed patterns. Saves carry a format version and
+  are upgraded on load; writes go to a temp file first so a crash can't corrupt a slot.
 - Economy: sales earn coins. Coins buy supplies (cloth, yarn, thread). Higher material tier
   gives higher sale prices.
 - Customers have relationship levels. Higher levels unlock new requests, dialogue, and story.
@@ -48,8 +61,10 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
 - .github/workflows/build-android.yml builds an APK (needs secrets UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD).
 
 ## Code that already exists
-- Data/CraftData.cs: CraftType enum, StitchCell, Pattern, CraftItemDef (ScriptableObject),
+- Data/CraftData.cs: CraftType enum, StitchCell, Pattern,
   SaveData (coins, day, ownedSupplies, unlockedItems, relationships), CustomerRelationship.
+- Data/CraftItemDef.cs: CraftItemDef (ScriptableObject). A ScriptableObject class must live in a
+  file with the same name, or its assets lose their script link.
 - Data/CustomerDef.cs: Expression enum, CustomerDef (portraits, requestable items by relationship level).
 - Data/SupplyDef.cs: supply with craft, price, tier.
 - Crafts/CrossStitchCanvas.cs: stitch mode and pattern-fill mode, Accuracy(target) method.
@@ -64,9 +79,12 @@ IMPORTANT: this code was written without being compiled. First job in any new se
 open the project, check the console, and fix any compile errors.
 
 ## Screen flow
-Title > Save select > Shop (hub) > Dialogue > Order accepted > Workbench > Minigame > Result > Deliver > Shop.
+Title > Save select > Shop (hub).
+- Greet a customer > Dialogue > Accept (goes into the Order book) or Not today > Shop.
+- Order book > pick an order > Workbench > Minigame > "Done for now" (keeps the work) or Finish > Result >
+  Deliver (or keep working).
 Side screens from the shop: Supply Market, Pattern Studio (create and price patterns), Journal
-(relationships and unlocks), Settings. After the last customer: End-of-day summary, then next day.
+(relationships and unlocks), Settings. End Day (whenever the player likes): End-of-day summary, then next day.
 
 ## Storyline: "Thimble & Thread"
 The player inherits their great-aunt's haberdashery in a seaside town. It opens at dusk.
@@ -109,7 +127,8 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
 
 ## Next tasks (suggested order)
 1. Verify everything compiles; run the placeholder generator; build a test scene with ScreenRouter.
-2. Workbench flow: connect an Order to a craft minigame to a Result screen (pricing, stars, relationship points).
+2. Workbench flow: Order book, save slots with autosave, resumable work, Result screen
+   (pricing, stars, relationship points).
 3. ICraftMinigame interface so every craft plugs in the same way; refactor CrossStitchCanvas to implement it.
 4. Dialogue system (Ink or Yarn Spinner) with portrait and expression hooks, including indirect
    requests: the player picks which item fits, scored by how well it matches.
