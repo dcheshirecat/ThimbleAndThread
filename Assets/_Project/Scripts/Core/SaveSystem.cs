@@ -43,11 +43,13 @@ public static class SaveSystem
         if (data == null) return null;
         // Version 0 (before versioning) had no order book or day tracking; the defaults are correct.
         // Version 1 had no night flag; false (daytime) is correct.
+        // Version 2 had no patterns; ShopDay gives the starter book patterns to a save that has none.
         data.orders ??= new System.Collections.Generic.List<Order>();
         data.visitorsToday ??= new System.Collections.Generic.List<string>();
         data.ownedSupplies ??= new System.Collections.Generic.List<string>();
         data.unlockedItems ??= new System.Collections.Generic.List<string>();
         data.relationships ??= new System.Collections.Generic.List<CustomerRelationship>();
+        data.patterns ??= new System.Collections.Generic.List<OwnedPattern>();
         data.version = SaveData.CurrentVersion;
         return data;
     }

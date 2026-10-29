@@ -32,24 +32,26 @@ public class Order
 
 public static class OrderGenerator
 {
-    /// Picks something this customer is allowed to ask for at their friendship level.
-    public static Order Generate(CustomerDef customer, int relationshipLevel, int today)
+    /// Items this customer may ask for at their friendship level.
+    public static List<CraftItemDef> Wants(CustomerDef customer, int relationshipLevel)
     {
-        var options = new List<OrderOption>();
+        var wants = new List<CraftItemDef>();
         foreach (var o in customer.requestable)
-            if (o.item != null && o.minRelationshipLevel <= relationshipLevel) options.Add(o);
-        if (options.Count == 0) return null;
+            if (o.item != null && o.minRelationshipLevel <= relationshipLevel) wants.Add(o.item);
+        return wants;
+    }
 
-        var pick = options[UnityEngine.Random.Range(0, options.Count)];
+    /// A pattern order: the customer picked a pattern off the shelf and wants the item made from it.
+    public static Order FromPattern(CustomerDef customer, CraftItemDef item, Pattern design, int today)
+    {
         return new Order
         {
             id = Guid.NewGuid().ToString("N"),
             customerId = customer.customerId,
-            itemId = pick.item.itemId,
-            item = pick.item,
-            patternOnly = UnityEngine.Random.value < 0.3f,
+            itemId = item.itemId,
+            item = item,
             dayPlaced = today,
-            target = PlaceholderPatterns.For(pick.item),
+            target = design,
         };
     }
 }

@@ -44,9 +44,33 @@ public static class PlaceholderGenerator
         Customer("juno",   "Juno",        "A teen who wants knitwear that doesn't look grandma-made.",
                  new Color(0.70f, 0.90f, 0.60f), new[] { (sampler, 0), (tote, 1), (sweater, 3) });
 
+        // ---- The great-aunt's pattern book (starter shelf) ----
+        BookPattern("seaside_heart", "Seaside Heart", sampler, 8, new[] { new Color(0.85f, 0.25f, 0.30f) },
+            "........\n..1..1..\n.111111.\n.111111.\n..1111..\n...11...\n........\n........");
+        BookPattern("anchor_border", "Anchor", tablecloth, 12, new[] { new Color(0.20f, 0.30f, 0.55f) },
+            "...1....\n..111...\n...1....\n...1....\n1..1..1.\n.1.1.1..\n..111...\n........");
+        BookPattern("little_bunny", "Little Bunny", plushie, 10, new[] { new Color(0.95f, 0.70f, 0.80f), new Color(0.25f, 0.20f, 0.25f) },
+            ".1...1..\n.1...1..\n.11111..\n.12121..\n.11111..\n..111...\n.11111..\n........");
+        BookPattern("wave_stripes", "Wave Stripes", scarf, 9, new[] { new Color(0.55f, 0.75f, 0.95f), new Color(0.15f, 0.35f, 0.65f) },
+            "........\n1...1...\n.1.1.1.1\n..1...1.\n........\n2...2...\n.2.2.2.2\n..2...2.");
+
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
+        ContentLibraryRefresher.Refresh();
         Debug.Log("Placeholder art and data generated.");
+    }
+
+    static PatternDef BookPattern(string id, string name, CraftItemDef item, int price, Color[] palette, string grid)
+    {
+        Directory.CreateDirectory($"{Root}/Data/Patterns");
+        string assetPath = $"{Root}/Data/Patterns/pattern_{id}.asset";
+        var existing = AssetDatabase.LoadAssetAtPath<PatternDef>(assetPath);
+        if (existing != null) return existing;
+        var def = ScriptableObject.CreateInstance<PatternDef>();
+        def.patternId = id; def.displayName = name; def.item = item; def.price = price;
+        def.palette = palette; def.grid = grid; def.startsOnShelf = true;
+        AssetDatabase.CreateAsset(def, assetPath);
+        return def;
     }
 
     // ---------- helpers ----------

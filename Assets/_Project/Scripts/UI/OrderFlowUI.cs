@@ -2,21 +2,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// Fills in the text, portraits and order list on the shop screens whenever the screen changes.
+/// Fills in the text, portraits, lists and pattern previews on the shop screens whenever the screen changes.
 public class OrderFlowUI : MonoBehaviour
 {
     public ShopDay day;
 
     [Header("Shop")] public Text shopStatus; public Text greetLabel;
     [Header("Workroom")] public Text workroomStatus;
-    [Header("Dialogue")] public Text dialogueName, dialogueText; public Image dialoguePortrait;
+    [Header("Dialogue")] public Text dialogueName, dialogueText, acceptLabel; public Image dialoguePortrait; public RawImage dialoguePattern;
     [Header("Order book")] public Button orderTemplate; public Text orderBookEmpty;
     [Header("Workbench")] public Text workbenchText; public Text startLabel; public GameObject startButton, handOverButton;
     [Header("Minigame")] public Text minigameHint;
     [Header("Result")] public Text resultText; public Image resultPortrait;
     [Header("Day summary")] public Text summaryText;
+    [Header("Pattern Studio")] public Button patternTemplate;
+    [Header("Pattern edit")] public Text patternText, shelfLabel; public RawImage patternPreview;
 
     readonly List<GameObject> orderRows = new List<GameObject>();
+    readonly List<GameObject> patternRows = new List<GameObject>();
 
     void OnEnable()
     {
@@ -38,27 +41,19 @@ public class OrderFlowUI : MonoBehaviour
         int ready = save.orders.FindAll(o => o.finished).Count;
         int toDo = save.orders.Count - ready;
         shopStatus.text = $"Day {save.day}    {save.coins} coins\n" +
+                          $"Patterns on the shelf: {day.Shelf.Count}\n" +
                           $"Ready to hand over: {ready}\nIn progress: {toDo}\n\n{day.LastMessage}";
         greetLabel.text = day.CustomersWaiting > 0 ? $"Greet Customer ({day.CustomersWaiting})" : "No one waiting";
         workroomStatus.text = $"Night of day {save.day}    {save.coins} coins\n" +
                               $"Orders to work on: {toDo}\nSet aside for tomorrow: {ready}\n\n{day.LastMessage}";
         summaryText.text = "The shop is closed for the night.\n\n" +
-                           $"Orders handed over: {save.deliveredToday}\nCoins earned today: {save.coinsToday}\n" +
-                           $"Total coins: {save.coins}";
+                           $"Patterns sold: {save.patternsSoldToday}\nOrders handed over: {save.deliveredToday}\n" +
+                           $"Coins earned today: {save.coinsToday}\nTotal coins: {save.coins}";
 
         if (screen == ScreenId.OrderBook) BuildOrderList();
-
-        if (day.Offer != null && day.Visitor != null)
-        {
-            var offer = day.Offer;
-            string item = offer.item.itemName.ToLower();
-            dialogueName.text = day.Visitor.displayName;
-            dialogueText.text = (offer.patternOnly
-                ? $"Hello! Could you design a {item} pattern for me? I'd like to make it myself."
-                : $"Hello! Could you make me a {item}?") +
-                $"\n\n({char.ToUpper(CraftName(offer.item.craft)[0])}{CraftName(offer.item.craft).Substring(1)}. No rush, whenever you have time.)";
-            SetPortrait(dialoguePortrait, day.Visitor.GetPortrait(Expression.Neutral));
-        }
+        if (screen == ScreenId.PatternStudio) BuildPatternList();
+        if (screen == ScreenId.PatternEdit && day.SelectedPattern != null) ShowPattern(day.SelectedPattern);
+        if (screen == ScreenId.Dialogue && day.Visitor != null) ShowVisitor();
 
         var order = day.Selected;
         if (order == null) return;
@@ -92,6 +87,39 @@ public class OrderFlowUI : MonoBehaviour
         SetPortrait(resultPortrait, customer != null ? customer.GetPortrait(mood) : null);
     }
 
+    void ShowVisitor()
+    {
+        dialogueName.text = day.Visitor.displayName;
+        SetPortrait(dialoguePortrait, day.Visitor.GetPortrait(Expression.Happy));
+        if (day.SaleOffer != null)
+        {
+            var p = day.SaleOffer;
+            dialogueText.text = $"Oh, I love your {p.name} pattern! May I buy it? I'd like to make it myself.";
+            acceptLabel.text = $"Sell It ({p.price} coins)";
+            SetPreview(dialoguePattern, day.DesignFor(p));
+        }
+        else if (day.Offer != null)
+        {
+            var o = day.Offer;
+            dialogueText.text = $"Your {o.target.displayName} pattern is lovely! Could you make me a {o.item.itemName.ToLower()} with it?" +
+                                $"\n\n(No rush, whenever you have time.)";
+            acceptLabel.text = "Take the Order";
+            SetPreview(dialoguePattern, o.target);
+        }
+    }
+
+    void ShowPattern(OwnedPattern p)
+    {
+        var item = day.ItemFor(p.itemId);
+        patternText.text = $"{p.name}\n\nMakes: {(item != null ? item.itemName : p.itemId)}\n" +
+                           $"Price: {p.price} coins\n" +
+                           (p.designed ? "Your own design" : "From your great-aunt's pattern book") + "\n\n" +
+                           (p.onShelf ? "On the shelf: customers can buy it or order the finished piece."
+                                      : "Not on the shelf: customers won't see it.");
+        shelfLabel.text = p.onShelf ? "Take Off the Shelf" : "Put on the Shelf";
+        SetPreview(patternPreview, day.DesignFor(p));
+    }
+
     void BuildOrderList()
     {
         foreach (var row in orderRows) Destroy(row);
@@ -101,18 +129,57 @@ public class OrderFlowUI : MonoBehaviour
 
         foreach (var order in day.Orders)
         {
-            var row = Instantiate(orderTemplate, orderTemplate.transform.parent);
-            row.gameObject.SetActive(true);
-            row.name = $"Order_{order.id}";
             var customer = day.CustomerFor(order.customerId);
             string kind = order.patternOnly ? " (pattern)" : "";
             string state = order.finished ? "Ready to hand over" : $"{Mathf.RoundToInt(order.Progress() * 100)}%";
-            row.GetComponentInChildren<Text>().text =
-                $"{order.item.itemName}{kind} for {(customer != null ? customer.displayName : order.customerId)}  ·  {state}";
             string id = order.id;
-            row.onClick.AddListener(() => day.SelectOrder(id));
-            orderRows.Add(row.gameObject);
+            orderRows.Add(AddRow(orderTemplate, $"Order_{id}",
+                $"{order.item.itemName}{kind} for {(customer != null ? customer.displayName : order.customerId)}  ·  {state}",
+                () => day.SelectOrder(id)));
         }
+    }
+
+    void BuildPatternList()
+    {
+        foreach (var row in patternRows) Destroy(row);
+        patternRows.Clear();
+        patternTemplate.gameObject.SetActive(false);
+
+        foreach (var p in day.Patterns)
+        {
+            var item = day.ItemFor(p.itemId);
+            string id = p.id;
+            patternRows.Add(AddRow(patternTemplate, $"Pattern_{id}",
+                $"{p.name}  ·  {(item != null ? item.itemName : p.itemId)}  ·  {p.price} coins  ·  {(p.onShelf ? "On shelf" : "In the book")}",
+                () => day.SelectPattern(id)));
+        }
+    }
+
+    static GameObject AddRow(Button template, string name, string label, UnityEngine.Events.UnityAction onClick)
+    {
+        var row = Instantiate(template, template.transform.parent);
+        row.gameObject.SetActive(true);
+        row.name = name;
+        row.GetComponentInChildren<Text>().text = label;
+        row.onClick.AddListener(onClick);
+        return row.gameObject;
+    }
+
+    /// Draws a pattern as a small pixel image: one pixel per square, on cream "fabric".
+    static void SetPreview(RawImage image, Pattern pattern)
+    {
+        if (image.texture != null) Destroy(image.texture);
+        int w = Mathf.Max(1, pattern.width), h = Mathf.Max(1, pattern.height);
+        var tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+        var fabric = new Color(0.96f, 0.93f, 0.86f);
+        var pixels = new Color[w * h];
+        for (int i = 0; i < pixels.Length; i++) pixels[i] = fabric;
+        foreach (var c in pattern.cells)
+            if (c.x >= 0 && c.x < w && c.y >= 0 && c.y < h && c.colorIndex < pattern.palette.Count)
+                pixels[c.y * w + c.x] = pattern.palette[c.colorIndex];
+        tex.SetPixels(pixels);
+        tex.Apply();
+        image.texture = tex;
     }
 
     static void SetPortrait(Image image, Sprite sprite)

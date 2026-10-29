@@ -31,12 +31,26 @@ public class StitchMark
     public int x, y, mask;
 }
 
+// A pattern the player owns. Book patterns point at a PatternDef (patternId); patterns the player
+// designs carry their own grid in "design". Owned patterns can sit on the shop shelf for sale.
+[Serializable]
+public class OwnedPattern
+{
+    public string id;               // PatternDef.patternId for book patterns, a new GUID for designed ones
+    public string name;
+    public string itemId;           // what it makes
+    public int price;
+    public bool onShelf;
+    public bool designed;           // true = made in the Pattern Studio, grid stored in "design"
+    public Pattern design = new Pattern();
+}
+
 // Player-owned state, one per save slot. Saved as JSON to Application.persistentDataPath.
 // When adding fields: give them safe defaults, bump CurrentVersion and upgrade old saves in SaveSystem.Upgrade.
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 2;   // 2: added night
+    public const int CurrentVersion = 3;   // 2: added night. 3: added patterns
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
@@ -49,8 +63,10 @@ public class SaveData
 
     public List<Order> orders = new List<Order>();             // the order book: accepted, not yet delivered
     public List<string> visitorsToday = new List<string>();    // customerIds still to arrive today
+    public List<OwnedPattern> patterns = new List<OwnedPattern>();  // the book and the shelf
     public int deliveredToday;
     public int coinsToday;
+    public int patternsSoldToday;
 }
 
 [Serializable]

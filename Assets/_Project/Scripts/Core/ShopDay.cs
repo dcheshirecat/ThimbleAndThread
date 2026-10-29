@@ -2,21 +2,23 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// Runs the shop's day and night.
-/// Day: customers visit and leave orders in the order book; finished orders are handed over.
+/// Day: customers visit and browse the pattern shelf. Each one buys a pattern or orders an item
+/// made from one (it goes in the order book); finished orders are handed over.
 /// Night: the player works on any order, can stop at any point and pick it up later (the work is saved),
 /// and sets finished pieces aside for the customer to collect the next day. Nothing has a deadline.
 /// Every change autosaves through GameManager.Persist.
 public class ShopDay : MonoBehaviour
 {
-    public CustomerDef[] customers;
-    public CraftItemDef[] items;
+    public ContentLibrary content;
     public ShopManager shop;
     public MinigameHost minigame;
 
     // Not saved: what is on screen right now.
-    public CustomerDef Visitor { get; private set; }     // customer in the Dialogue screen
-    public Order Offer { get; private set; }             // their request, not yet accepted
-    public Order Selected { get; private set; }          // order open on the Workbench
+    public CustomerDef Visitor { get; private set; }            // customer in the Dialogue screen
+    public Order Offer { get; private set; }                    // their pattern order, not yet accepted
+    public OwnedPattern SaleOffer { get; private set; }         // or: the shelf pattern they want to buy
+    public Order Selected { get; private set; }                 // order open on the Workbench
+    public OwnedPattern SelectedPattern { get; private set; }   // pattern open in the Pattern Studio
     public float LastAccuracy { get; private set; }
     public int LastStars { get; private set; }
     public int LastPrice { get; private set; }    // what the customer will pay at hand-over
@@ -27,6 +29,8 @@ public class ShopDay : MonoBehaviour
     SaveData Save => GM.Save;
 
     public List<Order> Orders => Save.orders;
+    public List<OwnedPattern> Patterns => Save.patterns;
+    public List<OwnedPattern> Shelf => Save.patterns.FindAll(p => p.onShelf && ItemFor(p.itemId) != null);
     public int CustomersWaiting => Save.visitorsToday.Count;
 
     void Start() => GM.OnGameLoaded += OnGameLoaded;
@@ -39,7 +43,13 @@ public class ShopDay : MonoBehaviour
     void OnGameLoaded(bool isNewGame)
     {
         minigame.Close();
-        Visitor = null; Offer = null; Selected = null;
+        Visitor = null; Offer = null; SaleOffer = null; Selected = null; SelectedPattern = null;
+
+        // The great-aunt's book: starter patterns for new games and for saves from before patterns existed.
+        if (Save.patterns.Count == 0)
+            foreach (var def in content.patterns)
+                if (def != null && def.startsOnShelf && def.item != null)
+                    Save.patterns.Add(new OwnedPattern { id = def.patternId, name = def.displayName, itemId = def.item.itemId, price = def.price, onShelf = true });
 
         // Saves store item ids; look the definitions back up. Drop orders for items that no longer exist.
         Save.orders.RemoveAll(o =>
@@ -62,8 +72,8 @@ public class ShopDay : MonoBehaviour
     {
         var list = Save.visitorsToday;
         list.Clear();
-        foreach (var c in customers)
-            if (!Save.orders.Exists(o => o.customerId == c.customerId)) list.Add(c.customerId);
+        foreach (var c in content.customers)
+            if (c != null && !Save.orders.Exists(o => o.customerId == c.customerId)) list.Add(c.customerId);
         for (int i = list.Count - 1; i > 0; i--)
         {
             int j = Random.Range(0, i + 1);
@@ -71,46 +81,76 @@ public class ShopDay : MonoBehaviour
         }
     }
 
-    public CustomerDef CustomerFor(string id) => System.Array.Find(customers, c => c.customerId == id);
-    CraftItemDef ItemFor(string id) => System.Array.Find(items, i => i.itemId == id);
+    public CustomerDef CustomerFor(string id) => content.Customer(id);
+    public CraftItemDef ItemFor(string id) => content.Item(id);
+
+    /// The stitch grid of an owned pattern (a fresh copy, safe to hand to an order).
+    public Pattern DesignFor(OwnedPattern owned)
+    {
+        if (owned.designed) return JsonUtility.FromJson<Pattern>(JsonUtility.ToJson(owned.design));
+        var def = content.Pattern(owned.id);
+        return def != null ? def.ToPattern() : PlaceholderPatterns.For(ItemFor(owned.itemId));
+    }
 
     // ---- Shop ----
 
     public void GreetCustomer()
     {
         if (Save.night) return;   // the shop is closed at night
+        string browsed = null;
         while (Save.visitorsToday.Count > 0)
         {
             var customer = CustomerFor(Save.visitorsToday[0]);
             Save.visitorsToday.RemoveAt(0);
             if (customer == null) continue;
-            var order = OrderGenerator.Generate(customer, GM.GetRelationship(customer.customerId).level, Save.day);
-            if (order == null) continue;   // nothing this customer can ask for yet
 
+            // They browse the shelf for patterns of things they'd like.
+            var wants = OrderGenerator.Wants(customer, GM.GetRelationship(customer.customerId).level);
+            var matches = Shelf.FindAll(p => wants.Exists(i => i.itemId == p.itemId));
+            if (matches.Count == 0)
+            {
+                browsed = $"{customer.displayName} browsed the shelf but didn't find anything today.";
+                continue;
+            }
+
+            var pick = matches[Random.Range(0, matches.Count)];
             Visitor = customer;
-            Offer = order;
+            if (Random.value < 0.35f) SaleOffer = pick;   // buys the pattern to make it themselves
+            else Offer = OrderGenerator.FromPattern(customer, ItemFor(pick.itemId), DesignFor(pick), Save.day);
             GM.Persist();
             GM.ChangeScreen(ScreenId.Dialogue);
             return;
         }
         GM.Persist();
-        LastMessage = "No one else is waiting today. Close the shop whenever you're ready.";
+        LastMessage = browsed ?? "No one else is waiting today. Close the shop whenever you're ready.";
         GM.ChangeScreen(ScreenId.Shop);
     }
 
-    public void AcceptOrder()
+    /// Sell the pattern, or take the order into the order book.
+    public void AcceptOffer()
     {
-        Save.orders.Add(Offer);
-        LastMessage = $"{Visitor.displayName}'s {Offer.item.itemName.ToLower()} is in your order book.";
-        Visitor = null; Offer = null;
+        if (SaleOffer != null)
+        {
+            GM.AddCoins(SaleOffer.price);
+            GM.AddRelationshipPoints(Visitor.customerId, 5);
+            Save.coinsToday += SaleOffer.price;
+            Save.patternsSoldToday++;
+            LastMessage = $"Sold the {SaleOffer.name} pattern to {Visitor.displayName}: +{SaleOffer.price} coins.";
+        }
+        else
+        {
+            Save.orders.Add(Offer);
+            LastMessage = $"{Visitor.displayName}'s {Offer.item.itemName.ToLower()} is in your order book.";
+        }
+        Visitor = null; Offer = null; SaleOffer = null;
         GM.Persist();
         GM.ChangeScreen(ScreenId.Shop);
     }
 
-    public void DeclineOrder()
+    public void DeclineOffer()
     {
         LastMessage = $"{Visitor.displayName} will come back another day.";
-        Visitor = null; Offer = null;
+        Visitor = null; Offer = null; SaleOffer = null;
         GM.ChangeScreen(ScreenId.Shop);
     }
 
@@ -136,12 +176,38 @@ public class ShopDay : MonoBehaviour
         Save.night = false;
         Save.deliveredToday = 0;
         Save.coinsToday = 0;
+        Save.patternsSoldToday = 0;
         GM.NextDay();
         InviteVisitors();
         GM.Persist();
         int ready = Save.orders.FindAll(o => o.finished).Count;
         LastMessage = $"Good morning! Day {Save.day}." + (ready > 0 ? $" {ready} order(s) ready to hand over." : "");
         GM.ChangeScreen(ScreenId.Shop);
+    }
+
+    // ---- Pattern Studio (night): price and shelf ----
+
+    public void SelectPattern(string patternId)
+    {
+        SelectedPattern = Save.patterns.Find(p => p.id == patternId);
+        if (SelectedPattern != null) GM.ChangeScreen(ScreenId.PatternEdit);
+    }
+
+    public void PriceUp() => SetPrice(SelectedPattern.price + 1);
+    public void PriceDown() => SetPrice(SelectedPattern.price - 1);
+
+    void SetPrice(int price)
+    {
+        SelectedPattern.price = Mathf.Clamp(price, 1, 999);
+        GM.Persist();
+        GM.ChangeScreen(ScreenId.PatternEdit);   // refresh the screen
+    }
+
+    public void ToggleShelf()
+    {
+        SelectedPattern.onShelf = !SelectedPattern.onShelf;
+        GM.Persist();
+        GM.ChangeScreen(ScreenId.PatternEdit);
     }
 
     // ---- Order book and workbench ----

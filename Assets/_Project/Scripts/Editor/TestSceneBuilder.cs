@@ -62,16 +62,16 @@ public static class TestSceneBuilder
         es.AddComponent<InputSystemUIInputModule>();
 
         // ---- Order loop ----
+        var content = ContentLibraryRefresher.Refresh();
         var shop = new GameObject("ShopManager").AddComponent<ShopManager>();
-        shop.catalog = LoadAll<SupplyDef>($"{Root}/Data/Supplies");
+        shop.content = content;
 
         var minigame = new GameObject("MinigameHost").AddComponent<MinigameHost>();
         minigame.cam = cam;
         minigame.material = AssetDatabase.LoadAssetAtPath<Material>(SpriteMaterialPath);
 
         var day = new GameObject("ShopDay").AddComponent<ShopDay>();
-        day.customers = LoadAll<CustomerDef>($"{Root}/Data/Customers");
-        day.items = LoadAll<CraftItemDef>($"{Root}/Data/Items");
+        day.content = content;
         day.shop = shop;
         day.minigame = minigame;
 
@@ -150,10 +150,11 @@ public static class TestSceneBuilder
         p = Panel(ScreenId.Dialogue, "", new Color(0.80f, 0.86f, 0.93f));
         ui.dialoguePortrait = Portrait(p, new Vector2(0.27f, 0.52f), 1000);
         ui.dialogueName = Label(p, "Name", new Vector2(0.52f, 0.72f), new Vector2(0.95f, 0.85f), 96, TextAnchor.MiddleLeft);
-        ui.dialogueText = Label(p, "Request", new Vector2(0.52f, 0.38f), new Vector2(0.95f, 0.72f), 64, TextAnchor.UpperLeft);
-        b = Buttons(p, new Vector2(0.73f, 0.22f));
-        Button(b, "Accept Order", day.AcceptOrder);
-        Button(b, "Not Today", day.DeclineOrder);
+        ui.dialogueText = Label(p, "Request", new Vector2(0.52f, 0.48f), new Vector2(0.95f, 0.72f), 64, TextAnchor.UpperLeft);
+        ui.dialoguePattern = Preview(p, new Vector2(0.60f, 0.30f), 360);
+        b = Buttons(p, new Vector2(0.80f, 0.26f));
+        ui.acceptLabel = Button(b, "Accept", day.AcceptOffer, 640).GetComponentInChildren<Text>();
+        Button(b, "Not Today", day.DeclineOffer, 640);
 
         p = Panel(ScreenId.Workbench, "Workbench", new Color(0.80f, 0.66f, 0.50f), "Art/Backgrounds/bg_workbench.png");
         ui.workbenchText = Label(p, "Order", new Vector2(0.15f, 0.45f), new Vector2(0.85f, 0.80f), 72, TextAnchor.MiddleCenter);
@@ -184,7 +185,18 @@ public static class TestSceneBuilder
         Button(Buttons(p, new Vector2(0.5f, 0.45f)), "Back to Shop", router.GoToShop);
 
         p = Panel(ScreenId.PatternStudio, "Pattern Studio", new Color(0.93f, 0.78f, 0.90f));
-        Button(Buttons(p, new Vector2(0.5f, 0.45f)), "Back", router.GoToHub);
+        ui.patternTemplate = Button(Buttons(p, new Vector2(0.5f, 0.55f)), "Pattern Template", null, 1900);
+        Button(Buttons(p, new Vector2(0.5f, 0.08f)), "Back", router.GoToHub);
+
+        p = Panel(ScreenId.PatternEdit, "Pattern", new Color(0.93f, 0.78f, 0.90f));
+        ui.patternPreview = Preview(p, new Vector2(0.27f, 0.50f), 900);
+        ui.patternText = Label(p, "Details", new Vector2(0.50f, 0.40f), new Vector2(0.95f, 0.82f), 60, TextAnchor.MiddleLeft);
+        b = Buttons(p, new Vector2(0.62f, 0.27f));
+        Button(b, "Price Up", day.PriceUp, 420);
+        Button(b, "Price Down", day.PriceDown, 420);
+        b = Buttons(p, new Vector2(0.84f, 0.27f));
+        ui.shelfLabel = Button(b, "Shelf", day.ToggleShelf, 620).GetComponentInChildren<Text>();
+        Button(b, "Back to Studio", router.GoToPatternStudio, 620);
 
         p = Panel(ScreenId.Journal, "Journal", new Color(0.80f, 0.93f, 0.74f));
         Button(Buttons(p, new Vector2(0.5f, 0.45f)), "Back", router.GoToHub);
@@ -204,14 +216,6 @@ public static class TestSceneBuilder
         EditorSceneManager.SaveScene(scene, ScenePath);
         AddToBuildSettingsFirst(ScenePath);
         Debug.Log($"Test scene built at {ScenePath}.");
-    }
-
-    static T[] LoadAll<T>(string folder) where T : Object
-    {
-        var list = new List<T>();
-        foreach (var guid in AssetDatabase.FindAssets($"t:{typeof(T).Name}", new[] { folder }))
-            list.Add(AssetDatabase.LoadAssetAtPath<T>(AssetDatabase.GUIDToAssetPath(guid)));
-        return list.ToArray();
     }
 
     static RectTransform MakePanel(Transform parent, ScreenId id, string title, Color color, string bgSprite)
@@ -281,6 +285,17 @@ public static class TestSceneBuilder
         rt.anchorMin = min; rt.anchorMax = max;
         rt.offsetMin = rt.offsetMax = Vector2.zero;
         return t;
+    }
+
+    static RawImage Preview(Transform panel, Vector2 anchor, float size)
+    {
+        var go = new GameObject("PatternPreview", typeof(RectTransform), typeof(RawImage));
+        var rt = (RectTransform)go.transform;
+        rt.SetParent(panel, false);
+        rt.anchorMin = rt.anchorMax = anchor;
+        rt.sizeDelta = new Vector2(size, size);
+        go.GetComponent<RawImage>().raycastTarget = false;
+        return go.GetComponent<RawImage>();
     }
 
     static Image Portrait(Transform panel, Vector2 anchor, float size)

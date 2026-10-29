@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d664e9494a15d3747aae761ccc2f60d0, type: 3}
+  m_Name: pattern_wave_stripes
+  m_EditorClassIdentifier: Assembly-CSharp::PatternDef
+  patternId: wave_stripes
+  displayName: Wave Stripes
+  item: {fileID: 11400000, guid: d72160bbb003b8b45bd0243d7c440a5c, type: 2}
+  price: 9
+  startsOnShelf: 1
+  palette:
+  - {r: 0.55, g: 0.75, b: 0.95, a: 1}
+  - {r: 0.15, g: 0.35, b: 0.65, a: 1}
+  grid: '........
+
+    1...1...
+
+    .1.1.1.1
+
+    ..1...1.
+
+    ........
+
+    2...2...
+
+    .2.2.2.2
+
+    ..2...2.'
