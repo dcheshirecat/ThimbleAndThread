@@ -36,12 +36,13 @@ public class StitchMark
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 1;
+    public const int CurrentVersion = 2;   // 2: added night
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
     public int coins = 50;
     public int day = 1;
+    public bool night;                        // false = shop open (day), true = workroom (night)
     public List<string> ownedSupplies = new List<string>();
     public List<string> unlockedItems = new List<string>();
     public List<CustomerRelationship> relationships = new List<CustomerRelationship>();

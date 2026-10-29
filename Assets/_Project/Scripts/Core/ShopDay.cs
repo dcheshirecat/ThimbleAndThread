@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// Runs the shop: customers visit each day and leave orders in the order book.
-/// The player works on any order whenever they like, can stop at any point and pick it up later
-/// (the work is saved), and delivers when happy. Nothing has a deadline.
+/// Runs the shop's day and night.
+/// Day: customers visit and leave orders in the order book; finished orders are handed over.
+/// Night: the player works on any order, can stop at any point and pick it up later (the work is saved),
+/// and sets finished pieces aside for the customer to collect the next day. Nothing has a deadline.
 /// Every change autosaves through GameManager.Persist.
 public class ShopDay : MonoBehaviour
 {
@@ -18,7 +19,7 @@ public class ShopDay : MonoBehaviour
     public Order Selected { get; private set; }          // order open on the Workbench
     public float LastAccuracy { get; private set; }
     public int LastStars { get; private set; }
-    public int LastPrice { get; private set; }
+    public int LastPrice { get; private set; }    // what the customer will pay at hand-over
     public int LastPoints { get; private set; }
     public string LastMessage { get; private set; } = "";
 
@@ -53,7 +54,7 @@ public class ShopDay : MonoBehaviour
             InviteVisitors();
             LastMessage = "Welcome to Thimble & Thread!";
         }
-        else LastMessage = $"Welcome back! Day {Save.day}.";
+        else LastMessage = Save.night ? $"Welcome back! Night of day {Save.day}." : $"Welcome back! Day {Save.day}.";
     }
 
     /// Everyone without an open order drops by today, in a random order.
@@ -77,6 +78,7 @@ public class ShopDay : MonoBehaviour
 
     public void GreetCustomer()
     {
+        if (Save.night) return;   // the shop is closed at night
         while (Save.visitorsToday.Count > 0)
         {
             var customer = CustomerFor(Save.visitorsToday[0]);
@@ -92,7 +94,7 @@ public class ShopDay : MonoBehaviour
             return;
         }
         GM.Persist();
-        LastMessage = "No one else is waiting today. Work on your orders, or end the day when you like.";
+        LastMessage = "No one else is waiting today. Close the shop whenever you're ready.";
         GM.ChangeScreen(ScreenId.Shop);
     }
 
@@ -112,16 +114,33 @@ public class ShopDay : MonoBehaviour
         GM.ChangeScreen(ScreenId.Shop);
     }
 
-    public void EndDay() => GM.ChangeScreen(ScreenId.DaySummary);
-
-    public void StartNextDay()
+    /// Day to night: ends the day's trading and shows the summary.
+    public void CloseShop()
     {
+        Save.night = true;
+        Save.visitorsToday.Clear();   // anyone still waiting comes back another day
+        GM.Persist();
+        GM.ChangeScreen(ScreenId.DaySummary);
+    }
+
+    public void GoToWorkroom()
+    {
+        int toDo = Save.orders.FindAll(o => !o.finished).Count;
+        LastMessage = toDo > 0 ? $"The shop is quiet. {toDo} order(s) to work on." : "The shop is quiet. Time to design some patterns?";
+        GM.ChangeScreen(ScreenId.Workroom);
+    }
+
+    /// Night to the next morning.
+    public void GoToBed()
+    {
+        Save.night = false;
         Save.deliveredToday = 0;
         Save.coinsToday = 0;
         GM.NextDay();
         InviteVisitors();
         GM.Persist();
-        LastMessage = $"Day {Save.day}. The shop is open!";
+        int ready = Save.orders.FindAll(o => o.finished).Count;
+        LastMessage = $"Good morning! Day {Save.day}." + (ready > 0 ? $" {ready} order(s) ready to hand over." : "");
         GM.ChangeScreen(ScreenId.Shop);
     }
 
@@ -133,8 +152,11 @@ public class ShopDay : MonoBehaviour
         if (Selected != null) GM.ChangeScreen(ScreenId.Workbench);
     }
 
+    /// Night only: crafting happens in the workroom.
     public void StartCrafting()
     {
+        if (!Save.night || Selected == null) return;
+        Selected.finished = false;   // reopening a set-aside piece makes it a work in progress again
         minigame.Open(Selected);
         GM.ChangeScreen(ScreenId.Minigame);
     }
@@ -149,6 +171,7 @@ public class ShopDay : MonoBehaviour
         GM.ChangeScreen(ScreenId.OrderBook);
     }
 
+    /// Shows how the piece turned out and what the customer will pay.
     public void FinishCrafting()
     {
         LastAccuracy = minigame.SaveWork();
@@ -164,23 +187,39 @@ public class ShopDay : MonoBehaviour
 
     public void KeepWorking() => StartCrafting();
 
-    public void Deliver()
+    /// Night: the piece is done and waits for the customer to collect it tomorrow.
+    public void SetAside()
     {
+        Selected.finished = true;
+        Selected.accuracy = LastAccuracy;
+        GM.Persist();
+        var customer = CustomerFor(Selected.customerId);
+        LastMessage = $"The {Selected.item.itemName.ToLower()} is set aside for {(customer != null ? customer.displayName : "its owner")} to collect tomorrow.";
+        Selected = null;
+        GM.ChangeScreen(ScreenId.OrderBook);
+    }
+
+    /// Day: give a finished order to its customer for coins and friendship.
+    public void HandOver()
+    {
+        if (Selected == null || !Selected.finished || Save.night) return;
         var customer = CustomerFor(Selected.customerId);
         string name = customer != null ? customer.displayName : Selected.customerId;
-        int before = GM.GetRelationship(Selected.customerId).level;
+        int level = GM.GetRelationship(Selected.customerId).level;
+        int price = PricingCalculator.Compute(Selected.item, Selected.accuracy, shop.BestTier(Selected.item.craft), level, Selected.patternOnly);
+        int points = PricingCalculator.RelationshipReward(Selected.accuracy);
 
-        GM.AddCoins(LastPrice);
-        GM.AddRelationshipPoints(Selected.customerId, LastPoints);
+        GM.AddCoins(price);
+        GM.AddRelationshipPoints(Selected.customerId, points);
         Save.orders.Remove(Selected);
         Save.deliveredToday++;
-        Save.coinsToday += LastPrice;
+        Save.coinsToday += price;
         GM.Persist();
 
         int after = GM.GetRelationship(Selected.customerId).level;
-        LastMessage = after > before
-            ? $"{name} is now a closer friend! (level {after})"
-            : $"Delivered to {name}: +{LastPrice} coins, +{LastPoints} friendship.";
+        LastMessage = after > level
+            ? $"{name} loves it and is now a closer friend! (level {after})"
+            : $"Handed over to {name}: +{price} coins, +{points} friendship.";
         Selected = null;
         GM.ChangeScreen(ScreenId.Shop);
     }

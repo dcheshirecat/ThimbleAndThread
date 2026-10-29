@@ -8,9 +8,10 @@ public class OrderFlowUI : MonoBehaviour
     public ShopDay day;
 
     [Header("Shop")] public Text shopStatus; public Text greetLabel;
+    [Header("Workroom")] public Text workroomStatus;
     [Header("Dialogue")] public Text dialogueName, dialogueText; public Image dialoguePortrait;
     [Header("Order book")] public Button orderTemplate; public Text orderBookEmpty;
-    [Header("Workbench")] public Text workbenchText; public Text startLabel;
+    [Header("Workbench")] public Text workbenchText; public Text startLabel; public GameObject startButton, handOverButton;
     [Header("Minigame")] public Text minigameHint;
     [Header("Result")] public Text resultText; public Image resultPortrait;
     [Header("Day summary")] public Text summaryText;
@@ -34,12 +35,16 @@ public class OrderFlowUI : MonoBehaviour
         var save = GameManager.Instance.Save;
         if (save == null) return;   // title and save select: no game loaded yet
 
+        int ready = save.orders.FindAll(o => o.finished).Count;
+        int toDo = save.orders.Count - ready;
         shopStatus.text = $"Day {save.day}    {save.coins} coins\n" +
-                          $"Open orders: {save.orders.Count}\n\n{day.LastMessage}";
+                          $"Ready to hand over: {ready}\nIn progress: {toDo}\n\n{day.LastMessage}";
         greetLabel.text = day.CustomersWaiting > 0 ? $"Greet Customer ({day.CustomersWaiting})" : "No one waiting";
-        summaryText.text = $"Day {save.day} is over.\n\n" +
-                           $"Orders delivered: {save.deliveredToday}\nCoins earned: {save.coinsToday}\n" +
-                           $"Total coins: {save.coins}\nOrders still open: {save.orders.Count}";
+        workroomStatus.text = $"Night of day {save.day}    {save.coins} coins\n" +
+                              $"Orders to work on: {toDo}\nSet aside for tomorrow: {ready}\n\n{day.LastMessage}";
+        summaryText.text = "The shop is closed for the night.\n\n" +
+                           $"Orders handed over: {save.deliveredToday}\nCoins earned today: {save.coinsToday}\n" +
+                           $"Total coins: {save.coins}";
 
         if (screen == ScreenId.OrderBook) BuildOrderList();
 
@@ -61,10 +66,14 @@ public class OrderFlowUI : MonoBehaviour
         string who = customer != null ? customer.displayName : order.customerId;
         int progress = Mathf.RoundToInt(order.Progress() * 100);
 
+        bool night = save.night;
         workbenchText.text = $"{order.item.itemName} for {who}\n\n" +
             (order.patternOnly ? "Pattern only: fill in the squares to design it." : "Finished piece: stitch each square.") +
-            $"\nProgress: {progress}%";
-        startLabel.text = order.work.Count > 0 ? "Keep Working" : "Start Crafting";
+            (order.finished ? $"\nFinished ({Mathf.RoundToInt(order.accuracy * 100)}% accuracy)." : $"\nProgress: {progress}%") +
+            (night ? "" : order.finished ? $"\n\n{who} is here to collect it." : "\n\nYou can work on this tonight, in the workroom.");
+        startLabel.text = order.finished ? "Rework It" : order.work.Count > 0 ? "Keep Working" : "Start Crafting";
+        startButton.SetActive(night);
+        handOverButton.SetActive(!night && order.finished);
 
         minigameHint.text = order.patternOnly
             ? "Tap or drag over the faint squares to fill in the pattern."
@@ -76,8 +85,9 @@ public class OrderFlowUI : MonoBehaviour
         resultText.text = $"{order.item.itemName} for {who}\n\n" +
                           $"Accuracy: {Mathf.RoundToInt(day.LastAccuracy * 100)}%\n" +
                           $"Stars: {day.LastStars} / 3\n" +
-                          $"Price: {day.LastPrice} coins\n" +
-                          $"Friendship: +{day.LastPoints}";
+                          $"{who} will pay {day.LastPrice} coins\n" +
+                          $"Friendship: +{day.LastPoints}\n\n" +
+                          "Set it aside and they'll collect it tomorrow.";
         var mood = day.LastStars >= 3 ? Expression.Happy : day.LastStars == 2 ? Expression.Thoughtful : Expression.Sad;
         SetPortrait(resultPortrait, customer != null ? customer.GetPortrait(mood) : null);
     }
@@ -96,8 +106,9 @@ public class OrderFlowUI : MonoBehaviour
             row.name = $"Order_{order.id}";
             var customer = day.CustomerFor(order.customerId);
             string kind = order.patternOnly ? " (pattern)" : "";
+            string state = order.finished ? "Ready to hand over" : $"{Mathf.RoundToInt(order.Progress() * 100)}%";
             row.GetComponentInChildren<Text>().text =
-                $"{order.item.itemName}{kind} for {(customer != null ? customer.displayName : order.customerId)}  ·  {Mathf.RoundToInt(order.Progress() * 100)}%";
+                $"{order.item.itemName}{kind} for {(customer != null ? customer.displayName : order.customerId)}  ·  {state}";
             string id = order.id;
             row.onClick.AddListener(() => day.SelectOrder(id));
             orderRows.Add(row.gameObject);

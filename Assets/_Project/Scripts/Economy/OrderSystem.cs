@@ -14,6 +14,8 @@ public class Order
     public int dayPlaced;
     public Pattern target;            // what to stitch or design
     public List<StitchMark> work = new List<StitchMark>();
+    public bool finished;             // set aside at night, ready to hand over during the day
+    public float accuracy;            // recorded when finished
 
     [NonSerialized] public CraftItemDef item;   // looked up from itemId after loading
 

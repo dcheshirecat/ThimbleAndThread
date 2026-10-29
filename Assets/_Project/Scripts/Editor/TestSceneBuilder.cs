@@ -125,17 +125,27 @@ public static class TestSceneBuilder
         ui.greetLabel = Button(b, "Greet Customer", day.GreetCustomer).GetComponentInChildren<Text>();
         Button(b, "Order Book", router.GoToOrderBook);
         Button(b, "Supply Market", router.GoToMarket);
+        Button(b, "Journal", router.GoToJournal);
+        Button(b, "Settings", router.GoToSettings);
+        Button(b, "Close the Shop", day.CloseShop);
+
+        p = Panel(ScreenId.Workroom, "Workroom", new Color(0.22f, 0.24f, 0.40f), "Art/Backgrounds/bg_workroom_night.png");
+        p.Find("Title").GetComponent<Text>().color = Color.white;
+        ui.workroomStatus = Label(p, "Status", new Vector2(0.06f, 0.20f), new Vector2(0.50f, 0.80f), 64, TextAnchor.MiddleLeft);
+        ui.workroomStatus.color = Color.white;
+        b = Buttons(p, new Vector2(0.72f, 0.45f));
+        Button(b, "Order Book", router.GoToOrderBook);
         Button(b, "Pattern Studio", router.GoToPatternStudio);
         Button(b, "Journal", router.GoToJournal);
         Button(b, "Settings", router.GoToSettings);
-        Button(b, "End Day", day.EndDay);
+        Button(b, "Go to Bed", day.GoToBed);
 
         p = Panel(ScreenId.OrderBook, "Order Book", new Color(0.96f, 0.92f, 0.84f));
         var list = Buttons(p, new Vector2(0.5f, 0.55f));
         ui.orderTemplate = Button(list, "Order Template", null, 1700);
         ui.orderBookEmpty = Label(p, "Empty", new Vector2(0.2f, 0.45f), new Vector2(0.8f, 0.65f), 64, TextAnchor.MiddleCenter);
-        ui.orderBookEmpty.text = "No orders yet. Greet a customer in the shop.";
-        Button(Buttons(p, new Vector2(0.5f, 0.08f)), "Back to Shop", router.GoToShop);
+        ui.orderBookEmpty.text = "No orders yet. Customers visit the shop during the day.";
+        Button(Buttons(p, new Vector2(0.5f, 0.08f)), "Back", router.GoToHub);
 
         p = Panel(ScreenId.Dialogue, "", new Color(0.80f, 0.86f, 0.93f));
         ui.dialoguePortrait = Portrait(p, new Vector2(0.27f, 0.52f), 1000);
@@ -148,7 +158,10 @@ public static class TestSceneBuilder
         p = Panel(ScreenId.Workbench, "Workbench", new Color(0.80f, 0.66f, 0.50f), "Art/Backgrounds/bg_workbench.png");
         ui.workbenchText = Label(p, "Order", new Vector2(0.15f, 0.45f), new Vector2(0.85f, 0.80f), 72, TextAnchor.MiddleCenter);
         b = Buttons(p, new Vector2(0.5f, 0.28f));
-        ui.startLabel = Button(b, "Start Crafting", day.StartCrafting).GetComponentInChildren<Text>();
+        var start = Button(b, "Start Crafting", day.StartCrafting);
+        ui.startLabel = start.GetComponentInChildren<Text>();
+        ui.startButton = start.gameObject;
+        ui.handOverButton = Button(b, "Hand Over", day.HandOver).gameObject;
         Button(b, "Back to Order Book", router.GoToOrderBook);
 
         // Transparent so the stitching board (world sprites) shows through.
@@ -164,26 +177,26 @@ public static class TestSceneBuilder
         ui.resultPortrait = Portrait(p, new Vector2(0.27f, 0.48f), 900);
         ui.resultText = Label(p, "Summary", new Vector2(0.52f, 0.35f), new Vector2(0.95f, 0.80f), 72, TextAnchor.MiddleLeft);
         b = Buttons(p, new Vector2(0.73f, 0.20f));
-        Button(b, "Deliver", day.Deliver);
+        Button(b, "Set Aside", day.SetAside);
         Button(b, "Keep Working", day.KeepWorking);
 
         p = Panel(ScreenId.Market, "Supply Market", new Color(0.85f, 0.70f, 0.60f));
         Button(Buttons(p, new Vector2(0.5f, 0.45f)), "Back to Shop", router.GoToShop);
 
         p = Panel(ScreenId.PatternStudio, "Pattern Studio", new Color(0.93f, 0.78f, 0.90f));
-        Button(Buttons(p, new Vector2(0.5f, 0.45f)), "Back to Shop", router.GoToShop);
+        Button(Buttons(p, new Vector2(0.5f, 0.45f)), "Back", router.GoToHub);
 
         p = Panel(ScreenId.Journal, "Journal", new Color(0.80f, 0.93f, 0.74f));
-        Button(Buttons(p, new Vector2(0.5f, 0.45f)), "Back to Shop", router.GoToShop);
+        Button(Buttons(p, new Vector2(0.5f, 0.45f)), "Back", router.GoToHub);
 
         p = Panel(ScreenId.Settings, "Settings", new Color(0.78f, 0.78f, 0.82f));
         b = Buttons(p, new Vector2(0.5f, 0.45f));
-        Button(b, "Back to Shop", router.GoToShop);
+        Button(b, "Back", router.GoToHub);
         Button(b, "Save and Quit to Title", gm.QuitToTitle);
 
         p = Panel(ScreenId.DaySummary, "End of Day", new Color(0.78f, 0.82f, 0.95f));
         ui.summaryText = Label(p, "Summary", new Vector2(0.2f, 0.40f), new Vector2(0.8f, 0.80f), 72, TextAnchor.MiddleCenter);
-        Button(Buttons(p, new Vector2(0.5f, 0.25f)), "Next Day", day.StartNextDay);
+        Button(Buttons(p, new Vector2(0.5f, 0.25f)), "Go to the Workroom", day.GoToWorkroom);
 
         router.screens = entries.ToArray();
 
