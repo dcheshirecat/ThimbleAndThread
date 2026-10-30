@@ -268,7 +268,12 @@ at 95% of RAM by default, so the swap was out of reach and 137 kept happening. S
 the swap step now picks a disk with room (the main disk; /mnt is small on newer runners), fails if no swap
 is active, and a "Memory log" step prints RAM/swap use every 20 s and any OOM kills (even on failure).
 Claude cannot read Actions logs from this machine (no gh, no GitHub MCP): ask the owner for the
-"Add swap space" and "Memory log" step output if it fails again. Not yet confirmed green.
+"Add swap space" and "Memory log" step output if it fails again. Not yet confirmed green. Still 137 at ~9.5 min on main (7ef2c01).
+Branch ci-oom-fix (NOT merged; the owner runs it via Actions > Run workflow on that branch): IL2CPP code
+generation "Faster (smaller) builds" (ProjectSettings il2cppCodeGeneration Android: 1, less C++ to compile),
+and the memory log now also records the Unity container's usage (docker stats) and kernel OOM kills, and
+writes everything to the run's Summary page ($GITHUB_STEP_SUMMARY) so the owner can read it on a phone.
+Test CI fixes on a branch this way instead of merging to main.
 
 Tutorial (branch tutorial, merged): Data/Tutorial.asset (TutorialDef: pages with title, text, optional art,
 TutorialAnim placeholder scene). UI/TutorialUI.cs shows it on first launch (PlayerPrefs "tutorial_seen") and

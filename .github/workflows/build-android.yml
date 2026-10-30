@@ -40,12 +40,16 @@ jobs:
           free -h
           swapon --show
           test "$(swapon --show --noheadings | wc -l)" -gt 0
-      # Writes memory use every 20 seconds, printed at the end (even if the build fails).
+      # Every 20 seconds: host RAM/swap, the Unity container's own memory against its limit, and any
+      # process the kernel killed for lack of memory. Shown on the run's Summary page at the end.
       - name: Start memory log
         run: |
           cat > /tmp/memlog.sh <<'EOF'
           while true; do
-            echo "$(date +%T) $(free -m | awk '/Mem:/{printf "ram %s/%s MB  ", $3, $2} /Swap:/{printf "swap %s/%s MB", $3, $2}')"
+            host=$(free -m | awk '/Mem:/{printf "ram %s/%s MB  ", $3, $2} /Swap:/{printf "swap %s/%s MB", $3, $2}')
+            box=$(docker stats --no-stream --format '{{.MemUsage}}' 2>/dev/null | head -1)
+            echo "$(date +%T)  $host  ${box:+ unity container $box}"
+            sudo dmesg | grep -iE "killed process|out of memory" | tail -n 1 | sed 's/^/    KERNEL: /'
             sleep 20
           done
           EOF
@@ -69,11 +73,24 @@ jobs:
           # Unity runs in a Docker container capped by default at 95% of the runner's RAM, so it could
           # never reach the swap above and got killed (exit code 137). Allow RAM + most of the swap.
           dockerMemoryLimit: 18g
+      # Puts the findings on the run's Summary page (easy to read on a phone), pass or fail.
       - name: Memory log
         if: always()
         run: |
-          tail -n 60 /tmp/memory.log || true
-          sudo dmesg | grep -iE "killed process|out of memory" | tail -n 5 || true
+          {
+            echo "## Memory during the build"
+            echo '```'
+            nproc | sed 's/^/CPUs: /'
+            free -h
+            swapon --show
+            echo
+            echo "Kernel out-of-memory kills:"
+            sudo dmesg | grep -iE "killed process|out of memory" | tail -n 5 || true
+            echo
+            echo "Last 40 readings (every 20 s):"
+            grep -v KERNEL /tmp/memory.log | tail -n 40 || true
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
           name: ThimbleAndThread-apk
