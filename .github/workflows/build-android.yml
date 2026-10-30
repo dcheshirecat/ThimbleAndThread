@@ -22,15 +22,34 @@ jobs:
           sudo apt-get clean
           df -h / /mnt
       # Unity's Android (IL2CPP) build can need more memory than the runner's ~7 GB; without extra swap
-      # the build gets killed (exit code 137). /mnt is a separate disk with free space.
+      # the build gets killed (exit code 137). The swap file goes on whichever disk has room (the main
+      # disk, after the cleanup above; /mnt is small on newer runners), and the step fails loudly if
+      # no swap ends up active, rather than letting the build run without it.
       - name: Add swap space
         run: |
           sudo swapoff -a || true
-          sudo fallocate -l 12G /mnt/swapfile
-          sudo chmod 600 /mnt/swapfile
-          sudo mkswap /mnt/swapfile
-          sudo swapon /mnt/swapfile
+          sudo rm -f /mnt/swapfile /swapfile
+          df -h / /mnt
+          for f in /swapfile /mnt/swapfile; do
+            dir=$(dirname $f)
+            free_gb=$(df --output=avail -BG "$dir" | tail -1 | tr -dc '0-9')
+            if [ "$free_gb" -ge 20 ]; then
+              sudo fallocate -l 14G $f && sudo chmod 600 $f && sudo mkswap $f && sudo swapon $f && break
+            fi
+          done
           free -h
+          swapon --show
+          test "$(swapon --show --noheadings | wc -l)" -gt 0
+      # Writes memory use every 20 seconds, printed at the end (even if the build fails).
+      - name: Start memory log
+        run: |
+          cat > /tmp/memlog.sh <<'EOF'
+          while true; do
+            echo "$(date +%T) $(free -m | awk '/Mem:/{printf "ram %s/%s MB  ", $3, $2} /Swap:/{printf "swap %s/%s MB", $3, $2}')"
+            sleep 20
+          done
+          EOF
+          nohup bash /tmp/memlog.sh > /tmp/memory.log 2>&1 &
       - uses: actions/checkout@v4
         with:
           lfs: true
@@ -50,6 +69,11 @@ jobs:
           # Unity runs in a Docker container capped by default at 95% of the runner's RAM, so it could
           # never reach the swap above and got killed (exit code 137). Allow RAM + most of the swap.
           dockerMemoryLimit: 18g
+      - name: Memory log
+        if: always()
+        run: |
+          tail -n 60 /tmp/memory.log || true
+          sudo dmesg | grep -iE "killed process|out of memory" | tail -n 5 || true
       - uses: actions/upload-artifact@v4
         with:
           name: ThimbleAndThread-apk

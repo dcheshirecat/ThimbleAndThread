@@ -260,7 +260,11 @@ made with the cross stitch board; Journal and Settings screens are empty.
 CI: main failed with exit code 137 (out of memory) and once with "no space left on device" while pulling
 the Unity image. The workflow deletes preinstalled runner tools, adds 12 GB swap on /mnt, and (since
 2026-10-30, commit 764543c) sets unity-builder's dockerMemoryLimit: 18g: GameCI caps the build container
-at 95% of RAM by default, so the swap was out of reach and 137 kept happening. Not yet confirmed green.
+at 95% of RAM by default, so the swap was out of reach and 137 kept happening. Still 137 after that, so
+the swap step now picks a disk with room (the main disk; /mnt is small on newer runners), fails if no swap
+is active, and a "Memory log" step prints RAM/swap use every 20 s and any OOM kills (even on failure).
+Claude cannot read Actions logs from this machine (no gh, no GitHub MCP): ask the owner for the
+"Add swap space" and "Memory log" step output if it fails again. Not yet confirmed green.
 
 Tutorial (branch tutorial, merged): Data/Tutorial.asset (TutorialDef: pages with title, text, optional art,
 TutorialAnim placeholder scene). UI/TutorialUI.cs shows it on first launch (PlayerPrefs "tutorial_seen") and
