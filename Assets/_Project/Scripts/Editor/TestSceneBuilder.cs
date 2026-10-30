@@ -200,13 +200,14 @@ public static class TestSceneBuilder
 
         // Dialogue
         p = Panel(ScreenId.Dialogue, "", new Color(0.80f, 0.86f, 0.93f));
-        ui.dialoguePortrait = Portrait(p, new Vector2(0.5f, 0.75f), 960);
-        ui.dialogueName = Label(p, "Name", new Vector2(0.08f, 0.53f), new Vector2(0.92f, 0.58f), 96, TextAnchor.MiddleLeft);
-        ui.dialogueText = Label(p, "Request", new Vector2(0.08f, 0.33f), new Vector2(0.92f, 0.53f), 68, TextAnchor.UpperLeft);
-        ui.dialoguePattern = Preview(p, new Vector2(0.22f, 0.2f), 420);
-        b = Column(p, 0.66f, 0.2f);
-        ui.acceptLabel = Button(b, "Accept", day.AcceptOffer, 960).GetComponentInChildren<Text>();
-        Button(b, "Not Today", day.DeclineOffer, 960);
+        var dialogue = canvasGo.AddComponent<DialogueUI>();
+        day.dialogue = dialogue;
+        dialogue.portrait = Portrait(p, new Vector2(0.5f, 0.76f), 900);
+        dialogue.patternPreview = Preview(p, new Vector2(0.85f, 0.62f), 300);
+        dialogue.nameText = Label(p, "Name", new Vector2(0.08f, 0.55f), new Vector2(0.92f, 0.6f), 96, TextAnchor.MiddleLeft);
+        dialogue.lineText = Label(p, "Line", new Vector2(0.08f, 0.37f), new Vector2(0.92f, 0.55f), 66, TextAnchor.UpperLeft);
+        dialogue.choiceTemplate = Button(Column(p, 0.5f, 0.04f), "Choice", null, 1750);
+        dialogue.choiceTemplate.GetComponentInChildren<Text>().fontSize = 56;
 
         // Workbench
         p = Panel(ScreenId.Workbench, "Workbench", new Color(0.80f, 0.66f, 0.50f), "Art/Backgrounds/bg_workbench.png");

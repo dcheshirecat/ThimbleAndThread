@@ -99,7 +99,7 @@ public class MarketPurchase
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 8;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades
+    public const int CurrentVersion = 9;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
@@ -127,6 +127,8 @@ public class SaveData
     public int totalDelivered;                                       // orders handed over, ever
     public int totalPatternsSold;                                    // patterns sold, ever
     public List<string> journalNews = new List<string>();            // recent things learned or unlocked, newest first
+    public List<string> flags = new List<string>();                  // set by dialogue (~ flag(x)); "seen:<knot>" for scenes played
+    public List<string> pendingScenes = new List<string>();          // story scenes to play next time a hub is on screen
     [NonSerialized] public bool learnEverything;                     // set when upgrading a save from before skills
     public int deliveredToday;
     public int coinsToday;
@@ -139,6 +141,7 @@ public class CustomerRelationship
     public string customerId;
     public int level;
     public int points;
+    public bool romance;            // romanceable characters: you're seeing each other
 
     // Simple curve: each level needs more points than the last.
     public int PointsForNextLevel() => 50 + level * 25;

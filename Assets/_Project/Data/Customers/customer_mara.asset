@@ -34,3 +34,6 @@ MonoBehaviour:
     minRelationshipLevel: 1
   - item: {fileID: 11400000, guid: 36d9c86e2a5e0424e95b16024db48f5f, type: 2}
     minRelationshipLevel: 0
+  firstChapter: 1
+  romanceable: 0
+  inkName: mara

@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af2bf79f2df3bdf48932578e82012d62, type: 3}
+  m_Name: customer_isla
+  m_EditorClassIdentifier: Assembly-CSharp::CustomerDef
+  customerId: isla
+  displayName: Isla Marlowe
+  bio: Keeper of the old lighthouse. Dry, gruff, and secretly hopeless at knitting.
+  fullBody: {fileID: 21300000, guid: e0e05c839469be149a63003f921cbdb9, type: 3}
+  portraits:
+  - expression: 0
+    sprite: {fileID: 21300000, guid: b520d53f77a212c4da321d85a076d820, type: 3}
+  - expression: 1
+    sprite: {fileID: 21300000, guid: 6cda4fbc8e3d3234996827070faa62b3, type: 3}
+  - expression: 2
+    sprite: {fileID: 21300000, guid: 6198e14c15beed7438d49c4451030cd3, type: 3}
+  - expression: 3
+    sprite: {fileID: 21300000, guid: 1941742e0b36b7543bef1ead7c54a720, type: 3}
+  - expression: 4
+    sprite: {fileID: 21300000, guid: 471fb907e0841be46a52a6a9beec59fe, type: 3}
+  requestable:
+  - item: {fileID: 11400000, guid: e7e94861e1dcdf847ba6112533c4cabe, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: d72160bbb003b8b45bd0243d7c440a5c, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: 10c1ffff1a3b659439f05d80f5834bda, type: 2}
+    minRelationshipLevel: 1
+  firstChapter: 2
+  romanceable: 1
+  inkName: isla

@@ -12,6 +12,7 @@ public class ShopDay : MonoBehaviour
     public ContentLibrary content;
     public ShopManager shop;
     public MinigameHost minigame;
+    public DialogueUI dialogue;
 
     // Not saved: what is on screen right now.
     public CustomerDef Visitor { get; private set; }            // customer in the Dialogue screen
@@ -37,17 +38,25 @@ public class ShopDay : MonoBehaviour
     public List<OwnedPattern> Shelf => Save.patterns.FindAll(p => p.onShelf && ItemFor(p.itemId) != null);
     public int CustomersWaiting => Save.visitorsToday.Count;
 
-    void Start() => GM.OnGameLoaded += OnGameLoaded;
+    void Start()
+    {
+        GM.OnGameLoaded += OnGameLoaded;
+        GM.OnScreenChanged += OnScreenChanged;
+    }
 
     void OnDestroy()
     {
-        if (GM != null) GM.OnGameLoaded -= OnGameLoaded;
+        if (GM == null) return;
+        GM.OnGameLoaded -= OnGameLoaded;
+        GM.OnScreenChanged -= OnScreenChanged;
     }
 
     void OnGameLoaded(bool isNewGame)
     {
         minigame.Close();
         Visitor = null; Offer = null; SaleOffer = null; Selected = null; SelectedPattern = null; DesigningFor = null;
+        playing = false;
+        if (isNewGame) Save.pendingScenes.Add("chapter_1");   // the story's opening, once the shop is on screen
 
         // The great-aunt's book: starter patterns for new games, and any starter pattern added in an
         // update for older saves (book patterns can't be deleted, so a missing one was never there).
@@ -120,61 +129,135 @@ public class ShopDay : MonoBehaviour
         return def != null ? def.ToPattern() : PlaceholderPatterns.For(ItemFor(owned.itemId));
     }
 
-    // ---- Shop ----
+    // ---- Shop: visitors ----
+
+    /// How often a visitor tells you about something they need (an Ink request) rather than browsing.
+    public const float RequestChance = 0.5f;
 
     public void GreetCustomer()
     {
         if (Save.night) return;   // the shop is closed at night
-        string browsed = null;
         while (Save.visitorsToday.Count > 0)
         {
             var customer = CustomerFor(Save.visitorsToday[0]);
             Save.visitorsToday.RemoveAt(0);
             if (customer == null) continue;
-
-            // Now and then they have something special in mind: a commission.
-            var commission = CommissionFor(customer);
-            if (commission != null && Random.value < CommissionChance)
-            {
-                Visitor = customer;
-                Offer = NewCommission(commission);
-                GM.Persist();
-                GM.ChangeScreen(ScreenId.Dialogue);
-                return;
-            }
-
-            // They browse the display for patterns of things they'd like. They can buy any pattern to
-            // make themselves, but only order a finished piece the player can make.
-            var wants = OrderGenerator.Wants(customer, GM.GetRelationship(customer.customerId).level);
-            var matches = Shelf.FindAll(p => wants.Exists(i => i.itemId == p.itemId));
-            if (matches.Count == 0)
-            {
-                browsed = wants.Count > 0
-                    ? $"{customer.displayName} browsed the display but didn't find anything. They were hoping for something like a {wants[Random.Range(0, wants.Count)].itemName.ToLower()}."
-                    : $"{customer.displayName} browsed the display but didn't find anything today.";
-                continue;
-            }
-
-            var pick = matches[Random.Range(0, matches.Count)];
             Visitor = customer;
-            if (!Progress.CanMake(ItemFor(pick.itemId)) || Random.value < 0.35f) SaleOffer = pick;   // buys the pattern to make it themselves
-            else
-            {
-                Offer = OrderGenerator.FromPattern(customer, ItemFor(pick.itemId), DesignFor(pick), Save.day);
-                Offer.fromPatternId = pick.id;
-            }
             GM.Persist();
-            GM.ChangeScreen(ScreenId.Dialogue);
+            // A friendship scene first, if one is waiting, then their hello, then what they're after.
+            var knots = ScenesDue(customer);
+            var hello = VisitKnot(customer);
+            if (hello != null) knots.Add(hello);
+            Play(customer, knots, () => WhatTheyWant(customer));
             return;
         }
+        Visitor = null;
         GM.Persist();
-        LastMessage = browsed ?? "No one else is waiting today. Close the shop whenever you're ready.";
+        LastMessage = "No one else is waiting today. Close the shop whenever you're ready.";
+        GM.ChangeScreen(ScreenId.Shop);
+    }
+
+    void WhatTheyWant(CustomerDef c)
+    {
+        var commission = CommissionFor(c);
+        if (commission != null && Random.value < CommissionChance)
+        {
+            Offer = NewCommission(commission);
+            var needs = commission.requiredSupply != null ? $" It must be made with {commission.requiredSupply.displayName}." : "";
+            Say(c, $"{commission.request}\n\n(A commission: you'll design a brand-new {commission.item.itemName.ToLower()} pattern for it.{needs})",
+                ("Take the Commission", AcceptOffer), ("Not Today", DeclineOffer));
+            return;
+        }
+        var requests = RequestsFor(c);
+        if (requests.Count > 0 && Random.value < RequestChance)
+        {
+            var knot = requests[Random.Range(0, requests.Count)];
+            Play(c, new List<string> { knot }, () => AskForPattern(c, knot));
+            return;
+        }
+        Browse(c);
+    }
+
+    /// They browse the display. They can buy any pattern to make themselves, but only order a finished
+    /// piece the player can make.
+    void Browse(CustomerDef c)
+    {
+        var wants = OrderGenerator.Wants(c, GM.GetRelationship(c.customerId).level);
+        var matches = Shelf.FindAll(p => wants.Exists(i => i.itemId == p.itemId));
+        if (matches.Count == 0)
+        {
+            string hoped = wants.Count > 0 ? $" I was hoping for something like a {wants[Random.Range(0, wants.Count)].itemName.ToLower()}." : "";
+            Say(c, $"Nothing on display for me today.{hoped} Maybe next time!",
+                ("Continue", () => Leave($"{c.displayName} browsed the display but didn't find anything.{hoped.Replace("I was", "They were")}")));
+            return;
+        }
+        var pick = matches[Random.Range(0, matches.Count)];
+        if (!Progress.CanMake(ItemFor(pick.itemId)) || Random.value < 0.35f)
+        {
+            SaleOffer = pick;   // buys the pattern to make it themselves
+            Say(c, $"Oh, I love your {pick.name} pattern! May I buy it? I'd like to make it myself.",
+                DesignFor(pick), ($"Sell It ({pick.price} coins)", AcceptOffer), ("Not Today", DeclineOffer));
+        }
+        else
+        {
+            Offer = OrderGenerator.FromPattern(c, ItemFor(pick.itemId), DesignFor(pick), Save.day);
+            Offer.fromPatternId = pick.id;
+            Say(c, $"Your {pick.name} pattern is lovely! Could you make me a {Offer.item.itemName.ToLower()} with it?\n\n(No rush, whenever you have time.)",
+                Offer.target, ("Take the Order", AcceptOffer), ("Not Today", DeclineOffer));
+        }
+    }
+
+    /// After an indirect request: the player offers a pattern from the display. Several can fit; the best
+    /// fit makes them happiest. "Nothing fits" sends them away to look elsewhere.
+    void AskForPattern(CustomerDef c, string requestKnot)
+    {
+        var knot = content.Ink.Get(requestKnot);
+        var fits = TagList(knot, "fits");
+        var best = TagList(knot, "best");
+        var options = new List<(string, System.Action)>();
+        foreach (var p in Shelf)
+        {
+            var item = ItemFor(p.itemId);
+            if (!Progress.CanMake(item)) continue;
+            var pattern = p;
+            options.Add(($"Offer {p.name} ({item.itemName})", () => OfferPattern(c, pattern, best.Contains(pattern.itemId) ? 2 : fits.Contains(pattern.itemId) ? 1 : 0, fits)));
+        }
+        options.Add(("I don't have anything for that, sorry.", () =>
+        {
+            string hoped = fits.Count > 0 && ItemFor(fits[0]) is CraftItemDef i ? $" Something like a {i.itemName.ToLower()} would have done." : "";
+            Leave($"{c.displayName} will look elsewhere.{hoped}");
+        }));
+        Say(c, "What do you think? Have you got anything like that?", options.ToArray());
+    }
+
+    void OfferPattern(CustomerDef c, OwnedPattern p, int fit, List<string> fits)
+    {
+        if (fit == 0)
+        {
+            string hint = fits.Count > 0 && ItemFor(fits[0]) is CraftItemDef i ? $" (They were thinking of something like a {i.itemName.ToLower()}.)" : "";
+            Say(c, "Hmm. It's lovely, but it's not really what I had in mind. Maybe another time.",
+                ("Continue", () => Leave($"{c.displayName} didn't take the {p.name}.{hint}")));
+            return;
+        }
+        Offer = OrderGenerator.FromPattern(c, ItemFor(p.itemId), DesignFor(p), Save.day);
+        Offer.fromPatternId = p.id;
+        Offer.fit = fit;
+        Say(c, fit == 2 ? "Oh! That's exactly it. How did you know?" : "Oh, that could work! Yes, let's do that.",
+            DesignFor(p), ("Continue", AcceptOffer));
+    }
+
+    void Leave(string message)
+    {
+        Visitor = null; Offer = null; SaleOffer = null;
+        LastMessage = message;
+        GM.Persist();
         GM.ChangeScreen(ScreenId.Shop);
     }
 
     /// Sell the pattern, or take the order into the order book.
     public void AcceptOffer()
     {
+        ChapterDef next = null;
         if (SaleOffer != null)
         {
             GM.AddCoins(SaleOffer.price);
@@ -182,10 +265,9 @@ public class ShopDay : MonoBehaviour
             Save.coinsToday += SaleOffer.price;
             Save.patternsSoldToday++;
             Save.totalPatternsSold++;
-            var next = Progress.AdvanceChapter();
             SaleOffer.sold++;
+            next = Progress.AdvanceChapter();
             LastMessage = $"Sold the {SaleOffer.name} pattern to {Visitor.displayName}: +{SaleOffer.price} coins.";
-            if (next != null) LastMessage += $"\n\nChapter {next.number}: {next.title}. {next.intro}";
         }
         else
         {
@@ -196,6 +278,7 @@ public class ShopDay : MonoBehaviour
                 ? $"{Visitor.displayName}'s commission is in your order book. Design its pattern tonight."
                 : $"{Visitor.displayName}'s {Offer.item.itemName.ToLower()} is in your order book.";
         }
+        if (next != null) QueueChapterScene(next);
         Visitor = null; Offer = null; SaleOffer = null;
         GM.Persist();
         GM.ChangeScreen(ScreenId.Shop);
@@ -206,6 +289,184 @@ public class ShopDay : MonoBehaviour
         LastMessage = $"{Visitor.displayName} will come back another day.";
         Visitor = null; Offer = null; SaleOffer = null;
         GM.ChangeScreen(ScreenId.Shop);
+    }
+
+    // ---- Conversations (Ink dialogue, see Dialogue/InkLite.cs) ----
+
+    bool playing;
+
+    /// Plays Ink knots one after another on the Dialogue screen, then calls "done".
+    /// Knots that don't exist are skipped, so a character without dialogue simply carries on.
+    public void Play(CustomerDef who, List<string> knots, System.Action done)
+    {
+        knots = knots.FindAll(content.Ink.Has);
+        if (knots.Count == 0) { playing = false; done(); return; }
+        playing = true;
+        var runner = new DialogueRunner(content.Ink, knots[0], c => Condition(who, c), c => Command(who, c));
+        knots.RemoveAt(0);
+        if (GM.Current != ScreenId.Dialogue) GM.ChangeScreen(ScreenId.Dialogue);
+        Beat(who, runner, null, () => Play(who, knots, done));
+    }
+
+    void Beat(CustomerDef who, DialogueRunner runner, DialogueRunner.Line last, System.Action done)
+    {
+        var line = runner.Next();
+        if (line == null) { done(); return; }
+        if (line.choices != null)
+        {
+            var options = new List<(string, System.Action)>();
+            for (int i = 0; i < line.choices.Count; i++)
+            {
+                int k = i;
+                options.Add((line.choices[i].text, () => { runner.Choose(k); Beat(who, runner, last, done); }));
+            }
+            Show(who, last, null, options);
+            return;
+        }
+        Show(who, line, null, new List<(string, System.Action)> { ("Continue", () => Beat(who, runner, line, done)) });
+    }
+
+    /// A line said by a customer (outside Ink): their face, the text, and answer buttons.
+    void Say(CustomerDef who, string text, params (string, System.Action)[] answers) => Say(who, text, null, answers);
+
+    void Say(CustomerDef who, string text, Pattern preview, params (string, System.Action)[] answers)
+    {
+        if (GM.Current != ScreenId.Dialogue) GM.ChangeScreen(ScreenId.Dialogue);
+        Show(who, new DialogueRunner.Line { speaker = who != null ? who.displayName : null, text = text, tags = new List<string>() },
+             preview, new List<(string, System.Action)>(answers));
+    }
+
+    Texture previewTexture;
+
+    void Show(CustomerDef who, DialogueRunner.Line line, Pattern preview, List<(string, System.Action)> options)
+    {
+        string speaker = line?.speaker;
+        var face = FaceFor(speaker, who, line?.tags);
+        if (previewTexture != null) Destroy(previewTexture);
+        previewTexture = preview != null ? PatternPreview.Make(preview) : null;
+        dialogue.Show(speaker, face, line?.text ?? "", options, previewTexture);
+    }
+
+    /// The speaker's portrait, with the expression from the line's tags (# happy, # sad...).
+    Sprite FaceFor(string speaker, CustomerDef who, List<string> tags)
+    {
+        var c = who;
+        if (speaker != null && (c == null || !Speaks(c, speaker)))
+            c = System.Array.Find(content.customers, x => x != null && Speaks(x, speaker));
+        if (c == null) return null;
+        var mood = Expression.Neutral;
+        if (tags != null)
+            foreach (var t in tags)
+                if (System.Enum.TryParse(t, true, out Expression e)) mood = e;
+        return c.GetPortrait(mood);
+    }
+
+    static bool Speaks(CustomerDef c, string speaker) =>
+        c.displayName == speaker || c.displayName.EndsWith(" " + speaker) || string.Equals(c.inkName, speaker, System.StringComparison.OrdinalIgnoreCase);
+
+    /// Ink conditions on choices: a flag name, "romance", "level >= N", or "not ..." any of those.
+    bool Condition(CustomerDef who, string condition)
+    {
+        condition = condition.Trim();
+        if (condition.StartsWith("not ")) return !Condition(who, condition.Substring(4));
+        var rel = who != null ? GM.GetRelationship(who.customerId) : null;
+        if (condition == "romance") return rel != null && rel.romance;
+        if (condition.StartsWith("level >=") && int.TryParse(condition.Substring(8).Trim(), out int n)) return rel != null && rel.level >= n;
+        return Save.flags.Contains(condition);
+    }
+
+    /// Ink commands: ~ friendship(5), ~ romance(1) / romance(0), ~ flag(name), ~ unflag(name).
+    void Command(CustomerDef who, string call)
+    {
+        int open = call.IndexOf('('), close = call.LastIndexOf(')');
+        string name = open > 0 ? call.Substring(0, open).Trim() : call.Trim();
+        string arg = open > 0 && close > open ? call.Substring(open + 1, close - open - 1).Trim().Trim('"') : "";
+        var rel = who != null ? GM.GetRelationship(who.customerId) : null;
+        switch (name)
+        {
+            case "friendship":
+                if (who != null && int.TryParse(arg, out int points)) GM.AddRelationshipPoints(who.customerId, points);
+                break;
+            case "romance":
+                if (rel != null && who.romanceable)
+                {
+                    rel.romance = arg != "0";
+                    if (rel.romance) Progress.AddNews($"You and {who.displayName} are seeing each other.");
+                }
+                break;
+            case "flag": if (!Save.flags.Contains(arg)) Save.flags.Add(arg); break;
+            case "unflag": Save.flags.Remove(arg); break;
+            default: Debug.LogWarning($"Unknown dialogue command: {call}"); break;
+        }
+        GM.Persist();
+    }
+
+    /// The greeting for this friendship level: <name>_visit_N for the highest N reached, else <name>_visit.
+    string VisitKnot(CustomerDef c)
+    {
+        if (string.IsNullOrEmpty(c.inkName)) return null;
+        for (int level = GM.GetRelationship(c.customerId).level; level > 0; level--)
+            if (content.Ink.Has($"{c.inkName}_visit_{level}")) return $"{c.inkName}_visit_{level}";
+        return content.Ink.Has($"{c.inkName}_visit") ? $"{c.inkName}_visit" : null;
+    }
+
+    /// The next friendship scene this customer has reached and not yet played (one at a time).
+    List<string> ScenesDue(CustomerDef c)
+    {
+        var due = new List<string>();
+        if (string.IsNullOrEmpty(c.inkName)) return due;
+        int level = GM.GetRelationship(c.customerId).level;
+        for (int n = 1; n <= level; n++)
+        {
+            string knot = $"{c.inkName}_scene_{n}";
+            if (!content.Ink.Has(knot) || Save.flags.Contains("seen:" + knot)) continue;
+            Save.flags.Add("seen:" + knot);
+            due.Add(knot);
+            break;
+        }
+        return due;
+    }
+
+    /// This customer's indirect requests that the player could fill with at least one item they can make.
+    List<string> RequestsFor(CustomerDef c)
+    {
+        var list = new List<string>();
+        if (string.IsNullOrEmpty(c.inkName)) return list;
+        foreach (var name in content.Ink.KnotNames)
+            if (name.StartsWith($"{c.inkName}_request_") && TagList(content.Ink.Get(name), "fits").Exists(id => Progress.CanMake(ItemFor(id))))
+                list.Add(name);
+        list.Sort();
+        return list;
+    }
+
+    /// A knot tag like "fits: scarf, sweater" as a list of ids.
+    static List<string> TagList(InkLite.Knot knot, string key)
+    {
+        var list = new List<string>();
+        if (knot == null) return list;
+        foreach (var t in knot.tags)
+            if (t.StartsWith(key + ":"))
+                foreach (var id in t.Substring(key.Length + 1).Split(','))
+                    if (id.Trim().Length > 0) list.Add(id.Trim());
+        return list;
+    }
+
+    /// A story scene to play next time the shop or workroom is on screen.
+    void QueueChapterScene(ChapterDef chapter)
+    {
+        string knot = !string.IsNullOrEmpty(chapter.inkScene) ? chapter.inkScene : $"chapter_{chapter.number}";
+        if (!Save.pendingScenes.Contains(knot)) Save.pendingScenes.Add(knot);
+        LastMessage += $"\n\nChapter {chapter.number}: {chapter.title}";
+    }
+
+    /// Plays waiting story scenes when a hub screen comes up.
+    void OnScreenChanged(ScreenId id)
+    {
+        if (playing || Save == null || Save.pendingScenes.Count == 0 || (id != ScreenId.Shop && id != ScreenId.Workroom)) return;
+        var knot = Save.pendingScenes[0];
+        Save.pendingScenes.RemoveAt(0);
+        GM.Persist();
+        Play(null, new List<string> { knot }, () => GM.ChangeScreen(GM.HubScreen));
     }
 
     // ---- Commissions ----
@@ -723,6 +984,7 @@ public class ShopDay : MonoBehaviour
         int level = GM.GetRelationship(Selected.customerId).level;
         int price = PricingCalculator.Compute(Selected.item, Selected.accuracy, TierOf(Selected), level, Selected.patternOnly);
         int points = PricingCalculator.RelationshipReward(Selected.accuracy);
+        if (Selected.fit == 2) points = Mathf.RoundToInt(points * 1.5f);   // exactly what they hoped for
         var commission = CommissionOf(Selected);
         if (commission != null)
         {
@@ -754,8 +1016,17 @@ public class ShopDay : MonoBehaviour
         if (commission != null)
             LastMessage += $" The \"{Selected.target.displayName}\" pattern is in your book: put it on the shelf in the Pattern Studio.";
         foreach (var s in taught) LastMessage += s.friend != null ? $" {s.friend.displayName} taught you {s.displayName}!" : $" You learned {s.displayName}!";
-        if (chapter != null) LastMessage += $"\n\nChapter {chapter.number}: {chapter.title}. {chapter.intro}";
+        if (chapter != null) QueueChapterScene(chapter);
+        var stars = PricingCalculator.Stars(Selected.accuracy);
         Selected = null;
-        GM.ChangeScreen(ScreenId.Shop);
+        GM.Persist();
+        // They react, and a friendship scene plays if this brought them to a new level.
+        var knots = new List<string>();
+        if (customer != null && !string.IsNullOrEmpty(customer.inkName))
+        {
+            knots.Add($"{customer.inkName}_handover_{(stars >= 3 ? "good" : stars == 2 ? "okay" : "poor")}");
+            knots.AddRange(ScenesDue(customer));
+        }
+        Play(customer, knots, () => GM.ChangeScreen(ScreenId.Shop));
     }
 }

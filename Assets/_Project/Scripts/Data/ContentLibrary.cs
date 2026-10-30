@@ -14,6 +14,20 @@ public class ContentLibrary : ScriptableObject
     public SkillDef[] skills = new SkillDef[0];
     public ChapterDef[] chapters = new ChapterDef[0];
     public UpgradeDef[] upgrades = new UpgradeDef[0];
+    public TextAsset[] dialogue = new TextAsset[0];   // the .ink files in Assets/_Project/Dialogue
+
+    InkLite ink;
+    /// All the dialogue, read once.
+    public InkLite Ink
+    {
+        get
+        {
+            if (ink != null) return ink;
+            ink = new InkLite();
+            foreach (var t in dialogue) if (t != null) ink.Load(t.text);
+            return ink;
+        }
+    }
 
     public SkillDef Skill(string id) => System.Array.Find(skills, s => s != null && s.skillId == id);
     public ChapterDef Chapter(int number) => System.Array.Find(chapters, c => c != null && c.number == number);

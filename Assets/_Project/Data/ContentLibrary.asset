@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: ContentLibrary
   m_EditorClassIdentifier: Assembly-CSharp::ContentLibrary
   customers:
+  - {fileID: 11400000, guid: 0929323ae57ef9d4b8b8d714fa2ab694, type: 2}
   - {fileID: 11400000, guid: 4c1b82f796272ea49bb2b6dfeae69964, type: 2}
   - {fileID: 11400000, guid: db0b7f56aefde914c813549865b3e871, type: 2}
+  - {fileID: 11400000, guid: c9dfe2d23fe0804498db2d7925e5f130, type: 2}
   - {fileID: 11400000, guid: 1a5522735a0d9984eaaa2b76d2f77c26, type: 2}
   items:
   - {fileID: 11400000, guid: 10c1ffff1a3b659439f05d80f5834bda, type: 2}
@@ -111,3 +113,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 14553872de4ff4f4e8104db5084e1ea0, type: 2}
   - {fileID: 11400000, guid: 6577cd1c8109fcd40a5d29bf90ff0cae, type: 2}
   - {fileID: 11400000, guid: d98151631cb4fae4db942dd195c10d44, type: 2}
+  dialogue:
+  - {fileID: 2811297602134710623, guid: 91d4b02dd09b31548b45c18cf92bc9bc, type: 3}
+  - {fileID: 2811297602134710623, guid: 42bf576b13a32f24aa58089ef731edc8, type: 3}
+  - {fileID: 2811297602134710623, guid: 12f34587aac34ac4cbbf39cdfbfea0a0, type: 3}
+  - {fileID: 2811297602134710623, guid: ae07d8edcff009f4f889af6f98bac623, type: 3}
+  - {fileID: 2811297602134710623, guid: 4d0f14bc5ad860540b61440cc475a7a3, type: 3}
+  - {fileID: 2811297602134710623, guid: c911c8d331013284a96a6d7f9498bd57, type: 3}

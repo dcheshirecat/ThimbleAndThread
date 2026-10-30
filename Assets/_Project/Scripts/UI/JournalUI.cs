@@ -80,6 +80,8 @@ public class JournalUI : MonoBehaviour
             var r = GameManager.Instance.GetRelationship(cust.customerId);
             sb.AppendLine($"<b>{cust.displayName}</b>  ·  friendship level {r.level} ({r.points} of {r.PointsForNextLevel()} to the next)");
             if (!string.IsNullOrEmpty(cust.bio)) sb.AppendLine(cust.bio);
+            if (r.romance) sb.AppendLine(Save.flags.Contains($"{cust.inkName}_together") ? "♥ Together." : "♥ You're seeing each other.");
+            else if (cust.romanceable && r.level < 3) sb.AppendLine("You sense there could be more to this friendship...");
             foreach (var s in day.content.skills)
                 if (s != null && s.friend == cust && s.friendLevel > 0)
                     sb.AppendLine($"Can teach you {s.displayName} at friendship level {s.friendLevel}" + (Progress.Knows(s.skillId) ? " (you know it already)." : "."));

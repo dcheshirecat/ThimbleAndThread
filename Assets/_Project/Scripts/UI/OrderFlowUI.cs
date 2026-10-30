@@ -9,7 +9,6 @@ public class OrderFlowUI : MonoBehaviour
 
     [Header("Shop")] public Text shopStatus; public Text greetLabel;
     [Header("Workroom")] public Text workroomStatus;
-    [Header("Dialogue")] public Text dialogueName, dialogueText, acceptLabel; public Image dialoguePortrait; public RawImage dialoguePattern;
     [Header("Order book")] public Button orderTemplate; public Text orderBookEmpty;
     [Header("Workbench")] public Text workbenchText; public Text startLabel; public GameObject startButton, handOverButton;
     [Header("Minigame")] public Text minigameHint; public ThreadSwatches minigameThreads;
@@ -59,7 +58,6 @@ public class OrderFlowUI : MonoBehaviour
         if (screen == ScreenId.Market) BuildMarketList(save);
         if (screen == ScreenId.PatternStudio) BuildPatternList();
         if (screen == ScreenId.PatternEdit && day.SelectedPattern != null) ShowPattern(day.SelectedPattern);
-        if (screen == ScreenId.Dialogue && day.Visitor != null) ShowVisitor();
 
         var order = day.Selected;
         if (order == null) return;
@@ -110,34 +108,6 @@ public class OrderFlowUI : MonoBehaviour
                           "Set it aside and they'll collect it tomorrow.";
         var mood = day.LastStars >= 3 ? Expression.Happy : day.LastStars == 2 ? Expression.Thoughtful : Expression.Sad;
         SetPortrait(resultPortrait, customer != null ? customer.GetPortrait(mood) : null);
-    }
-
-    void ShowVisitor()
-    {
-        dialogueName.text = day.Visitor.displayName;
-        SetPortrait(dialoguePortrait, day.Visitor.GetPortrait(Expression.Happy));
-        if (day.SaleOffer != null)
-        {
-            var p = day.SaleOffer;
-            dialogueText.text = $"Oh, I love your {p.name} pattern! May I buy it? I'd like to make it myself.";
-            acceptLabel.text = $"Sell It ({p.price} coins)";
-            SetPreview(dialoguePattern, day.DesignFor(p));
-        }
-        else if (day.Offer != null && day.CommissionOf(day.Offer) is CommissionDef c)
-        {
-            var needs = c.requiredSupply != null ? $"\nIt must be made with {c.requiredSupply.displayName}." : "";
-            dialogueText.text = $"{c.request}\n\n(A commission: you'll design a brand-new {c.item.itemName.ToLower()} pattern for it.{needs})";
-            acceptLabel.text = "Take the Commission";
-            SetPreview(dialoguePattern, day.Offer.target);   // blank: nothing designed yet
-        }
-        else if (day.Offer != null)
-        {
-            var o = day.Offer;
-            dialogueText.text = $"Your {o.target.displayName} pattern is lovely! Could you make me a {o.item.itemName.ToLower()} with it?" +
-                                $"\n\n(No rush, whenever you have time.)";
-            acceptLabel.text = "Take the Order";
-            SetPreview(dialoguePattern, o.target);
-        }
     }
 
     void ShowPattern(OwnedPattern p)
@@ -409,17 +379,7 @@ public class OrderFlowUI : MonoBehaviour
     static void SetPreview(RawImage image, Pattern pattern)
     {
         if (image.texture != null) Destroy(image.texture);
-        int w = Mathf.Max(1, pattern.width), h = Mathf.Max(1, pattern.height);
-        var tex = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
-        var fabric = new Color(0.96f, 0.93f, 0.86f);
-        var pixels = new Color[w * h];
-        for (int i = 0; i < pixels.Length; i++) pixels[i] = fabric;
-        foreach (var c in pattern.cells)
-            if (c.x >= 0 && c.x < w && c.y >= 0 && c.y < h && c.colorIndex < pattern.palette.Count)
-                pixels[c.y * w + c.x] = pattern.palette[c.colorIndex];
-        tex.SetPixels(pixels);
-        tex.Apply();
-        image.texture = tex;
+        image.texture = PatternPreview.Make(pattern);
     }
 
     static void SetPortrait(Image image, Sprite sprite)

@@ -159,6 +159,16 @@ public static class PlaceholderGenerator
         var junoTote = System.Array.Find(juno.requestable, o => o.item == tote);
         Wants(juno, hoopArt, 0);
         if (junoTote != null && junoTote.minRelationshipLevel == 1) { junoTote.minRelationshipLevel = 0; EditorUtility.SetDirty(juno); }   // totes are playable now
+        // Romanceable adults, arriving with the story.
+        var isla = Customer("isla", "Isla Marlowe", "Keeper of the old lighthouse. Dry, gruff, and secretly hopeless at knitting.",
+                 new Color(0.45f, 0.55f, 0.60f), new[] { (sweater, 0), (scarf, 0), (hoopArt, 1) });
+        var rowan = Customer("rowan", "Rowan Hale", "Owns Knot & Needle across the square. Competitive, charming, and they learned to crochet here.",
+                 new Color(0.75f, 0.50f, 0.55f), new[] { (plushie, 0), (tote, 0), (sampler, 1) });
+        Character(mara, "mara", 1, false);
+        Character(tobias, "tobias", 1, false);
+        Character(juno, "juno", 1, false);   // a teen: never romanceable
+        Character(isla, "isla", 2, true);
+        Character(rowan, "rowan", 4, true);
 
         // ---- Commissions: special requests, each needing a brand-new pattern ----
         Commission("juno_skate_scarf", juno, scarf, 0, null,
@@ -414,6 +424,15 @@ public static class PlaceholderGenerator
         def.commissionId = id; def.customer = customer; def.item = item; def.minRelationshipLevel = minLevel; def.request = request;
         if (requiredSupplyId != null) def.requiredSupply = AssetDatabase.LoadAssetAtPath<SupplyDef>($"{Root}/Data/Supplies/supply_{requiredSupplyId}.asset");
         AssetDatabase.CreateAsset(def, assetPath);
+    }
+
+    /// Links a customer to their dialogue (the knot names in Dialogue/*.ink) and sets when they arrive,
+    /// unless a dialogue name is already set (so edits made by hand are kept).
+    static void Character(CustomerDef c, string inkName, int firstChapter, bool romanceable)
+    {
+        if (!string.IsNullOrEmpty(c.inkName)) return;
+        c.inkName = inkName; c.firstChapter = firstChapter; c.romanceable = romanceable;
+        EditorUtility.SetDirty(c);
     }
 
     /// Adds an item to what a customer asks for, if it isn't there yet.

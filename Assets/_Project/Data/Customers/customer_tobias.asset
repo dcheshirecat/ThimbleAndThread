@@ -32,3 +32,6 @@ MonoBehaviour:
     minRelationshipLevel: 0
   - item: {fileID: 11400000, guid: e7e94861e1dcdf847ba6112533c4cabe, type: 2}
     minRelationshipLevel: 2
+  firstChapter: 1
+  romanceable: 0
+  inkName: tobias

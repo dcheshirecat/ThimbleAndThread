@@ -68,6 +68,9 @@ public static class SaveSystem
         data.upgrades ??= new System.Collections.Generic.List<string>();
         data.journalNews ??= new System.Collections.Generic.List<string>();
         if (data.version < 8) { data.chapter = 5; data.learnEverything = true; }
+        // Version 8 had no dialogue: no flags, no scenes waiting.
+        data.flags ??= new System.Collections.Generic.List<string>();
+        data.pendingScenes ??= new System.Collections.Generic.List<string>();
         data.version = SaveData.CurrentVersion;
         return data;
     }

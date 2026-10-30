@@ -10,12 +10,14 @@ public class ContentLibraryRefresher : AssetPostprocessor
 {
     public const string LibraryPath = "Assets/_Project/Data/ContentLibrary.asset";
     const string DataRoot = "Assets/_Project/Data";
+    const string DialogueRoot = "Assets/_Project/Dialogue";
 
     static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
     {
         foreach (var list in new[] { imported, deleted, moved, movedFrom })
             foreach (var path in list)
-                if (path.StartsWith(DataRoot) && path.EndsWith(".asset") && path != LibraryPath)
+                if (path.StartsWith(DataRoot) && path.EndsWith(".asset") && path != LibraryPath
+                    || path.StartsWith(DialogueRoot) && path.EndsWith(".ink"))
                 {
                     EditorApplication.delayCall += () => Refresh();   // after the import finishes
                     return;
@@ -39,6 +41,7 @@ public class ContentLibraryRefresher : AssetPostprocessor
         lib.skills = Find<SkillDef>();
         lib.chapters = Find<ChapterDef>();
         lib.upgrades = Find<UpgradeDef>();
+        lib.dialogue = Find<TextAsset>(DialogueRoot);
         var tutorials = Find<TutorialDef>();
         lib.tutorial = tutorials.Length > 0 ? tutorials[0] : null;
         EditorUtility.SetDirty(lib);
@@ -46,10 +49,11 @@ public class ContentLibraryRefresher : AssetPostprocessor
         return lib;
     }
 
-    static T[] Find<T>() where T : Object
+    static T[] Find<T>(string root = DataRoot) where T : Object
     {
         var paths = new List<string>();
-        foreach (var guid in AssetDatabase.FindAssets($"t:{typeof(T).Name}", new[] { DataRoot }))
+        if (!AssetDatabase.IsValidFolder(root)) return new T[0];
+        foreach (var guid in AssetDatabase.FindAssets($"t:{typeof(T).Name}", new[] { root }))
             paths.Add(AssetDatabase.GUIDToAssetPath(guid));
         paths.Sort();   // stable order, so the asset only changes when content does
         var result = new List<T>();
