@@ -251,21 +251,22 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
 Done and on main: project setup, save slots + autosave, order book with resumable work, day/night,
 pattern shelf (sales + pattern orders), book patterns, content library, portrait layout, thread colours,
 undo, Pattern Studio designer, owner guides, materials (counted supplies, starter kit), rotating Supply
-Market with shelves, tools that gate work. Everything is placeholder art and Unity default UI.
-Still stand-ins: items without their own recipe are made with the cross stitch board (on branch
-item-recipes the tablecloth and Sewn Plushie have real recipes); Journal and Settings screens are empty.
+Market with shelves, tools that gate work, item recipes (tablecloth: stitch + hem; Sewn Plushie:
+8 sewing steps). Everything is placeholder art and Unity default UI.
+Still stand-ins: items without their own recipe (sweater, scarf, crocheted plushie, sampler, tote) are
+made with the cross stitch board; Journal and Settings screens are empty.
 CI: main once failed with exit code 137 (out of memory) and later with "no space left on device" while
 pulling the Unity image. The workflow now adds 12 GB swap on /mnt and deletes more preinstalled runner
 tools; merged to main 2026-10-29 (commit d2d3ee9), first build with it not yet confirmed.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
-2. DONE (branch item-recipes, not merged): item recipes. CraftItemDef.steps (RecipeStep: StepKind, label,
+2. DONE (on main): item recipes. CraftItemDef.steps (RecipeStep: StepKind, label,
    extra tools); Order.step + Order.steps (StepProgress: done, score, progress, traced points); ICraftStep
    (Begin/SaveWork/Undo) with CrossStitchStep and TracingStep (drag along a dashed guide; HemStep is the
    first). Finishing a step returns to the Workbench with the next one; quality = average of step scores.
    Tools are checked per step. The tablecloth is now "Stitch the motif" then "Hem the edges".
-3. DONE (branch item-recipes, not merged): the Sewn Plushie (item plushie_sewn, CraftType Sewing; the
+3. DONE (on main): the Sewn Plushie (item plushie_sewn, CraftType Sewing; the
    old "plushie" item is now named Crocheted Plushie, same id). 8 steps: Choose fabric, Cut, Pin, Sew seam,
    Turn right side out, Stuff, Attach eyes, Close opening. Book pattern "Felt Bunny"; Mara asks for it.
    Sewing patterns use the grid: filled squares = the piece's shape (PieceShape smooths the outline,
