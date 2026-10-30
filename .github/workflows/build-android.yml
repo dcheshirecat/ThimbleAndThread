@@ -62,7 +62,13 @@ jobs:
           path: Library
           key: Library-Android-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: Library-Android-
-      - uses: game-ci/unity-builder@v4
+      # The Linux Unity 6.6 editor sometimes gets SIGKILLed (exit 137) while loading the compiled scripts,
+      # with plenty of memory free and no out-of-memory kill in the kernel log (seen 2026-10-30; other
+      # projects on 6000.6 report the same and retry). So: try the build up to three times.
+      - name: Build (attempt 1)
+        id: build1
+        continue-on-error: true
+        uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
@@ -70,8 +76,31 @@ jobs:
         with:
           targetPlatform: Android
           androidExportType: androidPackage   # .apk
-          # Unity runs in a Docker container capped by default at 95% of the runner's RAM, so it could
-          # never reach the swap above and got killed (exit code 137). Allow RAM + most of the swap.
+          dockerMemoryLimit: 18g
+      - name: Build (attempt 2)
+        id: build2
+        if: steps.build1.outcome == 'failure'
+        continue-on-error: true
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: Android
+          androidExportType: androidPackage   # .apk
+          dockerMemoryLimit: 18g
+      - name: Build (attempt 3)
+        id: build3
+        if: steps.build1.outcome == 'failure' && steps.build2.outcome == 'failure'
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: Android
+          androidExportType: androidPackage   # .apk
           dockerMemoryLimit: 18g
       # Puts the findings on the run's Summary page (easy to read on a phone), pass or fail.
       - name: Memory log

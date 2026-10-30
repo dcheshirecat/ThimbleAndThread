@@ -285,6 +285,12 @@ generation "Faster (smaller) builds" (ProjectSettings il2cppCodeGeneration Andro
 and the memory log now also records the Unity container's usage (docker stats) and kernel OOM kills, and
 writes everything to the run's Summary page ($GITHUB_STEP_SUMMARY) so the owner can read it on a phone.
 Test CI fixes on a branch this way instead of merging to main.
+DIAGNOSED 2026-10-30 (run on main 787ce56, public repo, 4 CPU / 16 GB runner): NOT memory. RAM peaked ~3.4 GB,
+swap unused, no kernel OOM kill. The Linux Unity 6000.6.0f1 editor printed "Killed" (SIGKILL, exit 137) about a
+second into "Begin MonoManager ReloadAssembly / Registering precompiled unity dll's", ~3.5 min into the
+builder step. Another project on 6000.6 reports the same sporadic SIGKILL and retries. Branch ci-retry runs the
+builder up to 3 times (continue-on-error + if: on step outcomes). If that keeps failing: build APKs locally
+(install Android Build Support for 6000.6.0f1 in Unity Hub) or try a different editor/image version.
 
 Tutorial (branch tutorial, merged): Data/Tutorial.asset (TutorialDef: pages with title, text, optional art,
 TutorialAnim placeholder scene). UI/TutorialUI.cs shows it on first launch (PlayerPrefs "tutorial_seen") and
