@@ -375,5 +375,12 @@ All eight feedback points have a first version (merged to main 2026-10-30).
    Not covered: one code can still be opened by several different saves (no server to check); finished
    items (there is no item inventory yet); selling patterns for coins (needs a "receipt" code back).
    Clipboard copy uses GUIUtility.systemCopyBuffer (untestable in batch mode; check on the phone).
-9. Next: audio; Settings screen; touch input wrapper;
+9. DONE (branch audio-settings, not merged): audio + Settings. Core/AudioManager.cs (on the GameManager
+   object): day/night music by screen, effects Click (UI/ButtonSound.cs on every builder button), Coin (coins
+   go up), Stitch (cross stitch + every PieceStep release), StepDone (Result screen), Bell (Dialogue screen).
+   Missing clips = generated placeholder tones (no files); missing music = silence. File names in
+   Docs/ADDING_ART.md; TestSceneBuilder.Clip loads them. Volumes in PlayerPrefs (music_volume,
+   sound_volume). UI/SettingsUI.cs: volumes, How to Play (returns to Settings via GameManager.Previous),
+   Save and Quit, Back.
+10. Next: Settings screen; touch input wrapper;
    sewing machine speed control; more complex crafting (half stitches, cables, colour changes).

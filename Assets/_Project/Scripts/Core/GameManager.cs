@@ -76,8 +76,12 @@ public class GameManager : MonoBehaviour
         ChangeScreen(ScreenId.Title);
     }
 
+    /// The screen shown before the current one (e.g. so the tutorial can go back to Settings).
+    public ScreenId Previous { get; private set; } = ScreenId.Title;
+
     public void ChangeScreen(ScreenId next)
     {
+        if (next != Current) Previous = Current;
         Current = next;
         OnScreenChanged?.Invoke(next);
     }

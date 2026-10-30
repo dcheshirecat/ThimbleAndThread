@@ -88,6 +88,27 @@ whole UI to it in one go.
 - **App icon:** 1024 x 1024, no transparency, important shapes away from the corners (Android crops
   icons into circles and rounded squares).
 
+## Music and sound effects
+
+The game already plays soft generated placeholder sounds; dropping in a real file replaces one.
+Put files in `Assets/_Project/Audio/` with these names (`.ogg` is best; `.wav` and `.mp3` work too),
+then ask Claude to rebuild the scene so it picks them up.
+
+| Sound | File | Notes |
+|---|---|---|
+| Day music (shop, title) | `Music/music_shop_day.ogg` | loops; make the end flow into the start |
+| Night music (workroom) | `Music/music_workroom_night.ogg` | loops |
+| Button tap | `SFX/sfx_click.ogg` | very short and quiet (under 0.1 s) |
+| Coins earned | `SFX/sfx_coin.ogg` | under 0.5 s |
+| A stitch / needle action | `SFX/sfx_stitch.ogg` | very short; it plays a lot |
+| Finished crafting | `SFX/sfx_step_done.ogg` | a small happy chime, about 1 s |
+| Customer arrives | `SFX/sfx_shop_bell.ogg` | the shop door bell, about 1 s |
+
+- 44.1 kHz, mono is fine for effects; music can be stereo.
+- Leave a little silence trimmed off the start of effects, or they feel late.
+- Check the licence of any music or sounds you didn't make yourself.
+- Players set music and sound volumes in Settings.
+
 ## Quick checklist
 
 - [ ] sRGB canvas, right size or bigger, same aspect ratio

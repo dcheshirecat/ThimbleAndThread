@@ -41,6 +41,7 @@ public class TutorialUI : MonoBehaviour
     void OnScreenChanged(ScreenId id)
     {
         if (id != ScreenId.Tutorial) return;
+        returnTo = GameManager.Instance.Previous == ScreenId.Settings ? ScreenId.Settings : ScreenId.Title;
         index = 0;
         Show();
     }
@@ -67,8 +68,10 @@ public class TutorialUI : MonoBehaviour
     {
         PlayerPrefs.SetInt(SeenKey, 1);
         PlayerPrefs.Save();
-        GameManager.Instance.ChangeScreen(ScreenId.Title);
+        GameManager.Instance.ChangeScreen(returnTo);
     }
+
+    ScreenId returnTo = ScreenId.Title;   // Settings when opened from there mid-game
 
     // ---- Pages ----
 

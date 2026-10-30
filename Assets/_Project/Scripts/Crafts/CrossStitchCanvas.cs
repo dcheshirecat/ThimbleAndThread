@@ -233,6 +233,7 @@ public class CrossStitchCanvas : MonoBehaviour
                 // Which diagonal? "/" connects (0,0)-(1,1) ; "\" connects (0,1)-(1,0)
                 bool isSlash = (dx * dy) > 0;
                 AddStitch(cell, isSlash ? 1 : 2, currentColor);
+                AudioManager.Play(Sfx.Stitch);
             }
         }
         EndStroke();

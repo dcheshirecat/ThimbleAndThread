@@ -65,7 +65,12 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
             OnPress(Normalized(Input.mousePosition));
         }
         else if (pressing && Input.GetMouseButton(0)) OnDrag(Normalized(Input.mousePosition));
-        else if (pressing && Input.GetMouseButtonUp(0)) { pressing = false; OnRelease(Normalized(Input.mousePosition)); }
+        else if (pressing && Input.GetMouseButtonUp(0))
+        {
+            pressing = false;
+            OnRelease(Normalized(Input.mousePosition));
+            AudioManager.Play(Sfx.Stitch);
+        }
     }
 
     Vector2 Normalized(Vector3 screen)

@@ -59,6 +59,14 @@ public static class TestSceneBuilder
         camGo.transform.position = new Vector3(0, 0, -10);
 
         var gm = new GameObject("GameManager").AddComponent<GameManager>();
+        var audio = gm.gameObject.AddComponent<AudioManager>();
+        audio.musicDay = Clip("Music/music_shop_day");
+        audio.musicNight = Clip("Music/music_workroom_night");
+        audio.click = Clip("SFX/sfx_click");
+        audio.coin = Clip("SFX/sfx_coin");
+        audio.stitch = Clip("SFX/sfx_stitch");
+        audio.stepDone = Clip("SFX/sfx_step_done");
+        audio.bell = Clip("SFX/sfx_shop_bell");
 
         var es = new GameObject("EventSystem");
         es.AddComponent<EventSystem>();
@@ -299,9 +307,20 @@ public static class TestSceneBuilder
         Button(Column(p, 0.5f, 0.04f), "Back", router.GoToHub);
 
         p = Panel(ScreenId.Settings, "Settings", new Color(0.78f, 0.78f, 0.82f));
-        b = Column(p, 0.5f, 0.45f);
-        Button(b, "Back", router.GoToHub, 1100);
+        var settings = canvasGo.AddComponent<SettingsUI>();
+        b = Row(p, 0.5f, 0.74f);
+        Button(b, "Music Down", settings.MusicDown, 300).GetComponentInChildren<Text>().text = "-";
+        settings.musicLabel = RowLabel(b, 700);
+        Button(b, "Music Up", settings.MusicUp, 300).GetComponentInChildren<Text>().text = "+";
+        b = Row(p, 0.5f, 0.66f);
+        Button(b, "Sound Down", settings.SoundDown, 300).GetComponentInChildren<Text>().text = "-";
+        settings.soundLabel = RowLabel(b, 700);
+        Button(b, "Sound Up", settings.SoundUp, 300).GetComponentInChildren<Text>().text = "+";
+        settings.musicLabel.color = settings.soundLabel.color = Ink;
+        b = Column(p, 0.5f, 0.4f);
+        Button(b, "How to Play", router.GoToTutorial, 1100);
         Button(b, "Save and Quit to Title", gm.QuitToTitle, 1100);
+        Button(b, "Back", router.GoToHub, 1100);
 
         p = Panel(ScreenId.DaySummary, "End of Day", new Color(0.78f, 0.82f, 0.95f));
         ui.summaryText = Label(p, "Summary", new Vector2(0.08f, 0.32f), new Vector2(0.92f, 0.88f), 60, TextAnchor.MiddleCenter);
@@ -519,6 +538,7 @@ public static class TestSceneBuilder
         var text = MakeText(go.transform, "Label", label, 64);
         Stretch((RectTransform)text.transform);
 
+        go.AddComponent<ButtonSound>();
         var button = go.GetComponent<Button>();
         if (onClick != null) UnityEventTools.AddPersistentListener(button.onClick, onClick);
         return button;
@@ -589,6 +609,7 @@ public static class TestSceneBuilder
         outline.effectColor = Color.white;
         outline.effectDistance = new Vector2(12, -12);
         outline.enabled = false;
+        go.AddComponent<ButtonSound>();
         return go.GetComponent<Button>();
     }
 
@@ -639,6 +660,17 @@ public static class TestSceneBuilder
         }
         ((Text)field.placeholder).text = "A friend's code goes here";
         return field;
+    }
+
+    /// An audio file from Assets/_Project/Audio by name without extension (.ogg, .wav or .mp3), or null.
+    static AudioClip Clip(string path)
+    {
+        foreach (var ext in new[] { ".ogg", ".wav", ".mp3" })
+        {
+            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>($"{Root}/Audio/{path}{ext}");
+            if (clip != null) return clip;
+        }
+        return null;
     }
 
     static Text Label(Transform panel, string name, Vector2 min, Vector2 max, int size, TextAnchor align)
