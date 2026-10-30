@@ -59,7 +59,11 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
   fixed number of squares, a ball of yarn a number of stitches, fabric is cut by size; designs show
   how much of each material they need. New games start with a small kit (white Aida, a few basic
   thread colours) so the first order can be made right away; everything else is bought.
-- Supply Market (owner's decisions):
+- Supply Market (owner's decisions). CHANGED 2026-10-30: stock per SHELF (ShopManager.ShelfGroup): every
+  common (Always) item, a few uncommon (Rotating) ones picked per 4-day period (fabric 2, floss 3, yarn 2,
+  notions 2, tools 1, books 1: UncommonPerShelf), and a 25% chance per shelf of one rare item. The market
+  does NOT need to cycle through everything; rarity is the point. (Older notes below about ~10/14/20
+  rotating items in one pool are superseded.)
   - Stock changes every 4 days (days 1-4, 5-8, ...). Three tiers: a few basics are ALWAYS for sale
     (white Aida, basic floss colours, stuffing, a basic needle), a rotating selection (~10 items) changes
     each period, and now and then a RARE special item appears (e.g. 100% alpaca, linen evenweave,
@@ -434,7 +438,7 @@ now; final art = separate drawings per option and colour (owner draws each), not
    Docs/ADDING_ART.md; TestSceneBuilder.Clip loads them. Volumes in PlayerPrefs (music_volume,
    sound_volume). UI/SettingsUI.cs: volumes, How to Play (returns to Settings via GameManager.Previous),
    Save and Quit, Back.
-10. DONE: 34 floss colours (20 added; black always stocked, metallic silver rare; RotatingCount 20);
+10. DONE: 34 floss colours (20 added; black always stocked, metallic silver rare);
     Pattern Studio swatches 12 a row.
 11. Next: Settings screen; touch input wrapper;
    sewing machine speed control; more complex crafting (half stitches, cables, colour changes).

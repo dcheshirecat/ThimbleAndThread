@@ -24,11 +24,27 @@ public class ShopManager : MonoBehaviour
         s.amount += amount;
     }
 
-    // ---- Market: always-on basics, a selection that changes every 4 days, and now and then a rare item ----
+    // ---- Market: each shelf stocks its common basics, a few uncommon items and now and then a rare one ----
+    // (owner, 2026-10-30: rarity should matter; the market doesn't need to cycle through everything.)
 
     public const int DaysPerRotation = 4;
-    public const int RotatingCount = 20;   // raised from 14 when 20 more floss colours joined the rotation
-    const float RareChance = 0.4f;
+    const float RareChance = 0.25f;   // per shelf, per 4-day period
+
+    /// The market's shelves (the same groups the Supply Market shows) and how many UNCOMMON items each
+    /// stocks per period. Common items (MarketSlot.Always) are always there; rare ones only now and then.
+    public enum ShelfGroup { Fabric, Floss, Yarn, Notions, Tools, Books }
+
+    static readonly int[] UncommonPerShelf = { 2, 3, 2, 2, 1, 1 };   // in ShelfGroup order
+
+    public static ShelfGroup GroupOf(SupplyKind k) => k switch
+    {
+        SupplyKind.Fabric => ShelfGroup.Fabric,
+        SupplyKind.Thread => ShelfGroup.Floss,
+        SupplyKind.Yarn => ShelfGroup.Yarn,
+        SupplyKind.Tool => ShelfGroup.Tools,
+        SupplyKind.Book => ShelfGroup.Books,
+        _ => ShelfGroup.Notions,
+    };
 
     public int DaysUntilRestock => DaysPerRotation - (Save.day - 1) % DaysPerRotation;
 
@@ -44,22 +60,28 @@ public class ShopManager : MonoBehaviour
         var rng = new System.Random(unchecked(Save.marketSeed * 31 + period));
 
         var sale = new List<SupplyDef>();
-        var rotating = new List<SupplyDef>();
-        var rare = new List<SupplyDef>();
-        foreach (var s in content.supplies)
+        int groups = System.Enum.GetValues(typeof(ShelfGroup)).Length;
+        for (int g = 0; g < groups; g++)
         {
-            if (s == null) continue;
-            if (s.market == MarketSlot.Always) sale.Add(s);
-            else if (s.market == MarketSlot.Rotating) rotating.Add(s);
-            else if (s.market == MarketSlot.Rare) rare.Add(s);
+            var uncommon = new List<SupplyDef>();
+            var rare = new List<SupplyDef>();
+            foreach (var s in content.supplies)
+            {
+                if (s == null || (int)GroupOf(s.kind) != g) continue;
+                if (s.market == MarketSlot.Always) sale.Add(s);
+                else if (s.market == MarketSlot.Rotating) uncommon.Add(s);
+                else if (s.market == MarketSlot.Rare) rare.Add(s);
+            }
+            for (int i = uncommon.Count - 1; i > 0; i--)   // shuffle, then take the first few
+            {
+                int j = rng.Next(i + 1);
+                (uncommon[i], uncommon[j]) = (uncommon[j], uncommon[i]);
+            }
+            sale.AddRange(uncommon.GetRange(0, Mathf.Min(UncommonPerShelf[g], uncommon.Count)));
+            double roll = rng.NextDouble();   // drawn for every shelf, so one shelf's items don't shift another's
+            int pick = rng.Next(1000);
+            if (rare.Count > 0 && roll < RareChance) sale.Add(rare[pick % rare.Count]);
         }
-        for (int i = rotating.Count - 1; i > 0; i--)   // shuffle, then take the first few
-        {
-            int j = rng.Next(i + 1);
-            (rotating[i], rotating[j]) = (rotating[j], rotating[i]);
-        }
-        sale.AddRange(rotating.GetRange(0, Mathf.Min(RotatingCount, rotating.Count)));
-        if (rare.Count > 0 && rng.NextDouble() < RareChance) sale.Add(rare[rng.Next(rare.Count)]);
         return sale;
     }
 
