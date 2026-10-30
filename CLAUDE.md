@@ -208,7 +208,11 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
 - Write important decisions into this file as they are made (context gets compressed).
 
 ## Environment
-- Repo: C:\Users\julie\ThimbleAndThread (GitHub dcheshirecat/ThimbleAndThread, private). Unity 6.6 editor:
+- Repo: C:\Users\julie\ThimbleAndThread (GitHub dcheshirecat/ThimbleAndThread). PUBLIC since 2026-10-30
+  (owner's choice: unlimited free Actions minutes, after October's 2,000 private minutes ran out; the owner
+  plans to make it private again later). While public: never commit secrets, keystores or license files;
+  remind the owner before committing finished art or story text they may not want copied; commit author
+  emails are visible to anyone. Unity 6.6 editor:
   D:\6000.6.0f1\Editor\Unity.exe (Unity Hub installs to D:\). Android Build Support is NOT installed
   locally yet (only Windows standalone), so APKs come from GitHub Actions.
 - App: product "Thimble & Thread", company "cheshirecat", id com.cheshirecat.thimbleandthread, portrait
