@@ -22,16 +22,21 @@ public abstract class PlacementStep : PieceStep
     protected virtual bool CanPlace(Vector2 p) => true;
 
     protected List<Vector2> Placed => State.points;
+    /// The faint marks' colour; light work needs dark marks and the other way round.
+    protected virtual Color MarkColor => new Color(0, 0, 0, 0.18f);
 
     protected override void Build()
     {
         DrawPiece();
-        foreach (var m in Marks) Square(m, 0.05f, new Color(0, 0, 0, 0.18f), 1);
+        foreach (var m in Marks) Square(m, 0.05f, MarkColor, 4);
         foreach (var p in Placed) placed.Add(DrawPlaced(p));
         Changed();
     }
 
-    protected override void OnPress(Vector2 p)
+    protected override void OnPress(Vector2 p) => Place(p);
+
+    /// Places one thing at p, if there's still something to place and p is allowed.
+    protected void Place(Vector2 p)
     {
         if (Placed.Count >= Marks.Count || !CanPlace(p)) return;
         Placed.Add(p);

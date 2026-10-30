@@ -339,6 +339,15 @@ public class ShopDay : MonoBehaviour
         if (step.kind == StepKind.CrossStitch) return Materials.For(o.target, Materials.FabricFor(o.target, content, shop), content);
         if (step.materials != null)
             foreach (var m in step.materials) needs.Add(new MaterialNeed { supplyId = m.supplyId, amount = m.amount });
+        if (step.threadAmount > 0 && o.target != null)
+        {
+            Materials.EnsureThreads(o.target, content);
+            if (o.target.threads.Count > 0)
+            {
+                string floss = o.target.threads[Mathf.Clamp(step.patternThread, 0, o.target.threads.Count - 1)];
+                if (!string.IsNullOrEmpty(floss)) needs.Add(new MaterialNeed { supplyId = floss, amount = step.threadAmount });
+            }
+        }
         if (step.fabricPieces > 0 && !string.IsNullOrEmpty(o.fabricId))
             needs.Add(new MaterialNeed { supplyId = o.fabricId, amount = step.ChosenAmount(o.target) });
         return needs;

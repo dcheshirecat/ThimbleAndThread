@@ -5,7 +5,8 @@ using UnityEngine;
 // The kinds of step a recipe can use. Each one is a minigame (see Crafts/ICraftStep.cs).
 // Append new values at the end: item assets store these as numbers.
 public enum StepKind { CrossStitch, Hem, ChooseFabric, CutPieces, Pin, SewSeam, TurnRightSideOut, Stuff, AttachEyes, CloseOpening, SewSides, HemTop, AttachHandles,
-                       ChooseYarn, CastOn, KnitRows, CastOff, MagicRing, CrochetRounds }
+                       ChooseYarn, CastOn, KnitRows, CastOff, MagicRing, CrochetRounds,
+                       HoopFabric, Backstitch, SatinFill, FrenchKnots }
 
 // One step of making an item, e.g. "Stitch the motif" then "Hem the edges".
 // Items list their steps in order in CraftItemDef.steps.
@@ -20,6 +21,8 @@ public class RecipeStep
     public int fabricPieces;                // how much of the fabric or yarn chosen in a Choose step this step uses
                                             // (fabric: pieces; yarn: stitches)
     public bool perPatternSquare;           // fabricPieces is per square of the pattern (e.g. 2 stitches of yarn per square)
+    public int patternThread;               // embroidery: which of the pattern's thread colours this step uses (0 = first)
+    public int threadAmount;                // ...and how much of that floss (in squares, like cross stitch)
 
     /// Whether the step's score counts towards the piece's quality (choosing a material isn't judged).
     public bool Judged => kind != StepKind.ChooseFabric && kind != StepKind.ChooseYarn;

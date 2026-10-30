@@ -2,6 +2,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+static class LoopExtensions
+{
+    /// A closed loop as a line: the points with the first one repeated at the end.
+    public static List<Vector2> Closed(this List<Vector2> loop) => new List<Vector2>(loop) { loop[0] };
+}
+
 /// Base for steps played on the piece in the step area: maps touches to 0..1 of the area,
 /// gives the piece's shape (from the order's pattern) and small drawing helpers.
 /// Subclasses draw in Build() and react in OnPress / OnDrag / OnRelease.
@@ -16,7 +22,9 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
     bool pressing;
 
     protected StepProgress State => order.StepState(stepIndex);
-    protected PieceShape Shape => shape ??= PieceShape.For(order.target);
+    protected PieceShape Shape => shape ??= PieceShape.For(order.target, ShapePadding);
+    /// Space around the piece's shape; embroidery leaves more, for the hoop.
+    protected virtual float ShapePadding => 0.1f;
     protected float Side => side;
 
     public void Begin(Order forOrder, int index, StepArea stepArea)
@@ -94,12 +102,46 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
         if (hemmed) Line(Shape.Mouth, stitch, 0.006f, 1);
     }
 
+    /// Embroidery: the hoop with its circle of fabric, the printed outline, and the work done so far.
+    protected void DrawHoop(bool outlined, bool filled)
+    {
+        var circle = Circle(new Vector2(0.5f, 0.5f), HoopRadius, 48);
+        Piece(circle, area.fabricColor, 0);
+        Line(Shape.Outline.Closed(), new Color(0.55f, 0.6f, 0.75f, 0.6f), 0.004f, 1);   // printed on the fabric
+        if (filled) Piece(Shape.Outline, Floss(0), 1);
+        if (outlined) Line(Shape.Outline.Closed(), Color.Lerp(Floss(0), Color.black, 0.3f), 0.01f, 2);
+        Line(circle.Closed(), new Color(0.72f, 0.55f, 0.35f), 0.035f, 5);   // the wooden hoop
+    }
+
+    protected const float HoopRadius = 0.46f;
+
+    /// The colour of the pattern's thread number i (the last one if there are fewer).
+    protected Color Floss(int i)
+    {
+        var palette = order.target != null ? order.target.palette : null;
+        if (palette == null || palette.Count == 0) return new Color(0.2f, 0.3f, 0.55f);
+        var c = palette[Mathf.Clamp(i, 0, palette.Count - 1)];
+        c.a = 1f;
+        return c;
+    }
+
+    protected static List<Vector2> Circle(Vector2 center, float radius, int points)
+    {
+        var list = new List<Vector2>();
+        for (int i = 0; i < points; i++)
+        {
+            float a = i / (float)points * Mathf.PI * 2f;
+            list.Add(center + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * radius);
+        }
+        return list;
+    }
+
     /// Recolours a piece drawn with Piece().
     protected static void Recolor(MeshRenderer piece, Color color)
     {
         var mesh = piece.GetComponent<MeshFilter>().mesh;
         var colors = new Color[mesh.vertexCount];
-        for (int i = 0; i < colors.Length; i++) colors[i] = color;
+        for (int i = 0; i < colors.Length; i++) colors[i] = PieceShape.VertexColor(color);
         mesh.colors = colors;
     }
 

@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c7901b20ad305e48a66e74441e500f0, type: 3}
+  m_Name: item_hoop_art
+  m_EditorClassIdentifier: Assembly-CSharp::CraftItemDef
+  itemId: hoop_art
+  itemName: Embroidered Hoop
+  craft: 2
+  icon: {fileID: 21300000, guid: afa2fb803f54c5740afa0f12b851e65a, type: 3}
+  requiredPattern:
+    id: 
+    displayName: 
+    craft: 0
+    width: 0
+    height: 0
+    palette: []
+    threads: []
+    cells: []
+  basePrice: 40
+  patternPrice: 12
+  requiredSupplyIds: []
+  steps:
+  - kind: 19
+    label: Hoop the fabric
+    tools:
+    - toolType: hoop
+      minSize: 0
+      label: Embroidery hoop
+      exactSize: 0
+      matchYarn: 0
+    materials:
+    - supplyId: embroidery_cotton
+      amount: 1
+    fabricPieces: 0
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+  - kind: 20
+    label: Backstitch the outline
+    tools:
+    - toolType: embroidery_needle
+      minSize: 0
+      label: Embroidery needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 10
+  - kind: 21
+    label: Fill with satin stitch
+    tools:
+    - toolType: embroidery_needle
+      minSize: 0
+      label: Embroidery needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 15
+  - kind: 22
+    label: Add French knots
+    tools:
+    - toolType: embroidery_needle
+      minSize: 0
+      label: Embroidery needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    perPatternSquare: 0
+    patternThread: 1
+    threadAmount: 2

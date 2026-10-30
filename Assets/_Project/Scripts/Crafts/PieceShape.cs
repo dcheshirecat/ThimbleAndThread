@@ -6,7 +6,7 @@ using UnityEngine;
 /// All points are in 0..1 of the area a step draws in.
 public class PieceShape
 {
-    const float Padding = 0.1f;          // space around the piece
+    const float DefaultPadding = 0.1f;   // space around the piece
     const float OpeningShare = 0.12f;    // the gap left open for turning and stuffing, as a share of the outline
     const float SeamAllowance = 0.025f;  // how far inside the cut edge the seam runs
     const float MaxCornerCut = 0.5f;     // smoothing rounds corners by at most this much, in grid squares
@@ -19,7 +19,8 @@ public class PieceShape
     public List<Vector2> Sides;          // bags: the seam down one side, along the bottom and up the other
     public List<Vector2> HandleEnds;     // bags: where the handle's two ends are sewn on, just below the top
 
-    public static PieceShape For(Pattern pattern)
+    /// padding: space left around the piece, in 0..1 of the area (embroidery leaves room for the hoop).
+    public static PieceShape For(Pattern pattern, float padding = DefaultPadding)
     {
         var shape = new PieceShape();
         var filled = new HashSet<Vector2Int>();
@@ -38,7 +39,7 @@ public class PieceShape
             for (int x = 1; x < 7; x++) for (int y = 1; y < 7; y++)
                 if ((new Vector2(x + 0.5f, y + 0.5f) - new Vector2(4, 4)).sqrMagnitude < 9.5f) filled.Add(new Vector2Int(x, y));
 
-        float scale = (1 - 2 * Padding) / Mathf.Max(w, h);
+        float scale = (1 - 2 * padding) / Mathf.Max(w, h);
         var offset = new Vector2((1 - w * scale) / 2f, (1 - h * scale) / 2f);
         Vector2 ToPiece(Vector2 g) => offset + g * scale;
 
@@ -268,10 +269,14 @@ public class PieceShape
         mesh.SetVertices(polygon.ConvertAll(p => (Vector3)p));
         mesh.SetTriangles(tris, 0);
         var colors = new Color[polygon.Count];
-        for (int i = 0; i < colors.Length; i++) colors[i] = color;
+        for (int i = 0; i < colors.Length; i++) colors[i] = PieceShape.VertexColor(color);
         mesh.colors = colors;
         return mesh;
     }
+
+    /// Mesh vertex colours aren't converted to linear colour space the way sprite and line colours
+    /// are, so convert them here; otherwise filled pieces come out lighter than their fabric.
+    public static Color VertexColor(Color c) => QualitySettings.activeColorSpace == ColorSpace.Linear ? c.linear : c;
 
     static bool InTriangle(Vector2 p, Vector2 a, Vector2 b, Vector2 c)
     {

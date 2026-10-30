@@ -78,10 +78,13 @@ Embroidery Floss, Yarn, Notions, Tools).
    yarn chosen in a Choose Yarn step. Tick **Per Pattern Square** to count it per square of the pattern
    (knitting a scarf uses 2 stitches of yarn per square). For knitting needles and crochet hooks, tick
    **Match Yarn** on the tool: the player then needs the size that matches the chosen yarn's weight.
+   **Pattern Thread** and **Thread Amount**: floss in one of the pattern's own colours (0 = first,
+   1 = second) that the step uses, in squares like cross stitch (embroidery steps use these).
    Leave Steps empty for a single cross stitch step.
    Kinds so far: Cross Stitch, Hem, Choose Fabric, Cut Pieces, Pin, Sew Seam, Turn Right Side Out,
    Stuff, Attach Eyes, Close Opening, Sew Sides, Hem Top, Attach Handles,
-   Choose Yarn, Cast On, Knit Rows, Cast Off, Magic Ring, Crochet Rounds.
+   Choose Yarn, Cast On, Knit Rows, Cast Off, Magic Ring, Crochet Rounds,
+   Hoop Fabric, Backstitch, Satin Fill, French Knots.
 
 The player can stop between steps or partway through one; every step's work is saved. A step's
 tools and materials are checked when the player starts it, and its materials are used up then.
@@ -94,6 +97,9 @@ Studio designs plushies too. Bags (e.g. "Market Tote") work the same way: the fi
 panel, the top edge stays open and is hemmed, and the handle is sewn on just below it.
 **Knitting patterns** use the grid as texture: each square is one stitch, filled squares are purl
 stitches and empty ones knit (so "Wave Stripes" knits a wavy texture).
+**Embroidery patterns** (e.g. "Little Whale") use the grid like sewing ones: the filled squares are the
+shape that's backstitched round and satin-filled in the first colour, and squares in the second colour
+are French knots in that colour.
 
 ## Customers and portraits
 

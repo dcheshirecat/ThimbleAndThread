@@ -34,3 +34,5 @@ MonoBehaviour:
     minRelationshipLevel: 0
   - item: {fileID: 11400000, guid: e7e94861e1dcdf847ba6112533c4cabe, type: 2}
     minRelationshipLevel: 3
+  - item: {fileID: 11400000, guid: 10c1ffff1a3b659439f05d80f5834bda, type: 2}
+    minRelationshipLevel: 0

@@ -140,7 +140,8 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
   designer canvas. Steps: CrossStitchStep; PieceStep (base: touch in 0..1 of the area, piece shape,
   drawing helpers) with TracingStep (Hem, CutPieces, SewSeam, CloseOpening) and ChooseFabric, Pin,
   TurnRightSideOut, Stuff, CastOn, KnitRows (KnitLayout), CrochetRounds, ChooseMaterial; PlacementStep (tap where things go: AttachEyes, AttachHandles); bag steps
-  SewSides and HemTop, CastOff, MagicRing (TracingStep). New step kinds: append to StepKind (Data/Recipe.cs), implement
+  SewSides and HemTop, CastOff, MagicRing, HoopFabric, Backstitch (TracingStep), SatinFill, FrenchKnots
+  (PlacementStep). New step kinds: append to StepKind (Data/Recipe.cs), implement
   ICraftStep (usually via PieceStep), add to MinigameHost.Create and a hint in OrderFlowUI.StepHint.
   Crafts/PlaceholderPatterns.cs.
 - Economy/OrderSystem.cs (Order with saved work, materialsUsed, fabricId; OrderGenerator), PricingCalculator.cs,
@@ -253,7 +254,7 @@ Done and on main: project setup, save slots + autosave, order book with resumabl
 pattern shelf (sales + pattern orders), book patterns, content library, portrait layout, thread colours,
 undo, Pattern Studio designer, owner guides, materials (counted supplies, starter kit), rotating Supply
 Market with shelves, tools that gate work, item recipes (tablecloth: stitch + hem; Sewn Plushie:
-8 sewing steps; tote bag: 5 steps; scarf and sweater: knitting; crocheted plushie: crochet). Everything is placeholder art and Unity default UI.
+8 sewing steps; tote bag: 5 steps; scarf and sweater: knitting; crocheted plushie: crochet; Embroidered Hoop: embroidery). Everything is placeholder art and Unity default UI.
 Still stand-ins: items without their own recipe (sampler) are
 made with the cross stitch board; Journal and Settings screens are empty.
 CI: main once failed with exit code 137 (out of memory) and later with "no space left on device" while
@@ -288,5 +289,11 @@ tools; merged to main 2026-10-29 (commit d2d3ee9), first build with it not yet c
    and yarn; RecipeStep.fabricPieces is the amount of the chosen material (perPatternSquare multiplies by
    the pattern's squares); ToolNeed.matchYarn/exactSize make needles and hooks match the yarn weight.
    Acrylic yarn, 5mm needles and the 5mm hook are always on sale.
-5. Next: embroidery actions; commissions; dialogue system (Ink or Yarn Spinner) with indirect requests;
+5. DONE (on main): embroidery. Item hoop_art "Embroidered Hoop" (Juno, level 0), book pattern "Little Whale".
+   Steps: Hoop the fabric (trace the ring; uses White Embroidery Cotton), Backstitch the outline (trace),
+   Fill with satin stitch (drag back and forth; coverage, minus stray stitches), Add French knots (twirl
+   twice round the mark, then let go; PlacementStep). Floss comes from the pattern's own threads via
+   RecipeStep.patternThread/threadAmount. Embroidery needles and embroidery cotton are always on sale.
+   Mesh colours go through PieceShape.VertexColor (linear colour space), or filled pieces look too light.
+6. Next: commissions; dialogue system (Ink or Yarn Spinner) with indirect requests;
    Journal; friend share codes (patterns, items, supplies); audio, settings, touch input wrapper.

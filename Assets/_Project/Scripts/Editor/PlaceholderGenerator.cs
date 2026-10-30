@@ -27,6 +27,7 @@ public static class PlaceholderGenerator
         var scarf     = Item("scarf",     "Scarf",     CraftType.Knitting,    30, 10, new Color(0.35f, 0.55f, 0.85f));
         var plushie   = Item("plushie",   "Crocheted Plushie", CraftType.Crochet, 45, 12, new Color(0.90f, 0.70f, 0.85f));
         if (plushie.itemName == "Plushie") { plushie.itemName = "Crocheted Plushie"; EditorUtility.SetDirty(plushie); }   // now that there's a sewn one
+        var hoopArt = Item("hoop_art", "Embroidered Hoop", CraftType.Embroidery, 40, 12, new Color(0.60f, 0.75f, 0.90f));
         var sewnPlushie = Item("plushie_sewn", "Sewn Plushie", CraftType.Sewing, 45, 12, new Color(0.95f, 0.75f, 0.80f));
         var tablecloth = Item("tablecloth", "Tablecloth", CraftType.CrossStitch, 50, 14, new Color(0.95f, 0.95f, 0.80f));
         var sampler   = Item("sampler",   "Sampler",   CraftType.CrossStitch, 25, 8,  new Color(0.60f, 0.85f, 0.60f));
@@ -62,6 +63,12 @@ public static class PlaceholderGenerator
             Step(StepKind.Stuff, "Stuff it", materials: Need("stuffing", 1)),
             Step(StepKind.AttachEyes, "Attach the eyes", materials: Need("safety_eyes_black", 1)),
             Step(StepKind.CloseOpening, "Close it up", tools: Tool("tapestry_needle", "Tapestry needle")));
+        var embroideryNeedle = Tool("embroidery_needle", "Embroidery needle");
+        Recipe(hoopArt,
+            Step(StepKind.HoopFabric, "Hoop the fabric", materials: Need("embroidery_cotton", 1), tools: Tool("hoop", "Embroidery hoop")),
+            Step(StepKind.Backstitch, "Backstitch the outline", thread: 0, threadAmount: 10, tools: embroideryNeedle),
+            Step(StepKind.SatinFill, "Fill with satin stitch", thread: 0, threadAmount: 15, tools: embroideryNeedle),
+            Step(StepKind.FrenchKnots, "Add French knots", thread: 1, threadAmount: 2, tools: embroideryNeedle));
         Recipe(tote,
             Step(StepKind.ChooseFabric, "Choose the fabric"),
             Step(StepKind.CutPieces, "Cut the panels", pieces: 2, tools: Tool("scissors", "Fabric scissors")),
@@ -86,6 +93,7 @@ public static class PlaceholderGenerator
         Supply("quilting_floral", "Floral Quilting Cotton", SupplyKind.Fabric, CraftType.Sewing, 9, 1, new Color(0.95f, 0.75f, 0.70f), 2, "pieces", R);
         Supply("fleece_blue",     "Blue Fleece",         SupplyKind.Fabric, CraftType.Sewing, 12, 2, new Color(0.55f, 0.70f, 0.90f), 2, "pieces", R);
         Supply("canvas_natural",  "Natural Canvas",      SupplyKind.Fabric, CraftType.Sewing, 14, 1, new Color(0.85f, 0.78f, 0.62f), 2, "pieces", R);
+        Supply("embroidery_cotton", "White Embroidery Cotton", SupplyKind.Fabric, CraftType.Embroidery, 6, 1, new Color(0.97f, 0.96f, 0.93f), 2, "pieces", A);
         Supply("minky_pink",      "Pink Minky",          SupplyKind.Fabric, CraftType.Sewing, 30, 3, new Color(0.98f, 0.78f, 0.85f), 2, "pieces", X);
 
         // Yarn: balls of 300 stitches. size = yarn weight (3 = DK, 4 = worsted); hooks and needles must match.
@@ -105,7 +113,7 @@ public static class PlaceholderGenerator
         var navy     = Supply("floss_navy",     "Navy Floss",     SupplyKind.Thread, cs, 3, 1, new Color(0.20f, 0.30f, 0.55f), 30, "squares", A, 1);
         Supply("floss_purple",   "Purple Floss",   SupplyKind.Thread, cs, 3, 1, new Color(0.55f, 0.40f, 0.70f), 30, "squares", R);
         var charcoal = Supply("floss_charcoal", "Charcoal Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.25f, 0.20f, 0.25f), 30, "squares", A, 1);
-        Supply("floss_white",    "White Floss",    SupplyKind.Thread, cs, 3, 1, new Color(0.98f, 0.98f, 0.96f), 30, "squares", A);
+        var white    = Supply("floss_white",    "White Floss",    SupplyKind.Thread, cs, 3, 1, new Color(0.98f, 0.98f, 0.96f), 30, "squares", A);
         Supply("floss_brown",    "Brown Floss",    SupplyKind.Thread, cs, 3, 1, new Color(0.50f, 0.32f, 0.20f), 30, "squares", R);
         Supply("floss_orange",   "Orange Floss",   SupplyKind.Thread, cs, 3, 1, new Color(0.95f, 0.50f, 0.20f), 30, "squares", R);
         Supply("floss_teal",     "Teal Floss",     SupplyKind.Thread, cs, 3, 1, new Color(0.15f, 0.55f, 0.55f), 30, "squares", R);
@@ -117,7 +125,7 @@ public static class PlaceholderGenerator
         Supply("hoop_6in", "6\" Embroidery Hoop", SupplyKind.Tool, cs, 8,  1, new Color(0.78f, 0.62f, 0.42f), 1, "hoop", R, 1, "hoop", 12);
         Supply("hoop_8in", "8\" Embroidery Hoop", SupplyKind.Tool, cs, 12, 1, new Color(0.75f, 0.60f, 0.40f), 1, "hoop", R, 0, "hoop", 16);
         Supply("tapestry_needle",   "Tapestry Needle",   SupplyKind.Tool, cs, 2, 1, new Color(0.75f, 0.75f, 0.80f), 1, "needle", A, 1, "tapestry_needle");
-        Supply("embroidery_needle", "Embroidery Needle", SupplyKind.Tool, CraftType.Embroidery, 2, 1, new Color(0.70f, 0.70f, 0.78f), 1, "needle", R, 0, "embroidery_needle");
+        Supply("embroidery_needle", "Embroidery Needle", SupplyKind.Tool, CraftType.Embroidery, 2, 1, new Color(0.70f, 0.70f, 0.78f), 1, "needle", A, 0, "embroidery_needle");
         Supply("crochet_hook_5mm",  "5mm Crochet Hook",  SupplyKind.Tool, CraftType.Crochet, 6, 1, new Color(0.55f, 0.75f, 0.85f), 1, "hook", A, 0, "crochet_hook", 4);
         Supply("knitting_needles_4mm", "4mm Knitting Needles", SupplyKind.Tool, CraftType.Knitting, 8, 1, new Color(0.70f, 0.55f, 0.40f), 1, "pair", R, 0, "knitting_needles", 3);
         Supply("knitting_needles_5mm", "5mm Knitting Needles", SupplyKind.Tool, CraftType.Knitting, 8, 1, new Color(0.65f, 0.50f, 0.35f), 1, "pair", A, 0, "knitting_needles", 4);
@@ -146,6 +154,7 @@ public static class PlaceholderGenerator
         var juno = Customer("juno",   "Juno",        "A teen who wants knitwear that doesn't look grandma-made.",
                  new Color(0.70f, 0.90f, 0.60f), new[] { (sampler, 0), (tote, 0), (sweater, 3) });
         var junoTote = System.Array.Find(juno.requestable, o => o.item == tote);
+        Wants(juno, hoopArt, 0);
         if (junoTote != null && junoTote.minRelationshipLevel == 1) { junoTote.minRelationshipLevel = 0; EditorUtility.SetDirty(juno); }   // totes are playable now
 
         // ---- The great-aunt's pattern book (starter shelf) ----
@@ -160,6 +169,9 @@ public static class PlaceholderGenerator
         // A sewing pattern: the filled squares are the piece's shape, '2' marks the eyes.
         BookPattern("felt_bunny", "Felt Bunny", sewnPlushie, 12, new[] { pink, charcoal },
             ".11....11.\n.11....11.\n.11....11.\n.11111111.\n1111111111\n1121111211\n1111111111\n1111111111\n.11111111.\n..111111..");
+        // An embroidery pattern: the filled squares are the shape (outlined, then satin-filled); '2' marks French knots.
+        BookPattern("little_whale", "Little Whale", hoopArt, 12, new[] { navy, white },
+            "........11\n........1.\n.111111.1.\n1111111111\n1211111111\n1111111111\n.11111111.\n..111111..");
         // A bag pattern: the filled squares are the panel (cut twice: front and back).
         BookPattern("market_tote", "Market Tote", tote, 10, new[] { navy },
             "111111111\n111111111\n111111111\n111111111\n111111111\n111111111\n111111111");
@@ -233,7 +245,7 @@ public static class PlaceholderGenerator
     }
 
     // Bump when the catalogue's details change, so supplies made by an older generator get updated.
-    const int SupplyGeneratorVersion = 4;
+    const int SupplyGeneratorVersion = 5;
 
     /// Gives an item its steps, unless it already has some (so steps set by hand are kept).
     static void Recipe(CraftItemDef item, params RecipeStep[] steps)
@@ -243,10 +255,12 @@ public static class PlaceholderGenerator
         EditorUtility.SetDirty(item);
     }
 
-    static RecipeStep Step(StepKind kind, string label, int pieces = 0, ToolNeed tools = null, MaterialNeed materials = null, bool perSquare = false) =>
+    static RecipeStep Step(StepKind kind, string label, int pieces = 0, ToolNeed tools = null, MaterialNeed materials = null, bool perSquare = false,
+                           int thread = 0, int threadAmount = 0) =>
         new RecipeStep
         {
             kind = kind, label = label, fabricPieces = pieces, perPatternSquare = perSquare,
+            patternThread = thread, threadAmount = threadAmount,
             tools = tools != null ? new[] { tools } : new ToolNeed[0],
             materials = materials != null ? new[] { materials } : new MaterialNeed[0],
         };
