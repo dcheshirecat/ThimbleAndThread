@@ -117,6 +117,13 @@ after delivery its pattern goes into the player's book, ready to put on the shel
      Linen Evenweave. Rare supplies only turn up at the market now and then, which makes these special.
    - **Bonus Coins** and **Bonus Friendship**: on top of the usual reward.
 
+## The tutorial ("How to Play")
+
+The tutorial shows the first time the app is opened, and from the title screen's How to Play button.
+Its pages are in `Data/Tutorial.asset`: click it and edit each page's **Title** and **Text**. To use
+your own illustration on a page, drag a sprite into its **Art** (any size; it keeps its shape and fits
+the picture area, about 1700 x 1150). Pages without art show a simple animated placeholder scene.
+
 ## Customers and portraits
 
 1. Art in `Art/Characters/Customers/`:

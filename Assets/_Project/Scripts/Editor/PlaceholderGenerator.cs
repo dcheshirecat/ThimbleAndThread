@@ -187,6 +187,8 @@ public static class PlaceholderGenerator
         BookPattern("market_tote", "Market Tote", tote, 10, new[] { navy },
             "111111111\n111111111\n111111111\n111111111\n111111111\n111111111\n111111111");
 
+        Tutorial();
+
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         ContentLibraryRefresher.Refresh();
@@ -278,6 +280,39 @@ public static class PlaceholderGenerator
 
     static ToolNeed Tool(string type, string label, bool matchYarn = false) => new ToolNeed { toolType = type, label = label, matchYarn = matchYarn };
     static MaterialNeed Need(string supplyId, int amount) => new MaterialNeed { supplyId = supplyId, amount = amount };
+
+    /// Creates the tutorial's pages, unless the tutorial exists (so words edited by hand are kept).
+    static void Tutorial()
+    {
+        string assetPath = $"{Root}/Data/Tutorial.asset";
+        if (AssetDatabase.LoadAssetAtPath<TutorialDef>(assetPath) != null) return;
+        var def = ScriptableObject.CreateInstance<TutorialDef>();
+        TutorialPage Page(string title, TutorialAnim anim, string text) => new TutorialPage { title = title, text = text, animation = anim };
+        def.pages = new[]
+        {
+            Page("Welcome to Thimble & Thread", TutorialAnim.Welcome,
+                "Your great-aunt has left you her little haberdashery by the sea. It opens at dusk... and it's yours now."),
+            Page("Day and Night", TutorialAnim.DayAndNight,
+                "By day the shop is open: customers come in, buy patterns and order things made. Close up when you like, " +
+                "and craft by lamplight in the workroom at night. Neither one has a timer."),
+            Page("Your Customers", TutorialAnim.Customers,
+                "People don't always say exactly what they want. Listen, choose something that fits, and they'll become " +
+                "friends. Now and then someone asks for a commission: a brand-new pattern only you can design."),
+            Page("Made by Hand", TutorialAnim.Stitching,
+                "Everything is made step by step, the way it's really done. Cross stitch: drag from corner to corner, then " +
+                "the other way to finish the X."),
+            Page("Every Craft Its Own", TutorialAnim.Gestures,
+                "Knit with a swipe for each stitch, crochet with a tap and a flick, and sew or embroider by tracing the line. " +
+                "The hint at the top always tells you what to do."),
+            Page("No Rush", TutorialAnim.OrderBook,
+                "Orders wait in your order book. Nothing has a deadline: stop whenever you like, your work is saved, and pick " +
+                "it up another night."),
+            Page("Supplies", TutorialAnim.Market,
+                "You can only make things with what's in your cupboard. Buy supplies at the Supply Market by day; its stock " +
+                "changes every four days. Tools are yours to keep."),
+        };
+        AssetDatabase.CreateAsset(def, assetPath);
+    }
 
     /// Creates a commission, unless it exists (so wording edited by hand is kept).
     static void Commission(string id, CustomerDef customer, CraftItemDef item, int minLevel, string requiredSupplyId, string request)

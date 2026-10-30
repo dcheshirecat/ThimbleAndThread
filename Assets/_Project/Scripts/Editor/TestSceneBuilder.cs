@@ -107,7 +107,48 @@ public static class TestSceneBuilder
         // Title
         var p = Panel(ScreenId.Title, "Thimble & Thread", new Color(0.30f, 0.22f, 0.35f));
         p.Find("Title").GetComponent<Text>().color = Color.white;
-        Button(Column(p, 0.5f, 0.45f), "Play", router.GoToSaveSelect);
+        var titleButtons = Column(p, 0.5f, 0.45f);
+        Button(titleButtons, "Play", router.GoToSaveSelect);
+        Button(titleButtons, "How to Play", router.GoToTutorial);
+
+        // Tutorial: shown the first time the app is opened, and from "How to Play"
+        p = Panel(ScreenId.Tutorial, "", new Color(0.30f, 0.22f, 0.35f));
+        var tutorial = canvasGo.AddComponent<TutorialUI>();
+        tutorial.content = content;
+        tutorial.square = uiSprite;
+        tutorial.circle = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
+        var pageGo = new GameObject("Page", typeof(RectTransform), typeof(CanvasGroup));
+        var pageRt = (RectTransform)pageGo.transform;
+        pageRt.SetParent(p, false);
+        Stretch(pageRt);
+        tutorial.page = pageGo.GetComponent<CanvasGroup>();
+        tutorial.titleText = Label(pageRt, "PageTitle", new Vector2(0.06f, 0.86f), new Vector2(0.94f, 0.93f), 100, TextAnchor.MiddleCenter);
+        tutorial.titleText.color = Color.white;
+        var stageGo = new GameObject("Stage", typeof(RectTransform), typeof(Image), typeof(RectMask2D));
+        var stageRt = (RectTransform)stageGo.transform;
+        stageRt.SetParent(pageRt, false);
+        stageRt.anchorMin = stageRt.anchorMax = new Vector2(0.5f, 0.635f);
+        stageRt.sizeDelta = new Vector2(1700, 1150);   // fixed canvas units, so the scenes look the same on every phone
+        stageGo.GetComponent<Image>().color = new Color(1, 1, 1, 0.08f);
+        tutorial.stage = stageRt;
+        var artGo = new GameObject("Art", typeof(RectTransform), typeof(Image));
+        var artRt = (RectTransform)artGo.transform;
+        artRt.SetParent(stageRt, false);
+        Stretch(artRt);
+        tutorial.art = artGo.GetComponent<Image>();
+        tutorial.art.preserveAspect = true;
+        tutorial.art.raycastTarget = false;
+        tutorial.bodyText = Label(pageRt, "Body", new Vector2(0.08f, 0.2f), new Vector2(0.92f, 0.41f), 64, TextAnchor.UpperCenter);
+        tutorial.bodyText.color = Color.white;
+        tutorial.pageText = Label(pageRt, "Dots", new Vector2(0.1f, 0.15f), new Vector2(0.9f, 0.19f), 56, TextAnchor.MiddleCenter);
+        tutorial.pageText.color = Color.white;
+        var tutorialButtons = Row(p, 0.5f, 0.07f);
+        tutorial.backButton = Button(tutorialButtons, "Back", tutorial.Back, 600).gameObject;
+        tutorial.nextLabel = Button(tutorialButtons, "Next", tutorial.Next, 900).GetComponentInChildren<Text>();
+        var skip = Button(p, "Skip", tutorial.Skip, 360);
+        var skipRt = (RectTransform)skip.transform;
+        skipRt.anchorMin = skipRt.anchorMax = new Vector2(0.88f, 0.965f);
+        skipRt.sizeDelta = new Vector2(360, 130);
 
         // Save select
         p = Panel(ScreenId.SaveSelect, "Choose a Save", new Color(0.88f, 0.84f, 0.92f));

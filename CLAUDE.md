@@ -262,6 +262,21 @@ the Unity image. The workflow deletes preinstalled runner tools, adds 12 GB swap
 2026-10-30, commit 764543c) sets unity-builder's dockerMemoryLimit: 18g: GameCI caps the build container
 at 95% of RAM by default, so the swap was out of reach and 137 kept happening. Not yet confirmed green.
 
+Tutorial (branch tutorial, merged): Data/Tutorial.asset (TutorialDef: pages with title, text, optional art,
+TutorialAnim placeholder scene). UI/TutorialUI.cs shows it on first launch (PlayerPrefs "tutorial_seen") and
+from the title's How to Play button (ScreenId.Tutorial); placeholder scenes are code-drawn UI shapes.
+
+## Owner feedback, 2026-10-30 (after playing; drives the next tasks)
+1. Stitches should look realistic (not flat lines/squares).
+2. Some thread colours are so bright that finished stitches are hard to see.
+3. Crafting steps should flow from one to the next, without going back to the Workbench between steps.
+4. Dialogue with customers, and special scenes at friendship thresholds. Some characters romanceable.
+5. More depth and flow: something that pulls you in; right now it feels flat. Crafting more complex and realistic.
+6. Limited display space: only N patterns on show at a time; choose which based on what sells.
+7. Skills unlockable (crafts and pattern creation), not all from the start. Journal pages: friendship
+   progress, unlocked crafts, inventory, etc.
+8. Supply store: items marked by rarity; once bought, an item is out of stock for the next two days.
+
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
 2. DONE (on main): item recipes. CraftItemDef.steps (RecipeStep: StepKind, label,

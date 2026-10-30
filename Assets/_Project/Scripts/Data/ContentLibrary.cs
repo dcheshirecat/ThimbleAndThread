@@ -10,6 +10,7 @@ public class ContentLibrary : ScriptableObject
     public SupplyDef[] supplies = new SupplyDef[0];
     public PatternDef[] patterns = new PatternDef[0];
     public CommissionDef[] commissions = new CommissionDef[0];
+    public TutorialDef tutorial;
 
     public CustomerDef Customer(string id) => System.Array.Find(customers, c => c != null && c.customerId == id);
     public CraftItemDef Item(string id) => System.Array.Find(items, i => i != null && i.itemId == id);

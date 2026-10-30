@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b922a12cd982a61439a5c71c68003984, type: 3}
+  m_Name: Tutorial
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialDef
+  pages:
+  - title: Welcome to Thimble & Thread
+    text: Your great-aunt has left you her little haberdashery by the sea. It opens at dusk... and it's yours now.
+    art: {fileID: 0}
+    animation: 0
+  - title: Day and Night
+    text: 'By day the shop is open: customers come in, buy patterns and order things made. Close up when you like, and craft by lamplight in the workroom at night. Neither one has a timer.'
+    art: {fileID: 0}
+    animation: 1
+  - title: Your Customers
+    text: 'People don''t always say exactly what they want. Listen, choose something that fits, and they''ll become friends. Now and then someone asks for a commission: a brand-new pattern only you can design.'
+    art: {fileID: 0}
+    animation: 2
+  - title: Made by Hand
+    text: 'Everything is made step by step, the way it''s really done. Cross stitch: drag from corner to corner, then the other way to finish the X.'
+    art: {fileID: 0}
+    animation: 3
+  - title: Every Craft Its Own
+    text: Knit with a swipe for each stitch, crochet with a tap and a flick, and sew or embroider by tracing the line. The hint at the top always tells you what to do.
+    art: {fileID: 0}
+    animation: 4
+  - title: No Rush
+    text: 'Orders wait in your order book. Nothing has a deadline: stop whenever you like, your work is saved, and pick it up another night.'
+    art: {fileID: 0}
+    animation: 5
+  - title: Supplies
+    text: You can only make things with what's in your cupboard. Buy supplies at the Supply Market by day; its stock changes every four days. Tools are yours to keep.
+    art: {fileID: 0}
+    animation: 6

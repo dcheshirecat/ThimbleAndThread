@@ -36,6 +36,8 @@ public class ContentLibraryRefresher : AssetPostprocessor
         lib.supplies = Find<SupplyDef>();
         lib.patterns = Find<PatternDef>();
         lib.commissions = Find<CommissionDef>();
+        var tutorials = Find<TutorialDef>();
+        lib.tutorial = tutorials.Length > 0 ? tutorials[0] : null;
         EditorUtility.SetDirty(lib);
         AssetDatabase.SaveAssets();
         return lib;
