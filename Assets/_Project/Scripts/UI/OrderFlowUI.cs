@@ -69,13 +69,15 @@ public class OrderFlowUI : MonoBehaviour
 
         bool night = save.night;
         workbenchText.text = $"{order.item.itemName} for {who}\n\n" +
+            CommissionText(order) +
             (order.patternOnly ? "Pattern only: fill in the squares to design it." : RecipeText(order)) +
             (order.finished ? $"\nFinished ({Mathf.RoundToInt(order.accuracy * 100)}% accuracy)." : $"\nProgress: {progress}%") +
             MaterialsText(order) +
             (night ? "" : order.finished ? $"\n\n{who} is here to collect it." : "\n\nYou can work on this tonight, in the workroom.");
         if (!string.IsNullOrEmpty(day.LastMessage) && screen == ScreenId.Workbench) workbenchText.text += $"\n\n{day.LastMessage}";
         bool started = order.work.Count > 0 || order.step > 0;
-        startLabel.text = order.finished ? "Rework It"
+        startLabel.text = order.needsDesign ? "Design the Pattern"
+            : order.finished ? "Rework It"
             : order.Steps.Length > 1 ? (started ? "Keep Working: " : "Start: ") + order.CurrentStep.label
             : started ? "Keep Working" : "Start Crafting";
         startButton.SetActive(night);
@@ -120,6 +122,13 @@ public class OrderFlowUI : MonoBehaviour
             acceptLabel.text = $"Sell It ({p.price} coins)";
             SetPreview(dialoguePattern, day.DesignFor(p));
         }
+        else if (day.Offer != null && day.CommissionOf(day.Offer) is CommissionDef c)
+        {
+            var needs = c.requiredSupply != null ? $"\nIt must be made with {c.requiredSupply.displayName}." : "";
+            dialogueText.text = $"{c.request}\n\n(A commission: you'll design a brand-new {c.item.itemName.ToLower()} pattern for it.{needs})";
+            acceptLabel.text = "Take the Commission";
+            SetPreview(dialoguePattern, day.Offer.target);   // blank: nothing designed yet
+        }
         else if (day.Offer != null)
         {
             var o = day.Offer;
@@ -156,7 +165,7 @@ public class OrderFlowUI : MonoBehaviour
         foreach (var order in day.Orders)
         {
             var customer = day.CustomerFor(order.customerId);
-            string kind = order.patternOnly ? " (pattern)" : "";
+            string kind = order.patternOnly ? " (pattern)" : !string.IsNullOrEmpty(order.commissionId) ? " (commission)" : "";
             string state = order.finished ? "Ready to hand over" : $"{Mathf.RoundToInt(order.Progress() * 100)}%";
             string id = order.id;
             orderRows.Add(AddRow(orderTemplate, $"Order_{id}",
@@ -246,6 +255,17 @@ public class OrderFlowUI : MonoBehaviour
             : $"{s.price} coins for {s.perPack} {s.unit}\nYou have {day.shop.Stock(id)}";
     }
 
+    /// A commission's request, and whether its pattern still needs designing.
+    string CommissionText(Order order)
+    {
+        var c = day.CommissionOf(order);
+        if (c == null) return "";
+        var text = $"Commission: \"{c.request}\"\n";
+        if (c.requiredSupply != null) text += $"Must be made with {c.requiredSupply.displayName}.\n";
+        if (order.needsDesign) text += "First, design a brand-new pattern for it (it isn't judged).\n";
+        return text + "\n";
+    }
+
     /// The recipe as a checklist: steps done, the one being worked on, and the ones still to come.
     static string RecipeText(Order order)
     {
@@ -317,8 +337,8 @@ public class OrderFlowUI : MonoBehaviour
         {
             var options = ChooseMaterialStep.Options(order, day.content, day.shop);
             text += options.Count > 0
-                ? $"\nHave: {ChooseMaterialStep.Wanted(order)} (you'll choose: {string.Join(", ", options.ConvertAll(s => s.displayName))})"
-                : $"\nMissing: {ChooseMaterialStep.Wanted(order)}";
+                ? $"\nHave: {ChooseMaterialStep.Wanted(order, day.content)} (you'll choose: {string.Join(", ", options.ConvertAll(s => s.displayName))})"
+                : $"\nMissing: {ChooseMaterialStep.Wanted(order, day.content)}";
         }
         var missing = day.shop.Missing(needs);
         foreach (var n in needs) text += $"\n{(missing.Contains(n) ? "Missing" : "Have")}: {Materials.Describe(n, day.content, day.shop)}";

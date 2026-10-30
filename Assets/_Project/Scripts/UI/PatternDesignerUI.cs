@@ -130,6 +130,7 @@ public class PatternDesignerUI : MonoBehaviour
 
     public void NextItem()
     {
+        if (day.DesigningFor != null) return;   // a commission decides what it makes
         itemIndex = (itemIndex + 1) % day.content.items.Length;
         Refresh();
     }
@@ -161,6 +162,11 @@ public class PatternDesignerUI : MonoBehaviour
     public void Save()
     {
         var d = Current();
+        if (day.DesigningFor != null && d.cells.Count == 0)
+        {
+            swatches.label.text = "Fill in some squares first: this is the commission's new pattern.";
+            return;
+        }
         day.SaveDesign(Copy(d, d.width, d.height), nameField.text, day.content.items[itemIndex].itemId, price);
     }
 

@@ -43,7 +43,7 @@ public class ShopDay : MonoBehaviour
     void OnGameLoaded(bool isNewGame)
     {
         minigame.Close();
-        Visitor = null; Offer = null; SaleOffer = null; Selected = null; SelectedPattern = null;
+        Visitor = null; Offer = null; SaleOffer = null; Selected = null; SelectedPattern = null; DesigningFor = null;
 
         // The great-aunt's book: starter patterns for new games, and any starter pattern added in an
         // update for older saves (book patterns can't be deleted, so a missing one was never there).
@@ -109,6 +109,17 @@ public class ShopDay : MonoBehaviour
             Save.visitorsToday.RemoveAt(0);
             if (customer == null) continue;
 
+            // Now and then they have something special in mind: a commission.
+            var commission = CommissionFor(customer);
+            if (commission != null && Random.value < CommissionChance)
+            {
+                Visitor = customer;
+                Offer = NewCommission(commission);
+                GM.Persist();
+                GM.ChangeScreen(ScreenId.Dialogue);
+                return;
+            }
+
             // They browse the shelf for patterns of things they'd like.
             var wants = OrderGenerator.Wants(customer, GM.GetRelationship(customer.customerId).level);
             var matches = Shelf.FindAll(p => wants.Exists(i => i.itemId == p.itemId));
@@ -145,7 +156,9 @@ public class ShopDay : MonoBehaviour
         else
         {
             Save.orders.Add(Offer);
-            LastMessage = $"{Visitor.displayName}'s {Offer.item.itemName.ToLower()} is in your order book.";
+            LastMessage = Offer.needsDesign
+                ? $"{Visitor.displayName}'s commission is in your order book. Design its pattern tonight."
+                : $"{Visitor.displayName}'s {Offer.item.itemName.ToLower()} is in your order book.";
         }
         Visitor = null; Offer = null; SaleOffer = null;
         GM.Persist();
@@ -157,6 +170,55 @@ public class ShopDay : MonoBehaviour
         LastMessage = $"{Visitor.displayName} will come back another day.";
         Visitor = null; Offer = null; SaleOffer = null;
         GM.ChangeScreen(ScreenId.Shop);
+    }
+
+    // ---- Commissions ----
+
+    /// How often a visitor with a commission in mind asks for it instead of browsing.
+    public const float CommissionChance = 0.3f;
+
+    /// A commission this customer could ask for now: friendly enough, not delivered, not already in the book.
+    public CommissionDef CommissionFor(CustomerDef customer)
+    {
+        int level = GM.GetRelationship(customer.customerId).level;
+        foreach (var c in content.commissions)
+            if (c != null && c.customer == customer && c.item != null && c.minRelationshipLevel <= level
+                && !Save.commissionsDone.Contains(c.commissionId) && !Save.orders.Exists(o => o.commissionId == c.commissionId))
+                return c;
+        return null;
+    }
+
+    /// The order for a commission: no pattern yet, the player designs it first.
+    public Order NewCommission(CommissionDef c) => new Order
+    {
+        id = System.Guid.NewGuid().ToString("N"),
+        customerId = c.customer.customerId,
+        itemId = c.item.itemId,
+        item = c.item,
+        dayPlaced = Save.day,
+        commissionId = c.commissionId,
+        needsDesign = true,
+        requiredSupplyId = c.requiredSupply != null ? c.requiredSupply.supplyId : "",
+        target = new Pattern { displayName = $"{c.customer.displayName}'s {c.item.itemName}", craft = c.item.craft, width = 8, height = 8 },
+    };
+
+    /// The commission an order is for, or null.
+    public CommissionDef CommissionOf(Order o) => string.IsNullOrEmpty(o.commissionId) ? null : content.Commission(o.commissionId);
+
+    /// The order whose pattern is being designed in the Pattern Studio designer (a commission), or null.
+    public Order DesigningFor { get; private set; }
+
+    /// Opens the designer for a commission's brand-new pattern. It isn't judged.
+    void DesignCommission(Order o)
+    {
+        DesigningFor = o;
+        SelectedPattern = new OwnedPattern
+        {
+            id = System.Guid.NewGuid().ToString("N"), name = o.target.displayName, itemId = o.itemId,
+            price = Mathf.Max(1, o.item.patternPrice), designed = true, design = o.target,
+        };
+        LastMessage = "";
+        GM.ChangeScreen(ScreenId.PatternDesigner);
     }
 
     /// Day to night: ends the day's trading and shows the summary.
@@ -251,6 +313,7 @@ public class ShopDay : MonoBehaviour
     /// Called by the designer's Save button with what's on the board.
     public void SaveDesign(Pattern design, string name, string itemId, int price)
     {
+        if (DesigningFor != null) { SaveCommissionDesign(design, name); return; }
         var p = SelectedPattern;
         p.name = string.IsNullOrWhiteSpace(name) ? p.name : name.Trim();
         p.itemId = itemId;
@@ -265,9 +328,34 @@ public class ShopDay : MonoBehaviour
         GM.ChangeScreen(ScreenId.PatternEdit);
     }
 
+    /// A commission's design becomes the order's pattern; then it's made like any other order.
+    void SaveCommissionDesign(Pattern design, string name)
+    {
+        if (design.cells.Count == 0) return;   // the designer asks for some squares first
+        var o = DesigningFor;
+        design.displayName = string.IsNullOrWhiteSpace(name) ? o.target.displayName : name.Trim();
+        design.craft = o.item.craft;
+        o.target = Compact(design);
+        o.needsDesign = false;
+        DesigningFor = null;
+        SelectedPattern = null;
+        Selected = o;
+        GM.Persist();
+        LastMessage = $"\"{o.target.displayName}\" is designed. Now make it!";
+        GM.ChangeScreen(ScreenId.Workbench);
+    }
+
     /// Designer's Cancel: back without saving (a brand-new pattern is simply dropped).
     public void CancelDesign()
     {
+        if (DesigningFor != null)
+        {
+            Selected = DesigningFor;
+            DesigningFor = null;
+            SelectedPattern = null;
+            GM.ChangeScreen(ScreenId.Workbench);
+            return;
+        }
         bool isNew = !Save.patterns.Contains(SelectedPattern);
         if (isNew) SelectedPattern = null;
         GM.ChangeScreen(isNew ? ScreenId.PatternStudio : ScreenId.PatternEdit);
@@ -336,7 +424,7 @@ public class ShopDay : MonoBehaviour
         var needs = new List<MaterialNeed>();
         if (o.patternOnly || StepMaterialsUsed(o, index)) return needs;
         var step = o.Steps[index];
-        if (step.kind == StepKind.CrossStitch) return Materials.For(o.target, Materials.FabricFor(o.target, content, shop), content);
+        if (step.kind == StepKind.CrossStitch) return Materials.For(o.target, Materials.FabricFor(o.target, content, shop, o.requiredSupplyId), content);
         if (step.materials != null)
             foreach (var m in step.materials) needs.Add(new MaterialNeed { supplyId = m.supplyId, amount = m.amount });
         if (step.threadAmount > 0 && o.target != null)
@@ -422,13 +510,14 @@ public class ShopDay : MonoBehaviour
     public void StartCrafting()
     {
         if (!Save.night || Selected == null) return;
-        int index = Mathf.Clamp(Selected.step, 0, Selected.Steps.Length - 1);
+        if (Selected.needsDesign) { DesignCommission(Selected); return; }
+        int index =Mathf.Clamp(Selected.step, 0, Selected.Steps.Length - 1);
         var kind = Selected.Steps[index].kind;
         string blocked = null;
         if (shop.MissingTools(ToolsForStep(Selected, index)).Count > 0)
             blocked = "You're missing a tool for this step. Look for it at the Supply Market.";
         else if ((kind == StepKind.ChooseFabric || kind == StepKind.ChooseYarn) && ChooseMaterialStep.Options(Selected, content, shop).Count == 0)
-            blocked = $"You need {ChooseMaterialStep.Wanted(Selected)}. Look for some at the Supply Market.";
+            blocked = $"You need {ChooseMaterialStep.Wanted(Selected, content)}. Look for some at the Supply Market.";
         else if (shop.Missing(NeedsForStep(Selected, index)).Count > 0)
             blocked = "You don't have all the materials for this step yet. Buy them at the Supply Market tomorrow.";
         if (blocked != null)
@@ -440,7 +529,7 @@ public class ShopDay : MonoBehaviour
         if (!StepMaterialsUsed(Selected, index))
         {
             var needs = NeedsForStep(Selected, index);
-            if (kind == StepKind.CrossStitch) Selected.fabricId = Materials.FabricFor(Selected.target, content, shop)?.supplyId;
+            if (kind == StepKind.CrossStitch) Selected.fabricId = Materials.FabricFor(Selected.target, content, shop, Selected.requiredSupplyId)?.supplyId;
             shop.Use(needs);
             if (kind == StepKind.CrossStitch) Selected.materialsUsed = true;
             else Selected.StepState(index).materialsUsed = true;
@@ -503,6 +592,8 @@ public class ShopDay : MonoBehaviour
         LastStars = PricingCalculator.Stars(LastAccuracy);
         LastPrice = PricingCalculator.Compute(Selected.item, LastAccuracy, TierOf(Selected), level, Selected.patternOnly);
         LastPoints = PricingCalculator.RelationshipReward(LastAccuracy);
+        var commission = CommissionOf(Selected);
+        if (commission != null) { LastPrice += commission.bonusCoins; LastPoints += commission.bonusFriendship; }
         GM.ChangeScreen(ScreenId.Result);
     }
 
@@ -529,6 +620,19 @@ public class ShopDay : MonoBehaviour
         int level = GM.GetRelationship(Selected.customerId).level;
         int price = PricingCalculator.Compute(Selected.item, Selected.accuracy, TierOf(Selected), level, Selected.patternOnly);
         int points = PricingCalculator.RelationshipReward(Selected.accuracy);
+        var commission = CommissionOf(Selected);
+        if (commission != null)
+        {
+            price += commission.bonusCoins;
+            points += commission.bonusFriendship;
+            Save.commissionsDone.Add(commission.commissionId);
+            // Its pattern goes into the book, ready to be shelved.
+            Save.patterns.Add(new OwnedPattern
+            {
+                id = System.Guid.NewGuid().ToString("N"), name = Selected.target.displayName, itemId = Selected.itemId,
+                price = Mathf.Max(1, Selected.item.patternPrice), designed = true, design = Selected.target,
+            });
+        }
 
         GM.AddCoins(price);
         GM.AddRelationshipPoints(Selected.customerId, points);
@@ -541,6 +645,8 @@ public class ShopDay : MonoBehaviour
         LastMessage = after > level
             ? $"{name} loves it and is now a closer friend! (level {after})"
             : $"Handed over to {name}: +{price} coins, +{points} friendship.";
+        if (commission != null)
+            LastMessage += $" The \"{Selected.target.displayName}\" pattern is in your book: put it on the shelf in the Pattern Studio.";
         Selected = null;
         GM.ChangeScreen(ScreenId.Shop);
     }

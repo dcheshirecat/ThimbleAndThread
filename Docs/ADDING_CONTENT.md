@@ -101,6 +101,22 @@ stitches and empty ones knit (so "Wave Stripes" knits a wavy texture).
 shape that's backstitched round and satin-filled in the first colour, and squares in the second colour
 are French knots in that colour.
 
+## Commissions (special requests)
+
+A commission is a special request from one customer: the player designs a brand-new pattern for
+it (the design isn't judged), then makes the item. Each one is offered until it's delivered, once;
+after delivery its pattern goes into the player's book, ready to put on the shelf.
+
+1. In `Data/Commissions/`: **Create > Craft > Commission**, file `commission_<id>`.
+2. Fill in:
+   - **Commission Id**: e.g. `tobias_sunday_cloth`
+   - **Customer** and **Item** (what gets made)
+   - **Min Relationship Level**: offered once the friendship is this high (0 = from the start)
+   - **Request**: what they say. Coffee Talk style works well: describe the feeling, not the item.
+   - **Required Supply** (optional): the fabric or yarn it must be made from, e.g. 100% Alpaca Yarn or
+     Linen Evenweave. Rare supplies only turn up at the market now and then, which makes these special.
+   - **Bonus Coins** and **Bonus Friendship**: on top of the usual reward.
+
 ## Customers and portraits
 
 1. Art in `Art/Characters/Customers/`:

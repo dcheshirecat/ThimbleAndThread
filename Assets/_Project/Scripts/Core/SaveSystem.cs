@@ -56,6 +56,8 @@ public static class SaveSystem
         // Version 4 orders had no recipe steps: step 0 with no saved step progress is right, since every
         // item was a single cross stitch step and its stitches are still in Order.work.
         foreach (var o in data.orders) o.steps ??= new System.Collections.Generic.List<StepProgress>();
+        // Version 5 had no commissions; none done is right.
+        data.commissionsDone ??= new System.Collections.Generic.List<string>();
         data.version = SaveData.CurrentVersion;
         return data;
     }

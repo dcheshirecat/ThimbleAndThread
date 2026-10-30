@@ -254,12 +254,13 @@ Done and on main: project setup, save slots + autosave, order book with resumabl
 pattern shelf (sales + pattern orders), book patterns, content library, portrait layout, thread colours,
 undo, Pattern Studio designer, owner guides, materials (counted supplies, starter kit), rotating Supply
 Market with shelves, tools that gate work, item recipes (tablecloth: stitch + hem; Sewn Plushie:
-8 sewing steps; tote bag: 5 steps; scarf and sweater: knitting; crocheted plushie: crochet; Embroidered Hoop: embroidery). Everything is placeholder art and Unity default UI.
+8 sewing steps; tote bag: 5 steps; scarf and sweater: knitting; crocheted plushie: crochet; Embroidered Hoop: embroidery), commissions. Everything is placeholder art and Unity default UI.
 Still stand-ins: items without their own recipe (sampler) are
 made with the cross stitch board; Journal and Settings screens are empty.
-CI: main once failed with exit code 137 (out of memory) and later with "no space left on device" while
-pulling the Unity image. The workflow now adds 12 GB swap on /mnt and deletes more preinstalled runner
-tools; merged to main 2026-10-29 (commit d2d3ee9), first build with it not yet confirmed.
+CI: main failed with exit code 137 (out of memory) and once with "no space left on device" while pulling
+the Unity image. The workflow deletes preinstalled runner tools, adds 12 GB swap on /mnt, and (since
+2026-10-30, commit 764543c) sets unity-builder's dockerMemoryLimit: 18g: GameCI caps the build container
+at 95% of RAM by default, so the swap was out of reach and 137 kept happening. Not yet confirmed green.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
@@ -295,5 +296,14 @@ tools; merged to main 2026-10-29 (commit d2d3ee9), first build with it not yet c
    twice round the mark, then let go; PlacementStep). Floss comes from the pattern's own threads via
    RecipeStep.patternThread/threadAmount. Embroidery needles and embroidery cotton are always on sale.
    Mesh colours go through PieceShape.VertexColor (linear colour space), or filled pieces look too light.
-6. Next: commissions; dialogue system (Ink or Yarn Spinner) with indirect requests;
+6. DONE (on main): commissions. CommissionDef assets (Data/Commissions): customer, item, min level,
+   request text (indirect), optional requiredSupply, bonus coins/friendship. A visitor with an eligible
+   commission (level reached, not done, not already in the book) offers it 30% of the time instead of
+   browsing. The order starts with needsDesign: Start opens the Pattern Studio designer (item locked,
+   empty designs refused); the design becomes order.target, then the item's recipe as usual. Required
+   supply restricts the Choose step (or the Aida for cross stitch). Hand-over adds the bonus, records it in
+   SaveData.commissionsDone (save version 6) and puts the pattern in the book, off the shelf.
+   Commissions so far: Juno's skate-park scarf (level 0), Mara's moon bunny (sewn plushie, pink minky,
+   level 1), Tobias's Sunday cloth (tablecloth, linen evenweave, level 1).
+7. Next: dialogue system (Ink or Yarn Spinner) with indirect requests;
    Journal; friend share codes (patterns, items, supplies); audio, settings, touch input wrapper.

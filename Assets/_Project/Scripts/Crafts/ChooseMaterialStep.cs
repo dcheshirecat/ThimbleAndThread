@@ -19,12 +19,17 @@ public class ChooseMaterialStep : PieceStep
     {
         int amount = order.ChosenAmount();
         bool yarn = order.ChooseKind() == StepKind.ChooseYarn;
+        string required = order.requiredSupplyId;   // a commission may insist on one
         return new List<SupplyDef>(System.Array.FindAll(content.supplies, s => s != null && shop.Stock(s.supplyId) >= amount
+            && (string.IsNullOrEmpty(required) || s.supplyId == required)
             && (yarn ? s.kind == SupplyKind.Yarn : s.kind == SupplyKind.Fabric && s.craft == CraftType.Sewing)));
     }
 
     /// What the player needs to buy, e.g. "2 pieces of one sewing fabric (felt, cotton, fleece...)".
-    public static string Wanted(Order order) => order.ChooseKind() == StepKind.ChooseYarn
+    public static string Wanted(Order order, ContentLibrary content) =>
+        content.Supply(order.requiredSupplyId) is SupplyDef required
+        ? $"{order.ChosenAmount()} {required.unit} of {required.displayName} (it must be this one)"
+        : order.ChooseKind() == StepKind.ChooseYarn
         ? $"{order.ChosenAmount()} stitches of one yarn (a ball is 300)"
         : $"{order.ChosenAmount()} pieces of one sewing fabric (felt, cotton, fleece...)";
 

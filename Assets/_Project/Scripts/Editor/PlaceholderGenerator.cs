@@ -149,13 +149,24 @@ public static class PlaceholderGenerator
         var mara = Customer("mara",   "Mara",        "A nervous new parent who loves anything soft.",
                  new Color(0.95f, 0.75f, 0.60f), new[] { (plushie, 0), (scarf, 1) });
         Wants(mara, sewnPlushie, 0);
-        Customer("tobias", "Old Tobias",  "A retired fisherman searching for his late wife's tablecloth pattern.",
+        var tobias = Customer("tobias", "Old Tobias",  "A retired fisherman searching for his late wife's tablecloth pattern.",
                  new Color(0.55f, 0.65f, 0.80f), new[] { (tablecloth, 0), (sweater, 2) });
         var juno = Customer("juno",   "Juno",        "A teen who wants knitwear that doesn't look grandma-made.",
                  new Color(0.70f, 0.90f, 0.60f), new[] { (sampler, 0), (tote, 0), (sweater, 3) });
         var junoTote = System.Array.Find(juno.requestable, o => o.item == tote);
         Wants(juno, hoopArt, 0);
         if (junoTote != null && junoTote.minRelationshipLevel == 1) { junoTote.minRelationshipLevel = 0; EditorUtility.SetDirty(juno); }   // totes are playable now
+
+        // ---- Commissions: special requests, each needing a brand-new pattern ----
+        Commission("juno_skate_scarf", juno, scarf, 0, null,
+            "The wind at the skate park goes straight through me. I need something round my neck that my nan " +
+            "would never knit in a million years. Make it look like it has opinions.");
+        Commission("mara_moon_bunny", mara, sewnPlushie, 1, "minky_pink",
+            "She only settles with something soft against her cheek. Softer than anything I own. Something to " +
+            "watch over her at night, the way the moon does.");
+        Commission("tobias_sunday_cloth", tobias, tablecloth, 1, "linen_28ct",
+            "Elsa laid a cloth for Sunday dinner, every week. Linen, always linen. The sea was on it somewhere... " +
+            "I can't remember how it went. Would you make one that feels like hers?");
 
         // ---- The great-aunt's pattern book (starter shelf) ----
         BookPattern("seaside_heart", "Seaside Heart", sampler, 8, new[] { red },
@@ -267,6 +278,18 @@ public static class PlaceholderGenerator
 
     static ToolNeed Tool(string type, string label, bool matchYarn = false) => new ToolNeed { toolType = type, label = label, matchYarn = matchYarn };
     static MaterialNeed Need(string supplyId, int amount) => new MaterialNeed { supplyId = supplyId, amount = amount };
+
+    /// Creates a commission, unless it exists (so wording edited by hand is kept).
+    static void Commission(string id, CustomerDef customer, CraftItemDef item, int minLevel, string requiredSupplyId, string request)
+    {
+        Directory.CreateDirectory($"{Root}/Data/Commissions");
+        string assetPath = $"{Root}/Data/Commissions/commission_{id}.asset";
+        if (AssetDatabase.LoadAssetAtPath<CommissionDef>(assetPath) != null) return;
+        var def = ScriptableObject.CreateInstance<CommissionDef>();
+        def.commissionId = id; def.customer = customer; def.item = item; def.minRelationshipLevel = minLevel; def.request = request;
+        if (requiredSupplyId != null) def.requiredSupply = AssetDatabase.LoadAssetAtPath<SupplyDef>($"{Root}/Data/Supplies/supply_{requiredSupplyId}.asset");
+        AssetDatabase.CreateAsset(def, assetPath);
+    }
 
     /// Adds an item to what a customer asks for, if it isn't there yet.
     static void Wants(CustomerDef customer, CraftItemDef item, int minLevel)

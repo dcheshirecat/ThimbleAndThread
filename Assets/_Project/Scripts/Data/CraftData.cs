@@ -80,7 +80,7 @@ public class OwnedPattern
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 5;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order
+    public const int CurrentVersion = 6;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
@@ -96,6 +96,7 @@ public class SaveData
     public List<Order> orders = new List<Order>();             // the order book: accepted, not yet delivered
     public List<string> visitorsToday = new List<string>();    // customerIds still to arrive today
     public List<OwnedPattern> patterns = new List<OwnedPattern>();  // the book and the shelf
+    public List<string> commissionsDone = new List<string>();       // delivered commissions, never offered again
     public int deliveredToday;
     public int coinsToday;
     public int patternsSoldToday;

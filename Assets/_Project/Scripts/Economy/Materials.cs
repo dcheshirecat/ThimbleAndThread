@@ -33,9 +33,12 @@ public static class Materials
 
     static float Sq(float v) => v * v;
 
-    /// The fabric for a project: the best Aida the player has enough of, or else the basic one to buy.
-    public static SupplyDef FabricFor(Pattern p, ContentLibrary content, ShopManager shop)
+    /// The fabric for a project: the one a commission requires, else the best Aida the player has
+    /// enough of, or else the basic one to buy.
+    public static SupplyDef FabricFor(Pattern p, ContentLibrary content, ShopManager shop, string requiredId = null)
     {
+        var required = string.IsNullOrEmpty(requiredId) ? null : content.Supply(requiredId);
+        if (required != null && required.kind == SupplyKind.Fabric && required.craft == CraftType.CrossStitch) return required;
         int squares = p.width * p.height;
         var aidas = new List<SupplyDef>(System.Array.FindAll(content.supplies,
             s => s != null && s.kind == SupplyKind.Fabric && s.craft == CraftType.CrossStitch));

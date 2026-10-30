@@ -18,6 +18,9 @@ public class Order
     public string fabricId;           // the fabric it's stitched on
     public bool finished;             // set aside at night, ready to hand over during the day
     public float accuracy;            // recorded when finished
+    public string commissionId;       // a commission (see CommissionDef), or empty
+    public bool needsDesign;          // a commission waits for the player to design its pattern first
+    public string requiredSupplyId;   // a commission's must-use fabric or yarn, or empty
     public int step;                  // the recipe step being worked on (index into Steps)
     public List<StepProgress> steps = new List<StepProgress>();   // saved progress per step
 
