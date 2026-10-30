@@ -351,10 +351,10 @@ public static class TestSceneBuilder
         p = Panel(ScreenId.PatternDesigner, "", Color.clear);
         p.GetComponent<Image>().raycastTarget = false;
         designer.nameField = NameField(p, new Vector2(0.5f, 0.925f));
-        designer.swatches = Swatches(p, 0.32f, Materials.Threads(content).Count, true, 130);
+        designer.swatches = Swatches(p, 0.31f, Materials.Threads(content).Count, true, 96, 12);   // 12 a row: room for 35 (3 rows)
         designer.swatches.label.color = Color.white;
         UnityEventTools.AddPersistentListener(designer.swatches.onPick, designer.SelectColour);
-        b = Row(p, 0.5f, 0.235f);
+        b = Row(p, 0.5f, 0.218f);
         designer.makesLabel = Button(b, "Makes", designer.NextItem, 900).GetComponentInChildren<Text>();
         designer.sizeLabel = Button(b, "Size", designer.NextSize, 760).GetComponentInChildren<Text>();
         b = Row(p, 0.5f, 0.155f);
@@ -555,10 +555,9 @@ public static class TestSceneBuilder
     }
 
     /// A grid of colour buttons (optionally with an eraser), centred at height y, with a label above it.
-    /// Up to 8 per row; "cell" is the button size, smaller when there are many colours.
-    static ThreadSwatches Swatches(Transform panel, float y, int count, bool eraser, float cell = 170)
+    /// Up to "columns" per row (8 by default); "cell" is the button size, smaller when there are many colours.
+    static ThreadSwatches Swatches(Transform panel, float y, int count, bool eraser, float cell = 170, int columns = 8)
     {
-        const int columns = 8;
         const float spacing = 20;
         var go = new GameObject("Swatches", typeof(RectTransform), typeof(GridLayoutGroup), typeof(ContentSizeFitter));
         var row = (RectTransform)go.transform;
@@ -586,7 +585,7 @@ public static class TestSceneBuilder
         if (eraser)
         {
             var b = Swatch(row, "Swatch_Eraser", new Color(0.95f, 0.95f, 0.95f));
-            var t = MakeText(b.transform, "Label", "Erase", 40);
+            var t = MakeText(b.transform, "Label", "Erase", cell < 120 ? 28 : 40);
             Stretch((RectTransform)t.transform);
             UnityEventTools.AddIntPersistentListener(b.onClick, ts.Pick, -1);
             ts.eraser = b.GetComponent<Image>();

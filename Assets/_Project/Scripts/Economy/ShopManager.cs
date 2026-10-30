@@ -27,7 +27,7 @@ public class ShopManager : MonoBehaviour
     // ---- Market: always-on basics, a selection that changes every 4 days, and now and then a rare item ----
 
     public const int DaysPerRotation = 4;
-    public const int RotatingCount = 14;
+    public const int RotatingCount = 20;   // raised from 14 when 20 more floss colours joined the rotation
     const float RareChance = 0.4f;
 
     public int DaysUntilRestock => DaysPerRotation - (Save.day - 1) % DaysPerRotation;

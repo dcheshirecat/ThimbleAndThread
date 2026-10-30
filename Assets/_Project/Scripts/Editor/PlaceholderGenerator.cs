@@ -129,6 +129,27 @@ public static class PlaceholderGenerator
         Supply("floss_orange",   "Orange Floss",   SupplyKind.Thread, cs, 3, 1, new Color(0.95f, 0.50f, 0.20f), 30, "squares", R);
         Supply("floss_teal",     "Teal Floss",     SupplyKind.Thread, cs, 3, 1, new Color(0.15f, 0.55f, 0.55f), 30, "squares", R);
         Supply("floss_lavender", "Lavender Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.78f, 0.70f, 0.90f), 30, "squares", R);
+        // More colours (owner, 2026-10-30): most rotate through the market; black is always stocked.
+        Supply("floss_black", "Black Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.10f, 0.09f, 0.11f), 30, "squares", A);
+        Supply("floss_cream", "Cream Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.96f, 0.92f, 0.80f), 30, "squares", R);
+        Supply("floss_silver_grey", "Silver Grey Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.70f, 0.71f, 0.74f), 30, "squares", R);
+        Supply("floss_yellow", "Sunny Yellow Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.98f, 0.85f, 0.25f), 30, "squares", R);
+        Supply("floss_lemon", "Lemon Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.98f, 0.95f, 0.55f), 30, "squares", R);
+        Supply("floss_coral", "Coral Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.97f, 0.50f, 0.45f), 30, "squares", R);
+        Supply("floss_rose", "Dusty Rose Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.80f, 0.55f, 0.60f), 30, "squares", R);
+        Supply("floss_burgundy", "Burgundy Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.50f, 0.12f, 0.20f), 30, "squares", R);
+        Supply("floss_peach", "Peach Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.98f, 0.78f, 0.62f), 30, "squares", R);
+        Supply("floss_mint", "Mint Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.65f, 0.88f, 0.75f), 30, "squares", R);
+        Supply("floss_olive", "Olive Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.50f, 0.52f, 0.25f), 30, "squares", R);
+        Supply("floss_forest", "Forest Green Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.12f, 0.38f, 0.22f), 30, "squares", R);
+        Supply("floss_turquoise", "Turquoise Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.20f, 0.75f, 0.75f), 30, "squares", R);
+        Supply("floss_royal", "Royal Blue Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.18f, 0.32f, 0.80f), 30, "squares", R);
+        Supply("floss_periwinkle", "Periwinkle Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.60f, 0.65f, 0.92f), 30, "squares", R);
+        Supply("floss_plum", "Plum Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.45f, 0.20f, 0.40f), 30, "squares", R);
+        Supply("floss_magenta", "Magenta Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.85f, 0.20f, 0.60f), 30, "squares", R);
+        Supply("floss_tan", "Tan Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.80f, 0.66f, 0.48f), 30, "squares", R);
+        Supply("floss_rust", "Rust Floss", SupplyKind.Thread, cs, 3, 1, new Color(0.70f, 0.30f, 0.15f), 30, "squares", R);
+        Supply("floss_metallic_silver", "Metallic Silver Floss", SupplyKind.Thread, cs, 8, 3, new Color(0.80f, 0.82f, 0.86f), 30, "squares", X);
         Supply("floss_metallic_gold", "Metallic Gold Floss", SupplyKind.Thread, cs, 8, 3, new Color(0.85f, 0.72f, 0.35f), 30, "squares", X);
 
         // Tools: bought once and kept. Hoop size = the largest pattern side it fits.

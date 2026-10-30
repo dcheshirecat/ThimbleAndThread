@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 312a5c1e891a3ea4fabdc67715c57d28, type: 3}
+  m_Name: supply_floss_metallic_silver
+  m_EditorClassIdentifier: Assembly-CSharp::SupplyDef
+  supplyId: floss_metallic_silver
+  displayName: Metallic Silver Floss
+  kind: 2
+  craft: 0
+  icon: {fileID: 21300000, guid: 873816b1ddc8d9a4786050245710f152, type: 3}
+  color: {r: 0.8, g: 0.82, b: 0.86, a: 1}
+  price: 8
+  tier: 3
+  perPack: 30
+  unit: squares
+  starterPacks: 0
+  market: 2
+  toolType: 
+  size: 0
+  generatorVersion: 5
