@@ -43,6 +43,12 @@ public static class PlaceholderGenerator
             Step(StepKind.Stuff, "Stuff it", materials: Need("stuffing", 1)),
             Step(StepKind.AttachEyes, "Attach the eyes", materials: Need("safety_eyes_black", 1)),
             Step(StepKind.CloseOpening, "Close the opening", tools: Tool("sewing_needle", "Hand sewing needle")));
+        Recipe(tote,
+            Step(StepKind.ChooseFabric, "Choose the fabric"),
+            Step(StepKind.CutPieces, "Cut the panels", pieces: 2, tools: Tool("scissors", "Fabric scissors")),
+            Step(StepKind.SewSides, "Sew the sides", tools: Tool("sewing_machine", "Sewing machine")),
+            Step(StepKind.HemTop, "Hem the top", tools: Tool("sewing_machine", "Sewing machine")),
+            Step(StepKind.AttachHandles, "Attach the handle", materials: Need("webbing", 1), tools: Tool("sewing_needle", "Hand sewing needle")));
 
         // ---- Supplies ----
         // Market slots: Always = basics always for sale; Rotating = the selection that changes every 4 days;
@@ -110,6 +116,7 @@ public static class PlaceholderGenerator
         Supply("ribbon_satin",      "Satin Ribbon",       SupplyKind.Notion,   CraftType.Sewing, 3, 1, new Color(0.90f, 0.35f, 0.50f), 2, "lengths", R);
         Supply("zip_20cm",          "20cm Zip",           SupplyKind.Notion,   CraftType.Sewing, 3, 1, new Color(0.30f, 0.30f, 0.35f), 1, "zips", R);
         Supply("interfacing",       "Interfacing",        SupplyKind.Notion,   CraftType.Sewing, 5, 1, new Color(0.92f, 0.92f, 0.92f), 2, "pieces", R);
+        Supply("webbing",           "Cotton Webbing",     SupplyKind.Notion,   CraftType.Sewing, 3, 1, new Color(0.55f, 0.42f, 0.28f), 2, "handles", A);
 
         // ---- Customers ----
         var mara = Customer("mara",   "Mara",        "A nervous new parent who loves anything soft.",
@@ -117,8 +124,10 @@ public static class PlaceholderGenerator
         Wants(mara, sewnPlushie, 0);
         Customer("tobias", "Old Tobias",  "A retired fisherman searching for his late wife's tablecloth pattern.",
                  new Color(0.55f, 0.65f, 0.80f), new[] { (tablecloth, 0), (sweater, 2) });
-        Customer("juno",   "Juno",        "A teen who wants knitwear that doesn't look grandma-made.",
-                 new Color(0.70f, 0.90f, 0.60f), new[] { (sampler, 0), (tote, 1), (sweater, 3) });
+        var juno = Customer("juno",   "Juno",        "A teen who wants knitwear that doesn't look grandma-made.",
+                 new Color(0.70f, 0.90f, 0.60f), new[] { (sampler, 0), (tote, 0), (sweater, 3) });
+        var junoTote = System.Array.Find(juno.requestable, o => o.item == tote);
+        if (junoTote != null && junoTote.minRelationshipLevel == 1) { junoTote.minRelationshipLevel = 0; EditorUtility.SetDirty(juno); }   // totes are playable now
 
         // ---- The great-aunt's pattern book (starter shelf) ----
         BookPattern("seaside_heart", "Seaside Heart", sampler, 8, new[] { red },
@@ -132,6 +141,9 @@ public static class PlaceholderGenerator
         // A sewing pattern: the filled squares are the piece's shape, '2' marks the eyes.
         BookPattern("felt_bunny", "Felt Bunny", sewnPlushie, 12, new[] { pink, charcoal },
             ".11....11.\n.11....11.\n.11....11.\n.11111111.\n1111111111\n1121111211\n1111111111\n1111111111\n.11111111.\n..111111..");
+        // A bag pattern: the filled squares are the panel (cut twice: front and back).
+        BookPattern("market_tote", "Market Tote", tote, 10, new[] { navy },
+            "111111111\n111111111\n111111111\n111111111\n111111111\n111111111\n111111111");
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();

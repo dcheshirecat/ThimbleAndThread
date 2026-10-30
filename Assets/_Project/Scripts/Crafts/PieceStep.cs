@@ -84,6 +84,16 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
         return r;
     }
 
+    /// Bags: the front panel over the back one, with the side seam and the hem shown once they're sewn.
+    protected void DrawBag(bool sidesSewn, bool hemmed)
+    {
+        var stitch = Color.Lerp(area.fabricColor, Color.black, 0.35f);
+        Piece(Shape.Outline, Color.Lerp(area.fabricColor, Color.black, 0.2f), 0, new Vector2(0.012f, -0.012f));
+        Piece(Shape.Outline, area.fabricColor, 0);
+        if (sidesSewn) Line(Shape.Sides, stitch, 0.006f, 1);
+        if (hemmed) Line(Shape.Mouth, stitch, 0.006f, 1);
+    }
+
     /// Recolours a piece drawn with Piece().
     protected static void Recolor(MeshRenderer piece, Color color)
     {

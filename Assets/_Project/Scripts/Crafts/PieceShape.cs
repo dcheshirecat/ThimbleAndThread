@@ -9,11 +9,15 @@ public class PieceShape
     const float Padding = 0.1f;          // space around the piece
     const float OpeningShare = 0.12f;    // the gap left open for turning and stuffing, as a share of the outline
     const float SeamAllowance = 0.025f;  // how far inside the cut edge the seam runs
+    const float MaxCornerCut = 0.5f;     // smoothing rounds corners by at most this much, in grid squares
 
     public List<Vector2> Outline;        // closed, counter-clockwise, smoothed
     public List<Vector2> Seam;           // the outline minus the opening (an open line)
     public List<Vector2> Opening;        // the gap left open (an open line), at the bottom
     public List<Vector2> Eyes;           // where the eyes go
+    public List<Vector2> Mouth;          // bags: the top edge, left open and hemmed (an open line)
+    public List<Vector2> Sides;          // bags: the seam down one side, along the bottom and up the other
+    public List<Vector2> HandleEnds;     // bags: where the handle's two ends are sewn on, just below the top
 
     public static PieceShape For(Pattern pattern)
     {
@@ -67,6 +71,30 @@ public class PieceShape
         Seam = new List<Vector2>();
         for (int k = -half; k <= half; k++) Opening.Add(ring[(lowest + k + ring.Count) % ring.Count]);
         for (int k = half; k <= ring.Count - half; k++) Seam.Add(ring[(lowest + k) % ring.Count]);
+        SplitMouth(ring);
+    }
+
+    /// For bags: the top edge is the mouth; the seam runs round the rest.
+    void SplitMouth(List<Vector2> ring)
+    {
+        float top = float.MinValue;
+        foreach (var p in ring) top = Mathf.Max(top, p.y);
+        bool IsTop(int i) => ring[(i + ring.Count) % ring.Count].y > top - 0.02f;
+        int start = 0;   // first point of the top run
+        for (int i = 0; i < ring.Count; i++) if (IsTop(i) && !IsTop(i - 1)) { start = i; break; }
+        Mouth = new List<Vector2>();
+        Sides = new List<Vector2>();
+        int k = 0;
+        for (; k < ring.Count && IsTop(start + k); k++) Mouth.Add(ring[(start + k) % ring.Count]);
+        for (int j = k - 1; j <= ring.Count; j++) Sides.Add(ring[(start + j) % ring.Count]);
+        Mouth.Reverse();   // left to right reads more naturally (the ring runs right to left along the top)
+
+        Bounds(Mouth, out var min, out var max);
+        HandleEnds = new List<Vector2>
+        {
+            new Vector2(Mathf.Lerp(min.x, max.x, 0.28f), top - 0.05f),
+            new Vector2(Mathf.Lerp(min.x, max.x, 0.72f), top - 0.05f),
+        };
     }
 
     // ---- Outline from grid squares ----
@@ -131,8 +159,10 @@ public class PieceShape
             for (int i = 0; i < loop.Count; i++)
             {
                 var a = loop[i]; var b = loop[(i + 1) % loop.Count];
-                next.Add(Vector2.Lerp(a, b, 0.25f));
-                next.Add(Vector2.Lerp(a, b, 0.75f));
+                // Cut at most half a grid square off each corner, so long straight edges (a bag) stay straight.
+                float t = Mathf.Min(0.25f, MaxCornerCut / Mathf.Max(Vector2.Distance(a, b), 1e-4f));
+                next.Add(Vector2.Lerp(a, b, t));
+                next.Add(Vector2.Lerp(a, b, 1 - t));
             }
             loop = next;
         }

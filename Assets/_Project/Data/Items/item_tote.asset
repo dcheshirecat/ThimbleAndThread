@@ -23,7 +23,48 @@ MonoBehaviour:
     width: 0
     height: 0
     palette: []
+    threads: []
     cells: []
   basePrice: 35
   patternPrice: 10
   requiredSupplyIds: []
+  steps:
+  - kind: 2
+    label: Choose the fabric
+    tools: []
+    materials: []
+    fabricPieces: 0
+  - kind: 3
+    label: Cut the panels
+    tools:
+    - toolType: scissors
+      minSize: 0
+      label: Fabric scissors
+    materials: []
+    fabricPieces: 2
+  - kind: 10
+    label: Sew the sides
+    tools:
+    - toolType: sewing_machine
+      minSize: 0
+      label: Sewing machine
+    materials: []
+    fabricPieces: 0
+  - kind: 11
+    label: Hem the top
+    tools:
+    - toolType: sewing_machine
+      minSize: 0
+      label: Sewing machine
+    materials: []
+    fabricPieces: 0
+  - kind: 12
+    label: Attach the handle
+    tools:
+    - toolType: sewing_needle
+      minSize: 0
+      label: Hand sewing needle
+    materials:
+    - supplyId: webbing
+      amount: 1
+    fabricPieces: 0

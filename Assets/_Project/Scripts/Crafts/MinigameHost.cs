@@ -47,6 +47,9 @@ public class MinigameHost : MonoBehaviour
         StepKind.Stuff => go.AddComponent<StuffStep>(),
         StepKind.AttachEyes => go.AddComponent<AttachEyesStep>(),
         StepKind.CloseOpening => go.AddComponent<CloseOpeningStep>(),
+        StepKind.SewSides => go.AddComponent<SewSidesStep>(),
+        StepKind.HemTop => go.AddComponent<HemTopStep>(),
+        StepKind.AttachHandles => go.AddComponent<AttachHandlesStep>(),
         _ => go.AddComponent<CrossStitchStep>(),
     };
 

@@ -271,6 +271,9 @@ public class OrderFlowUI : MonoBehaviour
         StepKind.Stuff => "Tap all over the piece to push stuffing in. Fill it evenly; too much in one spot makes it lumpy.",
         StepKind.AttachEyes => "Tap where each eye goes. The faint marks show where the pattern puts them.",
         StepKind.CloseOpening => "Sew the gap shut by hand: drag along the dashed line.",
+        StepKind.SewSides => "Guide the machine down one side, along the bottom and up the other. Leave the top open.",
+        StepKind.HemTop => "Fold the top edge over and sew along the dashed line.",
+        StepKind.AttachHandles => "Tap where each end of the handle goes, on the faint marks just below the top.",
         _ => "",
     };
 

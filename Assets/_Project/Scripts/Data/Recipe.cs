@@ -4,7 +4,7 @@ using UnityEngine;
 
 // The kinds of step a recipe can use. Each one is a minigame (see Crafts/ICraftStep.cs).
 // Append new values at the end: item assets store these as numbers.
-public enum StepKind { CrossStitch, Hem, ChooseFabric, CutPieces, Pin, SewSeam, TurnRightSideOut, Stuff, AttachEyes, CloseOpening }
+public enum StepKind { CrossStitch, Hem, ChooseFabric, CutPieces, Pin, SewSeam, TurnRightSideOut, Stuff, AttachEyes, CloseOpening, SewSides, HemTop, AttachHandles }
 
 // One step of making an item, e.g. "Stitch the motif" then "Hem the edges".
 // Items list their steps in order in CraftItemDef.steps.

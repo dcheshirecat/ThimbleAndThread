@@ -77,7 +77,7 @@ Embroidery Floss, Yarn, Notions, Tools).
    in a Choose Fabric step this step uses (cutting a plushie uses 2: front and back).
    Leave Steps empty for a single cross stitch step.
    Kinds so far: Cross Stitch, Hem, Choose Fabric, Cut Pieces, Pin, Sew Seam, Turn Right Side Out,
-   Stuff, Attach Eyes, Close Opening. Knitting and crochet kinds come later.
+   Stuff, Attach Eyes, Close Opening, Sew Sides, Hem Top, Attach Handles. Knitting and crochet kinds come later.
 
 The player can stop between steps or partway through one; every step's work is saved. A step's
 tools and materials are checked when the player starts it, and its materials are used up then.
@@ -86,7 +86,8 @@ The piece's quality is the average over its steps (choosing a fabric isn't judge
 **Sewing patterns** (e.g. the Sewn Plushie's "Felt Bunny") are drawn on the same grid as cross
 stitch patterns: the filled squares are the shape of the piece (the game smooths the outline), and
 squares in the second colour ('2' in a book pattern's grid) mark where the eyes go. So the Pattern
-Studio designs plushies too.
+Studio designs plushies too. Bags (e.g. "Market Tote") work the same way: the filled squares are the
+panel, the top edge stays open and is hemmed, and the handle is sewn on just below it.
 
 ## Customers and portraits
 

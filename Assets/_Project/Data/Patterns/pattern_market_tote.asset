@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d664e9494a15d3747aae761ccc2f60d0, type: 3}
+  m_Name: pattern_market_tote
+  m_EditorClassIdentifier: Assembly-CSharp::PatternDef
+  patternId: market_tote
+  displayName: Market Tote
+  item: {fileID: 11400000, guid: c290e0d30e10d3a43b2e345eaef53cd3, type: 2}
+  price: 10
+  startsOnShelf: 1
+  threads:
+  - {fileID: 11400000, guid: afb5e79371a63194dac821d613cf75d6, type: 2}
+  palette:
+  - {r: 0.85, g: 0.25, b: 0.3, a: 1}
+  grid: '111111111
+
+    111111111
+
+    111111111
+
+    111111111
+
+    111111111
+
+    111111111
+
+    111111111'
