@@ -47,6 +47,9 @@ jobs:
         with:
           targetPlatform: Android
           androidExportType: androidPackage   # .apk
+          # Unity runs in a Docker container capped by default at 95% of the runner's RAM, so it could
+          # never reach the swap above and got killed (exit code 137). Allow RAM + most of the swap.
+          dockerMemoryLimit: 18g
       - uses: actions/upload-artifact@v4
         with:
           name: ThimbleAndThread-apk
