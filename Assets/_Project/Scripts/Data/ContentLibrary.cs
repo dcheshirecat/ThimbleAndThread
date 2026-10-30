@@ -11,6 +11,13 @@ public class ContentLibrary : ScriptableObject
     public PatternDef[] patterns = new PatternDef[0];
     public CommissionDef[] commissions = new CommissionDef[0];
     public TutorialDef tutorial;
+    public SkillDef[] skills = new SkillDef[0];
+    public ChapterDef[] chapters = new ChapterDef[0];
+    public UpgradeDef[] upgrades = new UpgradeDef[0];
+
+    public SkillDef Skill(string id) => System.Array.Find(skills, s => s != null && s.skillId == id);
+    public ChapterDef Chapter(int number) => System.Array.Find(chapters, c => c != null && c.number == number);
+    public UpgradeDef Upgrade(string id) => System.Array.Find(upgrades, u => u != null && u.upgradeId == id);
 
     public CustomerDef Customer(string id) => System.Array.Find(customers, c => c != null && c.customerId == id);
     public CraftItemDef Item(string id) => System.Array.Find(items, i => i != null && i.itemId == id);

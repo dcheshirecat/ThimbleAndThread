@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea7dd40a1d8bcdb46b36634afe1b4844, type: 3}
+  m_Name: chapter_1
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterDef
+  number: 1
+  title: The Shop at the Edge of the Sea
+  intro: The key is heavier than you expected. Your great-aunt's haberdashery smells of lavender and old wool, and her pattern book waits on the counter, a few pages missing. Put some patterns on display and see who comes in.
+  inkScene: 
+  deliveries: 2
+  patternsSold: 0
+  friendLevel: 0
+  goalText: Hand over 2 orders.

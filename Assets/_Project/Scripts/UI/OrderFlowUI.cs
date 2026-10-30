@@ -106,6 +106,7 @@ public class OrderFlowUI : MonoBehaviour
                           $"Stars: {day.LastStars} / 3\n" +
                           $"{who} will pay {day.LastPrice} coins\n" +
                           $"Friendship: +{day.LastPoints}\n\n" +
+                          (string.IsNullOrEmpty(day.LastLearned) ? "" : $"{day.LastLearned}\n\n") +
                           "Set it aside and they'll collect it tomorrow.";
         var mood = day.LastStars >= 3 ? Expression.Happy : day.LastStars == 2 ? Expression.Thoughtful : Expression.Sad;
         SetPortrait(resultPortrait, customer != null ? customer.GetPortrait(mood) : null);
@@ -201,6 +202,7 @@ public class OrderFlowUI : MonoBehaviour
         ("Yarn", new[] { SupplyKind.Yarn }),
         ("Notions", new[] { SupplyKind.Stuffing, SupplyKind.Eyes, SupplyKind.Notion, SupplyKind.Other }),
         ("Tools", new[] { SupplyKind.Tool }),
+        ("Books", new[] { SupplyKind.Book }),
     };
 
     // Tiles by rarity: common, uncommon, rare; sold-out tiles are greyed.
@@ -225,17 +227,45 @@ public class OrderFlowUI : MonoBehaviour
             var onShelf = sale.FindAll(s => System.Array.IndexOf(kinds, s.kind) >= 0);
             if (onShelf.Count == 0) continue;
 
-            var heading = Instantiate(shelfTitleTemplate, shelfTitleTemplate.transform.parent);
-            heading.gameObject.SetActive(true);
-            heading.text = title;
-            marketRows.Add(heading.gameObject);
-            var shelf = Instantiate(shelfTemplate, shelfTemplate.parent);
-            shelf.gameObject.SetActive(true);
-            shelf.name = $"Shelf_{title.Replace(" ", "")}";
-            marketRows.Add(shelf.gameObject);
-
+            var shelf = NewShelf(title);
             foreach (var s in onShelf) AddTile(shelf, s);
         }
+
+        var upgrades = day.Progress.UpgradesOnOffer();
+        if (upgrades.Count > 0)
+        {
+            var shelf = NewShelf("For the Shop");
+            foreach (var u in upgrades) AddUpgradeTile(shelf, u);
+        }
+    }
+
+    RectTransform NewShelf(string title)
+    {
+        var heading = Instantiate(shelfTitleTemplate, shelfTitleTemplate.transform.parent);
+        heading.gameObject.SetActive(true);
+        heading.text = title;
+        marketRows.Add(heading.gameObject);
+        var shelf = Instantiate(shelfTemplate, shelfTemplate.parent);
+        shelf.gameObject.SetActive(true);
+        shelf.name = $"Shelf_{title.Replace(" ", "")}";
+        marketRows.Add(shelf.gameObject);
+        return shelf;
+    }
+
+    /// A shop upgrade on the "For the Shop" shelf: bought once.
+    void AddUpgradeTile(RectTransform shelf, UpgradeDef u)
+    {
+        string id = u.upgradeId;
+        var tile = Instantiate(marketTemplate, shelf);
+        tile.gameObject.SetActive(true);
+        tile.name = $"Upgrade_{id}";
+        tile.onClick.AddListener(() => day.BuyUpgrade(id));
+        tile.GetComponent<Image>().color = new Color(0.90f, 0.85f, 0.95f);
+        var icon = tile.transform.Find("Icon").GetComponent<Image>();
+        icon.sprite = u.icon;
+        icon.color = u.icon != null ? Color.white : new Color(0.55f, 0.45f, 0.70f);
+        tile.transform.Find("Name").GetComponent<Text>().text = $"Shop upgrade\n{u.displayName}";
+        tile.transform.Find("Info").GetComponent<Text>().text = $"{u.price} coins\n{u.description}";
     }
 
     void AddTile(RectTransform shelf, SupplyDef s)
@@ -256,7 +286,10 @@ public class OrderFlowUI : MonoBehaviour
 
         tile.transform.Find("Name").GetComponent<Text>().text = $"{ShopManager.Rarity(s)}\n{s.displayName}";
         string stock = left <= 0 ? $"Sold out: back in {day.shop.DaysUntilBack(s)} days" : $"{left} left";
-        tile.transform.Find("Info").GetComponent<Text>().text = s.kind == SupplyKind.Tool
+        var teaches = s.kind == SupplyKind.Book ? System.Array.Find(day.content.skills, k => k != null && k.book == s) : null;
+        tile.transform.Find("Info").GetComponent<Text>().text = s.kind == SupplyKind.Book
+            ? $"{s.price} coins  ·  {(day.shop.Owns(id) ? "Read" : stock)}\nTeaches {(teaches != null ? teaches.displayName : "something new")}"
+            : s.kind == SupplyKind.Tool
             ? $"{s.price} coins  ·  {(day.shop.Owns(id) ? "Owned" : stock)}"
             : $"{s.price} coins for {s.perPack} {s.unit}\n{stock}  ·  you have {day.shop.Stock(id)}";
     }

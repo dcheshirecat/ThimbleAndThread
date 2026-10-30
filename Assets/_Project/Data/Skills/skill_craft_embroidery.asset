@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45c28a39eda5e48428a2af6696dc98e3, type: 3}
+  m_Name: skill_craft_embroidery
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDef
+  skillId: craft_embroidery
+  displayName: Embroidery
+  description: Backstitch, satin stitch and knots on fabric in a hoop.
+  isCraft: 1
+  craft: 2
+  chapter: 3
+  levelCraft: 0
+  craftLevel: 0
+  book: {fileID: 0}
+  friend: {fileID: 0}
+  friendLevel: 0
+  grantsPatterns: []

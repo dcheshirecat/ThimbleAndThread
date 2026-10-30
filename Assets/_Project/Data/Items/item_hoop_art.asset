@@ -41,6 +41,7 @@ MonoBehaviour:
     - supplyId: embroidery_cotton
       amount: 1
     fabricPieces: 0
+    requiredSkill: 
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
@@ -54,6 +55,7 @@ MonoBehaviour:
       matchYarn: 0
     materials: []
     fabricPieces: 0
+    requiredSkill: 
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 10
@@ -67,6 +69,7 @@ MonoBehaviour:
       matchYarn: 0
     materials: []
     fabricPieces: 0
+    requiredSkill: 
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 15
@@ -80,6 +83,7 @@ MonoBehaviour:
       matchYarn: 0
     materials: []
     fabricPieces: 0
+    requiredSkill: french_knots
     perPatternSquare: 0
     patternThread: 1
     threadAmount: 2

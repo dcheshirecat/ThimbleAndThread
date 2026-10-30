@@ -61,6 +61,13 @@ public static class SaveSystem
         // Version 6 had no display limit or market sell-outs: 4 spots (patterns already shown stay shown).
         if (data.version < 7) data.displaySpots = 4;
         data.marketBought ??= new System.Collections.Generic.List<MarketPurchase>();
+        // Version 7 had no chapters or skills. Those saves were made while every craft was open, so they
+        // keep everything (ShopDay learns every skill for them on load); new games start at chapter 1.
+        data.skills ??= new System.Collections.Generic.List<string>();
+        data.craftXp ??= new System.Collections.Generic.List<CraftXp>();
+        data.upgrades ??= new System.Collections.Generic.List<string>();
+        data.journalNews ??= new System.Collections.Generic.List<string>();
+        if (data.version < 8) { data.chapter = 5; data.learnEverything = true; }
         data.version = SaveData.CurrentVersion;
         return data;
     }

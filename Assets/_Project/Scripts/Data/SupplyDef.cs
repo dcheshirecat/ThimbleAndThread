@@ -1,7 +1,7 @@
 using UnityEngine;
 
 // Append new values at the end: assets store these as numbers.
-public enum SupplyKind { Other, Fabric, Thread, Yarn, Stuffing, Eyes, Tool, Notion }
+public enum SupplyKind { Other, Fabric, Thread, Yarn, Stuffing, Eyes, Tool, Notion, Book }
 
 // When the Supply Market sells it: always, in the 4-day rotation, only now and then, or never.
 public enum MarketSlot { Rotating, Always, Rare, NotSold }
@@ -10,6 +10,7 @@ public enum MarketSlot { Rotating, Always, Rare, NotSold }
 // Most supplies are bought in packs and used up: a pack adds "perPack" units (e.g. a skein of floss
 // covers 30 squares, a piece of Aida 400 squares, a bag of stuffing 3 plushies).
 // Tools (kind Tool) are bought once and kept; recipes check you own the right type and size.
+// Books (kind Book) are bought once and kept too: each teaches a skill (see SkillDef.book).
 [CreateAssetMenu(menuName = "Craft/Supply")]
 public class SupplyDef : ScriptableObject
 {

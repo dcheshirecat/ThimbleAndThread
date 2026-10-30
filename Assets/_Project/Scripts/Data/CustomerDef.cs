@@ -27,6 +27,9 @@ public class CustomerDef : ScriptableObject
     public Sprite fullBody;
     public ExpressionSprite[] portraits;
     public OrderOption[] requestable;
+    public int firstChapter = 1;           // starts visiting the shop in this story chapter
+    public bool romanceable;               // adult characters only: friendship can grow into romance
+    public string inkName;                 // the name of this character's knots in the dialogue (e.g. "mara")
 
     public Sprite GetPortrait(Expression e)
     {

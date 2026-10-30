@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea7dd40a1d8bcdb46b36634afe1b4844, type: 3}
+  m_Name: chapter_5
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterDef
+  number: 5
+  title: The Community Quilt
+  intro: 'The festival committee knocks: this year''s Community Quilt needs a patch from each of your friends, and someone has to sew it all together. That someone is you. Sewing is open, and the old machine hums like it remembers.'
+  inkScene: 
+  deliveries: 0
+  patternsSold: 0
+  friendLevel: 0
+  goalText: 

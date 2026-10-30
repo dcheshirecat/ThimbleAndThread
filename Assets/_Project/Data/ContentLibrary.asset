@@ -31,6 +31,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c419ce37eb702fe41b7cf691912d0c36, type: 2}
   - {fileID: 11400000, guid: 46a01f1aa5d6b1a42b5e43da65b925cf, type: 2}
   - {fileID: 11400000, guid: 40bfd12d25f5e814aacd4e328d17e512, type: 2}
+  - {fileID: 11400000, guid: 4dadd2efaeee3e244991d80d3a4680cc, type: 2}
+  - {fileID: 11400000, guid: 1d6bd5e387fc02f45936fb7c2c5f46ba, type: 2}
   - {fileID: 11400000, guid: bbaf99fe07f4ad84dac5c3283e2199ca, type: 2}
   - {fileID: 11400000, guid: 84fee954a1759404989835096476a0f8, type: 2}
   - {fileID: 11400000, guid: 8ebf62167d5721c459ebca697f3cbf04, type: 2}
@@ -90,3 +92,22 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 8896773d935eae14d8f09798b8e9b841, type: 2}
   - {fileID: 11400000, guid: 6197bf9889dc91947a51d057c752eac3, type: 2}
   tutorial: {fileID: 11400000, guid: 796a656976b4cea40b7a769a9108d285, type: 2}
+  skills:
+  - {fileID: 11400000, guid: 8a17f85f2fb6a1d4996792ac5b6e2ca4, type: 2}
+  - {fileID: 11400000, guid: c3636e864ba74214b93f78318858e6e0, type: 2}
+  - {fileID: 11400000, guid: b9c205ac06b65f940be23d3ee3de7ef0, type: 2}
+  - {fileID: 11400000, guid: c4f5166ebf81a0c4a9fa7f8b100809dd, type: 2}
+  - {fileID: 11400000, guid: 5a1dd0e7b2e68aa488dfef539d1343fc, type: 2}
+  - {fileID: 11400000, guid: 14b99287f3696aa47907817c32d28d94, type: 2}
+  - {fileID: 11400000, guid: 541b582f02d21b043a13f3e00a0c0e61, type: 2}
+  chapters:
+  - {fileID: 11400000, guid: 05f54fe9689f3b04aa89cad22c33565e, type: 2}
+  - {fileID: 11400000, guid: e604cd22e4aee86429edf17a7a6accd6, type: 2}
+  - {fileID: 11400000, guid: b8143145b8548354cb2be463910a451c, type: 2}
+  - {fileID: 11400000, guid: 65a5fab82a8a1a64cb554931ad46582a, type: 2}
+  - {fileID: 11400000, guid: fc33e6728524b964c85e4d0edc112cd1, type: 2}
+  upgrades:
+  - {fileID: 11400000, guid: 6d3beb15662bde043997db63626a3b85, type: 2}
+  - {fileID: 11400000, guid: 14553872de4ff4f4e8104db5084e1ea0, type: 2}
+  - {fileID: 11400000, guid: 6577cd1c8109fcd40a5d29bf90ff0cae, type: 2}
+  - {fileID: 11400000, guid: d98151631cb4fae4db942dd195c10d44, type: 2}

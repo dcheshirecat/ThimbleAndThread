@@ -15,7 +15,7 @@ public static class PlaceholderGenerator
     [MenuItem("Tools/Thimble & Thread/Generate Placeholder Art And Data")]
     public static void Generate()
     {
-        string[] dirs = { "Art/Items", "Art/Supplies", "Art/Backgrounds", "Art/Characters/Customers", "Data/Items", "Data/Customers", "Data/Supplies" };
+        string[] dirs = { "Art/Items", "Art/Supplies", "Art/Backgrounds", "Art/Characters/Customers", "Data/Items", "Data/Customers", "Data/Supplies", "Art/Upgrades" };
         foreach (var d in dirs) Directory.CreateDirectory($"{Root}/{d}");
 
         MakeSprite($"{Root}/Art/Backgrounds/bg_shop_day.png", 2732, 2048, new Color(0.95f, 0.88f, 0.78f));
@@ -133,6 +133,9 @@ public static class PlaceholderGenerator
         Supply("pins",            "Box of Pins",        SupplyKind.Tool, CraftType.Sewing, 3,  1, new Color(0.90f, 0.40f, 0.45f), 1, "box", A, 0, "pins");
         Supply("sewing_needle",   "Hand Sewing Needles", SupplyKind.Tool, CraftType.Sewing, 2, 1, new Color(0.78f, 0.78f, 0.82f), 1, "pack", A, 0, "sewing_needle");
         // The great-aunt's old machine comes with the shop: in every new game, never sold.
+        // Books: bought once and kept; each teaches a skill (see the skills below).
+        var knotsBook = Supply("book_knots", "A Little Book of Knots", SupplyKind.Book, CraftType.Embroidery, 15, 1, new Color(0.55f, 0.35f, 0.45f), 1, "book", R);
+        var designBook = Supply("book_pattern_design", "The Pattern Maker's Notebook", SupplyKind.Book, cs, 25, 1, new Color(0.30f, 0.40f, 0.55f), 1, "book", R);
         Supply("sewing_machine",  "Great-Aunt's Sewing Machine", SupplyKind.Tool, CraftType.Sewing, 0, 1, new Color(0.25f, 0.30f, 0.30f), 1, "machine", MarketSlot.NotSold, 1, "sewing_machine");
         Supply("marking_pen",     "Fabric Marking Pen", SupplyKind.Tool, CraftType.Sewing, 4,  1, new Color(0.35f, 0.55f, 0.85f), 1, "pen", R, 0, "marking_pen");
 
@@ -188,6 +191,46 @@ public static class PlaceholderGenerator
             "111111111\n111111111\n111111111\n111111111\n111111111\n111111111\n111111111");
 
         Tutorial();
+
+        // ---- Skills: crafts open with the story; techniques come from levels, books and friends ----
+        Skill("craft_cross_stitch", "Cross Stitch", "Stitch Xs on Aida to make samplers, tablecloths and more.", true, cs, chapter: 1);
+        Skill("craft_knitting", "Knitting", "Two needles, one stitch at a time: scarves and sweaters.", true, CraftType.Knitting, chapter: 2);
+        Skill("craft_embroidery", "Embroidery", "Backstitch, satin stitch and knots on fabric in a hoop.", true, CraftType.Embroidery, chapter: 3);
+        Skill("craft_crochet", "Crochet", "A hook and a loop: amigurumi that spirals out from a magic ring.", true, CraftType.Crochet, chapter: 4);
+        Skill("craft_sewing", "Sewing", "Cut, pin and sew: plushies and tote bags on the old machine.", true, CraftType.Sewing, chapter: 5);
+        Skill(ShopDayPatternDesign, "Pattern Design", "Design your own patterns in the Pattern Studio, and take commissions.", false, cs,
+              levelCraft: cs, craftLevel: 2, book: designBook);
+        Skill("french_knots", "French Knots", "Wrap the thread twice and pull through: tiny raised dots, like an eye.", false, CraftType.Embroidery,
+              book: knotsBook, friend: juno, friendLevel: 1);
+        RequireSkill(hoopArt, StepKind.FrenchKnots, "french_knots");
+
+        // ---- The story, in chapters: each opens a craft and sets goals for the next ----
+        Chapter(1, "The Shop at the Edge of the Sea",
+            "The key is heavier than you expected. Your great-aunt's haberdashery smells of lavender and old wool, and her " +
+            "pattern book waits on the counter, a few pages missing. Put some patterns on display and see who comes in.",
+            "Hand over 2 orders.", deliveries: 2);
+        Chapter(2, "Casting On",
+            "Juno lingers by the yarn baskets. \"You knit, right? Everyone says your great-aunt could knit anything.\" Under the " +
+            "counter you find her needles, a half-finished row still on them. Knitting is open!",
+            "Hand over 5 orders in all, and become friends with someone (friendship level 1).", deliveries: 5, friendLevel: 1);
+        Chapter(3, "A Thread of Memory",
+            "Old Tobias brings in a faded photograph: a tablecloth with the sea embroidered round its edge. \"Elsa made it. I'd " +
+            "know it anywhere.\" Your great-aunt's book has an embroidery section, and a page torn out of it. Embroidery is open!",
+            "Hand over 9 orders in all and sell 3 patterns.", deliveries: 9, patternsSold: 3);
+        Chapter(4, "Knot & Needle",
+            "A new shop opens across the square: Knot & Needle, all crisp paper bags and crochet in the window. Its owner, Rowan, " +
+            "leans in your doorway. \"Healthy competition,\" they say, and leave a crochet hook on your counter. Crochet is open!",
+            "Hand over 14 orders in all, and grow a friendship to level 2.", deliveries: 14, friendLevel: 2);
+        Chapter(5, "The Community Quilt",
+            "The festival committee knocks: this year's Community Quilt needs a patch from each of your friends, and someone has " +
+            "to sew it all together. That someone is you. Sewing is open, and the old machine hums like it remembers.",
+            "", 0);
+
+        // ---- Shop upgrades: on the market's "For the Shop" shelf ----
+        Upgrade("display_shelf", "Extra Display Shelf", "One more pattern fits on display.", 80, 1, UpgradeEffect.DisplaySpot, 1);
+        Upgrade("work_lamp", "Brass Work Lamp", "Craft by better light: 25% more experience.", 100, 1, UpgradeEffect.CraftLamp, 25);
+        Upgrade("shop_sign", "Painted Shop Sign", "A customer drops by a second time each day.", 120, 2, UpgradeEffect.ExtraVisitor, 1);
+        Upgrade("display_case", "Glass Display Case", "Two more patterns fit on display.", 180, 3, UpgradeEffect.DisplaySpot, 2);
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -280,6 +323,53 @@ public static class PlaceholderGenerator
 
     static ToolNeed Tool(string type, string label, bool matchYarn = false) => new ToolNeed { toolType = type, label = label, matchYarn = matchYarn };
     static MaterialNeed Need(string supplyId, int amount) => new MaterialNeed { supplyId = supplyId, amount = amount };
+
+    const string ShopDayPatternDesign = ShopDay.PatternDesignSkill;
+
+    /// Creates a skill, unless it exists (so edits made by hand are kept).
+    static void Skill(string id, string name, string description, bool isCraft, CraftType craft, int chapter = 0,
+                      CraftType levelCraft = CraftType.CrossStitch, int craftLevel = 0, SupplyDef book = null,
+                      CustomerDef friend = null, int friendLevel = 0)
+    {
+        Directory.CreateDirectory($"{Root}/Data/Skills");
+        string assetPath = $"{Root}/Data/Skills/skill_{id}.asset";
+        if (AssetDatabase.LoadAssetAtPath<SkillDef>(assetPath) != null) return;
+        var def = ScriptableObject.CreateInstance<SkillDef>();
+        def.skillId = id; def.displayName = name; def.description = description; def.isCraft = isCraft; def.craft = craft;
+        def.chapter = chapter; def.levelCraft = levelCraft; def.craftLevel = craftLevel; def.book = book;
+        def.friend = friend; def.friendLevel = friendLevel;
+        AssetDatabase.CreateAsset(def, assetPath);
+    }
+
+    /// Makes a recipe step need a skill, unless it already names one.
+    static void RequireSkill(CraftItemDef item, StepKind kind, string skillId)
+    {
+        foreach (var s in item.steps)
+            if (s.kind == kind && string.IsNullOrEmpty(s.requiredSkill)) { s.requiredSkill = skillId; EditorUtility.SetDirty(item); }
+    }
+
+    static void Chapter(int number, string title, string intro, string goalText, int deliveries, int patternsSold = 0, int friendLevel = 0)
+    {
+        Directory.CreateDirectory($"{Root}/Data/Chapters");
+        string assetPath = $"{Root}/Data/Chapters/chapter_{number}.asset";
+        if (AssetDatabase.LoadAssetAtPath<ChapterDef>(assetPath) != null) return;
+        var def = ScriptableObject.CreateInstance<ChapterDef>();
+        def.number = number; def.title = title; def.intro = intro; def.goalText = goalText;
+        def.deliveries = deliveries; def.patternsSold = patternsSold; def.friendLevel = friendLevel;
+        AssetDatabase.CreateAsset(def, assetPath);
+    }
+
+    static void Upgrade(string id, string name, string description, int price, int chapter, UpgradeEffect effect, int amount)
+    {
+        Directory.CreateDirectory($"{Root}/Data/Upgrades");
+        string assetPath = $"{Root}/Data/Upgrades/upgrade_{id}.asset";
+        if (AssetDatabase.LoadAssetAtPath<UpgradeDef>(assetPath) != null) return;
+        var def = ScriptableObject.CreateInstance<UpgradeDef>();
+        def.upgradeId = id; def.displayName = name; def.description = description; def.price = price; def.chapter = chapter;
+        def.effect = effect; def.amount = amount;
+        def.icon = MakeSprite($"{Root}/Art/Upgrades/upgrade_{id}.png", 512, 512, new Color(0.60f, 0.50f, 0.75f));
+        AssetDatabase.CreateAsset(def, assetPath);
+    }
 
     /// Creates the tutorial's pages, unless the tutorial exists (so words edited by hand are kept).
     static void Tutorial()

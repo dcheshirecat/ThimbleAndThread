@@ -77,6 +77,14 @@ public class OwnedPattern
     public Pattern design = new Pattern();
 }
 
+// Experience in one craft; every so much is a new level.
+[Serializable]
+public class CraftXp
+{
+    public CraftType craft;
+    public int xp;
+}
+
 // How much of a supply has been bought off the market's shelf, and when it's back if it sold out.
 [Serializable]
 public class MarketPurchase
@@ -91,7 +99,7 @@ public class MarketPurchase
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 7;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs
+    public const int CurrentVersion = 8;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
@@ -110,6 +118,16 @@ public class SaveData
     public List<string> commissionsDone = new List<string>();       // delivered commissions, never offered again
     public int displaySpots = 4;                                     // patterns that fit on the shop's display
     public List<MarketPurchase> marketBought = new List<MarketPurchase>();   // packs bought from the market's shelf
+
+    // Progress through the game
+    public int chapter = 1;                                          // the story chapter (ChapterDef.number)
+    public List<string> skills = new List<string>();                 // learned SkillDef ids
+    public List<CraftXp> craftXp = new List<CraftXp>();              // experience per craft
+    public List<string> upgrades = new List<string>();               // bought UpgradeDef ids
+    public int totalDelivered;                                       // orders handed over, ever
+    public int totalPatternsSold;                                    // patterns sold, ever
+    public List<string> journalNews = new List<string>();            // recent things learned or unlocked, newest first
+    [NonSerialized] public bool learnEverything;                     // set when upgrading a save from before skills
     public int deliveredToday;
     public int coinsToday;
     public int patternsSoldToday;

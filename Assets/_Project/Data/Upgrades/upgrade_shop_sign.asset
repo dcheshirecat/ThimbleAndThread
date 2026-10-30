@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 922503ae54b66b245801baab9335b993, type: 3}
+  m_Name: upgrade_shop_sign
+  m_EditorClassIdentifier: Assembly-CSharp::UpgradeDef
+  upgradeId: shop_sign
+  displayName: Painted Shop Sign
+  description: A customer drops by a second time each day.
+  icon: {fileID: 21300000, guid: 6ede0e78acde94f4482916d178a2beb9, type: 3}
+  price: 120
+  chapter: 2
+  effect: 1
+  amount: 1

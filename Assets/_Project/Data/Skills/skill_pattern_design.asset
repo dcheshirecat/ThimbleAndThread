@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45c28a39eda5e48428a2af6696dc98e3, type: 3}
+  m_Name: skill_pattern_design
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDef
+  skillId: pattern_design
+  displayName: Pattern Design
+  description: Design your own patterns in the Pattern Studio, and take commissions.
+  isCraft: 0
+  craft: 0
+  chapter: 0
+  levelCraft: 0
+  craftLevel: 2
+  book: {fileID: 11400000, guid: 1d6bd5e387fc02f45936fb7c2c5f46ba, type: 2}
+  friend: {fileID: 0}
+  friendLevel: 0
+  grantsPatterns: []

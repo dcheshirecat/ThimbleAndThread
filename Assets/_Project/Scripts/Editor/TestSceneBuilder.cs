@@ -249,7 +249,26 @@ public static class TestSceneBuilder
         Button(Column(p, 0.5f, 0.04f), "Back", router.GoToHub);
 
         p = Panel(ScreenId.Journal, "Journal", new Color(0.80f, 0.93f, 0.74f));
-        Button(Column(p, 0.5f, 0.45f), "Back", router.GoToHub);
+        var journal = canvasGo.AddComponent<JournalUI>();
+        journal.day = day;
+        var tabRow = Row(p, 0.5f, 0.865f);
+        var tabNames = new[] { "Story", "Friends", "Skills", "Supplies", "News" };
+        journal.tabs = new Image[tabNames.Length];
+        for (int i = 0; i < tabNames.Length; i++)
+        {
+            var tab = Button(tabRow, tabNames[i], null, 360);
+            tab.GetComponentInChildren<Text>().fontSize = 52;
+            UnityEventTools.AddIntPersistentListener(tab.onClick, journal.ShowPage, i);
+            journal.tabs[i] = tab.GetComponent<Image>();
+        }
+        var journalList = ScrollList(p, 0.13f, 0.82f);
+        journal.pageText = MakeText(journalList, "Page", "", 54);
+        journal.pageText.alignment = TextAnchor.UpperLeft;
+        journal.pageText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        journal.pageText.verticalOverflow = VerticalWrapMode.Overflow;
+        var pageLayout = journal.pageText.gameObject.AddComponent<LayoutElement>();
+        pageLayout.preferredWidth = 1800;
+        Button(Column(p, 0.5f, 0.04f), "Back", router.GoToHub);
 
         p = Panel(ScreenId.Settings, "Settings", new Color(0.78f, 0.78f, 0.82f));
         b = Column(p, 0.5f, 0.45f);

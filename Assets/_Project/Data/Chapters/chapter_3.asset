@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea7dd40a1d8bcdb46b36634afe1b4844, type: 3}
+  m_Name: chapter_3
+  m_EditorClassIdentifier: Assembly-CSharp::ChapterDef
+  number: 3
+  title: A Thread of Memory
+  intro: 'Old Tobias brings in a faded photograph: a tablecloth with the sea embroidered round its edge. "Elsa made it. I''d know it anywhere." Your great-aunt''s book has an embroidery section, and a page torn out of it. Embroidery is open!'
+  inkScene: 
+  deliveries: 9
+  patternsSold: 3
+  friendLevel: 0
+  goalText: Hand over 9 orders in all and sell 3 patterns.

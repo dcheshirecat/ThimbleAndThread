@@ -28,6 +28,10 @@ public class ShopDay : MonoBehaviour
     GameManager GM => GameManager.Instance;
     SaveData Save => GM.Save;
 
+    Progression progress;
+    /// Skills, craft levels, the story chapter and shop upgrades.
+    public Progression Progress => progress ??= new Progression(content, shop);
+
     public List<Order> Orders => Save.orders;
     public List<OwnedPattern> Patterns => Save.patterns;
     public List<OwnedPattern> Shelf => Save.patterns.FindAll(p => p.onShelf && ItemFor(p.itemId) != null);
@@ -63,6 +67,20 @@ public class ShopDay : MonoBehaviour
 
         // Supplies: starter kit for new games; older saves get counted stock and threads on their patterns.
         shop.SetUpStock(isNewGame);
+
+        // What the player has learned: everything for saves from before skills, else whatever their
+        // chapter, levels, books and friends have taught them (chapter 1 opens cross stitch).
+        if (Save.learnEverything) Progress.LearnEverything();
+        Progress.CheckUnlocks();
+
+        // A new game opens with patterns for things the player can already make on display first.
+        if (isNewGame)
+        {
+            foreach (var p in Save.patterns) p.onShelf = false;
+            var book = new List<OwnedPattern>(Save.patterns);
+            book.Sort((a, b) => Progress.CanMake(ItemFor(b.itemId)).CompareTo(Progress.CanMake(ItemFor(a.itemId))));
+            foreach (var p in book) if (Shelf.Count < Save.displaySpots) p.onShelf = true;
+        }
         foreach (var o in Save.orders) Materials.EnsureThreads(o.target, content);
         foreach (var p in Save.patterns) if (p.designed) Materials.EnsureThreads(p.design, content);
 
@@ -80,7 +98,10 @@ public class ShopDay : MonoBehaviour
         var list = Save.visitorsToday;
         list.Clear();
         foreach (var c in content.customers)
-            if (c != null && !Save.orders.Exists(o => o.customerId == c.customerId)) list.Add(c.customerId);
+            if (c != null && c.firstChapter <= Save.chapter && !Save.orders.Exists(o => o.customerId == c.customerId)) list.Add(c.customerId);
+        // A sign out front: a few of them drop by a second time.
+        int extra = Mathf.Min(Progress.UpgradeAmount(UpgradeEffect.ExtraVisitor), list.Count);
+        for (int i = 0; i < extra; i++) list.Add(list[i]);
         for (int i = list.Count - 1; i > 0; i--)
         {
             int j = Random.Range(0, i + 1);
@@ -122,7 +143,8 @@ public class ShopDay : MonoBehaviour
                 return;
             }
 
-            // They browse the shelf for patterns of things they'd like.
+            // They browse the display for patterns of things they'd like. They can buy any pattern to
+            // make themselves, but only order a finished piece the player can make.
             var wants = OrderGenerator.Wants(customer, GM.GetRelationship(customer.customerId).level);
             var matches = Shelf.FindAll(p => wants.Exists(i => i.itemId == p.itemId));
             if (matches.Count == 0)
@@ -135,7 +157,7 @@ public class ShopDay : MonoBehaviour
 
             var pick = matches[Random.Range(0, matches.Count)];
             Visitor = customer;
-            if (Random.value < 0.35f) SaleOffer = pick;   // buys the pattern to make it themselves
+            if (!Progress.CanMake(ItemFor(pick.itemId)) || Random.value < 0.35f) SaleOffer = pick;   // buys the pattern to make it themselves
             else
             {
                 Offer = OrderGenerator.FromPattern(customer, ItemFor(pick.itemId), DesignFor(pick), Save.day);
@@ -159,8 +181,11 @@ public class ShopDay : MonoBehaviour
             GM.AddRelationshipPoints(Visitor.customerId, 5);
             Save.coinsToday += SaleOffer.price;
             Save.patternsSoldToday++;
+            Save.totalPatternsSold++;
+            var next = Progress.AdvanceChapter();
             SaleOffer.sold++;
             LastMessage = $"Sold the {SaleOffer.name} pattern to {Visitor.displayName}: +{SaleOffer.price} coins.";
+            if (next != null) LastMessage += $"\n\nChapter {next.number}: {next.title}. {next.intro}";
         }
         else
         {
@@ -185,6 +210,9 @@ public class ShopDay : MonoBehaviour
 
     // ---- Commissions ----
 
+    /// The skill that lets the player design patterns (the Pattern Studio, and commissions).
+    public const string PatternDesignSkill = "pattern_design";
+
     /// How often a visitor with a commission in mind asks for it instead of browsing.
     public const float CommissionChance = 0.3f;
 
@@ -194,6 +222,7 @@ public class ShopDay : MonoBehaviour
         int level = GM.GetRelationship(customer.customerId).level;
         foreach (var c in content.commissions)
             if (c != null && c.customer == customer && c.item != null && c.minRelationshipLevel <= level
+                && Progress.Knows(PatternDesignSkill) && Progress.CanMake(c.item)
                 && !Save.commissionsDone.Contains(c.commissionId) && !Save.orders.Exists(o => o.commissionId == c.commissionId))
                 return c;
         return null;
@@ -310,6 +339,13 @@ public class ShopDay : MonoBehaviour
 
     public void NewPattern()
     {
+        if (!Progress.Knows(PatternDesignSkill))
+        {
+            var s = content.Skill(PatternDesignSkill);
+            LastMessage = $"You haven't learned to design patterns yet. ({(s != null ? Progress.HowToLearn(s) : "")})";
+            GM.ChangeScreen(ScreenId.PatternStudio);
+            return;
+        }
         var item = System.Array.Find(content.items, i => i != null && i.craft == CraftType.CrossStitch) ?? content.items[0];
         int n = Save.patterns.FindAll(p => p.designed).Count + 1;
         var design = new Pattern { displayName = $"My Pattern {n}", craft = item.craft, width = 8, height = 8 };
@@ -419,11 +455,28 @@ public class ShopDay : MonoBehaviour
         var s = content.Supply(supplyId);
         if (s == null || Save.night || !shop.IsOnSale(s)) return;
         LastMessage = shop.PacksLeft(s) <= 0 ? $"{s.displayName} is sold out. It's back in {shop.DaysUntilBack(s)} days."
-            : s.kind == SupplyKind.Tool && shop.Owns(supplyId) ? $"You already have {s.displayName}: tools are kept."
+            : (s.kind == SupplyKind.Tool || s.kind == SupplyKind.Book) && shop.Owns(supplyId) ? $"You already have {s.displayName}."
             : !shop.Buy(s) ? $"Not enough coins for {s.displayName} ({s.price} coins)."
             : s.kind == SupplyKind.Tool ? $"Bought {s.displayName}. Tools are yours to keep."
+            : s.kind == SupplyKind.Book ? $"Bought {s.displayName}."
             : $"Bought {s.displayName}: +{s.perPack} {s.unit} (you have {shop.Stock(supplyId)}).";
+        foreach (var learned in Progress.CheckUnlocks()) LastMessage += $" You learned {learned.displayName}!";
+        GM.Persist();
         GM.ChangeScreen(ScreenId.Market);   // refresh the list
+    }
+
+    /// Buys a shop upgrade (once each): more display space, a sign for more visitors, a better lamp.
+    public void BuyUpgrade(string upgradeId)
+    {
+        var u = content.Upgrade(upgradeId);
+        if (u == null || Save.night || Progress.Owns(u) || u.chapter > Save.chapter) return;
+        if (!GM.TrySpend(u.price)) { LastMessage = $"Not enough coins for the {u.displayName} ({u.price} coins)."; GM.ChangeScreen(ScreenId.Market); return; }
+        Save.upgrades.Add(u.upgradeId);
+        if (u.effect == UpgradeEffect.DisplaySpot) Save.displaySpots += u.amount;
+        Progress.AddNews($"The shop has a new {u.displayName}.");
+        LastMessage = $"The {u.displayName} is in! {u.description}";
+        GM.Persist();
+        GM.ChangeScreen(ScreenId.Market);
     }
 
     // ---- Order book and workbench ----
@@ -529,6 +582,13 @@ public class ShopDay : MonoBehaviour
     public void StartCrafting()
     {
         if (!Save.night || Selected == null) return;
+        var notYet = Progress.MissingFor(Selected.item);
+        if (notYet.Count > 0)
+        {
+            LastMessage = $"You haven't learned {notYet[0].displayName} yet. ({Progress.HowToLearn(notYet[0])})";
+            GM.ChangeScreen(ScreenId.Workbench);
+            return;
+        }
         if (Selected.needsDesign) { DesignCommission(Selected); return; }
         int index =Mathf.Clamp(Selected.step, 0, Selected.Steps.Length - 1);
         var kind = Selected.Steps[index].kind;
@@ -595,6 +655,7 @@ public class ShopDay : MonoBehaviour
         state.done = true;
         state.progress = 1f;
         minigame.Close();
+        string learned = GainExperience(Selected, state.score);
         if (!Selected.IsLastStep)
         {
             // Carry straight on to the next step. Only if it needs something the player doesn't
@@ -605,10 +666,10 @@ public class ShopDay : MonoBehaviour
             StartCrafting();
             if (GM.Current == ScreenId.Minigame)
             {
-                LastMessage = $"{done}: done!";
+                LastMessage = $"{done}: done!{learned}";
                 GM.ChangeScreen(ScreenId.Minigame);   // shows it with the new step's hint
             }
-            else LastMessage = $"{done}: done! {LastMessage}";
+            else LastMessage = $"{done}: done!{learned} {LastMessage}";
             return;
         }
         LastAccuracy = Selected.RecipeScore();
@@ -620,7 +681,23 @@ public class ShopDay : MonoBehaviour
         LastPoints = PricingCalculator.RelationshipReward(LastAccuracy);
         var commission = CommissionOf(Selected);
         if (commission != null) { LastPrice += commission.bonusCoins; LastPoints += commission.bonusFriendship; }
+        LastLearned = learned.Trim();
         GM.ChangeScreen(ScreenId.Result);
+    }
+
+    /// What the last finished piece taught the player (a level, a new skill), for the Result screen.
+    public string LastLearned { get; private set; } = "";
+
+    /// Experience for a finished step (more for neater work), and anything a new level unlocks.
+    /// Returns a short message to show, or "" if nothing changed.
+    string GainExperience(Order o, float score)
+    {
+        if (o.patternOnly || !o.CurrentStep.Judged) return "";
+        var news = new List<string>();
+        string level = Progress.AddXp(o.item.craft, 10 + Mathf.RoundToInt(10 * score));
+        if (level != null) news.Add(level);
+        foreach (var s in Progress.CheckUnlocks()) news.Add($"You learned {s.displayName}!");
+        return news.Count > 0 ? " " + string.Join(" ", news) : "";
     }
 
     public void KeepWorking() => StartCrafting();
@@ -664,7 +741,10 @@ public class ShopDay : MonoBehaviour
         GM.AddRelationshipPoints(Selected.customerId, points);
         Save.orders.Remove(Selected);
         Save.deliveredToday++;
+        Save.totalDelivered++;
         Save.coinsToday += price;
+        var taught = Progress.CheckUnlocks();   // a closer friend may teach something
+        var chapter = Progress.AdvanceChapter();
         GM.Persist();
 
         int after = GM.GetRelationship(Selected.customerId).level;
@@ -673,6 +753,8 @@ public class ShopDay : MonoBehaviour
             : $"Handed over to {name}: +{price} coins, +{points} friendship.";
         if (commission != null)
             LastMessage += $" The \"{Selected.target.displayName}\" pattern is in your book: put it on the shelf in the Pattern Studio.";
+        foreach (var s in taught) LastMessage += s.friend != null ? $" {s.friend.displayName} taught you {s.displayName}!" : $" You learned {s.displayName}!";
+        if (chapter != null) LastMessage += $"\n\nChapter {chapter.number}: {chapter.title}. {chapter.intro}";
         Selected = null;
         GM.ChangeScreen(ScreenId.Shop);
     }

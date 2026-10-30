@@ -20,6 +20,7 @@ public class RecipeStep
     public MaterialNeed[] materials = new MaterialNeed[0];   // supplies used up, e.g. 1 bag of stuffing
     public int fabricPieces;                // how much of the fabric or yarn chosen in a Choose step this step uses
                                             // (fabric: pieces; yarn: stitches)
+    public string requiredSkill;            // a technique the player must have learned for this step (SkillDef id), or empty
     public bool perPatternSquare;           // fabricPieces is per square of the pattern (e.g. 2 stitches of yarn per square)
     public int patternThread;               // embroidery: which of the pattern's thread colours this step uses (0 = first)
     public int threadAmount;                // ...and how much of that floss (in squares, like cross stitch)
