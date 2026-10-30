@@ -294,8 +294,25 @@ find nothing say what they hoped for. Market: rarity (Common = Always, Uncommon 
 packs 6/3/1 (ShopManager.ShelfPacks); when the last is bought it's sold out for the rest of the day and the
 next two (SaveData.marketBought). Owner asked for "out of stock after buying"; packs per item keep basics
 like floss buyable more than once (explained to the owner). Save version 7.
-Plan, in order (remaining): (c) unlocks + Journal pages; (d) Ink dialogue,
-friendship scenes, romance characters; (e) depth: story goals, shop upgrades, a pull to come back.
+DONE 2026-10-30 (feedback 4, 5, 7):
+- Progression (Core/Progression.cs): SkillDef (crafts + techniques; learned via chapter, craft level, book,
+  or friend), ChapterDef (5 chapters, goals), UpgradeDef (display spots, extra visitor, lamp), craft
+  experience (60 per level). New games: chapter 1, cross stitch only; saves from before v8 learn everything.
+  Customers only order what you can make but buy any displayed pattern. Commissions need Pattern Design.
+- Journal (UI/JournalUI.cs): Story, Friends (with romance), Skills, Supplies, News.
+- Dialogue: Ink files in Assets/_Project/Dialogue read by Dialogue/InkLite.cs (our own subset reader; the
+  official ink-unity-integration package was blocked by the permission check as untrusted third-party code,
+  so ask the owner before adding it; if added, delete Editor/InkTextImporter.cs). Visits: scene due ->
+  greeting -> commission / indirect request (offer a displayed pattern; best fit = +50% friendship) /
+  browse. Hand-overs: reaction + scene. Story scenes queue in SaveData.pendingScenes. UI/DialogueUI.cs.
+- Characters: Isla Marlowe (lighthouse keeper, chapter 2) and Rowan Hale (they/them, Knot & Needle,
+  chapter 4) are romanceable (scene 3 choice -> ~ romance(1); scenes 4-5 branch on {romance}).
+- Depth: finishing steps (Press, WeaveEnds), sampler backstitch outline, chapter line on the shop screen,
+  "Looking ahead" on the end-of-day summary. Save version 9.
+Still open from the feedback: more complex crafting can keep growing (e.g. half stitches, cables, colour
+changes); dialogue drafts await the owner's edits; character art for Isla and Rowan.
+
+All eight feedback points have a first version (merged to main 2026-10-30).
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
@@ -340,5 +357,6 @@ friendship scenes, romance characters; (e) depth: story goals, shop upgrades, a 
    SaveData.commissionsDone (save version 6) and puts the pattern in the book, off the shelf.
    Commissions so far: Juno's skate-park scarf (level 0), Mara's moon bunny (sewn plushie, pink minky,
    level 1), Tobias's Sunday cloth (tablecloth, linen evenweave, level 1).
-7. Next: dialogue system (Ink or Yarn Spinner) with indirect requests;
-   Journal; friend share codes (patterns, items, supplies); audio, settings, touch input wrapper.
+7. DONE: dialogue, Journal, unlocks, chapters, upgrades (see "Owner feedback" above).
+8. Next: friend share codes (patterns, items, supplies); audio; Settings screen; touch input wrapper;
+   sewing machine speed control; more complex crafting (half stitches, cables, colour changes).

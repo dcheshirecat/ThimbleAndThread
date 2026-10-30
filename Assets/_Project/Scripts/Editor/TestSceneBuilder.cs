@@ -277,7 +277,7 @@ public static class TestSceneBuilder
         Button(b, "Save and Quit to Title", gm.QuitToTitle, 1100);
 
         p = Panel(ScreenId.DaySummary, "End of Day", new Color(0.78f, 0.82f, 0.95f));
-        ui.summaryText = Label(p, "Summary", new Vector2(0.1f, 0.45f), new Vector2(0.9f, 0.8f), 72, TextAnchor.MiddleCenter);
+        ui.summaryText = Label(p, "Summary", new Vector2(0.08f, 0.32f), new Vector2(0.92f, 0.88f), 60, TextAnchor.MiddleCenter);
         Button(Column(p, 0.5f, 0.3f), "Go to the Workroom", day.GoToWorkroom, 1100);
 
         // Pattern Studio

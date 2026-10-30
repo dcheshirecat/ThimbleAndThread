@@ -42,6 +42,8 @@ public class MinigameHost : MonoBehaviour
         StepKind.ChooseFabric or StepKind.ChooseYarn => go.AddComponent<ChooseMaterialStep>(),
         StepKind.CastOn => go.AddComponent<CastOnStep>(),
         StepKind.HoopFabric => go.AddComponent<HoopFabricStep>(),
+        StepKind.Press => go.AddComponent<PressStep>(),
+        StepKind.WeaveEnds => go.AddComponent<WeaveEndsStep>(),
         StepKind.Backstitch => go.AddComponent<BackstitchStep>(),
         StepKind.SatinFill => go.AddComponent<SatinFillStep>(),
         StepKind.FrenchKnots => go.AddComponent<FrenchKnotsStep>(),

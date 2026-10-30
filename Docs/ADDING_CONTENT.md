@@ -117,6 +117,65 @@ after delivery its pattern goes into the player's book, ready to put on the shel
      Linen Evenweave. Rare supplies only turn up at the market now and then, which makes these special.
    - **Bonus Coins** and **Bonus Friendship**: on top of the usual reward.
 
+## Dialogue (what customers say)
+
+All dialogue is in `Assets/_Project/Dialogue/`, one `.ink` file per character plus `story.ink`. They're
+plain text: edit them in any text editor, or in inkle's free **Inky** editor to preview them. The game
+reads a simple part of the Ink language:
+
+```
+=== mara_scene_1 ===
+Mara: Can I sit for a minute? # thoughtful
+* [Laugh] You laugh, and so does she.
+    ~ friendship(5)
+* [Put the kettle on]
+    Mara: You're an angel. # happy
+- Mara: This shop always felt safe.
+-> END
+```
+
+- `=== name ===` starts a scene (a "knot"). `Name: text` is a line; text without a name is narration.
+- `# happy` (or neutral, sad, surprised, thoughtful) sets the speaker's portrait for that line.
+- `* [Choice]` is an answer button; lines indented under it happen when it's picked. `- ` gathers the
+  choices back together. `* {romance} [...]` only shows when the condition holds (`{not romance}`,
+  `{level >= 3}` or any flag name work too).
+- Commands: `~ friendship(5)` adds friendship, `~ romance(1)` starts a romance (romanceable characters
+  only), `~ flag(name)` / `~ unflag(name)` remember things for later conditions.
+
+The game looks for knots by name (the character's **Ink Name**, set on the customer asset):
+- `mara_visit` is their greeting; `mara_visit_2` replaces it from friendship level 2 (any number).
+- `mara_request_<anything>`: an indirect request. Start it with `# fits: scarf, sweater` (item ids that
+  would do) and `# best: scarf` (the perfect one: 50% more friendship). The player offers a pattern
+  from the display.
+- `mara_handover_good`, `_okay`, `_poor`: what they say when collecting their order.
+- `mara_scene_1`, `_scene_2`...: a scene played once, when friendship reaches that level.
+- `chapter_1`, `chapter_2`...: story scenes, played when a chapter begins.
+
+## New characters
+
+Make a customer as below, then set **Ink Name** (e.g. `isla`), **First Chapter** (when they start
+visiting) and **Romanceable** (adult characters only), and write their `.ink` file.
+
+## Story chapters
+
+In `Data/Chapters/`: one asset per chapter (**Create > Craft > Chapter**): its number, title, intro,
+and goals to reach the next one (orders handed over, patterns sold, a friendship level, all totals).
+**Goal Text** is how the Journal describes them. Its story scene is the `chapter_N` knot in story.ink.
+
+## Skills (crafts and techniques)
+
+In `Data/Skills/` (**Create > Craft > Skill**). A skill is learned by ANY of its routes: reaching a
+**Chapter**, a **Craft Level**, buying a **Book** (a supply of kind Book), or a **Friend** at a
+friendship level. **Is Craft** makes it a whole craft (its items can be ordered). A recipe step can need
+a technique: put the skill id in the step's **Required Skill** (e.g. French knots). **Grants Patterns**
+adds patterns to the book when learned.
+
+## Shop upgrades
+
+In `Data/Upgrades/` (**Create > Craft > Upgrade**): name, price, the chapter it's offered from, and
+its effect: Display Spot (more patterns on display), Extra Visitor (a customer drops by twice), or
+Craft Lamp (Amount = % more experience). They're sold on the market's "For the Shop" shelf.
+
 ## The tutorial ("How to Play")
 
 The tutorial shows the first time the app is opened, and from the title screen's How to Play button.

@@ -58,6 +58,16 @@ public class PieceShape
         return shape;
     }
 
+    /// Where a pattern square sits in the step area (its centre) and how big it is, for the same padding
+    /// the shape uses.
+    public static Vector2 SquareCenter(Pattern pattern, float padding, int x, int y, out float size)
+    {
+        int w = Mathf.Max(1, pattern.width), h = Mathf.Max(1, pattern.height);
+        size = (1 - 2 * padding) / Mathf.Max(w, h);
+        var offset = new Vector2((1 - w * size) / 2f, (1 - h * size) / 2f);
+        return offset + new Vector2(x + 0.5f, y + 0.5f) * size;
+    }
+
     /// Puts the opening around the lowest point of the outline. Seam and opening run a little inside
     /// the cut edge, like a real seam allowance.
     void SplitOpening()

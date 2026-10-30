@@ -34,37 +34,74 @@ MonoBehaviour:
     tools: []
     materials: []
     fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
   - kind: 3
     label: Cut the panels
     tools:
     - toolType: scissors
       minSize: 0
       label: Fabric scissors
+      exactSize: 0
+      matchYarn: 0
     materials: []
     fabricPieces: 2
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
   - kind: 10
     label: Sew the sides
     tools:
     - toolType: sewing_machine
       minSize: 0
       label: Sewing machine
+      exactSize: 0
+      matchYarn: 0
     materials: []
     fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
   - kind: 11
     label: Hem the top
     tools:
     - toolType: sewing_machine
       minSize: 0
       label: Sewing machine
+      exactSize: 0
+      matchYarn: 0
     materials: []
     fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
   - kind: 12
     label: Attach the handle
     tools:
     - toolType: sewing_needle
       minSize: 0
       label: Hand sewing needle
+      exactSize: 0
+      matchYarn: 0
     materials:
     - supplyId: webbing
       amount: 1
     fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+  - kind: 23
+    label: Press it
+    tools: []
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0

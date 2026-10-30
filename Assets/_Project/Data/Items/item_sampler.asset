@@ -23,7 +23,41 @@ MonoBehaviour:
     width: 0
     height: 0
     palette: []
+    threads: []
     cells: []
   basePrice: 25
   patternPrice: 8
   requiredSupplyIds: []
+  steps:
+  - kind: 0
+    label: Stitch the design
+    tools: []
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+  - kind: 20
+    label: Backstitch the outline
+    tools:
+    - toolType: tapestry_needle
+      minSize: 0
+      label: Tapestry needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 4
+  - kind: 23
+    label: Press it
+    tools: []
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0

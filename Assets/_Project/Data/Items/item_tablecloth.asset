@@ -32,6 +32,27 @@ MonoBehaviour:
   - kind: 0
     label: Stitch the motif
     tools: []
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
   - kind: 1
     label: Hem the edges
     tools: []
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+  - kind: 23
+    label: Press it
+    tools: []
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0

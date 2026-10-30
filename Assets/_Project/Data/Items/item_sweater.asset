@@ -34,7 +34,10 @@ MonoBehaviour:
     tools: []
     materials: []
     fabricPieces: 0
+    requiredSkill: 
     perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
   - kind: 14
     label: Cast on
     tools:
@@ -45,7 +48,10 @@ MonoBehaviour:
       matchYarn: 1
     materials: []
     fabricPieces: 0
+    requiredSkill: 
     perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
   - kind: 15
     label: Knit the front and back
     tools:
@@ -56,7 +62,10 @@ MonoBehaviour:
       matchYarn: 1
     materials: []
     fabricPieces: 5
+    requiredSkill: 
     perPatternSquare: 1
+    patternThread: 0
+    threadAmount: 0
   - kind: 16
     label: Cast off
     tools:
@@ -67,4 +76,30 @@ MonoBehaviour:
       matchYarn: 1
     materials: []
     fabricPieces: 0
+    requiredSkill: 
     perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+  - kind: 24
+    label: Weave in the ends
+    tools:
+    - toolType: tapestry_needle
+      minSize: 0
+      label: Tapestry needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+  - kind: 23
+    label: Block it
+    tools: []
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0

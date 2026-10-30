@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// Runs the shop's day and night.
@@ -529,6 +530,33 @@ public class ShopDay : MonoBehaviour
         Save.visitorsToday.Clear();   // anyone still waiting comes back another day
         GM.Persist();
         GM.ChangeScreen(ScreenId.DaySummary);
+    }
+
+    /// For the end-of-day summary: what's coming, so there's something to look forward to.
+    public string LookingAhead()
+    {
+        var lines = new List<string>();
+        var c = Progress.Chapter;
+        if (c != null && content.Chapter(c.number + 1) != null) lines.Add($"Chapter {c.number}: {Progress.GoalProgress(c).Replace("\n", ". ")}.");
+        foreach (var cust in content.customers)
+        {
+            if (cust == null || cust.firstChapter > Save.chapter || string.IsNullOrEmpty(cust.inkName)) continue;
+            int level = GM.GetRelationship(cust.customerId).level;
+            for (int n = 1; n <= level; n++)
+                if (content.Ink.Has($"{cust.inkName}_scene_{n}") && !Save.flags.Contains($"seen:{cust.inkName}_scene_{n}"))
+                {
+                    lines.Add($"{cust.displayName} has something to tell you.");
+                    break;
+                }
+        }
+        if (content.Chapter(Save.chapter + 1) is ChapterDef nextChapter)
+            foreach (var cust in content.customers)
+                if (cust != null && cust.firstChapter == nextChapter.number) lines.Add("Someone new will visit in the next chapter...");
+        int restock = shop.DaysUntilRestock;
+        lines.Add(restock == 1 ? "The Supply Market gets new stock tomorrow." : $"New stock at the Supply Market in {restock} days.");
+        var ready = Save.orders.FindAll(o => o.finished).Count;
+        if (ready > 0) lines.Add($"{ready} order(s) set aside to hand over tomorrow.");
+        return string.Join("\n", lines.Distinct());
     }
 
     public void GoToWorkroom()

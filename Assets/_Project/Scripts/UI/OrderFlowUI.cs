@@ -45,6 +45,7 @@ public class OrderFlowUI : MonoBehaviour
         int ready = save.orders.FindAll(o => o.finished).Count;
         int toDo = save.orders.Count - ready;
         shopStatus.text = $"Day {save.day}    {save.coins} coins\n" +
+                          (day.Progress.Chapter is ChapterDef ch ? $"Chapter {ch.number}: {ch.title}\n" : "") +
                           $"On display: {day.Shelf.Count} of {save.displaySpots} patterns\n" +
                           $"Ready to hand over: {ready}\nIn progress: {toDo}\n\n{day.LastMessage}";
         greetLabel.text = day.CustomersWaiting > 0 ? $"Greet Customer ({day.CustomersWaiting})" : "No one waiting";
@@ -52,7 +53,8 @@ public class OrderFlowUI : MonoBehaviour
                               $"Orders to work on: {toDo}\nSet aside for tomorrow: {ready}\n\n{day.LastMessage}";
         summaryText.text = "The shop is closed for the night.\n\n" +
                            $"Patterns sold: {save.patternsSoldToday}\nOrders handed over: {save.deliveredToday}\n" +
-                           $"Coins earned today: {save.coinsToday}\nTotal coins: {save.coins}";
+                           $"Coins earned today: {save.coinsToday}\nTotal coins: {save.coins}\n\n" +
+                           $"<b>Looking ahead</b>\n{day.LookingAhead()}";
 
         if (screen == ScreenId.OrderBook) BuildOrderList();
         if (screen == ScreenId.Market) BuildMarketList(save);
@@ -303,6 +305,8 @@ public class OrderFlowUI : MonoBehaviour
         StepKind.SewSides => "Guide the machine down one side, along the bottom and up the other. Leave the top open.",
         StepKind.HemTop => "Fold the top edge over and sew along the dashed line.",
         StepKind.AttachHandles => "Tap where each end of the handle goes, on the faint marks just below the top.",
+        StepKind.Press => "Drag the iron all over the piece until the creases are gone.",
+        StepKind.WeaveEnds => "Drag the loose tail along the dashed path to weave it into the back of the stitches.",
         StepKind.HoopFabric => "Press the outer ring down all the way round so the fabric is drum-tight.",
         StepKind.Backstitch => "Backstitch along the printed line. The closer you follow it, the neater it looks.",
         StepKind.SatinFill => "Drag back and forth across the shape to fill it with satin stitch. Try to stay inside the outline.",

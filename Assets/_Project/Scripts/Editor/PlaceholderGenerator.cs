@@ -69,12 +69,23 @@ public static class PlaceholderGenerator
             Step(StepKind.Backstitch, "Backstitch the outline", thread: 0, threadAmount: 10, tools: embroideryNeedle),
             Step(StepKind.SatinFill, "Fill with satin stitch", thread: 0, threadAmount: 15, tools: embroideryNeedle),
             Step(StepKind.FrenchKnots, "Add French knots", thread: 1, threadAmount: 2, tools: embroideryNeedle));
+        Recipe(sampler,
+            Step(StepKind.CrossStitch, "Stitch the design"),
+            Step(StepKind.Backstitch, "Backstitch the outline", thread: 0, threadAmount: 4, tools: Tool("tapestry_needle", "Tapestry needle")),
+            Step(StepKind.Press, "Press it"));
+        // Finishing touches for items that already had recipes (added once).
+        AddStep(tablecloth, Step(StepKind.Press, "Press it"));
+        AddStep(scarf, Step(StepKind.WeaveEnds, "Weave in the ends", tools: Tool("tapestry_needle", "Tapestry needle")));
+        AddStep(scarf, Step(StepKind.Press, "Block it"));
+        AddStep(sweater, Step(StepKind.WeaveEnds, "Weave in the ends", tools: Tool("tapestry_needle", "Tapestry needle")));
+        AddStep(sweater, Step(StepKind.Press, "Block it"));
         Recipe(tote,
             Step(StepKind.ChooseFabric, "Choose the fabric"),
             Step(StepKind.CutPieces, "Cut the panels", pieces: 2, tools: Tool("scissors", "Fabric scissors")),
             Step(StepKind.SewSides, "Sew the sides", tools: Tool("sewing_machine", "Sewing machine")),
             Step(StepKind.HemTop, "Hem the top", tools: Tool("sewing_machine", "Sewing machine")),
             Step(StepKind.AttachHandles, "Attach the handle", materials: Need("webbing", 1), tools: Tool("sewing_needle", "Hand sewing needle")));
+        AddStep(tote, Step(StepKind.Press, "Press it"));
 
         // ---- Supplies ----
         // Market slots: Always = basics always for sale; Rotating = the selection that changes every 4 days;
@@ -318,6 +329,15 @@ public static class PlaceholderGenerator
     {
         if (item.steps != null && item.steps.Length > 0) return;
         item.steps = steps;
+        EditorUtility.SetDirty(item);
+    }
+
+    /// Adds a step to the end of an item's recipe, unless it already has a step of that kind.
+    static void AddStep(CraftItemDef item, RecipeStep step)
+    {
+        if (System.Array.Exists(item.steps, s => s.kind == step.kind)) return;
+        var list = new List<RecipeStep>(item.steps) { step };
+        item.steps = list.ToArray();
         EditorUtility.SetDirty(item);
     }
 
