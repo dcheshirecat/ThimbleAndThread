@@ -276,6 +276,17 @@ from the title's How to Play button (ScreenId.Tutorial); placeholder scenes are 
 7. Skills unlockable (crafts and pattern creation), not all from the start. Journal pages: friendship
    progress, unlocked crafts, inventory, etc.
 8. Supply store: items marked by rarity; once bought, an item is out of stock for the next two days.
+Owner's answers (2026-10-30):
+- Romance: NEW adult characters written as romance options (2-3; e.g. the rival shop owner of chapter 4).
+  Mara, Juno and Tobias stay friendship-only. Juno is a teen: never romanceable.
+- Dialogue: Claude drafts in Ink (plain-text .ink files the owner can edit anywhere); the owner edits.
+- Unlocking: all three combined: story chapters unlock crafts (1 cross stitch, 2 knitting, 3 embroidery,
+  4 crochet, 5 sewing), crafting experience unlocks techniques and pattern design, books/lessons can be
+  bought, and friends can teach things at friendship milestones.
+- Display: 4 pattern spots at the start, more via shop upgrades; the shelf shows how each pattern sells.
+Plan, in order: (a) colour contrast, continuous steps, market rarity + sold out for 2 days, display spots
+with sales stats; (b) realistic stitch rendering; (c) unlocks + Journal pages; (d) Ink dialogue,
+friendship scenes, romance characters; (e) depth: story goals, shop upgrades, a pull to come back.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
