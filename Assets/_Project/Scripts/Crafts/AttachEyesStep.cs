@@ -16,7 +16,7 @@ public class AttachEyesStep : PlacementStep
         Line(Shape.Seam, Color.Lerp(area.fabricColor, Color.black, 0.35f), 0.006f, 1);
     }
 
-    protected override GameObject DrawPlaced(Vector2 p) => Square(p, EyeSize, EyeColor, 2).gameObject;
+    protected override GameObject DrawPlaced(Vector2 p) => Dot(p, EyeSize * 1.2f, EyeColor, 2, shine: true);
 
     protected override bool CanPlace(Vector2 p) => PieceShape.Inside(Shape.Outline, p);
 }

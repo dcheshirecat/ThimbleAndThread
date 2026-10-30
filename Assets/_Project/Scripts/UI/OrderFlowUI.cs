@@ -46,7 +46,7 @@ public class OrderFlowUI : MonoBehaviour
         int ready = save.orders.FindAll(o => o.finished).Count;
         int toDo = save.orders.Count - ready;
         shopStatus.text = $"Day {save.day}    {save.coins} coins\n" +
-                          $"Patterns on the shelf: {day.Shelf.Count}\n" +
+                          $"On display: {day.Shelf.Count} of {save.displaySpots} patterns\n" +
                           $"Ready to hand over: {ready}\nIn progress: {toDo}\n\n{day.LastMessage}";
         greetLabel.text = day.CustomersWaiting > 0 ? $"Greet Customer ({day.CustomersWaiting})" : "No one waiting";
         workroomStatus.text = $"Night of day {save.day}    {save.coins} coins\n" +
@@ -145,10 +145,11 @@ public class OrderFlowUI : MonoBehaviour
         patternText.text = $"{p.name}\n\nMakes: {(item != null ? item.itemName : p.itemId)}\n" +
                            $"Price: {p.price} coins\n" +
                            (p.designed ? "Your own design" : "From your great-aunt's pattern book") + "\n\n" +
-                           (p.onShelf ? "On the shelf: customers can buy it or order the finished piece."
+                           $"Sold {p.sold} {(p.sold == 1 ? "copy" : "copies")}, {p.ordered} {(p.ordered == 1 ? "order" : "orders")} so far.\n\n" +
+                           (p.onShelf ? $"On display ({day.Shelf.Count} of {GameManager.Instance.Save.displaySpots}): customers can buy it or order the finished piece."
                                       : "Not on the shelf: customers won't see it.");
         if (!string.IsNullOrEmpty(day.LastMessage)) patternText.text += $"\n\n{day.LastMessage}";
-        shelfLabel.text = p.onShelf ? "Take Off Shelf" : "Put on Shelf";
+        shelfLabel.text = p.onShelf ? "Take Off Display" : "Put on Display";
         editDesignButton.SetActive(p.designed);
         deleteButton.SetActive(p.designed);
         deleteLabel.text = day.ConfirmingDelete ? "Tap Again to Delete" : "Delete";
@@ -185,7 +186,7 @@ public class OrderFlowUI : MonoBehaviour
             var item = day.ItemFor(p.itemId);
             string id = p.id;
             patternRows.Add(AddRow(patternTemplate, $"Pattern_{id}",
-                $"{p.name}  ·  {(item != null ? item.itemName : p.itemId)}  ·  {p.price} coins  ·  {(p.onShelf ? "On shelf" : "In the book")}",
+                $"{p.name}  ·  {(item != null ? item.itemName : p.itemId)}  ·  {p.price} coins  ·  {(p.onShelf ? "On display" : "In the book")}  ·  sold {p.sold}, ordered {p.ordered}",
                 () => day.SelectPattern(id)));
         }
     }
@@ -202,7 +203,9 @@ public class OrderFlowUI : MonoBehaviour
         ("Tools", new[] { SupplyKind.Tool }),
     };
 
-    static readonly Color TileColor = new Color(0.98f, 0.95f, 0.88f), RareTileColor = new Color(1f, 0.88f, 0.55f);
+    // Tiles by rarity: common, uncommon, rare; sold-out tiles are greyed.
+    static readonly Color TileColor = new Color(0.98f, 0.95f, 0.88f), UncommonTileColor = new Color(0.80f, 0.90f, 1f),
+        RareTileColor = new Color(1f, 0.88f, 0.55f), SoldOutTileColor = new Color(0.7f, 0.68f, 0.66f);
 
     /// The Supply Market as shelves: one per kind of supply, each a grid of tiles showing the supply's icon.
     void BuildMarketList(SaveData save)
@@ -242,17 +245,20 @@ public class OrderFlowUI : MonoBehaviour
         tile.gameObject.SetActive(true);
         tile.name = $"Supply_{id}";
         tile.onClick.AddListener(() => day.BuyPack(id));
-        bool rare = s.market == MarketSlot.Rare;
-        tile.GetComponent<Image>().color = rare ? RareTileColor : TileColor;
+        int left = day.shop.PacksLeft(s);
+        tile.GetComponent<Image>().color = left <= 0 ? SoldOutTileColor
+            : s.market == MarketSlot.Rare ? RareTileColor : s.market == MarketSlot.Rotating ? UncommonTileColor : TileColor;
 
         var icon = tile.transform.Find("Icon").GetComponent<Image>();
         icon.sprite = s.icon;
         icon.color = s.icon != null ? Color.white : s.color;   // no art yet: a swatch of its colour
+        if (left <= 0) icon.color *= new Color(0.6f, 0.6f, 0.6f, 0.6f);
 
-        tile.transform.Find("Name").GetComponent<Text>().text = (rare ? "Rare find!\n" : "") + s.displayName;
+        tile.transform.Find("Name").GetComponent<Text>().text = $"{ShopManager.Rarity(s)}\n{s.displayName}";
+        string stock = left <= 0 ? $"Sold out: back in {day.shop.DaysUntilBack(s)} days" : $"{left} left";
         tile.transform.Find("Info").GetComponent<Text>().text = s.kind == SupplyKind.Tool
-            ? $"{s.price} coins\n{(day.shop.Owns(id) ? "Owned" : "Yours to keep")}"
-            : $"{s.price} coins for {s.perPack} {s.unit}\nYou have {day.shop.Stock(id)}";
+            ? $"{s.price} coins  ·  {(day.shop.Owns(id) ? "Owned" : stock)}"
+            : $"{s.price} coins for {s.perPack} {s.unit}\n{stock}  ·  you have {day.shop.Stock(id)}";
     }
 
     /// A commission's request, and whether its pattern still needs designing.

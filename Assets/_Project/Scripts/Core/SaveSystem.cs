@@ -58,6 +58,9 @@ public static class SaveSystem
         foreach (var o in data.orders) o.steps ??= new System.Collections.Generic.List<StepProgress>();
         // Version 5 had no commissions; none done is right.
         data.commissionsDone ??= new System.Collections.Generic.List<string>();
+        // Version 6 had no display limit or market sell-outs: 4 spots (patterns already shown stay shown).
+        if (data.version < 7) data.displaySpots = 4;
+        data.marketBought ??= new System.Collections.Generic.List<MarketPurchase>();
         data.version = SaveData.CurrentVersion;
         return data;
     }

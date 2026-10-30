@@ -16,6 +16,7 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep
         Board.mode = order.patternOnly ? CrossStitchCanvas.Mode.PatternFill : CrossStitchCanvas.Mode.Stitch;
         Board.target = target;
         Board.restore = order.work;
+        Board.fabricColor = area.fabricColor;
     }
 
     public float SaveWork()

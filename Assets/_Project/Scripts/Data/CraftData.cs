@@ -72,7 +72,18 @@ public class OwnedPattern
     public int price;
     public bool onShelf;
     public bool designed;           // true = made in the Pattern Studio, grid stored in "design"
+    public int sold;                // copies of the pattern sold off the shelf
+    public int ordered;             // orders taken for the finished item
     public Pattern design = new Pattern();
+}
+
+// How much of a supply has been bought off the market's shelf, and when it's back if it sold out.
+[Serializable]
+public class MarketPurchase
+{
+    public string supplyId;
+    public int bought;
+    public int soldOutUntil;        // the last day it's sold out (0 = not sold out)
 }
 
 // Player-owned state, one per save slot. Saved as JSON to Application.persistentDataPath.
@@ -80,7 +91,7 @@ public class OwnedPattern
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 6;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions
+    public const int CurrentVersion = 7;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
@@ -97,6 +108,8 @@ public class SaveData
     public List<string> visitorsToday = new List<string>();    // customerIds still to arrive today
     public List<OwnedPattern> patterns = new List<OwnedPattern>();  // the book and the shelf
     public List<string> commissionsDone = new List<string>();       // delivered commissions, never offered again
+    public int displaySpots = 4;                                     // patterns that fit on the shop's display
+    public List<MarketPurchase> marketBought = new List<MarketPurchase>();   // packs bought from the market's shelf
     public int deliveredToday;
     public int coinsToday;
     public int patternsSoldToday;

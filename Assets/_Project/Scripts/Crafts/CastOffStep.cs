@@ -5,6 +5,7 @@ using UnityEngine;
 /// edge of the piece.
 public class CastOffStep : TracingStep
 {
+    protected override float StitchLength => 0f;   // a continuous line, not stitches
     protected override Color ThreadColor => Color.Lerp(area.fabricColor, Color.black, 0.4f);
 
     protected override void DrawPiece()

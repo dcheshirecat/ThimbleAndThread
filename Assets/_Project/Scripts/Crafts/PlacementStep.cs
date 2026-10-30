@@ -28,7 +28,7 @@ public abstract class PlacementStep : PieceStep
     protected override void Build()
     {
         DrawPiece();
-        foreach (var m in Marks) Square(m, 0.05f, MarkColor, 4);
+        foreach (var m in Marks) Dot(m, 0.06f, MarkColor, 4);
         foreach (var p in Placed) placed.Add(DrawPlaced(p));
         Changed();
     }

@@ -284,8 +284,17 @@ Owner's answers (2026-10-30):
   4 crochet, 5 sewing), crafting experience unlocks techniques and pattern design, books/lessons can be
   bought, and friends can teach things at friendship milestones.
 - Display: 4 pattern spots at the start, more via shop upgrades; the shelf shows how each pattern sells.
-Plan, in order: (a) colour contrast, continuous steps, market rarity + sold out for 2 days, display spots
-with sales stats; (b) realistic stitch rendering; (c) unlocks + Journal pages; (d) Ink dialogue,
+DONE 2026-10-30 (feedback 1, 2, 3, 6, 8): cross stitch board looks like Aida (fabric, woven holes, faint
+chart) and stitches are shaded floss (shadow, body, sheen) that stay visible in any colour; seams and hems
+are dashed stitches (TracingStep.StitchLength; 0 = a continuous cut or yarn); knit/purl/crochet stitches
+are shaded tapered loops; eyes, knots, pins and stuffing are round dots with a shine (PieceStep.Dot).
+Finishing a step goes straight into the next (stops at the Workbench only if a tool/material is missing).
+Display: SaveData.displaySpots (4); OwnedPattern.sold/ordered shown in the Pattern Studio; customers who
+find nothing say what they hoped for. Market: rarity (Common = Always, Uncommon = Rotating, Rare), shelf
+packs 6/3/1 (ShopManager.ShelfPacks); when the last is bought it's sold out for the rest of the day and the
+next two (SaveData.marketBought). Owner asked for "out of stock after buying"; packs per item keep basics
+like floss buyable more than once (explained to the owner). Save version 7.
+Plan, in order (remaining): (c) unlocks + Journal pages; (d) Ink dialogue,
 friendship scenes, romance characters; (e) depth: story goals, shop upgrades, a pull to come back.
 
 ## Next tasks (in this order)

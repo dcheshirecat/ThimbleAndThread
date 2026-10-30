@@ -7,6 +7,7 @@ public class HoopFabricStep : TracingStep
 {
     protected override float ShapePadding => 0.25f;
     protected override bool ClosedGuide => true;
+    protected override float StitchLength => 0f;   // a continuous line, not stitches
     protected override Color ThreadColor => new Color(0.72f, 0.55f, 0.35f);   // the outer ring, pressed on
     protected override Color GuideColor => new Color(0.72f, 0.55f, 0.35f, 0.6f);
 

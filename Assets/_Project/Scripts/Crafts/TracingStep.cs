@@ -11,6 +11,8 @@ public abstract class TracingStep : PieceStep
     protected virtual bool ClosedGuide => false;
     protected virtual Color ThreadColor => new Color(0.30f, 0.25f, 0.30f);
     protected virtual Color GuideColor => new Color(1f, 1f, 1f, 0.85f);
+    /// Length of one stitch, in 0..1 of the area; 0 draws a continuous line (a cut, a strand of yarn).
+    protected virtual float StitchLength => 0.028f;
 
     /// Draws what's being worked on, under the line. Default: a square sheet of the fabric.
     protected virtual void DrawPiece() => Square(Vector2.one * 0.5f, 0.9f, area.fabricColor, 0);
@@ -20,7 +22,7 @@ public abstract class TracingStep : PieceStep
 
     readonly List<Vector2> points = new List<Vector2>();
     readonly List<int> strokeStarts = new List<int>();
-    readonly List<LineRenderer> strokeLines = new List<LineRenderer>();
+    readonly List<LineRenderer[]> strokeLines = new List<LineRenderer[]>();   // shadow and thread for each stroke
     List<Vector2> samples;
     bool[] covered;
 
@@ -68,7 +70,7 @@ public abstract class TracingStep : PieceStep
     protected override void OnPress(Vector2 p)
     {
         strokeStarts.Add(points.Count);
-        strokeLines.Add(Line(new Vector2[0], ThreadColor, 0.012f, 2));
+        strokeLines.Add(NewStroke());
         AddPoint(p);
     }
 
@@ -82,7 +84,16 @@ public abstract class TracingStep : PieceStep
     {
         points.Add(p);
         Cover(p);
-        Extend(strokeLines[strokeLines.Count - 1], p);
+        foreach (var line in strokeLines[strokeLines.Count - 1]) Extend(line, p);
+    }
+
+    /// A stroke of thread: a soft shadow under it, so it shows on any fabric, and the thread itself.
+    LineRenderer[] NewStroke()
+    {
+        var shadow = Line(new Vector2[0], new Color(0, 0, 0, 0.3f), 0.016f, 2);
+        var thread = Line(new Vector2[0], ThreadColor, 0.011f, 3);
+        if (StitchLength > 0) { MakeDashed(shadow, StitchLength); MakeDashed(thread, StitchLength); }
+        return new[] { shadow, thread };
     }
 
     void Cover(Vector2 p)
@@ -96,16 +107,20 @@ public abstract class TracingStep : PieceStep
 
     void Redraw()
     {
-        foreach (var l in strokeLines) if (l) Destroy(l.gameObject);
+        foreach (var stroke in strokeLines) foreach (var l in stroke) if (l) Destroy(l.gameObject);
         strokeLines.Clear();
         System.Array.Clear(covered, 0, covered.Length);
         Coverage = 0f;
         for (int s = 0; s < strokeStarts.Count; s++)
         {
             int from = strokeStarts[s], to = s + 1 < strokeStarts.Count ? strokeStarts[s + 1] : points.Count;
-            var line = Line(new Vector2[0], ThreadColor, 0.012f, 2);
-            strokeLines.Add(line);
-            for (int i = from; i < to; i++) { Extend(line, points[i]); Cover(points[i]); }
+            var stroke = NewStroke();
+            strokeLines.Add(stroke);
+            for (int i = from; i < to; i++)
+            {
+                foreach (var line in stroke) Extend(line, points[i]);
+                Cover(points[i]);
+            }
         }
     }
 }

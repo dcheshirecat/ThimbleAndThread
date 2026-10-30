@@ -20,7 +20,7 @@ public class CastOnStep : PieceStep
 
     Vector2 Loop(int x) => new Vector2(knit.origin.x + (x + 0.5f) * knit.cell, knit.origin.y - knit.cell * 0.2f);
 
-    void AddLoop(int x) => loops.Add(Square(Loop(x), knit.cell * 0.5f, area.fabricColor, 2).gameObject);
+    void AddLoop(int x) => loops.Add(Stitch(Loop(x), knit.cell * 0.8f, true, Color.Lerp(area.fabricColor, Color.black, 0.1f), 2, 90f));
 
     protected override void OnPress(Vector2 p)
     {

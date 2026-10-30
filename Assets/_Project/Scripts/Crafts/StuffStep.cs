@@ -32,7 +32,7 @@ public class StuffStep : PieceStep
         Puff(p);
     }
 
-    void Puff(Vector2 p) => puffs.Add(Square(p, 0.07f, new Color(1, 1, 1, 0.55f), 2).gameObject);
+    void Puff(Vector2 p) => puffs.Add(Dot(p, 0.1f, new Color(1, 1, 1, 0.45f), 2));
 
     public override void Undo()
     {

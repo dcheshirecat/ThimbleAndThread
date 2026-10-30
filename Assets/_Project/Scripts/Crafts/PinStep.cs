@@ -13,7 +13,7 @@ public class PinStep : PieceStep
 
     protected override void Build()
     {
-        Piece(Shape.Outline, Color.Lerp(area.fabricColor, Color.black, 0.2f), 0, new Vector2(0.012f, -0.012f));
+        Piece(Shape.Outline, Color.Lerp(area.fabricColor, Color.black, 0.2f), -1, new Vector2(0.012f, -0.012f));
         Piece(Shape.Outline, area.fabricColor, 0);
         marks = PieceShape.Resample(Shape.Outline, true, PinCount + 1);
         marks.RemoveAt(marks.Count - 1);
@@ -37,7 +37,7 @@ public class PinStep : PieceStep
         var pin = new GameObject("Pin");
         pin.transform.SetParent(transform, false);
         Line(new[] { at, at + new Vector2(0.03f, 0.06f) }, new Color(0.75f, 0.75f, 0.8f), 0.007f, 3).transform.SetParent(pin.transform, true);
-        Square(at + new Vector2(0.03f, 0.06f), 0.025f, new Color(0.85f, 0.2f, 0.3f), 4).transform.SetParent(pin.transform, true);
+        Dot(at + new Vector2(0.03f, 0.06f), 0.032f, new Color(0.85f, 0.2f, 0.3f), 4, shine: true).transform.SetParent(pin.transform, true);
         pins.Add(pin);
         int i = marks.FindIndex(m => Same(m, at));
         if (i >= 0) markViews[i].enabled = false;

@@ -37,15 +37,21 @@ public class CrochetRoundsStep : PieceStep
     protected override void Build()
     {
         slots.AddRange(Slots());
-        Square(new Vector2(0.5f, 0.5f), 0.07f, Yarn, 1);   // the magic ring
-        foreach (var s in slots) Square(s, 0.02f, new Color(1, 1, 1, 0.3f), 1);
+        Dot(new Vector2(0.5f, 0.5f), 0.08f, Yarn, 1);   // the magic ring
+        foreach (var s in slots) Dot(s, 0.025f, new Color(1, 1, 1, 0.3f), 1);
         current = Square(Vector2.zero, 0.08f, new Color(1, 1, 1, 0.45f), 2);
         loop = Square(Vector2.zero, 0.035f, Color.white, 4);
         for (int i = 0; i < Done; i++) MakeStitch(i);
         Show();
     }
 
-    void MakeStitch(int i) => made.Add(Square(slots[i], 0.07f + 0.02f * State.points[i].x, Yarn, 3).gameObject);
+    /// A crochet stitch: a little "V" whose top faces outwards, away from the ring. Neater ones are plumper.
+    void MakeStitch(int i)
+    {
+        var out_ = slots[i] - new Vector2(0.5f, 0.5f);
+        float angle = Mathf.Atan2(out_.y, out_.x) * Mathf.Rad2Deg - 90f;
+        made.Add(Stitch(slots[i], 0.065f + 0.015f * State.points[i].x, false, Yarn, 3, angle));
+    }
 
     void Show()
     {

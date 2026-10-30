@@ -6,6 +6,7 @@ using UnityEngine;
 public class CutPiecesStep : TracingStep
 {
     protected override bool ClosedGuide => true;
+    protected override float StitchLength => 0f;   // a continuous line, not stitches
     protected override Color ThreadColor => new Color(0.35f, 0.35f, 0.40f);   // the scissors' cut
     protected override Color GuideColor => new Color(0.15f, 0.15f, 0.2f, 0.8f);   // marking pen
 

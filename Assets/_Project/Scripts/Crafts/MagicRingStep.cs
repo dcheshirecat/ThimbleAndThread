@@ -8,6 +8,7 @@ public class MagicRingStep : TracingStep
     const float Radius = 0.15f;
 
     protected override bool ClosedGuide => true;
+    protected override float StitchLength => 0f;   // a continuous line, not stitches
     protected override Color ThreadColor => Color.Lerp(area.fabricColor, Color.black, 0.15f);
 
     protected override void DrawPiece() { }   // nothing yet: just the yarn

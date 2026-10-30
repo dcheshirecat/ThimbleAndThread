@@ -47,9 +47,11 @@ public class ShopDay : MonoBehaviour
 
         // The great-aunt's book: starter patterns for new games, and any starter pattern added in an
         // update for older saves (book patterns can't be deleted, so a missing one was never there).
+        // They go on display while there's room; the rest wait in the book.
         foreach (var def in content.patterns)
             if (def != null && def.startsOnShelf && def.item != null && !Save.patterns.Exists(p => p.id == def.patternId))
-                Save.patterns.Add(new OwnedPattern { id = def.patternId, name = def.displayName, itemId = def.item.itemId, price = def.price, onShelf = true });
+                Save.patterns.Add(new OwnedPattern { id = def.patternId, name = def.displayName, itemId = def.item.itemId, price = def.price,
+                                                     onShelf = Shelf.Count < Save.displaySpots });
 
         // Saves store item ids; look the definitions back up. Drop orders for items that no longer exist.
         Save.orders.RemoveAll(o =>
@@ -125,14 +127,20 @@ public class ShopDay : MonoBehaviour
             var matches = Shelf.FindAll(p => wants.Exists(i => i.itemId == p.itemId));
             if (matches.Count == 0)
             {
-                browsed = $"{customer.displayName} browsed the shelf but didn't find anything today.";
+                browsed = wants.Count > 0
+                    ? $"{customer.displayName} browsed the display but didn't find anything. They were hoping for something like a {wants[Random.Range(0, wants.Count)].itemName.ToLower()}."
+                    : $"{customer.displayName} browsed the display but didn't find anything today.";
                 continue;
             }
 
             var pick = matches[Random.Range(0, matches.Count)];
             Visitor = customer;
             if (Random.value < 0.35f) SaleOffer = pick;   // buys the pattern to make it themselves
-            else Offer = OrderGenerator.FromPattern(customer, ItemFor(pick.itemId), DesignFor(pick), Save.day);
+            else
+            {
+                Offer = OrderGenerator.FromPattern(customer, ItemFor(pick.itemId), DesignFor(pick), Save.day);
+                Offer.fromPatternId = pick.id;
+            }
             GM.Persist();
             GM.ChangeScreen(ScreenId.Dialogue);
             return;
@@ -151,11 +159,14 @@ public class ShopDay : MonoBehaviour
             GM.AddRelationshipPoints(Visitor.customerId, 5);
             Save.coinsToday += SaleOffer.price;
             Save.patternsSoldToday++;
+            SaleOffer.sold++;
             LastMessage = $"Sold the {SaleOffer.name} pattern to {Visitor.displayName}: +{SaleOffer.price} coins.";
         }
         else
         {
             Save.orders.Add(Offer);
+            var from = Save.patterns.Find(x => x.id == Offer.fromPatternId);
+            if (from != null) from.ordered++;
             LastMessage = Offer.needsDesign
                 ? $"{Visitor.displayName}'s commission is in your order book. Design its pattern tonight."
                 : $"{Visitor.displayName}'s {Offer.item.itemName.ToLower()} is in your order book.";
@@ -281,6 +292,12 @@ public class ShopDay : MonoBehaviour
             GM.ChangeScreen(ScreenId.PatternEdit);
             return;
         }
+        if (!SelectedPattern.onShelf && Shelf.Count >= Save.displaySpots)
+        {
+            LastMessage = $"Your display holds {Save.displaySpots} patterns. Take one off first: keep the ones that sell.";
+            GM.ChangeScreen(ScreenId.PatternEdit);
+            return;
+        }
         SelectedPattern.onShelf = !SelectedPattern.onShelf;
         LastMessage = "";
         GM.Persist();
@@ -401,7 +418,9 @@ public class ShopDay : MonoBehaviour
     {
         var s = content.Supply(supplyId);
         if (s == null || Save.night || !shop.IsOnSale(s)) return;
-        LastMessage = !shop.Buy(s) ? $"Not enough coins for {s.displayName} ({s.price} coins)."
+        LastMessage = shop.PacksLeft(s) <= 0 ? $"{s.displayName} is sold out. It's back in {shop.DaysUntilBack(s)} days."
+            : s.kind == SupplyKind.Tool && shop.Owns(supplyId) ? $"You already have {s.displayName}: tools are kept."
+            : !shop.Buy(s) ? $"Not enough coins for {s.displayName} ({s.price} coins)."
             : s.kind == SupplyKind.Tool ? $"Bought {s.displayName}. Tools are yours to keep."
             : $"Bought {s.displayName}: +{s.perPack} {s.unit} (you have {shop.Stock(supplyId)}).";
         GM.ChangeScreen(ScreenId.Market);   // refresh the list
@@ -578,11 +597,18 @@ public class ShopDay : MonoBehaviour
         minigame.Close();
         if (!Selected.IsLastStep)
         {
+            // Carry straight on to the next step. Only if it needs something the player doesn't
+            // have (a tool, a material) does StartCrafting stop at the Workbench to say what.
             string done = Selected.CurrentStep.label;
             Selected.step++;
             GM.Persist();
-            LastMessage = $"{done}: done! Next: {Selected.CurrentStep.label}.";
-            GM.ChangeScreen(ScreenId.Workbench);
+            StartCrafting();
+            if (GM.Current == ScreenId.Minigame)
+            {
+                LastMessage = $"{done}: done!";
+                GM.ChangeScreen(ScreenId.Minigame);   // shows it with the new step's hint
+            }
+            else LastMessage = $"{done}: done! {LastMessage}";
             return;
         }
         LastAccuracy = Selected.RecipeScore();

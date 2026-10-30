@@ -96,7 +96,7 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
     protected void DrawBag(bool sidesSewn, bool hemmed)
     {
         var stitch = Color.Lerp(area.fabricColor, Color.black, 0.35f);
-        Piece(Shape.Outline, Color.Lerp(area.fabricColor, Color.black, 0.2f), 0, new Vector2(0.012f, -0.012f));
+        Piece(Shape.Outline, Color.Lerp(area.fabricColor, Color.black, 0.2f), -1, new Vector2(0.012f, -0.012f));
         Piece(Shape.Outline, area.fabricColor, 0);
         if (sidesSewn) Line(Shape.Sides, stitch, 0.006f, 1);
         if (hemmed) Line(Shape.Mouth, stitch, 0.006f, 1);
@@ -168,12 +168,103 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
     }
 
     /// One knitted stitch in a cell: a knit stitch is a "V", a purl a little bump across.
-    protected GameObject Stitch(Vector2 c, float cell, bool purl, Color color, int sorting)
+    /// A knit stitch is two plump legs leaning into a "V"; a purl is a rounded bump across.
+    /// Each leg is shaded: darker underneath, a sheen on top. "angle" turns it (crochet stitches face the ring).
+    protected GameObject Stitch(Vector2 c, float cell, bool purl, Color color, int sorting, float angle = 0f)
     {
-        var line = purl
-            ? Line(new[] { c + new Vector2(-0.3f, 0) * cell, c + new Vector2(0.3f, 0) * cell }, color, cell * 0.22f, sorting)
-            : Line(new[] { c + new Vector2(-0.3f, 0.3f) * cell, c + new Vector2(0, -0.3f) * cell, c + new Vector2(0.3f, 0.3f) * cell }, color, cell * 0.14f, sorting);
-        return line.gameObject;
+        var stitch = new GameObject("Stitch");
+        stitch.transform.SetParent(transform, false);
+        var turn = Quaternion.Euler(0, 0, angle);
+        Vector2 P(float x, float y) => c + (Vector2)(turn * new Vector3(x, y, 0)) * cell;
+        if (purl)
+        {
+            Leg(stitch, new[] { P(-0.38f, -0.05f), P(0f, 0.12f), P(0.38f, -0.05f) }, color, cell * 0.26f, sorting);
+        }
+        else
+        {
+            Leg(stitch, new[] { P(-0.34f, 0.36f), P(-0.16f, 0.02f), P(-0.02f, -0.34f) }, color, cell * 0.24f, sorting);
+            Leg(stitch, new[] { P(0.34f, 0.36f), P(0.16f, 0.02f), P(0.02f, -0.34f) }, color, cell * 0.24f, sorting);
+        }
+        return stitch;
+    }
+
+    /// One plump, tapered loop of yarn: shadow, body and sheen.
+    void Leg(GameObject parent, Vector2[] points, Color color, float width, int sorting)
+    {
+        var taper = new AnimationCurve(new Keyframe(0, 0.45f), new Keyframe(0.5f, 1f), new Keyframe(1, 0.45f));
+        var shadow = Line(points, new Color(0, 0, 0, 0.3f), width * 1.2f, sorting);
+        var body = Line(points, color, width, sorting + 1);
+        var sheen = Line(System.Array.ConvertAll(points, q => q + new Vector2(-0.12f, 0.12f) * width), Color.Lerp(color, Color.white, 0.45f), width * 0.3f, sorting + 2);
+        foreach (var l in new[] { shadow, body, sheen })
+        {
+            float w = l.startWidth;   // the width Line() set, before the taper replaces it
+            l.widthCurve = taper;
+            l.widthMultiplier = w;
+            l.transform.SetParent(parent.transform, true);
+        }
+    }
+
+    /// A round dot (an eye, a knot, a pin head, a tuft of stuffing), with a little shine if asked.
+    protected GameObject Dot(Vector2 p, float size, Color color, int sorting, bool shine = false)
+    {
+        var dot = new GameObject("Dot");
+        dot.transform.SetParent(transform, false);
+        Round(dot, p, size, color, sorting);
+        if (shine) Round(dot, p + new Vector2(-0.22f, 0.22f) * size, size * 0.3f, new Color(1, 1, 1, 0.8f), sorting + 1);
+        return dot;
+    }
+
+    void Round(GameObject parent, Vector2 p, float size, Color color, int sorting)
+    {
+        var sr = new GameObject("Round").AddComponent<SpriteRenderer>();
+        sr.transform.SetParent(parent.transform, false);
+        sr.transform.position = World(p);
+        sr.transform.localScale = Vector3.one * size * side;
+        sr.sprite = CircleSprite;
+        sr.sharedMaterial = area.material;
+        sr.color = color;
+        sr.sortingOrder = sorting;
+    }
+
+    static Sprite circle;
+
+    /// A soft-edged white circle, made once, 1 world unit across at scale 1.
+    static Sprite CircleSprite
+    {
+        get
+        {
+            if (circle != null) return circle;
+            const int n = 64;
+            var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            for (int y = 0; y < n; y++)
+                for (int x = 0; x < n; x++)
+                {
+                    float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), Vector2.one * n / 2f) / (n / 2f);
+                    tex.SetPixel(x, y, new Color(1, 1, 1, Mathf.Clamp01((1f - d) * n / 4f)));
+                }
+            tex.Apply();
+            return circle = Sprite.Create(tex, new Rect(0, 0, n, n), Vector2.one * 0.5f, n);
+        }
+    }
+
+    static Texture2D dashTexture;
+
+    /// Thread drawn as real stitches: short dashes with gaps where it goes into the fabric.
+    /// "stitchLength" is in 0..1 of the area.
+    protected void MakeDashed(LineRenderer line, float stitchLength)
+    {
+        if (dashTexture == null)
+        {
+            dashTexture = new Texture2D(16, 4, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Bilinear };
+            for (int x = 0; x < 16; x++)
+                for (int y = 0; y < 4; y++) dashTexture.SetPixel(x, y, new Color(1, 1, 1, x < 12 ? 1 : 0));
+            dashTexture.Apply();
+        }
+        var mat = new Material(area.material) { mainTexture = dashTexture };
+        line.sharedMaterial = mat;
+        line.textureMode = LineTextureMode.Tile;
+        line.textureScale = new Vector2(1f / (stitchLength * side), 1f);
+        line.numCapVertices = 0;
     }
 
     /// A line through points in 0..1 of the area; "width" is in 0..1 of the area too.

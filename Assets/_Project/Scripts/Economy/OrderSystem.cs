@@ -21,6 +21,7 @@ public class Order
     public string commissionId;       // a commission (see CommissionDef), or empty
     public bool needsDesign;          // a commission waits for the player to design its pattern first
     public string requiredSupplyId;   // a commission's must-use fabric or yarn, or empty
+    public string fromPatternId;      // the shelf pattern the customer picked, for its sales record
     public int step;                  // the recipe step being worked on (index into Steps)
     public List<StepProgress> steps = new List<StepProgress>();   // saved progress per step
 

@@ -17,7 +17,7 @@ public class FrenchKnotsStep : PlacementStep
 
     protected override void DrawPiece() => DrawHoop(outlined: true, filled: true);
 
-    protected override GameObject DrawPlaced(Vector2 p) => Square(p, 0.035f, Floss(1), 6).gameObject;
+    protected override GameObject DrawPlaced(Vector2 p) => Dot(p, 0.045f, Floss(1), 6, shine: true);
 
     protected override void OnPress(Vector2 p)
     {

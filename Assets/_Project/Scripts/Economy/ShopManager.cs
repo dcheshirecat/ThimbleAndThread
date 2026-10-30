@@ -64,6 +64,46 @@ public class ShopManager : MonoBehaviour
 
     public bool IsOnSale(SupplyDef s) => OnSale().Contains(s);
 
+    // ---- Rarity and how many are left on the market's shelf ----
+
+    public const int SoldOutDays = 2;   // once the last pack is bought, it's gone for the next two days
+
+    /// Common (always stocked), Uncommon (in the rotation) or Rare (now and then).
+    public static string Rarity(SupplyDef s) => s.market == MarketSlot.Rare ? "Rare" : s.market == MarketSlot.Rotating ? "Uncommon" : "Common";
+
+    /// Packs the market has on its shelf at a time: plenty of basics, a few of the rotation, one rare find.
+    public static int ShelfPacks(SupplyDef s) => s.market == MarketSlot.Rare ? 1 : s.market == MarketSlot.Rotating ? 3 : 6;
+
+    MarketPurchase Purchase(SupplyDef s)
+    {
+        var p = Save.marketBought.Find(x => x.supplyId == s.supplyId);
+        if (p != null && p.soldOutUntil > 0 && Save.day > p.soldOutUntil) { p.bought = 0; p.soldOutUntil = 0; }   // restocked
+        return p;
+    }
+
+    /// Packs still on the market's shelf (0 = sold out).
+    public int PacksLeft(SupplyDef s)
+    {
+        var p = Purchase(s);
+        if (p == null) return ShelfPacks(s);
+        return p.soldOutUntil > 0 ? 0 : Mathf.Max(0, ShelfPacks(s) - p.bought);
+    }
+
+    /// Days until a sold-out supply is back (0 if it isn't sold out).
+    public int DaysUntilBack(SupplyDef s)
+    {
+        var p = Purchase(s);
+        return p != null && p.soldOutUntil > 0 ? p.soldOutUntil - Save.day + 1 : 0;
+    }
+
+    void TakeFromShelf(SupplyDef s)
+    {
+        var p = Purchase(s);
+        if (p == null) Save.marketBought.Add(p = new MarketPurchase { supplyId = s.supplyId });
+        p.bought++;
+        if (p.bought >= ShelfPacks(s)) p.soldOutUntil = Save.day + SoldOutDays;
+    }
+
     // ---- Tools ----
 
     /// The best owned tool of this type (null if none).
@@ -87,11 +127,12 @@ public class ShopManager : MonoBehaviour
 
     public List<ToolNeed> MissingTools(List<ToolNeed> needs) => needs.FindAll(n => !HasTool(n));
 
-    /// Buys one pack. Returns false if the player can't afford it.
+    /// Buys one pack. Returns false if the player can't afford it or it's sold out.
     public bool Buy(SupplyDef s)
     {
-        if (!GameManager.Instance.TrySpend(s.price)) return false;
+        if (PacksLeft(s) <= 0 || !GameManager.Instance.TrySpend(s.price)) return false;
         Add(s.supplyId, s.perPack);
+        TakeFromShelf(s);
         GameManager.Instance.Persist();
         return true;
     }

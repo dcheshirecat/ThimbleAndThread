@@ -7,7 +7,7 @@ public class SewSeamStep : TracingStep
 {
     protected override void DrawPiece()
     {
-        Piece(Shape.Outline, Color.Lerp(area.fabricColor, Color.black, 0.2f), 0, new Vector2(0.012f, -0.012f));   // the back piece
+        Piece(Shape.Outline, Color.Lerp(area.fabricColor, Color.black, 0.2f), -1, new Vector2(0.012f, -0.012f));   // the back piece
         Piece(Shape.Outline, area.fabricColor, 0);
     }
 

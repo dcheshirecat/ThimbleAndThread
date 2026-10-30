@@ -20,6 +20,7 @@ public class CrossStitchCanvas : MonoBehaviour
     public float cellSize = 0.5f;
     public Mode mode = Mode.Stitch;
     public Material material;          // sprite material for cells and threads; falls back to Sprites/Default
+    public Color fabricColor = new Color(0.96f, 0.94f, 0.88f);   // Stitch mode: the Aida the piece is stitched on
 
     [Header("State")]
     public Pattern pattern = new Pattern();
@@ -92,7 +93,7 @@ public class CrossStitchCanvas : MonoBehaviour
         stitchProgress.Clear();
         stitchColor.Clear();
         pattern.cells.Clear();
-        foreach (var kv in cellViews) kv.Value.color = GuideColor(kv.Key.x, kv.Key.y);
+        foreach (var kv in cellViews) kv.Value.color = GuideColor(kv.Key.x, kv.Key.y);   // the chart shows again
     }
 
     void Apply(List<StitchMark> marks)
@@ -110,13 +111,14 @@ public class CrossStitchCanvas : MonoBehaviour
 
     void BuildGrid()
     {
+        if (mode == Mode.Stitch) BuildFabric();
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
             {
                 var go = new GameObject($"cell_{x}_{y}");
                 go.transform.SetParent(transform, false);
                 go.transform.localPosition = CellCenter(x, y);
-                go.transform.localScale = Vector3.one * cellSize * 0.95f;
+                go.transform.localScale = Vector3.one * cellSize * (mode == Mode.Stitch ? 1f : 0.95f);
                 var sr = go.AddComponent<SpriteRenderer>();
                 sr.sprite = cellSprite;
                 sr.sharedMaterial = material;
@@ -125,9 +127,43 @@ public class CrossStitchCanvas : MonoBehaviour
             }
     }
 
+    /// Stitch mode: a piece of Aida under the grid, with the little woven holes the needle goes through.
+    void BuildFabric()
+    {
+        var fabric = new GameObject("fabric").AddComponent<SpriteRenderer>();
+        fabric.transform.SetParent(transform, false);
+        fabric.transform.localPosition = new Vector3(width * cellSize / 2f, height * cellSize / 2f, 0);
+        fabric.transform.localScale = new Vector3((width + 0.6f) * cellSize, (height + 0.6f) * cellSize, 1);
+        fabric.sprite = cellSprite;
+        fabric.sharedMaterial = material;
+        fabric.color = fabricColor;
+        fabric.sortingOrder = -2;
+        var hole = Color.Lerp(fabricColor, Color.black, 0.28f);
+        for (int x = 0; x <= width; x++)
+            for (int y = 0; y <= height; y++)
+            {
+                var h = new GameObject("hole").AddComponent<SpriteRenderer>();
+                h.transform.SetParent(transform, false);
+                h.transform.localPosition = new Vector3(x * cellSize, y * cellSize, 0);
+                h.transform.localScale = Vector3.one * cellSize * 0.13f;
+                h.sprite = cellSprite;
+                h.sharedMaterial = material;
+                h.color = hole;
+                h.sortingOrder = 1;
+            }
+    }
+
     Color GuideColor(int x, int y)
     {
         var t = target?.cells.Find(c => c.x == x && c.y == y);
+        if (mode == Mode.Stitch)
+        {
+            // The chart printed faintly on the fabric: a light tint of the square's thread colour.
+            if (t == null) return Color.clear;
+            var tint = Color.Lerp(fabricColor, target.palette[t.colorIndex], 0.35f);
+            tint.a = 1f;
+            return tint;
+        }
         if (t == null) return new Color(1, 1, 1, 0.15f);
         var c = target.palette[t.colorIndex];
         c.a = 0.4f;
@@ -225,18 +261,43 @@ public class CrossStitchCanvas : MonoBehaviour
         stitchProgress[cell] = done;
         stitchColor[cell] = color;
 
-        var line = MakeLine(pattern.palette[color], 0.08f);
         bool slash = bit == 1;
-        line.SetPosition(0, CornerPos(new Vector2Int(cell.x, slash ? cell.y : cell.y + 1)));
-        line.SetPosition(1, CornerPos(new Vector2Int(cell.x + 1, slash ? cell.y + 1 : cell.y)));
-        stitchLines.Add(line);
+        DrawThread(CornerPos(new Vector2Int(cell.x, slash ? cell.y : cell.y + 1)),
+                   CornerPos(new Vector2Int(cell.x + 1, slash ? cell.y + 1 : cell.y)),
+                   pattern.palette[color], slash ? 5 : 9);   // the second diagonal crosses over the first
 
         if (done == 3) CompleteCell(cell, color);
     }
 
+    /// One stitch as real floss: a soft shadow, the thread itself and a sheen along it, running from
+    /// hole to hole. The shadow keeps even white or pale thread visible on the fabric.
+    void DrawThread(Vector3 from, Vector3 to, Color color, int sorting)
+    {
+        color.a = 1f;
+        var inset = (to - from) * 0.05f;
+        from += inset; to -= inset;
+        var down = new Vector3(0.03f, -0.03f, 0) * cellSize;
+        var up = new Vector3(-0.025f, 0.025f, 0) * cellSize;
+        Thread(from + down, to + down, new Color(0, 0, 0, 0.35f), cellSize * 0.22f, sorting);
+        Thread(from, to, color, cellSize * 0.17f, sorting + 1, Color.Lerp(color, Color.black, 0.18f));
+        Thread(from + up, to + up, new Color(1, 1, 1, 0.45f) * Color.Lerp(color, Color.white, 0.6f), cellSize * 0.05f, sorting + 2);
+    }
+
+    void Thread(Vector3 from, Vector3 to, Color color, float width, int sorting, Color? endColor = null)
+    {
+        var line = MakeLine(color, width);
+        line.endColor = endColor ?? color;
+        line.sortingOrder = sorting;
+        line.SetPosition(0, from);
+        line.SetPosition(1, to);
+        stitchLines.Add(line);
+    }
+
     void CompleteCell(Vector2Int cell, int color)
     {
-        cellViews[cell].color = pattern.palette[color];
+        // The thread covers the square now, so the printed chart under it no longer shows.
+        if (mode == Mode.Stitch) cellViews[cell].color = Color.clear;
+        else cellViews[cell].color = pattern.palette[color];
         pattern.cells.RemoveAll(c => c.x == cell.x && c.y == cell.y);
         pattern.cells.Add(new StitchCell { x = cell.x, y = cell.y, colorIndex = color });
         // TODO: play satisfying "pop" sound, award tiny progress to the commission
