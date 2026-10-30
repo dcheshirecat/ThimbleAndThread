@@ -60,7 +60,10 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
         if (Input.GetMouseButtonDown(0))
         {
             // Presses that start on a UI button (e.g. Finish) aren't part of the step.
-            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+            var es = EventSystem.current;
+            if (es != null && es.IsPointerOverGameObject()) return;
+            for (int i = 0; i < Input.touchCount; i++)   // phones: touches are checked by finger id
+                if (es != null && es.IsPointerOverGameObject(Input.GetTouch(i).fingerId)) return;
             pressing = true;
             OnPress(Normalized(Input.mousePosition));
         }

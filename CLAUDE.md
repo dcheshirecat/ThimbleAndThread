@@ -331,6 +331,26 @@ changes); dialogue drafts await the owner's edits; character art for Isla and Ro
 
 All eight feedback points have a first version (merged to main 2026-10-30).
 
+## Owner feedback round 2, 2026-10-30 (the next big plan)
+1. Day hub = a SHOP SCENE: coin counter in a corner; an open/closed (day) switch; middle panel shows the
+   shopkeeper (the player character) and the shop door; swipe right = the pattern display (edit it there),
+   swipe left = finished orders waiting for pickup. A doorbell rings when a customer comes; the scene
+   cuts to the customer (in place of the shopkeeper) for the conversation.
+2. Character customization scene at the start; the player can WEAR things they made, seen in the shop.
+3. The current hub menu becomes a side JOURNAL with tabs and a storybook (page-turn) animation.
+4. Surprise unlocks: how/when skills unlock stays hidden until it happens, then appears in the Journal.
+5. More characters; existing characters get more varied dialogue (no repeating the same lines).
+6. Hand-over only when the customer comes back, at an unannounced time.
+7. DONE (branch designer-fixes): designer painted a square when tapping a floss/button. Grey out unowned floss.
+8. Friend trade code: a short six-character code (see the open question; needs an online service for patterns).
+9. Rename a pattern after creating it.
+10. Optional extras on patterns (lace, buttons...) where they fit: bonus coins/points, but a customer may
+    dislike the surprise.
+11. Cross stitch: under stitch then over stitch; crossing in the wrong order is a mistake.
+12. Mistakes in general: possible everywhere, undoable, but if left they affect the result.
+13. Starting an order: scroll through the inventory and pick the items to use, ticking off a needs list.
+14. Crafting animations: the needle making each stitch, the hook making each loop, per craft.
+
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
 2. DONE (on main): item recipes. CraftItemDef.steps (RecipeStep: StepKind, label,

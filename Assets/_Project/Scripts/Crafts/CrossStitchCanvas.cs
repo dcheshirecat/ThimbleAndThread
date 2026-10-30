@@ -175,13 +175,38 @@ public class CrossStitchCanvas : MonoBehaviour
 
     // Works with mouse in the editor and a single touch on iPad (Unity maps touch to mouse
     // with the legacy Input Manager; for the new Input System, swap in Pointer.current).
+    // A drag only counts if it started on the board itself: presses on a UI button (a floss colour,
+    // Finish...) or anywhere else off the grid are ignored for their whole length. (Before, only the
+    // first frame was ignored, so tapping a button painted the nearest edge square.)
+    bool pressing;
+
     void Update()
     {
-        // Presses that start on a UI button (e.g. Finish) are not stitches.
-        if (Input.GetMouseButtonDown(0) && EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
-        if (Input.GetMouseButtonDown(0)) OnPress(WorldPoint());
-        else if (Input.GetMouseButton(0)) OnDrag(WorldPoint());
-        else if (Input.GetMouseButtonUp(0)) OnRelease(WorldPoint());
+        if (Input.GetMouseButtonDown(0))
+        {
+            pressing = !OverUI() && OnBoard(WorldPoint());
+            if (pressing) OnPress(WorldPoint());
+        }
+        else if (pressing && Input.GetMouseButton(0)) OnDrag(WorldPoint());
+        else if (pressing && Input.GetMouseButtonUp(0)) { pressing = false; OnRelease(WorldPoint()); }
+    }
+
+    bool OnBoard(Vector3 local)
+    {
+        float margin = cellSize * 0.5f;   // a little slack around the edge for corner-to-corner stitches
+        return local.x >= -margin && local.y >= -margin && local.x <= width * cellSize + margin && local.y <= height * cellSize + margin;
+    }
+
+    /// True when the pointer is over a UI element. Checks touches by finger id too, since on phones
+    /// IsPointerOverGameObject() with no id only knows about the mouse.
+    static bool OverUI()
+    {
+        var es = EventSystem.current;
+        if (es == null) return false;
+        if (es.IsPointerOverGameObject()) return true;
+        for (int i = 0; i < Input.touchCount; i++)
+            if (es.IsPointerOverGameObject(Input.GetTouch(i).fingerId)) return true;
+        return false;
     }
 
     Vector3 WorldPoint()
@@ -211,7 +236,7 @@ public class CrossStitchCanvas : MonoBehaviour
 
     void OnDrag(Vector3 local)
     {
-        if (mode == Mode.PatternFill) { Paint(CellAt(local)); return; }
+        if (mode == Mode.PatternFill) { if (OnBoard(local)) Paint(CellAt(local)); return; }
         if (previewLine != null)
             previewLine.SetPosition(1, transform.TransformPoint(local));
     }
