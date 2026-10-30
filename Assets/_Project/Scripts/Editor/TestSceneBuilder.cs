@@ -176,17 +176,88 @@ public static class TestSceneBuilder
         }
         Button(Column(p, 0.5f, 0.06f), "Back", router.GoToTitle);
 
-        // Shop (day)
-        p = Panel(ScreenId.Shop, "Shop", new Color(0.95f, 0.88f, 0.78f), "Art/Backgrounds/bg_shop_day.png");
-        ui.shopStatus = Label(p, "Status", new Vector2(0.08f, 0.62f), new Vector2(0.92f, 0.88f), 68, TextAnchor.MiddleLeft);
-        var b = Column(p, 0.5f, 0.33f);
-        ui.greetLabel = Button(b, "Greet Customer", day.GreetCustomer, 1100).GetComponentInChildren<Text>();
-        Button(b, "Order Book", router.GoToOrderBook, 1100);
-        Button(b, "Supply Market", router.GoToMarket, 1100);
-        Button(b, "Journal", router.GoToJournal, 1100);
-        Button(b, "Trade", router.GoToTrade, 1100);
-        Button(b, "Settings", router.GoToSettings, 1100);
-        Button(b, "Close the Shop", day.CloseShop, 1100);
+        // Shop (day): a scene with three pages (pickups | shopkeeper and door | display), see ShopSceneUI
+        p = Panel(ScreenId.Shop, "", new Color(0.95f, 0.88f, 0.78f), "Art/Backgrounds/bg_shop_day.png");
+        var shopScene = p.gameObject.AddComponent<ShopSceneUI>();
+        shopScene.day = day;
+        var pageNames = new[] { "Page_Pickups", "Page_Shop", "Page_Display" };
+        shopScene.pages = new RectTransform[3];
+        for (int i = 0; i < 3; i++)
+        {
+            var pg = new GameObject(pageNames[i], typeof(RectTransform));
+            var prt = (RectTransform)pg.transform;
+            prt.SetParent(p, false);
+            Stretch(prt);
+            shopScene.pages[i] = prt;
+        }
+        // Middle: the shopkeeper behind the counter, and the door (placeholder shapes)
+        var mid = shopScene.pages[1];
+        var keeper = Shape(mid, "Shopkeeper_Body", new Vector2(0.36f, 0.5f), new Vector2(460, 600), new Color(0.45f, 0.55f, 0.75f), uiSprite);
+        Shape(keeper, "Shopkeeper_Head", new Vector2(0.5f, 1.25f), new Vector2(300, 300), new Color(0.96f, 0.82f, 0.70f), Knob());
+        Shape(keeper, "Shopkeeper_Hair", new Vector2(0.5f, 1.42f), new Vector2(320, 150), new Color(0.40f, 0.26f, 0.18f), Knob());
+        var counter = Shape(mid, "Counter", new Vector2(0.4f, 0.38f), new Vector2(1500, 280), new Color(0.55f, 0.36f, 0.22f), uiSprite);
+        Shape(counter, "CounterTop", new Vector2(0.5f, 1f), new Vector2(1560, 50), new Color(0.68f, 0.47f, 0.30f), uiSprite);
+        var doorButton = Button(mid, "Door", shopScene.TapDoor, 360);
+        doorButton.GetComponentInChildren<Text>().text = "";
+        var doorRt = (RectTransform)doorButton.transform;
+        Object.DestroyImmediate(doorButton.GetComponent<LayoutElement>());
+        doorRt.anchorMin = doorRt.anchorMax = new Vector2(0.8f, 0.6f);
+        doorRt.pivot = new Vector2(0, 0.5f);   // hinged on its left edge
+        doorRt.anchoredPosition = new Vector2(-180, 0);
+        doorRt.sizeDelta = new Vector2(360, 680);
+        doorButton.GetComponent<Image>().color = new Color(0.45f, 0.30f, 0.20f);
+        Shape(doorRt, "Window", new Vector2(0.5f, 0.75f), new Vector2(220, 200), new Color(0.75f, 0.88f, 0.95f), uiSprite);
+        Shape(doorRt, "Knob", new Vector2(0.82f, 0.45f), new Vector2(50, 50), new Color(0.95f, 0.80f, 0.35f), Knob());
+        shopScene.door = doorRt;
+        var bubble = Shape(mid, "Bubble", new Vector2(0.5f, 0.8f), new Vector2(1500, 190), Color.white, uiSprite);
+        shopScene.bubble = bubble.gameObject;
+        shopScene.bubbleText = MakeText(bubble, "Text", "", 56);
+        Stretch((RectTransform)shopScene.bubbleText.transform);
+        shopScene.statusText = Label(mid, "Status", new Vector2(0.06f, 0.16f), new Vector2(0.94f, 0.27f), 52, TextAnchor.UpperCenter);
+        // Left: orders waiting to be picked up
+        var left = shopScene.pages[0];
+        Label(left, "Heading", new Vector2(0.06f, 0.78f), new Vector2(0.94f, 0.86f), 80, TextAnchor.MiddleCenter).text = "Waiting for pickup";
+        shopScene.pickupEmpty = Label(left, "Info", new Vector2(0.08f, 0.7f), new Vector2(0.92f, 0.78f), 52, TextAnchor.UpperCenter);
+        shopScene.pickupTemplate = Button(StackList(left, 0.68f), "Pickup Template", null, 1800);
+        TallRow(shopScene.pickupTemplate, 230, 54);
+        // Right: the pattern display
+        var right = shopScene.pages[2];
+        Label(right, "Heading", new Vector2(0.06f, 0.78f), new Vector2(0.94f, 0.86f), 80, TextAnchor.MiddleCenter).text = "The pattern display";
+        shopScene.displayInfo = Label(right, "Info", new Vector2(0.08f, 0.69f), new Vector2(0.92f, 0.78f), 50, TextAnchor.UpperCenter);
+        shopScene.displayTemplate = Button(StackList(right, 0.67f), "Display Template", null, 1800);
+        TallRow(shopScene.displayTemplate, 260, 52);
+        var dtText = shopScene.displayTemplate.GetComponentInChildren<Text>();
+        ((RectTransform)dtText.transform).offsetMin = new Vector2(300, 0);
+        dtText.alignment = TextAnchor.MiddleLeft;
+        var dtPreview = Preview(shopScene.displayTemplate.transform, new Vector2(0, 0.5f), 220);
+        ((RectTransform)dtPreview.transform).anchoredPosition = new Vector2(150, 0);
+        // On top of all pages: the OPEN sign, the coins, the page name, arrows and the journal
+        var sign = Button(p, "Open Sign", shopScene.TapSign, 560);
+        sign.GetComponentInChildren<Text>().text = "OPEN";
+        sign.GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
+        sign.GetComponent<Image>().color = new Color(0.55f, 0.80f, 0.55f);
+        Place(sign, new Vector2(0.17f, 0.935f), new Vector2(560, 170));
+        var coins = Shape(p, "Coins", new Vector2(0.8f, 0.935f), new Vector2(560, 170), new Color(1, 1, 1, 0.85f), uiSprite);
+        Shape(coins, "CoinIcon", new Vector2(0.18f, 0.5f), new Vector2(110, 110), new Color(0.98f, 0.80f, 0.25f), Knob());
+        shopScene.coinText = MakeText(coins, "CoinText", "0", 72);
+        var ctr = (RectTransform)shopScene.coinText.transform;
+        Stretch(ctr);
+        ctr.offsetMin = new Vector2(150, 0);
+        shopScene.pageLabel = Label(p, "PageName", new Vector2(0.2f, 0.85f), new Vector2(0.8f, 0.9f), 56, TextAnchor.MiddleCenter);
+        var b = Row(p, 0.5f, 0.05f);
+        Button(b, "Pickups Arrow", shopScene.Left, 420).GetComponentInChildren<Text>().text = "< Pickups";
+        Button(b, "Journal", shopScene.OpenJournal, 600);
+        Button(b, "Display Arrow", shopScene.Right, 420).GetComponentInChildren<Text>().text = "Display >";
+        // "Close the shop for the night?"
+        var confirm = Shape(p, "Close Confirm", new Vector2(0.5f, 0.5f), new Vector2(1700, 560), new Color(1, 0.97f, 0.9f), uiSprite);
+        confirm.GetComponent<Image>().raycastTarget = true;
+        var question = Label(confirm, "Question", new Vector2(0.05f, 0.5f), new Vector2(0.95f, 0.95f), 60, TextAnchor.MiddleCenter);
+        question.text = "Flip the sign to CLOSED and end the day?\nAnyone who hasn't come in yet will visit another day.";
+        b = Row(confirm, 0.5f, 0.25f);
+        Button(b, "Close the Shop", shopScene.CloseShop, 640);
+        Button(b, "Stay Open", shopScene.KeepOpen, 640);
+        confirm.gameObject.SetActive(false);
+        shopScene.closeConfirm = confirm.gameObject;
 
         // Workroom (night)
         p = Panel(ScreenId.Workroom, "Workroom", new Color(0.22f, 0.24f, 0.40f), "Art/Backgrounds/bg_workroom_night.png");
@@ -196,9 +267,7 @@ public static class TestSceneBuilder
         b = Column(p, 0.5f, 0.35f);
         Button(b, "Order Book", router.GoToOrderBook, 1100);
         Button(b, "Pattern Studio", router.GoToPatternStudio, 1100);
-        Button(b, "Journal", router.GoToJournal, 1100);
-        Button(b, "Trade", router.GoToTrade, 1100);
-        Button(b, "Settings", router.GoToSettings, 1100);
+        var workroomJournal = Button(b, "Journal", null, 1100);   // wired to the journal overlay below
         Button(b, "Go to Bed", day.GoToBed, 1100);
 
         // Order book
@@ -259,34 +328,12 @@ public static class TestSceneBuilder
         ui.marketTemplate = SupplyTile(ui.shelfTemplate);
         Button(Column(p, 0.5f, 0.04f), "Back", router.GoToHub);
 
-        p = Panel(ScreenId.Journal, "Journal", new Color(0.80f, 0.93f, 0.74f));
-        var journal = canvasGo.AddComponent<JournalUI>();
-        journal.day = day;
-        var tabRow = Row(p, 0.5f, 0.865f);
-        var tabNames = new[] { "Story", "Friends", "Skills", "Supplies", "News" };
-        journal.tabs = new Image[tabNames.Length];
-        for (int i = 0; i < tabNames.Length; i++)
-        {
-            var tab = Button(tabRow, tabNames[i], null, 360);
-            tab.GetComponentInChildren<Text>().fontSize = 52;
-            UnityEventTools.AddIntPersistentListener(tab.onClick, journal.ShowPage, i);
-            journal.tabs[i] = tab.GetComponent<Image>();
-        }
-        var journalList = ScrollList(p, 0.13f, 0.82f);
-        journal.pageText = MakeText(journalList, "Page", "", 54);
-        journal.pageText.alignment = TextAnchor.UpperLeft;
-        journal.pageText.horizontalOverflow = HorizontalWrapMode.Wrap;
-        journal.pageText.verticalOverflow = VerticalWrapMode.Overflow;
-        var pageLayout = journal.pageText.gameObject.AddComponent<LayoutElement>();
-        pageLayout.preferredWidth = 1800;
-        Button(Column(p, 0.5f, 0.04f), "Back", router.GoToHub);
-
         // Trade with friends (share codes)
         p = Panel(ScreenId.Trade, "Trade with Friends", new Color(0.78f, 0.88f, 0.95f));
         var trade = canvasGo.AddComponent<TradeUI>();
         trade.day = day;
-        tabRow = Row(p, 0.5f, 0.865f);
-        tabNames = new[] { "Give", "Patterns", "Open", "My Codes" };
+        var tabRow = Row(p, 0.5f, 0.865f);
+        var tabNames = new[] { "Give", "Patterns", "Open", "My Codes" };
         trade.tabs = new Image[tabNames.Length];
         for (int i = 0; i < tabNames.Length; i++)
         {
@@ -366,6 +413,73 @@ public static class TestSceneBuilder
         Button(b, "Clear", designer.Clear, 440);
         Button(b, "Save", designer.Save, 440);
         Button(b, "Cancel", designer.Cancel, 440);
+
+        // The journal: a storybook overlay that slides in over any screen (JournalUI)
+        var journal = canvasGo.AddComponent<JournalUI>();
+        journal.day = day;
+        journal.router = router;
+        var overlay = new GameObject("JournalOverlay", typeof(RectTransform), typeof(Image), typeof(Button));
+        var ort = (RectTransform)overlay.transform;
+        ort.SetParent(canvasGo.transform, false);
+        Stretch(ort);
+        overlay.GetComponent<Image>().color = new Color(0, 0, 0, 0.45f);
+        UnityEventTools.AddPersistentListener(overlay.GetComponent<Button>().onClick, journal.Close);   // tap outside the book
+        journal.overlay = overlay;
+        var bookGo = new GameObject("Book", typeof(RectTransform), typeof(Image));
+        var bookRt = (RectTransform)bookGo.transform;
+        bookRt.SetParent(ort, false);
+        bookRt.anchorMin = new Vector2(0.04f, 0.03f); bookRt.anchorMax = new Vector2(0.99f, 0.97f);
+        bookRt.offsetMin = bookRt.offsetMax = Vector2.zero;
+        var cover = bookGo.GetComponent<Image>();
+        cover.sprite = uiSprite;
+        cover.type = Image.Type.Sliced;
+        cover.color = new Color(0.55f, 0.32f, 0.25f);   // the cover (also catches taps, so they don't close the book)
+        journal.book = bookRt;
+        var paper = Shape(bookRt, "Paper", new Vector2(0.5f, 0.5f), Vector2.zero, new Color(0.98f, 0.95f, 0.87f), uiSprite);
+        paper.anchorMin = new Vector2(0.035f, 0.012f); paper.anchorMax = new Vector2(0.985f, 0.988f);
+        paper.offsetMin = paper.offsetMax = Vector2.zero;
+        var spine = Shape(bookRt, "Spine", new Vector2(0.5f, 0.5f), Vector2.zero, new Color(0.42f, 0.24f, 0.18f), uiSprite);
+        spine.anchorMin = new Vector2(0, 0); spine.anchorMax = new Vector2(0.03f, 1);
+        spine.offsetMin = spine.offsetMax = Vector2.zero;
+        Label(paper, "BookTitle", new Vector2(0.05f, 0.93f), new Vector2(0.95f, 0.985f), 84, TextAnchor.MiddleCenter).text = "Journal";
+        var jTabs = Row(paper, 0.5f, 0.895f);
+        var jTabNames = new[] { "Orders", "Story", "Friends", "Skills", "Supplies", "News" };
+        journal.tabs = new Image[jTabNames.Length];
+        for (int i = 0; i < jTabNames.Length; i++)
+        {
+            var tab = Button(jTabs, "Tab " + jTabNames[i], null, 270);
+            tab.GetComponentInChildren<Text>().text = jTabNames[i];
+            tab.GetComponentInChildren<Text>().fontSize = 44;
+            UnityEventTools.AddIntPersistentListener(tab.onClick, journal.ShowPage, i);
+            journal.tabs[i] = tab.GetComponent<Image>();
+        }
+        var jPageGo = new GameObject("Page", typeof(RectTransform), typeof(Image));
+        var jPage = (RectTransform)jPageGo.transform;
+        jPage.SetParent(paper, false);
+        jPage.anchorMin = new Vector2(0.02f, 0.1f); jPage.anchorMax = new Vector2(0.98f, 0.86f);
+        jPage.offsetMin = jPage.offsetMax = Vector2.zero;
+        jPage.pivot = new Vector2(0, 0.5f);   // turns over at the spine
+        jPageGo.GetComponent<Image>().color = new Color(1f, 0.985f, 0.94f);
+        journal.page = jPage;
+        var journalList = ScrollList(jPage, 0.02f, 0.98f);
+        journal.pageText = MakeText(journalList, "PageText", "", 52);
+        journal.pageText.alignment = TextAnchor.UpperLeft;
+        journal.pageText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        journal.pageText.verticalOverflow = VerticalWrapMode.Overflow;
+        journal.pageText.gameObject.AddComponent<LayoutElement>().preferredWidth = 1650;
+        journal.rowTemplate = Button(journalList, "Journal Row Template", null, 1650);
+        journal.rowTemplate.GetComponentInChildren<Text>().fontSize = 50;
+        b = Row(paper, 0.5f, 0.05f);
+        var marketLink = Button(b, "Journal Market", journal.GoToMarket, 470);
+        marketLink.GetComponentInChildren<Text>().text = "Supply Market";
+        journal.marketLink = marketLink.gameObject;
+        Button(b, "Journal Trade", journal.GoToTrade, 330).GetComponentInChildren<Text>().text = "Trade";
+        Button(b, "Journal Settings", journal.GoToSettings, 380).GetComponentInChildren<Text>().text = "Settings";
+        Button(b, "Journal Close", journal.Close, 330).GetComponentInChildren<Text>().text = "Close";
+        foreach (var t in b.GetComponentsInChildren<Text>()) t.fontSize = 50;
+        overlay.SetActive(false);
+        shopScene.journal = journal;
+        UnityEventTools.AddPersistentListener(workroomJournal.onClick, journal.Open);
 
         router.screens = entries.ToArray();
 
@@ -670,6 +784,58 @@ public static class TestSceneBuilder
             if (clip != null) return clip;
         }
         return null;
+    }
+
+    /// A plain coloured shape (placeholder art), centred at a fraction of its parent.
+    static RectTransform Shape(Transform parent, string name, Vector2 anchor, Vector2 size, Color color, Sprite sprite)
+    {
+        var go = new GameObject(name, typeof(RectTransform), typeof(Image));
+        var rt = (RectTransform)go.transform;
+        rt.SetParent(parent, false);
+        rt.anchorMin = rt.anchorMax = anchor;
+        rt.sizeDelta = size;
+        var img = go.GetComponent<Image>();
+        img.sprite = sprite;
+        img.type = sprite == uiSprite ? Image.Type.Sliced : Image.Type.Simple;
+        img.color = color;
+        img.raycastTarget = false;
+        return rt;
+    }
+
+    static Sprite Knob() => AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
+
+    /// Moves a laid-out element (e.g. a Button) to a fixed spot and size of its own.
+    static void Place(Component c, Vector2 anchor, Vector2 size)
+    {
+        var le = c.GetComponent<LayoutElement>();
+        if (le != null) Object.DestroyImmediate(le);
+        var rt = (RectTransform)c.transform;
+        rt.anchorMin = rt.anchorMax = anchor;
+        rt.sizeDelta = size;
+    }
+
+    /// A column of rows hanging from height "top" (no scrolling, so sideways swipes still turn pages).
+    static Transform StackList(Transform panel, float top)
+    {
+        var go = new GameObject("Rows", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+        var rt = (RectTransform)go.transform;
+        rt.SetParent(panel, false);
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, top);
+        rt.pivot = new Vector2(0.5f, 1);
+        var layout = go.GetComponent<VerticalLayoutGroup>();
+        layout.spacing = 30;
+        layout.childAlignment = TextAnchor.UpperCenter;
+        layout.childControlWidth = layout.childControlHeight = true;
+        layout.childForceExpandWidth = layout.childForceExpandHeight = false;
+        var fitter = go.GetComponent<ContentSizeFitter>();
+        fitter.horizontalFit = fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        return rt;
+    }
+
+    static void TallRow(Button row, float height, int fontSize)
+    {
+        row.GetComponent<LayoutElement>().preferredHeight = height;
+        row.GetComponentInChildren<Text>().fontSize = fontSize;
     }
 
     static Text Label(Transform panel, string name, Vector2 min, Vector2 max, int size, TextAnchor align)

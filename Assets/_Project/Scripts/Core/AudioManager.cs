@@ -69,8 +69,7 @@ public class AudioManager : MonoBehaviour
 
     void OnScreenChanged(ScreenId id)
     {
-        if (id == ScreenId.Dialogue) PlaySound(Sfx.Bell);
-        else if (id == ScreenId.Result) PlaySound(Sfx.StepDone);
+        if (id == ScreenId.Result) PlaySound(Sfx.StepDone);
         var save = GameManager.Instance.Save;
         PlayMusic(save != null && save.night && id != ScreenId.Title && id != ScreenId.SaveSelect ? musicNight : musicDay);
     }

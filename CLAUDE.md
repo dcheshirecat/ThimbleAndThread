@@ -160,8 +160,15 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
 
 ## Screen flow
 Title > Save select > Shop (day hub).
-- Day: Greet a customer > Dialogue > buy a pattern / accept an order or commission / Not today > Shop.
-  Order book > a finished order > Hand over. Supply Market. "Close the shop" > End-of-day summary > Workroom.
+- Day (since 2026-10-30, UI/ShopSceneUI.cs on the Shop panel): a shop SCENE with three swipeable pages:
+  left = orders waiting for pickup, middle = shopkeeper behind the counter + the door, right = the pattern
+  display (tap a pattern to edit it, an empty spot to choose one). OPEN sign (top left) asks, then closes
+  the shop; coin counter top right; page dots; "< Pickups / Journal / Display >" along the bottom.
+  When visitors are due the doorbell rings (Sfx.Bell) and the door rattles; tap it and it swings open into
+  the Dialogue screen (the customer replaces the shopkeeper). Then buy / order / commission / Not today.
+- Journal (UI/JournalUI.cs): a storybook overlay on any screen (JournalOverlay, not a router screen):
+  tabs Orders, Story, Friends, Skills, Supplies, News (pages flip at the spine); links to Supply Market (by
+  day), Trade, Settings. The old hub menu buttons live here now. "Close the shop" > summary > Workroom.
 - Night (Workroom hub): Order book > pick an order > Workbench > Minigame > "Done for now" (keeps the work)
   or Finish > Result (set aside for hand-over tomorrow, or keep working). Pattern Studio
   (list > pattern page > designer). "Go to bed" > next day.
@@ -332,12 +339,12 @@ changes); dialogue drafts await the owner's edits; character art for Isla and Ro
 All eight feedback points have a first version (merged to main 2026-10-30).
 
 ## Owner feedback round 2, 2026-10-30 (the next big plan)
-1. Day hub = a SHOP SCENE: coin counter in a corner; an open/closed (day) switch; middle panel shows the
+1. DONE (first version, placeholder shapes) Day hub = a SHOP SCENE: coin counter in a corner; an open/closed (day) switch; middle panel shows the
    shopkeeper (the player character) and the shop door; swipe right = the pattern display (edit it there),
    swipe left = finished orders waiting for pickup. A doorbell rings when a customer comes; the scene
    cuts to the customer (in place of the shopkeeper) for the conversation.
 2. Character customization scene at the start; the player can WEAR things they made, seen in the shop.
-3. The current hub menu becomes a side JOURNAL with tabs and a storybook (page-turn) animation.
+3. DONE (first version) The current hub menu becomes a side JOURNAL with tabs and a storybook (page-turn) animation.
 4. Surprise unlocks: how/when skills unlock stays hidden until it happens, then appears in the Journal.
 5. More characters; existing characters get more varied dialogue (no repeating the same lines).
 6. Hand-over only when the customer comes back, at an unannounced time.

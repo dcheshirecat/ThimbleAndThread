@@ -7,7 +7,7 @@ public class OrderFlowUI : MonoBehaviour
 {
     public ShopDay day;
 
-    [Header("Shop")] public Text shopStatus; public Text greetLabel;
+    [Header("Shop")] public Text shopStatus; public Text greetLabel;   // optional: the old menu hub (the shop scene has its own)
     [Header("Workroom")] public Text workroomStatus;
     [Header("Order book")] public Button orderTemplate; public Text orderBookEmpty;
     [Header("Workbench")] public Text workbenchText; public Text startLabel; public GameObject startButton, handOverButton;
@@ -44,11 +44,11 @@ public class OrderFlowUI : MonoBehaviour
 
         int ready = save.orders.FindAll(o => o.finished).Count;
         int toDo = save.orders.Count - ready;
-        shopStatus.text = $"Day {save.day}    {save.coins} coins\n" +
+        if (shopStatus != null) shopStatus.text = $"Day {save.day}    {save.coins} coins\n" +
                           (day.Progress.Chapter is ChapterDef ch ? $"Chapter {ch.number}: {ch.title}\n" : "") +
                           $"On display: {day.Shelf.Count} of {save.displaySpots} patterns\n" +
                           $"Ready to hand over: {ready}\nIn progress: {toDo}\n\n{day.LastMessage}";
-        greetLabel.text = day.CustomersWaiting > 0 ? $"Greet Customer ({day.CustomersWaiting})" : "No one waiting";
+        if (greetLabel != null) greetLabel.text = day.CustomersWaiting > 0 ? $"Greet Customer ({day.CustomersWaiting})" : "No one waiting";
         workroomStatus.text = $"Night of day {save.day}    {save.coins} coins\n" +
                               $"Orders to work on: {toDo}\nSet aside for tomorrow: {ready}\n\n{day.LastMessage}";
         summaryText.text = "The shop is closed for the night.\n\n" +
