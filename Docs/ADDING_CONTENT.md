@@ -72,11 +72,21 @@ Embroidery Floss, Yarn, Notions, Tools).
 4. **Steps**: how it's made, in order. Press **+** for each step and pick its **Kind** (the minigame)
    and a **Label** the player sees, e.g. the tablecloth is *Cross Stitch: "Stitch the motif"* then
    *Hem: "Hem the edges"*. **Tools** lists anything extra the step needs (Tool Type and Min Size, as
-   on the supply, plus a Label like "Fabric scissors"). Leave Steps empty for a single cross stitch step.
-   Kinds so far: Cross Stitch and Hem; more come with the sewing, knitting and crochet minigames.
+   on the supply, plus a Label like "Fabric scissors"). **Materials** lists supplies the step uses up
+   (Supply Id and Amount, e.g. `stuffing` 1). **Fabric Pieces** is how many pieces of the fabric chosen
+   in a Choose Fabric step this step uses (cutting a plushie uses 2: front and back).
+   Leave Steps empty for a single cross stitch step.
+   Kinds so far: Cross Stitch, Hem, Choose Fabric, Cut Pieces, Pin, Sew Seam, Turn Right Side Out,
+   Stuff, Attach Eyes, Close Opening. Knitting and crochet kinds come later.
 
-The player can stop between steps or partway through one; every step's work is saved. The piece's
-quality is the average over its steps.
+The player can stop between steps or partway through one; every step's work is saved. A step's
+tools and materials are checked when the player starts it, and its materials are used up then.
+The piece's quality is the average over its steps (choosing a fabric isn't judged).
+
+**Sewing patterns** (e.g. the Sewn Plushie's "Felt Bunny") are drawn on the same grid as cross
+stitch patterns: the filled squares are the shape of the piece (the game smooths the outline), and
+squares in the second colour ('2' in a book pattern's grid) mark where the eyes go. So the Pattern
+Studio designs plushies too.
 
 ## Customers and portraits
 

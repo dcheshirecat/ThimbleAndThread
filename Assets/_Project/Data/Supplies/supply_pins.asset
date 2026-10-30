@@ -23,7 +23,7 @@ MonoBehaviour:
   perPack: 1
   unit: box
   starterPacks: 0
-  market: 0
+  market: 1
   toolType: pins
   size: 0
-  generatorVersion: 2
+  generatorVersion: 3

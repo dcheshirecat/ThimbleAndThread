@@ -23,10 +23,12 @@ public class MinigameHost : MonoBehaviour
     public ICraftStep Step => step;
 
     /// Opens the order's current step.
-    public void Open(Order order, Color fabricColor)
+    public void Open(Order order, Color fabricColor, ContentLibrary content, ShopManager shop)
     {
         Close();
         var area = Area(fabricColor);
+        area.content = content;
+        area.shop = shop;
         stepObject = new GameObject($"Step_{order.CurrentStep.kind}");
         stepObject.transform.SetParent(transform, false);
         step = Create(order.CurrentStep.kind, stepObject);
@@ -37,6 +39,14 @@ public class MinigameHost : MonoBehaviour
     static ICraftStep Create(StepKind kind, GameObject go) => kind switch
     {
         StepKind.Hem => go.AddComponent<HemStep>(),
+        StepKind.ChooseFabric => go.AddComponent<ChooseFabricStep>(),
+        StepKind.CutPieces => go.AddComponent<CutPiecesStep>(),
+        StepKind.Pin => go.AddComponent<PinStep>(),
+        StepKind.SewSeam => go.AddComponent<SewSeamStep>(),
+        StepKind.TurnRightSideOut => go.AddComponent<TurnRightSideOutStep>(),
+        StepKind.Stuff => go.AddComponent<StuffStep>(),
+        StepKind.AttachEyes => go.AddComponent<AttachEyesStep>(),
+        StepKind.CloseOpening => go.AddComponent<CloseOpeningStep>(),
         _ => go.AddComponent<CrossStitchStep>(),
     };
 

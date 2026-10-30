@@ -3,8 +3,8 @@ using UnityEngine;
 /// One step of making an item, played as a small minigame (stitching, hemming, cutting, stuffing...).
 /// Every step plugs in the same way: MinigameHost makes the step's GameObject, calls Begin,
 /// and later SaveWork (on "Done for now" and "Finish") before destroying it.
-/// To add a step kind: append it to StepKind, write a MonoBehaviour that implements this,
-/// and add it to MinigameHost.Create.
+/// To add a step kind: append it to StepKind, write a MonoBehaviour that implements this
+/// (PieceStep and TracingStep do most of the work), and add it to MinigameHost.Create.
 public interface ICraftStep
 {
     /// Shows the step for this order, restoring the work saved earlier.
@@ -15,9 +15,13 @@ public interface ICraftStep
 
     /// Steps back one action, if the step supports it.
     void Undo();
+
+    /// Why the step can't be finished yet (e.g. "Choose a fabric first"), or null when it can.
+    string FinishBlocker { get; }
 }
 
-/// Where a step may draw: a square in world space, plus the shared camera, material and sprite.
+/// Where a step may draw: a square in world space, plus the shared camera, material and sprite,
+/// and the supply cupboard for steps that offer a choice of materials.
 public struct StepArea
 {
     public Camera cam;
@@ -26,4 +30,6 @@ public struct StepArea
     public Vector2 center;
     public float size;             // side of the square, in world units
     public Color fabricColor;      // the fabric the order is made on
+    public ContentLibrary content;
+    public ShopManager shop;
 }

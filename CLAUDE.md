@@ -136,9 +136,12 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
   crafting, set aside / hand over, Pattern Studio actions (price, shelf, new/edit/save/delete design).
 - Crafts/CrossStitchCanvas.cs: stitch and paint modes, thread colour per stitch, undo per drag,
   Score() counts right-colour squares. Crafts/MinigameHost.cs opens the order's current recipe step
-  (ICraftStep: CrossStitchStep, HemStep via TracingStep) in the screen band 0.40-0.86 of a portrait screen,
-  and also opens the board as the designer canvas. New step kinds: append to StepKind (Data/Recipe.cs),
-  implement ICraftStep, add to MinigameHost.Create and a hint in OrderFlowUI.StepHint. Crafts/PlaceholderPatterns.cs.
+  (ICraftStep) in the screen band 0.40-0.86 of a portrait screen, and also opens the board as the
+  designer canvas. Steps: CrossStitchStep; PieceStep (base: touch in 0..1 of the area, piece shape,
+  drawing helpers) with TracingStep (Hem, CutPieces, SewSeam, CloseOpening) and ChooseFabric, Pin,
+  TurnRightSideOut, Stuff, AttachEyes. New step kinds: append to StepKind (Data/Recipe.cs), implement
+  ICraftStep (usually via PieceStep), add to MinigameHost.Create and a hint in OrderFlowUI.StepHint.
+  Crafts/PlaceholderPatterns.cs.
 - Economy/OrderSystem.cs (Order with saved work, materialsUsed, fabricId; OrderGenerator), PricingCalculator.cs,
   ShopManager.cs (counted stock, Buy packs, starter kit, Missing/Use), Materials.cs (what a pattern needs:
   Aida = width x height squares, floss = squares per colour; EnsureThreads maps old colours to floss).
@@ -249,7 +252,8 @@ Done and on main: project setup, save slots + autosave, order book with resumabl
 pattern shelf (sales + pattern orders), book patterns, content library, portrait layout, thread colours,
 undo, Pattern Studio designer, owner guides, materials (counted supplies, starter kit), rotating Supply
 Market with shelves, tools that gate work. Everything is placeholder art and Unity default UI.
-Still stand-ins: every item is made with the cross stitch board; Journal and Settings screens are empty.
+Still stand-ins: items without their own recipe are made with the cross stitch board (on branch
+item-recipes the tablecloth and Sewn Plushie have real recipes); Journal and Settings screens are empty.
 CI: main once failed with exit code 137 (out of memory) and later with "no space left on device" while
 pulling the Unity image. The workflow now adds 12 GB swap on /mnt and deletes more preinstalled runner
 tools; merged to main 2026-10-29 (commit d2d3ee9), first build with it not yet confirmed.
@@ -261,8 +265,15 @@ tools; merged to main 2026-10-29 (commit d2d3ee9), first build with it not yet c
    (Begin/SaveWork/Undo) with CrossStitchStep and TracingStep (drag along a dashed guide; HemStep is the
    first). Finishing a step returns to the Workbench with the next one; quality = average of step scores.
    Tools are checked per step. The tablecloth is now "Stitch the motif" then "Hem the edges".
-3. Sewing steps for the sewn plushie: choose fabric, cut along lines (a TracingStep), pin, sew seam
-   (machine: TracingStep plus press-to-run speed), turn, stuff, attach eyes, close. Then tote bag and a
-   separate crocheted plushie.
+3. DONE (branch item-recipes, not merged): the Sewn Plushie (item plushie_sewn, CraftType Sewing; the
+   old "plushie" item is now named Crocheted Plushie, same id). 8 steps: Choose fabric, Cut, Pin, Sew seam,
+   Turn right side out, Stuff, Attach eyes, Close opening. Book pattern "Felt Bunny"; Mara asks for it.
+   Sewing patterns use the grid: filled squares = the piece's shape (PieceShape smooths the outline,
+   inset seam line with a gap at the bottom), colour index 1 = eye marks. Each RecipeStep lists its tools,
+   materials and fabricPieces (of the fabric chosen in Choose Fabric); a step's materials are used when
+   it's started. The great-aunt's sewing machine is a NotSold starter tool (older saves get it on load);
+   scissors, pins, hand sewing needles, cream felt, stuffing and safety eyes are always on sale.
+   Starter book patterns added in an update now appear in older saves.
+   Still to do here: machine speed control on Sew Seam (press to run), tote bag recipe, crocheted plushie.
 4. Then: knitting and crochet actions, embroidery; commissions; dialogue system (Ink or Yarn Spinner)
    with indirect requests; Journal; friend share codes; audio, settings, touch input wrapper.

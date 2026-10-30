@@ -1,4 +1,5 @@
 #if UNITY_EDITOR
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -24,13 +25,24 @@ public static class PlaceholderGenerator
         // ---- Items ----
         var sweater   = Item("sweater",   "Sweater",   CraftType.Knitting,    60, 15, new Color(0.85f, 0.35f, 0.35f));
         var scarf     = Item("scarf",     "Scarf",     CraftType.Knitting,    30, 10, new Color(0.35f, 0.55f, 0.85f));
-        var plushie   = Item("plushie",   "Plushie",   CraftType.Crochet,     45, 12, new Color(0.90f, 0.70f, 0.85f));
+        var plushie   = Item("plushie",   "Crocheted Plushie", CraftType.Crochet, 45, 12, new Color(0.90f, 0.70f, 0.85f));
+        if (plushie.itemName == "Plushie") { plushie.itemName = "Crocheted Plushie"; EditorUtility.SetDirty(plushie); }   // now that there's a sewn one
+        var sewnPlushie = Item("plushie_sewn", "Sewn Plushie", CraftType.Sewing, 45, 12, new Color(0.95f, 0.75f, 0.80f));
         var tablecloth = Item("tablecloth", "Tablecloth", CraftType.CrossStitch, 50, 14, new Color(0.95f, 0.95f, 0.80f));
         var sampler   = Item("sampler",   "Sampler",   CraftType.CrossStitch, 25, 8,  new Color(0.60f, 0.85f, 0.60f));
         var tote      = Item("tote",      "Tote Bag",  CraftType.Sewing,      35, 10, new Color(0.80f, 0.60f, 0.35f));
 
         // ---- Recipes (items without one are a single cross stitch step for now) ----
-        Recipe(tablecloth, (StepKind.CrossStitch, "Stitch the motif"), (StepKind.Hem, "Hem the edges"));
+        Recipe(tablecloth, Step(StepKind.CrossStitch, "Stitch the motif"), Step(StepKind.Hem, "Hem the edges"));
+        Recipe(sewnPlushie,
+            Step(StepKind.ChooseFabric, "Choose the fabric"),
+            Step(StepKind.CutPieces, "Cut the pieces", pieces: 2, tools: Tool("scissors", "Fabric scissors")),
+            Step(StepKind.Pin, "Pin them together", tools: Tool("pins", "Pins")),
+            Step(StepKind.SewSeam, "Sew the seam", tools: Tool("sewing_machine", "Sewing machine")),
+            Step(StepKind.TurnRightSideOut, "Turn it right side out"),
+            Step(StepKind.Stuff, "Stuff it", materials: Need("stuffing", 1)),
+            Step(StepKind.AttachEyes, "Attach the eyes", materials: Need("safety_eyes_black", 1)),
+            Step(StepKind.CloseOpening, "Close the opening", tools: Tool("sewing_needle", "Hand sewing needle")));
 
         // ---- Supplies ----
         // Market slots: Always = basics always for sale; Rotating = the selection that changes every 4 days;
@@ -44,7 +56,7 @@ public static class PlaceholderGenerator
         Supply("aida_18ct",  "Fine Aida 18ct",         SupplyKind.Fabric, cs, 25, 2, new Color(0.90f, 0.90f, 0.95f), 400, "squares", R);
         Supply("linen_28ct", "Linen Evenweave 28ct",   SupplyKind.Fabric, cs, 45, 3, new Color(0.88f, 0.82f, 0.70f), 400, "squares", X);
         // Sewing fabric, in pieces (recipes will say how many pieces an item needs).
-        Supply("felt_cream",      "Cream Felt",          SupplyKind.Fabric, CraftType.Sewing, 5,  1, new Color(0.97f, 0.93f, 0.82f), 4, "pieces", R);
+        Supply("felt_cream",      "Cream Felt",          SupplyKind.Fabric, CraftType.Sewing, 5,  1, new Color(0.97f, 0.93f, 0.82f), 4, "pieces", A);
         Supply("felt_brown",      "Brown Felt",          SupplyKind.Fabric, CraftType.Sewing, 5,  1, new Color(0.55f, 0.38f, 0.25f), 4, "pieces", R);
         Supply("quilting_floral", "Floral Quilting Cotton", SupplyKind.Fabric, CraftType.Sewing, 9, 1, new Color(0.95f, 0.75f, 0.70f), 2, "pieces", R);
         Supply("fleece_blue",     "Blue Fleece",         SupplyKind.Fabric, CraftType.Sewing, 12, 2, new Color(0.55f, 0.70f, 0.90f), 2, "pieces", R);
@@ -84,21 +96,25 @@ public static class PlaceholderGenerator
         Supply("crochet_hook_5mm",  "5mm Crochet Hook",  SupplyKind.Tool, CraftType.Crochet, 6, 1, new Color(0.55f, 0.75f, 0.85f), 1, "hook", R, 0, "crochet_hook", 4);
         Supply("knitting_needles_4mm", "4mm Knitting Needles", SupplyKind.Tool, CraftType.Knitting, 8, 1, new Color(0.70f, 0.55f, 0.40f), 1, "pair", R, 0, "knitting_needles", 3);
         Supply("knitting_needles_5mm", "5mm Knitting Needles", SupplyKind.Tool, CraftType.Knitting, 8, 1, new Color(0.65f, 0.50f, 0.35f), 1, "pair", R, 0, "knitting_needles", 4);
-        Supply("fabric_scissors", "Fabric Scissors",    SupplyKind.Tool, CraftType.Sewing, 15, 1, new Color(0.60f, 0.60f, 0.65f), 1, "pair", R, 0, "scissors");
-        Supply("pins",            "Box of Pins",        SupplyKind.Tool, CraftType.Sewing, 3,  1, new Color(0.90f, 0.40f, 0.45f), 1, "box", R, 0, "pins");
+        Supply("fabric_scissors", "Fabric Scissors",    SupplyKind.Tool, CraftType.Sewing, 15, 1, new Color(0.60f, 0.60f, 0.65f), 1, "pair", A, 0, "scissors");
+        Supply("pins",            "Box of Pins",        SupplyKind.Tool, CraftType.Sewing, 3,  1, new Color(0.90f, 0.40f, 0.45f), 1, "box", A, 0, "pins");
+        Supply("sewing_needle",   "Hand Sewing Needles", SupplyKind.Tool, CraftType.Sewing, 2, 1, new Color(0.78f, 0.78f, 0.82f), 1, "pack", A, 0, "sewing_needle");
+        // The great-aunt's old machine comes with the shop: in every new game, never sold.
+        Supply("sewing_machine",  "Great-Aunt's Sewing Machine", SupplyKind.Tool, CraftType.Sewing, 0, 1, new Color(0.25f, 0.30f, 0.30f), 1, "machine", MarketSlot.NotSold, 1, "sewing_machine");
         Supply("marking_pen",     "Fabric Marking Pen", SupplyKind.Tool, CraftType.Sewing, 4,  1, new Color(0.35f, 0.55f, 0.85f), 1, "pen", R, 0, "marking_pen");
 
         // Notions: used up by sewn and crocheted items (once item recipes arrive).
         Supply("stuffing",          "Polyester Stuffing", SupplyKind.Stuffing, CraftType.Sewing, 6, 1, new Color(0.97f, 0.97f, 0.97f), 3, "plushies", A);
-        Supply("safety_eyes_black", "Black Safety Eyes",  SupplyKind.Eyes,     CraftType.Sewing, 4, 1, new Color(0.10f, 0.10f, 0.10f), 4, "pairs", R);
+        Supply("safety_eyes_black", "Black Safety Eyes",  SupplyKind.Eyes,     CraftType.Sewing, 4, 1, new Color(0.10f, 0.10f, 0.10f), 4, "pairs", A);
         Supply("buttons_wood",      "Wooden Buttons",     SupplyKind.Notion,   CraftType.Sewing, 4, 1, new Color(0.65f, 0.48f, 0.30f), 8, "buttons", R);
         Supply("ribbon_satin",      "Satin Ribbon",       SupplyKind.Notion,   CraftType.Sewing, 3, 1, new Color(0.90f, 0.35f, 0.50f), 2, "lengths", R);
         Supply("zip_20cm",          "20cm Zip",           SupplyKind.Notion,   CraftType.Sewing, 3, 1, new Color(0.30f, 0.30f, 0.35f), 1, "zips", R);
         Supply("interfacing",       "Interfacing",        SupplyKind.Notion,   CraftType.Sewing, 5, 1, new Color(0.92f, 0.92f, 0.92f), 2, "pieces", R);
 
         // ---- Customers ----
-        Customer("mara",   "Mara",        "A nervous new parent who loves anything soft.",
+        var mara = Customer("mara",   "Mara",        "A nervous new parent who loves anything soft.",
                  new Color(0.95f, 0.75f, 0.60f), new[] { (plushie, 0), (scarf, 1) });
+        Wants(mara, sewnPlushie, 0);
         Customer("tobias", "Old Tobias",  "A retired fisherman searching for his late wife's tablecloth pattern.",
                  new Color(0.55f, 0.65f, 0.80f), new[] { (tablecloth, 0), (sweater, 2) });
         Customer("juno",   "Juno",        "A teen who wants knitwear that doesn't look grandma-made.",
@@ -113,6 +129,9 @@ public static class PlaceholderGenerator
             ".1...1..\n.1...1..\n.11111..\n.12121..\n.11111..\n..111...\n.11111..\n........");
         BookPattern("wave_stripes", "Wave Stripes", scarf, 9, new[] { sky, navy },
             "........\n1...1...\n.1.1.1.1\n..1...1.\n........\n2...2...\n.2.2.2.2\n..2...2.");
+        // A sewing pattern: the filled squares are the piece's shape, '2' marks the eyes.
+        BookPattern("felt_bunny", "Felt Bunny", sewnPlushie, 12, new[] { pink, charcoal },
+            ".11....11.\n.11....11.\n.11....11.\n.11111111.\n1111111111\n1121111211\n1111111111\n1111111111\n.11111111.\n..111111..");
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
@@ -183,14 +202,34 @@ public static class PlaceholderGenerator
     }
 
     // Bump when the catalogue's details change, so supplies made by an older generator get updated.
-    const int SupplyGeneratorVersion = 2;
+    const int SupplyGeneratorVersion = 3;
 
     /// Gives an item its steps, unless it already has some (so steps set by hand are kept).
-    static void Recipe(CraftItemDef item, params (StepKind kind, string label)[] steps)
+    static void Recipe(CraftItemDef item, params RecipeStep[] steps)
     {
         if (item.steps != null && item.steps.Length > 0) return;
-        item.steps = System.Array.ConvertAll(steps, s => new RecipeStep { kind = s.kind, label = s.label });
+        item.steps = steps;
         EditorUtility.SetDirty(item);
+    }
+
+    static RecipeStep Step(StepKind kind, string label, int pieces = 0, ToolNeed tools = null, MaterialNeed materials = null) =>
+        new RecipeStep
+        {
+            kind = kind, label = label, fabricPieces = pieces,
+            tools = tools != null ? new[] { tools } : new ToolNeed[0],
+            materials = materials != null ? new[] { materials } : new MaterialNeed[0],
+        };
+
+    static ToolNeed Tool(string type, string label) => new ToolNeed { toolType = type, label = label };
+    static MaterialNeed Need(string supplyId, int amount) => new MaterialNeed { supplyId = supplyId, amount = amount };
+
+    /// Adds an item to what a customer asks for, if it isn't there yet.
+    static void Wants(CustomerDef customer, CraftItemDef item, int minLevel)
+    {
+        if (System.Array.Exists(customer.requestable, o => o.item == item)) return;
+        var list = new List<OrderOption>(customer.requestable) { new OrderOption { item = item, minRelationshipLevel = minLevel } };
+        customer.requestable = list.ToArray();
+        EditorUtility.SetDirty(customer);
     }
 
     /// Creates the supply, or updates the details of one an older generator made. Supplies the owner

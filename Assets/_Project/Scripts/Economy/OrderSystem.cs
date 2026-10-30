@@ -60,13 +60,22 @@ public class Order
         return (float)done / target.cells.Count;
     }
 
-    /// Final quality: the average of the finished steps' scores.
+    /// Final quality: the average score of the judged steps.
     public float RecipeScore()
     {
         float sum = 0f;
-        int n = Steps.Length;
-        for (int i = 0; i < n; i++) sum += StepState(i).score;
-        return n > 0 ? sum / n : 0f;
+        int n = 0;
+        for (int i = 0; i < Steps.Length; i++)
+            if (Steps[i].Judged) { sum += StepState(i).score; n++; }
+        return n > 0 ? sum / n : 1f;
+    }
+
+    /// Pieces of fabric the whole recipe uses (chosen in its Choose Fabric step).
+    public int FabricPieces()
+    {
+        int n = 0;
+        foreach (var s in Steps) n += s.fabricPieces;
+        return n;
     }
 }
 

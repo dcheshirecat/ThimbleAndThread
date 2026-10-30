@@ -101,6 +101,11 @@ public class ShopManager : MonoBehaviour
         if (isNewGame)
             foreach (var s in content.supplies)
                 if (s != null && s.starterPacks > 0) Add(s.supplyId, s.starterPacks * s.perPack);
+        // Tools that come with the shop (e.g. the great-aunt's sewing machine) and are never sold:
+        // saves from before they existed get them too, or they could never be had.
+        foreach (var s in content.supplies)
+            if (s != null && s.kind == SupplyKind.Tool && s.market == MarketSlot.NotSold && s.starterPacks > 0 && !Owns(s.supplyId))
+                Add(s.supplyId, s.starterPacks * s.perPack);
         foreach (var id in Save.ownedSupplies)   // version 3 and older: owned = one pack
         {
             var s = content.Supply(id);

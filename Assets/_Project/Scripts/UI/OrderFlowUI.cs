@@ -87,6 +87,7 @@ public class OrderFlowUI : MonoBehaviour
             : stitching ? "Drag corner to corner across a square, then the other diagonal to finish the X. Match each square's thread colour."
             : StepHint(step.kind);
         if (order.Steps.Length > 1) minigameHint.text = $"{step.label}. {minigameHint.text}";
+        if (screen == ScreenId.Minigame && !string.IsNullOrEmpty(day.LastMessage)) minigameHint.text += $"\n{day.LastMessage}";
         if (stitching && order.item.craft != CraftType.CrossStitch && order.Steps.Length == 1)
             minigameHint.text += $" (The {CraftName(order.item.craft)} minigame is coming soon; cross stitch stands in.)";
         minigameThreads.gameObject.SetActive(stitching);
@@ -250,18 +251,26 @@ public class OrderFlowUI : MonoBehaviour
     {
         var steps = order.Steps;
         if (steps.Length == 1) return "Finished piece: stitch each square.";
-        var text = "How it's made:";
-        for (int i = 0; i < steps.Length; i++)
-        {
-            string mark = order.finished || i < order.step ? "Done" : i == order.step ? "Now" : "Then";
-            text += $"\n{mark}: {steps[i].label}";
-        }
+        if (order.finished) return $"All {steps.Length} steps done.";
+        var text = $"Step {order.step + 1} of {steps.Length}";
+        if (order.step > 0) text += $" (done: {string.Join(", ", System.Array.ConvertAll(steps[..order.step], s => s.label))})";
+        text += $"\nNow: {steps[order.step].label}";
+        if (order.step + 1 < steps.Length)
+            text += $"\nThen: {string.Join(", ", System.Array.ConvertAll(steps[(order.step + 1)..], s => s.label))}";
         return text;
     }
 
     static string StepHint(StepKind kind) => kind switch
     {
         StepKind.Hem => "Drag along the dashed line to sew the hem all the way round. Lift your finger and carry on wherever you like.",
+        StepKind.ChooseFabric => "Tap the fabric to make it from. Only fabrics you have enough of are shown.",
+        StepKind.CutPieces => "Cut along the marked line. The fabric is folded, so front and back are cut together.",
+        StepKind.Pin => "Tap each white mark around the edge to pin the two pieces together.",
+        StepKind.SewSeam => "Guide the machine along the dashed line. Leave the gap at the bottom open for turning and stuffing.",
+        StepKind.TurnRightSideOut => "Drag from inside the piece out through the gap at the bottom to turn it right side out.",
+        StepKind.Stuff => "Tap all over the piece to push stuffing in. Fill it evenly; too much in one spot makes it lumpy.",
+        StepKind.AttachEyes => "Tap where each eye goes. The faint marks show where the pattern puts them.",
+        StepKind.CloseOpening => "Sew the gap shut by hand: drag along the dashed line.",
         _ => "",
     };
 
@@ -283,14 +292,23 @@ public class OrderFlowUI : MonoBehaviour
     string NeedsText(Order order)
     {
         if (order.patternOnly) return "";
-        if (order.materialsUsed)
+        var needs = day.NeedsFor(order);
+        bool choose = day.FabricToChoose(order);
+        if (needs.Count == 0 && !choose)
         {
             var fabric = day.content.Supply(order.fabricId);
             return $"\nMaterials: ready{(fabric != null ? $" (on {fabric.displayName})" : "")}.";
         }
-        var needs = day.NeedsFor(order);
-        var missing = day.shop.Missing(needs);
         var text = "\n\nMaterials:";
+        if (choose)
+        {
+            int pieces = order.FabricPieces();
+            var options = ChooseFabricStep.Options(order, day.content, day.shop);
+            text += options.Count > 0
+                ? $"\nHave: {pieces} pieces of sewing fabric (you'll choose: {string.Join(", ", options.ConvertAll(s => s.displayName))})"
+                : $"\nMissing: {pieces} pieces of one sewing fabric (felt, cotton, fleece...)";
+        }
+        var missing = day.shop.Missing(needs);
         foreach (var n in needs) text += $"\n{(missing.Contains(n) ? "Missing" : "Have")}: {Materials.Describe(n, day.content, day.shop)}";
         if (missing.Count > 0)
         {

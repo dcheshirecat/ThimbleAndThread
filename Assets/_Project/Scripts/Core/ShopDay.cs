@@ -45,11 +45,11 @@ public class ShopDay : MonoBehaviour
         minigame.Close();
         Visitor = null; Offer = null; SaleOffer = null; Selected = null; SelectedPattern = null;
 
-        // The great-aunt's book: starter patterns for new games and for saves from before patterns existed.
-        if (Save.patterns.Count == 0)
-            foreach (var def in content.patterns)
-                if (def != null && def.startsOnShelf && def.item != null)
-                    Save.patterns.Add(new OwnedPattern { id = def.patternId, name = def.displayName, itemId = def.item.itemId, price = def.price, onShelf = true });
+        // The great-aunt's book: starter patterns for new games, and any starter pattern added in an
+        // update for older saves (book patterns can't be deleted, so a missing one was never there).
+        foreach (var def in content.patterns)
+            if (def != null && def.startsOnShelf && def.item != null && !Save.patterns.Exists(p => p.id == def.patternId))
+                Save.patterns.Add(new OwnedPattern { id = def.patternId, name = def.displayName, itemId = def.item.itemId, price = def.price, onShelf = true });
 
         // Saves store item ids; look the definitions back up. Drop orders for items that no longer exist.
         Save.orders.RemoveAll(o =>
@@ -328,14 +328,47 @@ public class ShopDay : MonoBehaviour
         if (Selected != null) GM.ChangeScreen(ScreenId.Workbench);
     }
 
-    /// What an order still needs from the cupboard before work can start (nothing once started).
+    /// Supplies one recipe step uses up, taken from the cupboard when the step is started (nothing once
+    /// taken, and nothing for designing). Cross stitch: its fabric and floss. Other steps: their own list,
+    /// plus pieces of the fabric chosen in the Choose Fabric step.
+    public List<MaterialNeed> NeedsForStep(Order o, int index)
+    {
+        var needs = new List<MaterialNeed>();
+        if (o.patternOnly || StepMaterialsUsed(o, index)) return needs;
+        var step = o.Steps[index];
+        if (step.kind == StepKind.CrossStitch) return Materials.For(o.target, Materials.FabricFor(o.target, content, shop), content);
+        if (step.materials != null)
+            foreach (var m in step.materials) needs.Add(new MaterialNeed { supplyId = m.supplyId, amount = m.amount });
+        if (step.fabricPieces > 0 && !string.IsNullOrEmpty(o.fabricId))
+            needs.Add(new MaterialNeed { supplyId = o.fabricId, amount = step.fabricPieces });
+        return needs;
+    }
+
+    bool StepMaterialsUsed(Order o, int index) =>
+        o.Steps[index].kind == StepKind.CrossStitch ? o.materialsUsed : o.StepState(index).materialsUsed;
+
+    /// Everything the steps still to do will use, added up per supply.
     public List<MaterialNeed> NeedsFor(Order o)
     {
-        if (o.materialsUsed || o.patternOnly) return new List<MaterialNeed>();   // designing is free
-        return Materials.For(o.target, Materials.FabricFor(o.target, content, shop), content);
+        var all = new List<MaterialNeed>();
+        for (int i = Mathf.Max(0, o.step); i < o.Steps.Length; i++)
+            foreach (var n in NeedsForStep(o, i))
+            {
+                var same = all.Find(x => x.supplyId == n.supplyId);
+                if (same != null) same.amount += n.amount;
+                else all.Add(n);
+            }
+        return all;
     }
 
     public List<MaterialNeed> MissingFor(Order o) => shop.Missing(NeedsFor(o));
+
+    /// True while the order's fabric is still to be chosen in a later (or the current) step.
+    public bool FabricToChoose(Order o)
+    {
+        int choose = System.Array.FindIndex(o.Steps, s => s.kind == StepKind.ChooseFabric);
+        return choose >= 0 && choose >= o.step && !o.patternOnly;
+    }
 
     /// Tools one recipe step needs: a cross stitch step needs a hoop that fits and a tapestry needle,
     /// plus whatever the step itself lists. Designing (pattern-only orders) needs none.
@@ -365,35 +398,40 @@ public class ShopDay : MonoBehaviour
 
     public List<ToolNeed> MissingToolsFor(Order o) => shop.MissingTools(ToolsFor(o));
 
-    /// Night only: crafting happens in the workroom. The first time, the fabric is cut and the
-    /// floss set aside, so everything must be in the cupboard. Each step needs its own tools
-    /// (tools are kept, so once owned they stay owned).
+    /// Night only: crafting happens in the workroom, one recipe step at a time. Each step needs its
+    /// own tools (kept once owned) and uses its own materials, taken from the cupboard the first time
+    /// the step is started (e.g. the Aida is cut, the stuffing bag opened), so they must all be there.
     public void StartCrafting()
     {
         if (!Save.night || Selected == null) return;
-        if (shop.MissingTools(ToolsForStep(Selected, Selected.step)).Count > 0)
+        int index = Mathf.Clamp(Selected.step, 0, Selected.Steps.Length - 1);
+        var kind = Selected.Steps[index].kind;
+        string blocked = null;
+        if (shop.MissingTools(ToolsForStep(Selected, index)).Count > 0)
+            blocked = "You're missing a tool for this step. Look for it at the Supply Market.";
+        else if (kind == StepKind.ChooseFabric && ChooseFabricStep.Options(Selected, content, shop).Count == 0)
+            blocked = $"You need {Selected.FabricPieces()} pieces of one sewing fabric (felt, cotton, fleece...). Look for some at the Supply Market.";
+        else if (shop.Missing(NeedsForStep(Selected, index)).Count > 0)
+            blocked = "You don't have all the materials for this step yet. Buy them at the Supply Market tomorrow.";
+        if (blocked != null)
         {
-            LastMessage = "You're missing a tool for this step. Look for it at the Supply Market.";
+            LastMessage = blocked;
             GM.ChangeScreen(ScreenId.Workbench);
             return;
         }
-        if (!Selected.materialsUsed)
+        if (!StepMaterialsUsed(Selected, index))
         {
-            var needs = NeedsFor(Selected);
-            if (shop.Missing(needs).Count > 0)
-            {
-                LastMessage = "You don't have all the materials yet. Buy them at the Supply Market tomorrow.";
-                GM.ChangeScreen(ScreenId.Workbench);
-                return;
-            }
-            Selected.fabricId = Materials.FabricFor(Selected.target, content, shop)?.supplyId;
+            var needs = NeedsForStep(Selected, index);
+            if (kind == StepKind.CrossStitch) Selected.fabricId = Materials.FabricFor(Selected.target, content, shop)?.supplyId;
             shop.Use(needs);
-            Selected.materialsUsed = true;
+            if (kind == StepKind.CrossStitch) Selected.materialsUsed = true;
+            else Selected.StepState(index).materialsUsed = true;
             GM.Persist();
         }
+        LastMessage = "";
         Selected.finished = false;   // reopening a set-aside piece makes it a work in progress again
         var fabric = content.Supply(Selected.fabricId);
-        minigame.Open(Selected, fabric != null ? fabric.color : new Color(0.95f, 0.95f, 0.90f));
+        minigame.Open(Selected, fabric != null ? fabric.color : new Color(0.95f, 0.95f, 0.90f), content, shop);
         GM.ChangeScreen(ScreenId.Minigame);
     }
 
@@ -419,6 +457,13 @@ public class ShopDay : MonoBehaviour
     /// turned out and what the customer will pay: the quality is the average over all steps.
     public void FinishCrafting()
     {
+        var blocker = minigame.Step?.FinishBlocker;
+        if (blocker != null)
+        {
+            LastMessage = blocker;
+            GM.ChangeScreen(ScreenId.Minigame);   // shows the message with the step's hint
+            return;
+        }
         var state = Selected.StepState(Selected.step);
         state.score = minigame.SaveWork();
         state.done = true;

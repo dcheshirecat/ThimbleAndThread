@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c7901b20ad305e48a66e74441e500f0, type: 3}
+  m_Name: item_plushie_sewn
+  m_EditorClassIdentifier: Assembly-CSharp::CraftItemDef
+  itemId: plushie_sewn
+  itemName: Sewn Plushie
+  craft: 3
+  icon: {fileID: 21300000, guid: c8ea9b5efead5054080eb43d2fa1744e, type: 3}
+  requiredPattern:
+    id: 
+    displayName: 
+    craft: 0
+    width: 0
+    height: 0
+    palette: []
+    threads: []
+    cells: []
+  basePrice: 45
+  patternPrice: 12
+  requiredSupplyIds: []
+  steps:
+  - kind: 2
+    label: Choose the fabric
+    tools: []
+    materials: []
+    fabricPieces: 0
+  - kind: 3
+    label: Cut the pieces
+    tools:
+    - toolType: scissors
+      minSize: 0
+      label: Fabric scissors
+    materials: []
+    fabricPieces: 2
+  - kind: 4
+    label: Pin them together
+    tools:
+    - toolType: pins
+      minSize: 0
+      label: Pins
+    materials: []
+    fabricPieces: 0
+  - kind: 5
+    label: Sew the seam
+    tools:
+    - toolType: sewing_machine
+      minSize: 0
+      label: Sewing machine
+    materials: []
+    fabricPieces: 0
+  - kind: 6
+    label: Turn it right side out
+    tools: []
+    materials: []
+    fabricPieces: 0
+  - kind: 7
+    label: Stuff it
+    tools: []
+    materials:
+    - supplyId: stuffing
+      amount: 1
+    fabricPieces: 0
+  - kind: 8
+    label: Attach the eyes
+    tools: []
+    materials:
+    - supplyId: safety_eyes_black
+      amount: 1
+    fabricPieces: 0
+  - kind: 9
+    label: Close the opening
+    tools:
+    - toolType: sewing_needle
+      minSize: 0
+      label: Hand sewing needle
+    materials: []
+    fabricPieces: 0

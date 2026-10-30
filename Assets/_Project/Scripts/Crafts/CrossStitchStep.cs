@@ -24,7 +24,12 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep
         return CrossStitchCanvas.Score(order.work, order.target);
     }
 
-    public void Undo() => Board?.Undo();
+    public void Undo()
+    {
+        if (Board != null) Board.Undo();
+    }
+
+    public string FinishBlocker => null;
 
     /// A board fitted into the area, as big as it can be while its squares stay square.
     public static CrossStitchCanvas MakeBoard(Transform parent, StepArea area, int width, int height)

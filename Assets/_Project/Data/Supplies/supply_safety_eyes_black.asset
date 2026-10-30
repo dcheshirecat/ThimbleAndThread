@@ -23,7 +23,7 @@ MonoBehaviour:
   perPack: 4
   unit: pairs
   starterPacks: 0
-  market: 0
+  market: 1
   toolType: 
   size: 0
-  generatorVersion: 2
+  generatorVersion: 3

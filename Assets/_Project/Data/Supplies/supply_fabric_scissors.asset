@@ -23,7 +23,7 @@ MonoBehaviour:
   perPack: 1
   unit: pair
   starterPacks: 0
-  market: 0
+  market: 1
   toolType: scissors
   size: 0
-  generatorVersion: 2
+  generatorVersion: 3
