@@ -74,10 +74,14 @@ Embroidery Floss, Yarn, Notions, Tools).
    *Hem: "Hem the edges"*. **Tools** lists anything extra the step needs (Tool Type and Min Size, as
    on the supply, plus a Label like "Fabric scissors"). **Materials** lists supplies the step uses up
    (Supply Id and Amount, e.g. `stuffing` 1). **Fabric Pieces** is how many pieces of the fabric chosen
-   in a Choose Fabric step this step uses (cutting a plushie uses 2: front and back).
+   in a Choose Fabric step this step uses (cutting a plushie uses 2: front and back), or stitches of the
+   yarn chosen in a Choose Yarn step. Tick **Per Pattern Square** to count it per square of the pattern
+   (knitting a scarf uses 2 stitches of yarn per square). For knitting needles and crochet hooks, tick
+   **Match Yarn** on the tool: the player then needs the size that matches the chosen yarn's weight.
    Leave Steps empty for a single cross stitch step.
    Kinds so far: Cross Stitch, Hem, Choose Fabric, Cut Pieces, Pin, Sew Seam, Turn Right Side Out,
-   Stuff, Attach Eyes, Close Opening, Sew Sides, Hem Top, Attach Handles. Knitting and crochet kinds come later.
+   Stuff, Attach Eyes, Close Opening, Sew Sides, Hem Top, Attach Handles,
+   Choose Yarn, Cast On, Knit Rows, Cast Off, Magic Ring, Crochet Rounds.
 
 The player can stop between steps or partway through one; every step's work is saved. A step's
 tools and materials are checked when the player starts it, and its materials are used up then.
@@ -88,6 +92,8 @@ stitch patterns: the filled squares are the shape of the piece (the game smooths
 squares in the second colour ('2' in a book pattern's grid) mark where the eyes go. So the Pattern
 Studio designs plushies too. Bags (e.g. "Market Tote") work the same way: the filled squares are the
 panel, the top edge stays open and is hemmed, and the handle is sewn on just below it.
+**Knitting patterns** use the grid as texture: each square is one stitch, filled squares are purl
+stitches and empty ones knit (so "Wave Stripes" knits a wavy texture).
 
 ## Customers and portraits
 

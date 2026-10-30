@@ -39,7 +39,12 @@ public class MinigameHost : MonoBehaviour
     static ICraftStep Create(StepKind kind, GameObject go) => kind switch
     {
         StepKind.Hem => go.AddComponent<HemStep>(),
-        StepKind.ChooseFabric => go.AddComponent<ChooseFabricStep>(),
+        StepKind.ChooseFabric or StepKind.ChooseYarn => go.AddComponent<ChooseMaterialStep>(),
+        StepKind.CastOn => go.AddComponent<CastOnStep>(),
+        StepKind.KnitRows => go.AddComponent<KnitRowsStep>(),
+        StepKind.CastOff => go.AddComponent<CastOffStep>(),
+        StepKind.MagicRing => go.AddComponent<MagicRingStep>(),
+        StepKind.CrochetRounds => go.AddComponent<CrochetRoundsStep>(),
         StepKind.CutPieces => go.AddComponent<CutPiecesStep>(),
         StepKind.Pin => go.AddComponent<PinStep>(),
         StepKind.SewSeam => go.AddComponent<SewSeamStep>(),

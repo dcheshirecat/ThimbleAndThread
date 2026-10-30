@@ -79,7 +79,8 @@ public class ShopManager : MonoBehaviour
     public bool HasTool(ToolNeed need)
     {
         foreach (var s in content.supplies)
-            if (s != null && s.kind == SupplyKind.Tool && s.toolType == need.toolType && s.size >= need.minSize && Owns(s.supplyId))
+            if (s != null && s.kind == SupplyKind.Tool && s.toolType == need.toolType && Owns(s.supplyId)
+                && (need.exactSize ? s.size == need.minSize : s.size >= need.minSize))
                 return true;
         return false;
     }

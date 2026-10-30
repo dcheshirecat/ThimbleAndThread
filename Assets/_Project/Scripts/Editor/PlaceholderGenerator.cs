@@ -43,6 +43,25 @@ public static class PlaceholderGenerator
             Step(StepKind.Stuff, "Stuff it", materials: Need("stuffing", 1)),
             Step(StepKind.AttachEyes, "Attach the eyes", materials: Need("safety_eyes_black", 1)),
             Step(StepKind.CloseOpening, "Close the opening", tools: Tool("sewing_needle", "Hand sewing needle")));
+        var needles = Tool("knitting_needles", "Knitting needles", matchYarn: true);
+        var hook = Tool("crochet_hook", "Crochet hook", matchYarn: true);
+        Recipe(scarf,
+            Step(StepKind.ChooseYarn, "Choose the yarn"),
+            Step(StepKind.CastOn, "Cast on", tools: needles),
+            Step(StepKind.KnitRows, "Knit the rows", pieces: 2, perSquare: true, tools: needles),
+            Step(StepKind.CastOff, "Cast off", tools: needles));
+        Recipe(sweater,
+            Step(StepKind.ChooseYarn, "Choose the yarn"),
+            Step(StepKind.CastOn, "Cast on", tools: needles),
+            Step(StepKind.KnitRows, "Knit the front and back", pieces: 5, perSquare: true, tools: needles),
+            Step(StepKind.CastOff, "Cast off", tools: needles));
+        Recipe(plushie,
+            Step(StepKind.ChooseYarn, "Choose the yarn"),
+            Step(StepKind.MagicRing, "Make a magic ring", tools: hook),
+            Step(StepKind.CrochetRounds, "Crochet the rounds", pieces: 150, tools: hook),
+            Step(StepKind.Stuff, "Stuff it", materials: Need("stuffing", 1)),
+            Step(StepKind.AttachEyes, "Attach the eyes", materials: Need("safety_eyes_black", 1)),
+            Step(StepKind.CloseOpening, "Close it up", tools: Tool("tapestry_needle", "Tapestry needle")));
         Recipe(tote,
             Step(StepKind.ChooseFabric, "Choose the fabric"),
             Step(StepKind.CutPieces, "Cut the panels", pieces: 2, tools: Tool("scissors", "Fabric scissors")),
@@ -70,7 +89,7 @@ public static class PlaceholderGenerator
         Supply("minky_pink",      "Pink Minky",          SupplyKind.Fabric, CraftType.Sewing, 30, 3, new Color(0.98f, 0.78f, 0.85f), 2, "pieces", X);
 
         // Yarn: balls of 300 stitches. size = yarn weight (3 = DK, 4 = worsted); hooks and needles must match.
-        Supply("acrylic_yarn", "Acrylic Yarn",     SupplyKind.Yarn, CraftType.Knitting, 5,  1, new Color(0.85f, 0.45f, 0.40f), 300, "stitches", R, 0, "", 4);
+        Supply("acrylic_yarn", "Acrylic Yarn",     SupplyKind.Yarn, CraftType.Knitting, 5,  1, new Color(0.85f, 0.45f, 0.40f), 300, "stitches", A, 0, "", 4);
         Supply("wool_basic",   "Basic Wool",       SupplyKind.Yarn, CraftType.Knitting, 8,  1, new Color(0.75f, 0.55f, 0.45f), 300, "stitches", R, 0, "", 4);
         Supply("wool_merino",  "Merino Wool",      SupplyKind.Yarn, CraftType.Knitting, 20, 3, new Color(0.55f, 0.45f, 0.75f), 300, "stitches", R, 0, "", 4);
         Supply("cotton_yarn",  "Cotton Yarn",      SupplyKind.Yarn, CraftType.Crochet,  6,  1, new Color(0.60f, 0.80f, 0.70f), 300, "stitches", R, 0, "", 4);
@@ -99,9 +118,9 @@ public static class PlaceholderGenerator
         Supply("hoop_8in", "8\" Embroidery Hoop", SupplyKind.Tool, cs, 12, 1, new Color(0.75f, 0.60f, 0.40f), 1, "hoop", R, 0, "hoop", 16);
         Supply("tapestry_needle",   "Tapestry Needle",   SupplyKind.Tool, cs, 2, 1, new Color(0.75f, 0.75f, 0.80f), 1, "needle", A, 1, "tapestry_needle");
         Supply("embroidery_needle", "Embroidery Needle", SupplyKind.Tool, CraftType.Embroidery, 2, 1, new Color(0.70f, 0.70f, 0.78f), 1, "needle", R, 0, "embroidery_needle");
-        Supply("crochet_hook_5mm",  "5mm Crochet Hook",  SupplyKind.Tool, CraftType.Crochet, 6, 1, new Color(0.55f, 0.75f, 0.85f), 1, "hook", R, 0, "crochet_hook", 4);
+        Supply("crochet_hook_5mm",  "5mm Crochet Hook",  SupplyKind.Tool, CraftType.Crochet, 6, 1, new Color(0.55f, 0.75f, 0.85f), 1, "hook", A, 0, "crochet_hook", 4);
         Supply("knitting_needles_4mm", "4mm Knitting Needles", SupplyKind.Tool, CraftType.Knitting, 8, 1, new Color(0.70f, 0.55f, 0.40f), 1, "pair", R, 0, "knitting_needles", 3);
-        Supply("knitting_needles_5mm", "5mm Knitting Needles", SupplyKind.Tool, CraftType.Knitting, 8, 1, new Color(0.65f, 0.50f, 0.35f), 1, "pair", R, 0, "knitting_needles", 4);
+        Supply("knitting_needles_5mm", "5mm Knitting Needles", SupplyKind.Tool, CraftType.Knitting, 8, 1, new Color(0.65f, 0.50f, 0.35f), 1, "pair", A, 0, "knitting_needles", 4);
         Supply("fabric_scissors", "Fabric Scissors",    SupplyKind.Tool, CraftType.Sewing, 15, 1, new Color(0.60f, 0.60f, 0.65f), 1, "pair", A, 0, "scissors");
         Supply("pins",            "Box of Pins",        SupplyKind.Tool, CraftType.Sewing, 3,  1, new Color(0.90f, 0.40f, 0.45f), 1, "box", A, 0, "pins");
         Supply("sewing_needle",   "Hand Sewing Needles", SupplyKind.Tool, CraftType.Sewing, 2, 1, new Color(0.78f, 0.78f, 0.82f), 1, "pack", A, 0, "sewing_needle");
@@ -214,7 +233,7 @@ public static class PlaceholderGenerator
     }
 
     // Bump when the catalogue's details change, so supplies made by an older generator get updated.
-    const int SupplyGeneratorVersion = 3;
+    const int SupplyGeneratorVersion = 4;
 
     /// Gives an item its steps, unless it already has some (so steps set by hand are kept).
     static void Recipe(CraftItemDef item, params RecipeStep[] steps)
@@ -224,15 +243,15 @@ public static class PlaceholderGenerator
         EditorUtility.SetDirty(item);
     }
 
-    static RecipeStep Step(StepKind kind, string label, int pieces = 0, ToolNeed tools = null, MaterialNeed materials = null) =>
+    static RecipeStep Step(StepKind kind, string label, int pieces = 0, ToolNeed tools = null, MaterialNeed materials = null, bool perSquare = false) =>
         new RecipeStep
         {
-            kind = kind, label = label, fabricPieces = pieces,
+            kind = kind, label = label, fabricPieces = pieces, perPatternSquare = perSquare,
             tools = tools != null ? new[] { tools } : new ToolNeed[0],
             materials = materials != null ? new[] { materials } : new MaterialNeed[0],
         };
 
-    static ToolNeed Tool(string type, string label) => new ToolNeed { toolType = type, label = label };
+    static ToolNeed Tool(string type, string label, bool matchYarn = false) => new ToolNeed { toolType = type, label = label, matchYarn = matchYarn };
     static MaterialNeed Need(string supplyId, int amount) => new MaterialNeed { supplyId = supplyId, amount = amount };
 
     /// Adds an item to what a customer asks for, if it isn't there yet.

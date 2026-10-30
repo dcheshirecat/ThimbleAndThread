@@ -48,6 +48,8 @@ public class ToolNeed
     public string toolType;
     public int minSize;
     public string label;        // e.g. "Embroidery hoop for 16 x 16 or bigger"
+    public bool exactSize;      // the size must match exactly (needles and hooks for a yarn weight)
+    public bool matchYarn;      // recipes: the size comes from the chosen yarn's weight
 }
 
 // Work done on a grid cell. mask: 1 = "/" diagonal, 2 = "\" diagonal, 3 = full X (or a painted pattern cell).

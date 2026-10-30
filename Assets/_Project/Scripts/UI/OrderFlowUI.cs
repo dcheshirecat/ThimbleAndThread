@@ -274,6 +274,12 @@ public class OrderFlowUI : MonoBehaviour
         StepKind.SewSides => "Guide the machine down one side, along the bottom and up the other. Leave the top open.",
         StepKind.HemTop => "Fold the top edge over and sew along the dashed line.",
         StepKind.AttachHandles => "Tap where each end of the handle goes, on the faint marks just below the top.",
+        StepKind.ChooseYarn => "Tap the yarn to make it from. Only yarns you have enough of are shown.",
+        StepKind.CastOn => "Tap once for each stitch to cast it onto the needle.",
+        StepKind.KnitRows => "Swipe down for a knit stitch, up for a purl (the bar marks). Keep a steady rhythm for even stitches.",
+        StepKind.CastOff => "Drag along the top edge to cast off, so it can't unravel.",
+        StepKind.MagicRing => "Wrap the yarn round: drag along the dashed circle to make a magic ring.",
+        StepKind.CrochetRounds => "Tap the bright spot to hook a loop, then flick anywhere to pull it through. Round and round!",
         _ => "",
     };
 
@@ -296,7 +302,7 @@ public class OrderFlowUI : MonoBehaviour
     {
         if (order.patternOnly) return "";
         var needs = day.NeedsFor(order);
-        bool choose = day.FabricToChoose(order);
+        bool choose = day.MaterialToChoose(order);
         if (needs.Count == 0 && !choose)
         {
             var fabric = day.content.Supply(order.fabricId);
@@ -305,11 +311,10 @@ public class OrderFlowUI : MonoBehaviour
         var text = "\n\nMaterials:";
         if (choose)
         {
-            int pieces = order.FabricPieces();
-            var options = ChooseFabricStep.Options(order, day.content, day.shop);
+            var options = ChooseMaterialStep.Options(order, day.content, day.shop);
             text += options.Count > 0
-                ? $"\nHave: {pieces} pieces of sewing fabric (you'll choose: {string.Join(", ", options.ConvertAll(s => s.displayName))})"
-                : $"\nMissing: {pieces} pieces of one sewing fabric (felt, cotton, fleece...)";
+                ? $"\nHave: {ChooseMaterialStep.Wanted(order)} (you'll choose: {string.Join(", ", options.ConvertAll(s => s.displayName))})"
+                : $"\nMissing: {ChooseMaterialStep.Wanted(order)}";
         }
         var missing = day.shop.Missing(needs);
         foreach (var n in needs) text += $"\n{(missing.Contains(n) ? "Missing" : "Have")}: {Materials.Describe(n, day.content, day.shop)}";

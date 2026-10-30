@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// Recipe step: pick which of your sewing fabrics to make the piece from. Only fabrics you have
-/// enough of are offered. Not judged; the choice sets the piece's colour and material tier.
-public class ChooseFabricStep : PieceStep
+/// Recipe step (Choose Fabric or Choose Yarn): pick which of your fabrics or yarns to make the piece
+/// from. Only ones you have enough of are offered. Not judged; the choice sets the piece's colour,
+/// its material tier and, for yarn, which needles or hook it needs.
+public class ChooseMaterialStep : PieceStep
 {
     const int Columns = 3;
     const float Swatch = 0.2f;
@@ -13,13 +14,19 @@ public class ChooseFabricStep : PieceStep
     SpriteRenderer highlight;
     MeshRenderer preview;
 
-    /// Sewing fabrics with enough pieces for this order.
+    /// Fabrics (for sewing) or yarns with enough for this order.
     public static List<SupplyDef> Options(Order order, ContentLibrary content, ShopManager shop)
     {
-        int pieces = order.FabricPieces();
-        return new List<SupplyDef>(System.Array.FindAll(content.supplies,
-            s => s != null && s.kind == SupplyKind.Fabric && s.craft == CraftType.Sewing && shop.Stock(s.supplyId) >= pieces));
+        int amount = order.ChosenAmount();
+        bool yarn = order.ChooseKind() == StepKind.ChooseYarn;
+        return new List<SupplyDef>(System.Array.FindAll(content.supplies, s => s != null && shop.Stock(s.supplyId) >= amount
+            && (yarn ? s.kind == SupplyKind.Yarn : s.kind == SupplyKind.Fabric && s.craft == CraftType.Sewing)));
     }
+
+    /// What the player needs to buy, e.g. "2 pieces of one sewing fabric (felt, cotton, fleece...)".
+    public static string Wanted(Order order) => order.ChooseKind() == StepKind.ChooseYarn
+        ? $"{order.ChosenAmount()} stitches of one yarn (a ball is 300)"
+        : $"{order.ChosenAmount()} pieces of one sewing fabric (felt, cotton, fleece...)";
 
     protected override void Build()
     {
@@ -63,5 +70,6 @@ public class ChooseFabricStep : PieceStep
         return Chosen ? 1f : 0f;
     }
 
-    public override string FinishBlocker => Chosen ? null : "Tap a fabric to choose it first.";
+    public override string FinishBlocker => Chosen ? null
+        : order.ChooseKind() == StepKind.ChooseYarn ? "Tap a yarn to choose it first." : "Tap a fabric to choose it first.";
 }

@@ -74,6 +74,12 @@ public static class Materials
         };
     }
 
+    /// Yarn weights by number, as on yarn labels.
+    public static string WeightName(int weight) => weight switch
+    {
+        1 => "fingering", 2 => "sport", 3 => "DK", 4 => "worsted", 5 => "chunky", 6 => "super chunky", _ => $"weight {weight}",
+    };
+
     /// e.g. "Red Floss: need 20, have 12"
     public static string Describe(MaterialNeed n, ContentLibrary content, ShopManager shop)
     {

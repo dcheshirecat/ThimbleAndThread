@@ -139,8 +139,8 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
   (ICraftStep) in the screen band 0.40-0.86 of a portrait screen, and also opens the board as the
   designer canvas. Steps: CrossStitchStep; PieceStep (base: touch in 0..1 of the area, piece shape,
   drawing helpers) with TracingStep (Hem, CutPieces, SewSeam, CloseOpening) and ChooseFabric, Pin,
-  TurnRightSideOut, Stuff; PlacementStep (tap where things go: AttachEyes, AttachHandles); bag steps
-  SewSides and HemTop (TracingStep). New step kinds: append to StepKind (Data/Recipe.cs), implement
+  TurnRightSideOut, Stuff, CastOn, KnitRows (KnitLayout), CrochetRounds, ChooseMaterial; PlacementStep (tap where things go: AttachEyes, AttachHandles); bag steps
+  SewSides and HemTop, CastOff, MagicRing (TracingStep). New step kinds: append to StepKind (Data/Recipe.cs), implement
   ICraftStep (usually via PieceStep), add to MinigameHost.Create and a hint in OrderFlowUI.StepHint.
   Crafts/PlaceholderPatterns.cs.
 - Economy/OrderSystem.cs (Order with saved work, materialsUsed, fabricId; OrderGenerator), PricingCalculator.cs,
@@ -253,8 +253,8 @@ Done and on main: project setup, save slots + autosave, order book with resumabl
 pattern shelf (sales + pattern orders), book patterns, content library, portrait layout, thread colours,
 undo, Pattern Studio designer, owner guides, materials (counted supplies, starter kit), rotating Supply
 Market with shelves, tools that gate work, item recipes (tablecloth: stitch + hem; Sewn Plushie:
-8 sewing steps; tote bag: 5 steps). Everything is placeholder art and Unity default UI.
-Still stand-ins: items without their own recipe (sweater, scarf, crocheted plushie, sampler) are
+8 sewing steps; tote bag: 5 steps; scarf and sweater: knitting; crocheted plushie: crochet). Everything is placeholder art and Unity default UI.
+Still stand-ins: items without their own recipe (sampler) are
 made with the cross stitch board; Journal and Settings screens are empty.
 CI: main once failed with exit code 137 (out of memory) and later with "no space left on device" while
 pulling the Unity image. The workflow now adds 12 GB swap on /mnt and deletes more preinstalled runner
@@ -279,7 +279,14 @@ tools; merged to main 2026-10-29 (commit d2d3ee9), first build with it not yet c
    Tote bag DONE: Choose fabric, Cut the panels, Sew the sides, Hem the top, Attach the handle (uses Cotton
    Webbing, always on sale). Book pattern "Market Tote"; Juno asks for totes from level 0. PieceShape also
    gives bags a Mouth (top edge), Sides and HandleEnds; corner smoothing cuts at most half a grid square.
-   Still to do here: machine speed control on Sew Seam (press to run); crocheted plushie (needs task 4's
-   crochet actions).
-4. Then: knitting and crochet actions, embroidery; commissions; dialogue system (Ink or Yarn Spinner)
-   with indirect requests; Journal; friend share codes; audio, settings, touch input wrapper.
+   Still to do here: machine speed control on Sew Seam (press to run).
+4. DONE (on main): knitting and crochet. Scarf and sweater: Choose yarn, Cast on (tap per
+   stitch), Knit the rows (one swipe per stitch: down = knit, up = purl; pattern's filled squares are
+   purls; a steady rhythm = even stitches; a wrong swipe is a mistake), Cast off (trace the top edge).
+   Crocheted plushie: Choose yarn, Magic ring (trace a circle), Crochet the rounds (tap to hook, flick to
+   pull through; 3 rounds of 6/12/18), Stuff, Attach eyes, Close it up. ChooseMaterialStep handles fabric
+   and yarn; RecipeStep.fabricPieces is the amount of the chosen material (perPatternSquare multiplies by
+   the pattern's squares); ToolNeed.matchYarn/exactSize make needles and hooks match the yarn weight.
+   Acrylic yarn, 5mm needles and the 5mm hook are always on sale.
+5. Next: embroidery actions; commissions; dialogue system (Ink or Yarn Spinner) with indirect requests;
+   Journal; friend share codes (patterns, items, supplies); audio, settings, touch input wrapper.

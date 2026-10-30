@@ -23,7 +23,48 @@ MonoBehaviour:
     width: 0
     height: 0
     palette: []
+    threads: []
     cells: []
   basePrice: 30
   patternPrice: 10
   requiredSupplyIds: []
+  steps:
+  - kind: 13
+    label: Choose the yarn
+    tools: []
+    materials: []
+    fabricPieces: 0
+    perPatternSquare: 0
+  - kind: 14
+    label: Cast on
+    tools:
+    - toolType: knitting_needles
+      minSize: 0
+      label: Knitting needles
+      exactSize: 0
+      matchYarn: 1
+    materials: []
+    fabricPieces: 0
+    perPatternSquare: 0
+  - kind: 15
+    label: Knit the rows
+    tools:
+    - toolType: knitting_needles
+      minSize: 0
+      label: Knitting needles
+      exactSize: 0
+      matchYarn: 1
+    materials: []
+    fabricPieces: 2
+    perPatternSquare: 1
+  - kind: 16
+    label: Cast off
+    tools:
+    - toolType: knitting_needles
+      minSize: 0
+      label: Knitting needles
+      exactSize: 0
+      matchYarn: 1
+    materials: []
+    fabricPieces: 0
+    perPatternSquare: 0

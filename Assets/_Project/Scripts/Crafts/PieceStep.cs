@@ -117,6 +117,23 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
         return sr;
     }
 
+    /// A rectangle of colour centred on p, "size" in 0..1 of the area.
+    protected SpriteRenderer Rect(Vector2 p, Vector2 size, Color color, int sorting)
+    {
+        var sr = Square(p, 1f, color, sorting);
+        sr.transform.localScale = new Vector3(size.x * side, size.y * side, 1);
+        return sr;
+    }
+
+    /// One knitted stitch in a cell: a knit stitch is a "V", a purl a little bump across.
+    protected GameObject Stitch(Vector2 c, float cell, bool purl, Color color, int sorting)
+    {
+        var line = purl
+            ? Line(new[] { c + new Vector2(-0.3f, 0) * cell, c + new Vector2(0.3f, 0) * cell }, color, cell * 0.22f, sorting)
+            : Line(new[] { c + new Vector2(-0.3f, 0.3f) * cell, c + new Vector2(0, -0.3f) * cell, c + new Vector2(0.3f, 0.3f) * cell }, color, cell * 0.14f, sorting);
+        return line.gameObject;
+    }
+
     /// A line through points in 0..1 of the area; "width" is in 0..1 of the area too.
     protected LineRenderer Line(IList<Vector2> points, Color color, float width, int sorting)
     {

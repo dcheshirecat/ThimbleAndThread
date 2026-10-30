@@ -28,4 +28,59 @@ MonoBehaviour:
   basePrice: 45
   patternPrice: 12
   requiredSupplyIds: []
-  steps: []
+  steps:
+  - kind: 13
+    label: Choose the yarn
+    tools: []
+    materials: []
+    fabricPieces: 0
+    perPatternSquare: 0
+  - kind: 17
+    label: Make a magic ring
+    tools:
+    - toolType: crochet_hook
+      minSize: 0
+      label: Crochet hook
+      exactSize: 0
+      matchYarn: 1
+    materials: []
+    fabricPieces: 0
+    perPatternSquare: 0
+  - kind: 18
+    label: Crochet the rounds
+    tools:
+    - toolType: crochet_hook
+      minSize: 0
+      label: Crochet hook
+      exactSize: 0
+      matchYarn: 1
+    materials: []
+    fabricPieces: 150
+    perPatternSquare: 0
+  - kind: 7
+    label: Stuff it
+    tools: []
+    materials:
+    - supplyId: stuffing
+      amount: 1
+    fabricPieces: 0
+    perPatternSquare: 0
+  - kind: 8
+    label: Attach the eyes
+    tools: []
+    materials:
+    - supplyId: safety_eyes_black
+      amount: 1
+    fabricPieces: 0
+    perPatternSquare: 0
+  - kind: 9
+    label: Close it up
+    tools:
+    - toolType: tapestry_needle
+      minSize: 0
+      label: Tapestry needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    perPatternSquare: 0

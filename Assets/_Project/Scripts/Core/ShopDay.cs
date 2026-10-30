@@ -330,7 +330,7 @@ public class ShopDay : MonoBehaviour
 
     /// Supplies one recipe step uses up, taken from the cupboard when the step is started (nothing once
     /// taken, and nothing for designing). Cross stitch: its fabric and floss. Other steps: their own list,
-    /// plus pieces of the fabric chosen in the Choose Fabric step.
+    /// plus their share of the fabric or yarn chosen in the Choose step.
     public List<MaterialNeed> NeedsForStep(Order o, int index)
     {
         var needs = new List<MaterialNeed>();
@@ -340,7 +340,7 @@ public class ShopDay : MonoBehaviour
         if (step.materials != null)
             foreach (var m in step.materials) needs.Add(new MaterialNeed { supplyId = m.supplyId, amount = m.amount });
         if (step.fabricPieces > 0 && !string.IsNullOrEmpty(o.fabricId))
-            needs.Add(new MaterialNeed { supplyId = o.fabricId, amount = step.fabricPieces });
+            needs.Add(new MaterialNeed { supplyId = o.fabricId, amount = step.ChosenAmount(o.target) });
         return needs;
     }
 
@@ -363,10 +363,10 @@ public class ShopDay : MonoBehaviour
 
     public List<MaterialNeed> MissingFor(Order o) => shop.Missing(NeedsFor(o));
 
-    /// True while the order's fabric is still to be chosen in a later (or the current) step.
-    public bool FabricToChoose(Order o)
+    /// True while the order's fabric or yarn is still to be chosen in a later (or the current) step.
+    public bool MaterialToChoose(Order o)
     {
-        int choose = System.Array.FindIndex(o.Steps, s => s.kind == StepKind.ChooseFabric);
+        int choose = System.Array.FindIndex(o.Steps, s => s.kind == StepKind.ChooseFabric || s.kind == StepKind.ChooseYarn);
         return choose >= 0 && choose >= o.step && !o.patternOnly;
     }
 
@@ -378,8 +378,17 @@ public class ShopDay : MonoBehaviour
         if (o.patternOnly) return tools;
         var step = o.Steps[Mathf.Clamp(index, 0, o.Steps.Length - 1)];
         if (step.kind == StepKind.CrossStitch) tools.AddRange(Materials.ToolsFor(o.target));
-        if (step.tools != null) tools.AddRange(step.tools);
+        if (step.tools != null)
+            foreach (var t in step.tools) tools.Add(t.matchYarn ? ForYarn(o, t) : t);
         return tools;
+    }
+
+    /// Needles or a hook to match the chosen yarn's weight (any size until a yarn is chosen).
+    ToolNeed ForYarn(Order o, ToolNeed t)
+    {
+        var yarn = content.Supply(o.fabricId);
+        if (yarn == null || yarn.kind != SupplyKind.Yarn) return new ToolNeed { toolType = t.toolType, label = $"{t.label} to match your yarn" };
+        return new ToolNeed { toolType = t.toolType, minSize = yarn.size, exactSize = true, label = $"{t.label} for {Materials.WeightName(yarn.size)} yarn" };
     }
 
     /// Tools for the steps still to do, each type once (the largest size needed).
@@ -409,8 +418,8 @@ public class ShopDay : MonoBehaviour
         string blocked = null;
         if (shop.MissingTools(ToolsForStep(Selected, index)).Count > 0)
             blocked = "You're missing a tool for this step. Look for it at the Supply Market.";
-        else if (kind == StepKind.ChooseFabric && ChooseFabricStep.Options(Selected, content, shop).Count == 0)
-            blocked = $"You need {Selected.FabricPieces()} pieces of one sewing fabric (felt, cotton, fleece...). Look for some at the Supply Market.";
+        else if ((kind == StepKind.ChooseFabric || kind == StepKind.ChooseYarn) && ChooseMaterialStep.Options(Selected, content, shop).Count == 0)
+            blocked = $"You need {ChooseMaterialStep.Wanted(Selected)}. Look for some at the Supply Market.";
         else if (shop.Missing(NeedsForStep(Selected, index)).Count > 0)
             blocked = "You don't have all the materials for this step yet. Buy them at the Supply Market tomorrow.";
         if (blocked != null)

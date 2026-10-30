@@ -70,12 +70,19 @@ public class Order
         return n > 0 ? sum / n : 1f;
     }
 
-    /// Pieces of fabric the whole recipe uses (chosen in its Choose Fabric step).
-    public int FabricPieces()
+    /// How much of the chosen fabric or yarn the whole recipe uses (fabric pieces, or stitches of yarn).
+    public int ChosenAmount()
     {
         int n = 0;
-        foreach (var s in Steps) n += s.fabricPieces;
+        foreach (var s in Steps) n += s.ChosenAmount(target);
         return n;
+    }
+
+    /// The Choose Fabric or Choose Yarn step's kind, or null if the recipe has none.
+    public StepKind? ChooseKind()
+    {
+        foreach (var s in Steps) if (s.kind == StepKind.ChooseFabric || s.kind == StepKind.ChooseYarn) return s.kind;
+        return null;
     }
 }
 
