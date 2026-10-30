@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// Recipe step: sew the two pieces together on the machine, all the way round except for a gap
 /// at the bottom (left open for turning and stuffing).
-public class SewSeamStep : TracingStep
+public class SewSeamStep : MachineSewingStep
 {
     protected override void DrawPiece()
     {

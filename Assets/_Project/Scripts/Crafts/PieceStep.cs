@@ -74,7 +74,11 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
             OnRelease(Normalized(Input.mousePosition));
             AudioManager.Play(Sfx.Stitch);
         }
+        Tick(Time.deltaTime);
     }
+
+    /// Called every frame after input, for steps that move on their own (e.g. the sewing machine).
+    protected virtual void Tick(float dt) { }
 
     Vector2 Normalized(Vector3 screen)
     {

@@ -69,9 +69,19 @@ public abstract class TracingStep : PieceStep
 
     protected override void OnPress(Vector2 p)
     {
+        StartStroke();
+        AddPoint(p);
+    }
+
+    /// The line resampled into evenly spaced checkpoints, in order along it.
+    protected List<Vector2> GuidePoints => samples;
+    /// Every traced point so far, in order.
+    protected List<Vector2> Points => points;
+
+    protected void StartStroke()
+    {
         strokeStarts.Add(points.Count);
         strokeLines.Add(NewStroke());
-        AddPoint(p);
     }
 
     protected override void OnDrag(Vector2 p)
@@ -80,7 +90,7 @@ public abstract class TracingStep : PieceStep
         AddPoint(p);
     }
 
-    void AddPoint(Vector2 p)
+    protected void AddPoint(Vector2 p)
     {
         points.Add(p);
         Cover(p);
