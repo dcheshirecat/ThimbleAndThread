@@ -11,8 +11,8 @@ public abstract class MachineSewingStep : TracingStep
     const float MaxSpeed = 0.42f;        // share of the area per second at full pedal
     const float CornerSpeed = 0.1f;      // safe speed through the sharpest corner
     const float SharpTurn = 70f;         // degrees of turn (over a short stretch) that count as the sharpest
-    const float Skid = 1.6f;             // how fast stitches swing off the line per unit of excess speed
-    const float Settle = 4f;             // how fast they come back once slow enough
+    const float Skid = 3.5f;             // how fast stitches swing off the line per unit of excess speed
+    const float Settle = 3f;             // how fast they come back once slow enough
     const float StitchGap = 0.007f;      // a new stitch point every this far
 
     float along;                         // needle position, in samples along the line (fractional)

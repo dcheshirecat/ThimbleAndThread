@@ -384,7 +384,9 @@ now; final art = separate drawings per option and colour (owner draws each), not
    Tote bag DONE: Choose fabric, Cut the panels, Sew the sides, Hem the top, Attach the handle (uses Cotton
    Webbing, always on sale). Book pattern "Market Tote"; Juno asks for totes from level 0. PieceShape also
    gives bags a Mouth (top edge), Sides and HandleEnds; corner smoothing cuts at most half a grid square.
-   Still to do here: machine speed control on Sew Seam (press to run).
+   Machine speed control DONE: Crafts/MachineSewingStep.cs (SewSeam, SewSides): hold = pedal (slide up faster,
+   down slower); the needle runs along the line by itself; faster than a bend's safe speed makes the stitches
+   skid off the line (Skid/Settle constants). Tested: racing corners ~0.66, careful 1.00.
 4. DONE (on main): knitting and crochet. Scarf and sweater: Choose yarn, Cast on (tap per
    stitch), Knit the rows (one swipe per stitch: down = knit, up = purl; pattern's filled squares are
    purls; a steady rhythm = even stitches; a wrong swipe is a mistake), Cast off (trace the top edge).
@@ -425,5 +427,7 @@ now; final art = separate drawings per option and colour (owner draws each), not
    Docs/ADDING_ART.md; TestSceneBuilder.Clip loads them. Volumes in PlayerPrefs (music_volume,
    sound_volume). UI/SettingsUI.cs: volumes, How to Play (returns to Settings via GameManager.Previous),
    Save and Quit, Back.
-10. Next: Settings screen; touch input wrapper;
+10. DONE: 34 floss colours (20 added; black always stocked, metallic silver rare; RotatingCount 20);
+    Pattern Studio swatches 12 a row.
+11. Next: Settings screen; touch input wrapper;
    sewing machine speed control; more complex crafting (half stitches, cables, colour changes).
