@@ -356,6 +356,14 @@ now; final art = separate drawings per option and colour (owner draws each), not
 12. Mistakes in general: possible everywhere, undoable, but if left they affect the result.
 13. Starting an order: scroll through the inventory and pick the items to use, ticking off a needs list.
 14. Crafting animations: the needle making each stitch, the hook making each loop, per craft.
+15. Craft upgrades (owner, 2026-10-30): buy better tools that make crafting easier, e.g. sharp fabric
+    scissors make cut lines straighter, sharper needles make stitching more forgiving. Plan: tools already
+    exist as SupplyDef (kind Tool, toolType, size) and gate steps; add a quality tier per tool with an
+    "assist" effect that the step reads from the best owned tool of that type (ShopManager.BestTool):
+    scissors -> wider cutting tolerance / steadier line; needles -> more forgiving stitch aim; machine
+    (better presser foot / speed control) -> faster safe speed at corners; hooks/knitting needles ->
+    wider rhythm window; hoops -> fabric stays taut (fewer wobble mistakes). Sold in the Supply Market's
+    Tools shelf (premium tiers can be Rare). Steps show which tool helped. Ties in with item 12 (mistakes).
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
