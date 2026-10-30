@@ -35,5 +35,6 @@ MonoBehaviour:
   - item: {fileID: 11400000, guid: 624106ae6949e67438c1436949d015e1, type: 2}
     minRelationshipLevel: 1
   firstChapter: 4
+  likesSurprises: 0.55
   romanceable: 1
   inkName: rowan

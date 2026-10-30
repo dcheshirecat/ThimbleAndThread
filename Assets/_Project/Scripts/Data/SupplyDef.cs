@@ -31,5 +31,10 @@ public class SupplyDef : ScriptableObject
     public string toolType;                // tools: "hoop", "tapestry_needle", "crochet_hook", "knitting_needles", "scissors"...
     public int size;                       // hoops: largest pattern side that fits (squares); hooks, needles, yarn: yarn weight
 
+    [Header("Special touches (optional extras, e.g. lace, buttons, ribbon)")]
+    public CraftItemDef[] decorates;       // items this can be added to as a surprise extra (empty = not an extra)
+    public int decorateAmount = 1;         // units one extra uses
+    [Range(0f, 1f)] public float decorateBonus = 0.25f;   // extra share of the price when the customer likes it
+
     [HideInInspector] public int generatorVersion;   // placeholder data only: lets the generator update its own supplies
 }

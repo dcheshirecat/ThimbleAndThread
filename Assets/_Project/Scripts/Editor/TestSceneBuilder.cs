@@ -298,6 +298,21 @@ public static class TestSceneBuilder
         ui.handOverButton = Button(b, "Hand Over", day.HandOver, 1100).gameObject;
         Button(b, "Back to Order Book", router.GoToOrderBook, 1100);
 
+        // Gather supplies: pick what the order needs from the cupboard, ticking off its list (GatherUI)
+        p = Panel(ScreenId.Gather, "Gather Supplies", new Color(0.88f, 0.80f, 0.68f));
+        var gather = canvasGo.AddComponent<GatherUI>();
+        gather.day = day;
+        gather.listText = Label(p, "List", new Vector2(0.06f, 0.63f), new Vector2(0.94f, 0.88f), 52, TextAnchor.UpperLeft);
+        gather.messageText = Label(p, "Message", new Vector2(0.06f, 0.57f), new Vector2(0.94f, 0.63f), 50, TextAnchor.MiddleCenter);
+        var cupboard = ScrollList(p, 0.13f, 0.565f);
+        gather.shelf = Shelf(cupboard);
+        gather.shelf.name = "Cupboard";
+        gather.tileTemplate = SupplyTile(gather.shelf);
+        gather.tileTemplate.name = "Cupboard Template";
+        b = Row(p, 0.5f, 0.04f);
+        gather.startButton = Button(b, "Start Crafting", gather.StartCrafting, 860).gameObject;
+        Button(b, "Back", router.GoToWorkbench, 860);
+
         // Minigame: transparent so the stitching board (world sprites, upper half) shows through
         p = Panel(ScreenId.Minigame, "", Color.clear);
         p.GetComponent<Image>().raycastTarget = false;
@@ -318,6 +333,13 @@ public static class TestSceneBuilder
         b = Column(p, 0.5f, 0.18f);
         Button(b, "Set Aside", day.SetAside, 1100);
         Button(b, "Keep Working", day.KeepWorking, 1100);
+        b = Row(p, 0.5f, 0.275f);   // special touches (filled in by OrderFlowUI)
+        ui.extraButtons = new Button[3];
+        for (int i = 0; i < 3; i++)
+        {
+            ui.extraButtons[i] = Button(b, $"Extra {i + 1}", null, 620);
+            ui.extraButtons[i].GetComponentInChildren<Text>().fontSize = 48;
+        }
 
         // Side screens
         p = Panel(ScreenId.Market, "Supply Market", new Color(0.85f, 0.70f, 0.60f));

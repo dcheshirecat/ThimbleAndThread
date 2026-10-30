@@ -94,3 +94,50 @@ Rowan: I was going to fight you for it. I don't want to fight you for it. I want
     Rowan: To competitive neighbours. The best kind. # happy
     ~ friendship(10)
 -> END
+
+// ---- More lines (2026-10-30)
+
+=== rowan_visit_spy ===
+Rowan: Just checking out the competition. Professionally. # neutral
+Rowan: Your window display's better than mine. I hate it. Congratulations.
+-> END
+
+=== rowan_visit_coffee ===
+Rowan: I went to the café and ordered two by accident. Muscle memory. # thoughtful
+Rowan: Here. Don't read into it.
+-> END
+
+=== rowan_visit_1_market ===
+Rowan: Did you see the wool at the market this week? Daylight robbery. # neutral
+Rowan: I bought three. Don't judge me.
+-> END
+
+=== rowan_visit_2_lesson ===
+Rowan: I learned to crochet in this exact spot, you know. Your great-aunt made me redo my first chain forty times. # thoughtful
+Rowan: I still count my chains under my breath because of her.
+-> END
+
+=== rowan_visit_4_window ===
+Rowan: I put one of your pieces in my window. With a sign saying where it's from. # happy
+Rowan: Purely as a public service.
+-> END
+
+=== rowan_request_rivalry ===
+# fits: sampler, hoop_art, tablecloth
+# best: hoop_art
+Rowan: I'm doing a "local makers" wall at Knot & Needle. It's very generous of me. # neutral
+Rowan: It needs something from you, or people will ask why it isn't there.
+-> END
+
+=== rowan_handover_good_grudging ===
+Rowan: Okay. Fine. That's better than anything I've made this year. # surprised
+Rowan: Tell no one I said that. # happy
+-> END
+
+=== rowan_handover_okay_shrug ===
+Rowan: Neat work. Bit safe. But neat. # neutral
+-> END
+
+=== rowan_handover_poor_tease ===
+Rowan: Oh, this is going on my "inspiration" wall. Under "what not to do". I'm kidding! Mostly. # happy
+-> END

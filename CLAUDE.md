@@ -349,9 +349,16 @@ All eight feedback points have a first version (merged to main 2026-10-30).
    cuts to the customer (in place of the shopkeeper) for the conversation.
 2. Character customization scene at the start; the player can WEAR things they made, seen in the shop.
 3. DONE (first version) The current hub menu becomes a side JOURNAL with tabs and a storybook (page-turn) animation.
-4. Surprise unlocks: how/when skills unlock stays hidden until it happens, then appears in the Journal.
-5. More characters; existing characters get more varied dialogue (no repeating the same lines).
-6. Hand-over only when the customer comes back, at an unannounced time.
+4. DONE (branch surprises-pickups) Surprise unlocks: Journal shows techniques only once learned ("N more things to
+   learn out there..."), friends' teachings only after they happen, no "(how to learn)" hints in messages.
+   Was: how/when skills unlock stays hidden until it happens, then appears in the Journal.
+5. DONE (first pass) More characters: Priya Nair (teacher, ch1, friendship) and Eli Brooks (Driftwood café,
+   he/him, ch2, ROMANCEABLE: the third romance option with Isla and Rowan). Varied dialogue: any knot
+   name_visit*/name_handover_<grade>* is a variant; ShopDay.Fresh picks one not in SaveData.recentLines (last 40).
+   Was: existing characters get more varied dialogue (no repeating the same lines).
+6. DONE Hand-over only when the customer comes back, at an unannounced time: SetAside sets Order.pickupDay =
+   day + 1..3 (never shown); InviteVisitors adds customers with a due pickup; GreetCustomer hands it over
+   (reaction + scenes). No Hand Over button any more. Save version 11.
 7. DONE (branch designer-fixes): designer painted a square when tapping a floss/button; unowned floss greyed AND locked.
 8. Friend trade code: six characters for everything, patterns too. Owner chose an ONLINE SERVICE for this
    (reverses the earlier "no backend" decision): a small free online database (e.g. Firebase) stores the
@@ -361,11 +368,16 @@ All eight feedback points have a first version (merged to main 2026-10-30).
 9. Rename a pattern after creating it.
 Answers: build in this order, starting with the shop scene + journal (1, 3). Character art: placeholders
 now; final art = separate drawings per option and colour (owner draws each), not tints.
-10. Optional extras on patterns (lace, buttons...) where they fit: bonus coins/points, but a customer may
+10. DONE (first version) Optional extras: SupplyDef.decorates/decorateAmount/decorateBonus (lace trim, wooden
+    buttons, satin ribbon); Result screen offers owned ones (Order.extras), used on Set Aside; at pickup each is a
+    gamble on CustomerDef.likesSurprises (liked: +bonus% price, +5 friendship; disliked: -4 friendship + a line).
+    Was: Optional extras on patterns (lace, buttons...) where they fit: bonus coins/points, but a customer may
     dislike the surprise.
-11. Cross stitch: under stitch then over stitch; crossing in the wrong order is a mistake.
+11. DONE Cross stitch: "/" under then "\\" over; StitchMark.crossedWrong when made the other way (drawn with the
+    second leg on top, counts half in Score). Was: under stitch then over stitch; crossing in the wrong order is a mistake.
 12. Mistakes in general: possible everywhere, undoable, but if left they affect the result.
-13. Starting an order: scroll through the inventory and pick the items to use, ticking off a needs list.
+13. DONE Starting an order: ScreenId.Gather / UI/GatherUI.cs (Order.gathered): the list = ShopDay.NeedsFor +
+    ToolsFor; tap cupboard tiles to tick; wrong picks get a hint; Start Crafting once all ticked. Was: scroll through the inventory and pick the items to use, ticking off a needs list.
 14. Crafting animations: the needle making each stitch, the hook making each loop, per craft.
 15. Craft upgrades (owner, 2026-10-30): buy better tools that make crafting easier, e.g. sharp fabric
     scissors make cut lines straighter, sharper needles make stitching more forgiving. Plan: tools already

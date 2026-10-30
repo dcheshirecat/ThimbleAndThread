@@ -143,11 +143,16 @@ Mara: Can I sit for a minute? # thoughtful
   only), `~ flag(name)` / `~ unflag(name)` remember things for later conditions.
 
 The game looks for knots by name (the character's **Ink Name**, set on the customer asset):
-- `mara_visit` is their greeting; `mara_visit_2` replaces it from friendship level 2 (any number).
+- Greetings: any knot named `mara_visit` or starting with `mara_visit_`. Write as many as you like
+  (`mara_visit_rain`, `mara_visit_list`...). A number straight after `_visit_` is the friendship level
+  needed (`mara_visit_2`, `mara_visit_2_word`). Each visit picks one the player hasn't heard lately, so
+  more greetings = less repetition.
 - `mara_request_<anything>`: an indirect request. Start it with `# fits: scarf, sweater` (item ids that
   would do) and `# best: scarf` (the perfect one: 50% more friendship). The player offers a pattern
   from the display.
-- `mara_handover_good`, `_okay`, `_poor`: what they say when collecting their order.
+- `mara_handover_good`, `_okay`, `_poor`: what they say when they come back to collect their order.
+  Add variants the same way (`mara_handover_good_hug`); one not heard lately is picked.
+- Requests are picked the same way, so a character with several `mara_request_...` knots varies too.
 - `mara_scene_1`, `_scene_2`...: a scene played once, when friendship reaches that level.
 - `chapter_1`, `chapter_2`...: story scenes, played when a chapter begins.
 

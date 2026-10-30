@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: ContentLibrary
   m_EditorClassIdentifier: Assembly-CSharp::ContentLibrary
   customers:
+  - {fileID: 11400000, guid: 0ffc17e9bd35f9d42a0c7cfc784d2865, type: 2}
   - {fileID: 11400000, guid: 0929323ae57ef9d4b8b8d714fa2ab694, type: 2}
   - {fileID: 11400000, guid: 4c1b82f796272ea49bb2b6dfeae69964, type: 2}
   - {fileID: 11400000, guid: db0b7f56aefde914c813549865b3e871, type: 2}
+  - {fileID: 11400000, guid: 4b9bb0d25c305114f87ff91af8822d69, type: 2}
   - {fileID: 11400000, guid: c9dfe2d23fe0804498db2d7925e5f130, type: 2}
   - {fileID: 11400000, guid: 1a5522735a0d9984eaaa2b76d2f77c26, type: 2}
   items:
@@ -85,6 +87,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1b0d953b980810443800846b0e743b18, type: 2}
   - {fileID: 11400000, guid: 2ddc01a95a5ce9348a9e2e76ed815bff, type: 2}
   - {fileID: 11400000, guid: c7b4a46eae9f5b84a98fe8e337a746e9, type: 2}
+  - {fileID: 11400000, guid: 7fc872e5ff1c0ec428c10a548c45479f, type: 2}
   - {fileID: 11400000, guid: 2bafefeb940193941bbc6f56e4aa4729, type: 2}
   - {fileID: 11400000, guid: 88122723794c2104fb9bd66efc52f241, type: 2}
   - {fileID: 11400000, guid: d11c0ed46703e734bbdf7b8de6204f82, type: 2}
@@ -134,9 +137,11 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6577cd1c8109fcd40a5d29bf90ff0cae, type: 2}
   - {fileID: 11400000, guid: d98151631cb4fae4db942dd195c10d44, type: 2}
   dialogue:
+  - {fileID: 2811297602134710623, guid: ded37055d71dbb844a03b3324a31aaff, type: 3}
   - {fileID: 2811297602134710623, guid: 91d4b02dd09b31548b45c18cf92bc9bc, type: 3}
   - {fileID: 2811297602134710623, guid: 42bf576b13a32f24aa58089ef731edc8, type: 3}
   - {fileID: 2811297602134710623, guid: 12f34587aac34ac4cbbf39cdfbfea0a0, type: 3}
+  - {fileID: 2811297602134710623, guid: 93b4cba4902fe0844bd8bb30d28067ef, type: 3}
   - {fileID: 2811297602134710623, guid: ae07d8edcff009f4f889af6f98bac623, type: 3}
   - {fileID: 2811297602134710623, guid: 4d0f14bc5ad860540b61440cc475a7a3, type: 3}
   - {fileID: 2811297602134710623, guid: c911c8d331013284a96a6d7f9498bd57, type: 3}

@@ -13,6 +13,7 @@ public class OrderFlowUI : MonoBehaviour
     [Header("Workbench")] public Text workbenchText; public Text startLabel; public GameObject startButton, handOverButton;
     [Header("Minigame")] public Text minigameHint; public ThreadSwatches minigameThreads;
     [Header("Result")] public Text resultText; public Image resultPortrait;
+    public Button[] extraButtons;        // special touches that suit the piece (lace, buttons...), toggled on and off
     [Header("Day summary")] public Text summaryText;
     [Header("Pattern Studio")] public Button patternTemplate;
     [Header("Supply Market")] public Text marketStatus;
@@ -73,7 +74,7 @@ public class OrderFlowUI : MonoBehaviour
             (order.patternOnly ? "Pattern only: fill in the squares to design it." : RecipeText(order)) +
             (order.finished ? $"\nFinished ({Mathf.RoundToInt(order.accuracy * 100)}% accuracy)." : $"\nProgress: {progress}%") +
             MaterialsText(order) +
-            (night ? "" : order.finished ? $"\n\n{who} is here to collect it." : "\n\nYou can work on this tonight, in the workroom.");
+            (night ? "" : order.finished ? $"\n\nWrapped and waiting. {who} will come by for it; you never quite know when." : "\n\nYou can work on this tonight, in the workroom.");
         if (!string.IsNullOrEmpty(day.LastMessage) && screen == ScreenId.Workbench) workbenchText.text += $"\n\n{day.LastMessage}";
         bool started = order.work.Count > 0 || order.step > 0;
         startLabel.text = order.needsDesign ? "Design the Pattern"
@@ -81,12 +82,12 @@ public class OrderFlowUI : MonoBehaviour
             : order.Steps.Length > 1 ? (started ? "Keep Working: " : "Start: ") + order.CurrentStep.label
             : started ? "Keep Working" : "Start Crafting";
         startButton.SetActive(night);
-        handOverButton.SetActive(!night && order.finished);
+        handOverButton.SetActive(false);   // customers collect when they come back (ShopDay.GreetCustomer)
 
         var step = order.CurrentStep;
         bool stitching = step.kind == StepKind.CrossStitch;
         minigameHint.text = order.patternOnly ? "Tap or drag over the faint squares to fill them in."
-            : stitching ? "Drag corner to corner across a square, then the other diagonal to finish the X. Match each square's thread colour."
+            : stitching ? "Stitch / first (bottom left to top right), then cross over it with \\ to finish the X. Every X should cross the same way: the other way round is a mistake (Undo unpicks it). Match each square's thread colour."
             : StepHint(step.kind);
         if (order.Steps.Length > 1) minigameHint.text = $"{step.label}. {minigameHint.text}";
         if (screen == ScreenId.Minigame && !string.IsNullOrEmpty(day.LastMessage)) minigameHint.text += $"\n{day.LastMessage}";
@@ -107,7 +108,23 @@ public class OrderFlowUI : MonoBehaviour
                           $"{who} will pay {day.LastPrice} coins\n" +
                           $"Friendship: +{day.LastPoints}\n\n" +
                           (string.IsNullOrEmpty(day.LastLearned) ? "" : $"{day.LastLearned}\n\n") +
-                          "Set it aside and they'll collect it tomorrow.";
+                          "Set it aside: they'll come by for it one of these days.";
+        var extras = day.ExtrasFor(order);
+        if (extras.Count > 0)
+            resultText.text += "\n\nAdd a special touch? They might love the surprise... or not.";
+        for (int i = 0; i < extraButtons.Length; i++)
+        {
+            bool used = i < extras.Count;
+            extraButtons[i].gameObject.SetActive(used);
+            if (!used) continue;
+            var s = extras[i];
+            string id = s.supplyId;
+            bool on = order.extras.Contains(id);
+            extraButtons[i].GetComponentInChildren<Text>().text = on ? $"Remove {s.displayName}" : $"Add {s.displayName}";
+            extraButtons[i].GetComponent<Image>().color = on ? new Color(0.75f, 0.92f, 0.75f) : Color.white;
+            extraButtons[i].onClick.RemoveAllListeners();
+            extraButtons[i].onClick.AddListener(() => day.ToggleExtra(id));
+        }
         var mood = day.LastStars >= 3 ? Expression.Happy : day.LastStars == 2 ? Expression.Thoughtful : Expression.Sad;
         SetPortrait(resultPortrait, customer != null ? customer.GetPortrait(mood) : null);
     }

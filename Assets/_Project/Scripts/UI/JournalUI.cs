@@ -180,9 +180,9 @@ public class JournalUI : MonoBehaviour
             if (!string.IsNullOrEmpty(cust.bio)) sb.AppendLine(cust.bio);
             if (r.romance) sb.AppendLine(Save.flags.Contains($"{cust.inkName}_together") ? "♥ Together." : "♥ You're seeing each other.");
             else if (cust.romanceable && r.level < 3) sb.AppendLine("You sense there could be more to this friendship...");
-            foreach (var s in day.content.skills)
-                if (s != null && s.friend == cust && s.friendLevel > 0)
-                    sb.AppendLine($"Can teach you {s.displayName} at friendship level {s.friendLevel}" + (Progress.Knows(s.skillId) ? " (you know it already)." : "."));
+            foreach (var s in day.content.skills)   // only once it's happened: what they'll teach is a surprise
+                if (s != null && s.friend == cust && s.friendLevel > 0 && Progress.Knows(s.skillId) && r.level >= s.friendLevel)
+                    sb.AppendLine($"Taught you {s.displayName}.");
             sb.AppendLine();
         }
         return sb.ToString();
@@ -197,16 +197,18 @@ public class JournalUI : MonoBehaviour
             string name = Progression.CraftName(craft);
             sb.AppendLine(Progress.CraftOpen(craft)
                 ? $"{name}: level {Progress.Level(craft)} ({Progress.XpToNext(craft)} experience to the next)"
-                : $"{name}: not yet. Comes with {Progress.HowToLearn(skill)}.");
+                : $"{name}: not yet.");
         }
+        // Techniques only appear once learned: how and when they come is a surprise (owner, 2026-10-30).
         sb.AppendLine("\n<b>Techniques</b>");
+        int unknown = 0;
         foreach (var s in day.content.skills)
         {
             if (s == null || s.isCraft) continue;
-            sb.AppendLine(Progress.Knows(s.skillId)
-                ? $"{s.displayName}: learned. {s.description}"
-                : $"{s.displayName}: not yet. Learn it from {Progress.HowToLearn(s)}.");
+            if (Progress.Knows(s.skillId)) sb.AppendLine($"{s.displayName}: {s.description}");
+            else unknown++;
         }
+        if (unknown > 0) sb.AppendLine(unknown == 1 ? "There's one more thing to learn out there..." : $"There are {unknown} more things to learn out there...");
         return sb.ToString();
     }
 

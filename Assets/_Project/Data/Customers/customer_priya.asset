@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af2bf79f2df3bdf48932578e82012d62, type: 3}
+  m_Name: customer_priya
+  m_EditorClassIdentifier: Assembly-CSharp::CustomerDef
+  customerId: priya
+  displayName: Priya Nair
+  bio: Teaches the little ones at St. Brigid's. Cheerful, organised, always covered in glitter.
+  fullBody: {fileID: 21300000, guid: 2bfa5ae9eed305b40b2effda7f1a2c53, type: 3}
+  portraits:
+  - expression: 0
+    sprite: {fileID: 21300000, guid: 265b913cc920c284a86d90c4c71caf03, type: 3}
+  - expression: 1
+    sprite: {fileID: 21300000, guid: ae9c532aa2a3cda4eb8baf91e7a344c1, type: 3}
+  - expression: 2
+    sprite: {fileID: 21300000, guid: dbc8f85649c2e59458282579bb0456c9, type: 3}
+  - expression: 3
+    sprite: {fileID: 21300000, guid: 3ef7a2f252bb3df40ac4c4cafa77b4be, type: 3}
+  - expression: 4
+    sprite: {fileID: 21300000, guid: 1ab5409a30bf5194aa2a953f97fde563, type: 3}
+  requestable:
+  - item: {fileID: 11400000, guid: 624106ae6949e67438c1436949d015e1, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: 759bb51d40664bf49943bb326c33d641, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: 10c1ffff1a3b659439f05d80f5834bda, type: 2}
+    minRelationshipLevel: 1
+  - item: {fileID: 11400000, guid: c6e1e2e9b2b49e64cb78d15551c8b572, type: 2}
+    minRelationshipLevel: 2
+  firstChapter: 1
+  likesSurprises: 0.9
+  romanceable: 0
+  inkName: priya

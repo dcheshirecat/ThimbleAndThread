@@ -6,7 +6,8 @@ using UnityEngine;
 /// Day: customers visit and browse the pattern shelf. Each one buys a pattern or orders an item
 /// made from one (it goes in the order book); finished orders are handed over.
 /// Night: the player works on any order, can stop at any point and pick it up later (the work is saved),
-/// and sets finished pieces aside for the customer to collect the next day. Nothing has a deadline.
+/// and sets finished pieces aside until the customer comes back for them (on a day the player isn't told).
+/// Nothing has a deadline.
 /// Every change autosaves through GameManager.Persist.
 public class ShopDay : MonoBehaviour
 {
@@ -102,13 +103,15 @@ public class ShopDay : MonoBehaviour
         else LastMessage = Save.night ? $"Welcome back! Night of day {Save.day}." : $"Welcome back! Day {Save.day}.";
     }
 
-    /// Everyone without an open order drops by today, in a random order.
+    /// Who drops by today, in a random order: everyone without an open order, and anyone whose finished
+    /// order they've decided to collect today (the player only finds out when the bell rings).
     void InviteVisitors()
     {
         var list = Save.visitorsToday;
         list.Clear();
         foreach (var c in content.customers)
-            if (c != null && c.firstChapter <= Save.chapter && !Save.orders.Exists(o => o.customerId == c.customerId)) list.Add(c.customerId);
+            if (c != null && c.firstChapter <= Save.chapter && (!Save.orders.Exists(o => o.customerId == c.customerId) || PickupFor(c) != null))
+                list.Add(c.customerId);
         // A sign out front: a few of them drop by a second time.
         int extra = Mathf.Min(Progress.UpgradeAmount(UpgradeEffect.ExtraVisitor), list.Count);
         for (int i = 0; i < extra; i++) list.Add(list[i]);
@@ -120,6 +123,36 @@ public class ShopDay : MonoBehaviour
     }
 
     public CustomerDef CustomerFor(string id) => content.Customer(id);
+
+    // ---- Special touches: extras the player can add as a surprise (lace, buttons, ribbon...) ----
+
+    /// Owned extras that suit this order's item, for the Result screen.
+    public List<SupplyDef> ExtrasFor(Order o)
+    {
+        var list = new List<SupplyDef>();
+        if (o == null || o.patternOnly || o.item == null) return list;
+        foreach (var s in content.supplies)
+            if (s != null && s.decorates != null && System.Array.IndexOf(s.decorates, o.item) >= 0
+                && (shop.Stock(s.supplyId) >= s.decorateAmount || o.extras.Contains(s.supplyId)))
+                list.Add(s);
+        return list;
+    }
+
+    /// Adds or removes a special touch (used from the cupboard when the piece is set aside).
+    public void ToggleExtra(string supplyId)
+    {
+        if (Selected == null) return;
+        if (!Selected.extras.Remove(supplyId)) Selected.extras.Add(supplyId);
+        GM.Persist();
+        GM.ChangeScreen(ScreenId.Result);   // refresh
+    }
+
+    /// A finished order this customer has come back for today, or null.
+    public Order PickupFor(CustomerDef c) =>
+        c == null ? null : Save.orders.Find(o => o.customerId == c.customerId && o.finished && o.pickupDay > 0 && o.pickupDay <= Save.day);
+
+    /// When a customer will come back for a finished piece: one to three days later, never said.
+    static int PickupDelay() => Random.Range(1, 4);
     public CraftItemDef ItemFor(string id) => content.Item(id);
 
     /// The stitch grid of an owned pattern (a fresh copy, safe to hand to an order).
@@ -145,6 +178,14 @@ public class ShopDay : MonoBehaviour
             if (customer == null) continue;
             Visitor = customer;
             GM.Persist();
+            // Back to collect a finished order: hand it over (their reaction plays, then any scenes).
+            var pickup = PickupFor(customer);
+            if (pickup != null)
+            {
+                Selected = pickup;
+                HandOver();
+                return;
+            }
             // A friendship scene first, if one is waiting, then their hello, then what they're after.
             var knots = ScenesDue(customer);
             var hello = VisitKnot(customer);
@@ -172,7 +213,7 @@ public class ShopDay : MonoBehaviour
         var requests = RequestsFor(c);
         if (requests.Count > 0 && Random.value < RequestChance)
         {
-            var knot = requests[Random.Range(0, requests.Count)];
+            var knot = Fresh(requests);
             Play(c, new List<string> { knot }, () => AskForPattern(c, knot));
             return;
         }
@@ -403,12 +444,53 @@ public class ShopDay : MonoBehaviour
     }
 
     /// The greeting for this friendship level: <name>_visit_N for the highest N reached, else <name>_visit.
+    /// A greeting for this visit: any knot named name_visit, name_visit_N (friendship level N or more) or
+    /// with a further suffix (name_visit_b, name_visit_2_rain...), preferring one not heard lately.
     string VisitKnot(CustomerDef c)
     {
         if (string.IsNullOrEmpty(c.inkName)) return null;
-        for (int level = GM.GetRelationship(c.customerId).level; level > 0; level--)
-            if (content.Ink.Has($"{c.inkName}_visit_{level}")) return $"{c.inkName}_visit_{level}";
-        return content.Ink.Has($"{c.inkName}_visit") ? $"{c.inkName}_visit" : null;
+        int level = GM.GetRelationship(c.customerId).level;
+        var options = new List<string>();
+        foreach (var name in Variants($"{c.inkName}_visit"))
+            if (MinLevel(name, $"{c.inkName}_visit") <= level) options.Add(name);
+        return Fresh(options);
+    }
+
+    /// Knots called exactly "prefix" or "prefix_<anything>".
+    List<string> Variants(string prefix)
+    {
+        var list = new List<string>();
+        foreach (var name in content.Ink.KnotNames)
+            if (name == prefix || name.StartsWith(prefix + "_")) list.Add(name);
+        return list;
+    }
+
+    /// The level in a name like "mara_visit_2_rain" (2), or 0 when the first part after the prefix isn't a number.
+    static int MinLevel(string name, string prefix)
+    {
+        if (name.Length <= prefix.Length + 1) return 0;
+        var first = name.Substring(prefix.Length + 1).Split('_')[0];
+        return int.TryParse(first, out int n) ? n : 0;
+    }
+
+    const int RecentMemory = 40;   // knots remembered, so a regular doesn't say the same thing twice in a row
+
+    /// Picks one of the options, preferring ones not heard lately (else the one heard longest ago), and remembers it.
+    string Fresh(List<string> options)
+    {
+        if (options == null || options.Count == 0) return null;
+        var unheard = options.FindAll(o => !Save.recentLines.Contains(o));
+        string pick;
+        if (unheard.Count > 0) pick = unheard[Random.Range(0, unheard.Count)];
+        else
+        {
+            pick = options[0];
+            foreach (var o in options) if (Save.recentLines.IndexOf(o) > Save.recentLines.IndexOf(pick)) pick = o;
+        }
+        Save.recentLines.Remove(pick);
+        Save.recentLines.Insert(0, pick);
+        if (Save.recentLines.Count > RecentMemory) Save.recentLines.RemoveRange(RecentMemory, Save.recentLines.Count - RecentMemory);
+        return pick;
     }
 
     /// The next friendship scene this customer has reached and not yet played (one at a time).
@@ -577,7 +659,7 @@ public class ShopDay : MonoBehaviour
         InviteVisitors();
         GM.Persist();
         int ready = Save.orders.FindAll(o => o.finished).Count;
-        LastMessage = $"Good morning! Day {Save.day}." + (ready > 0 ? $" {ready} order(s) ready to hand over." : "");
+        LastMessage = $"Good morning! Day {Save.day}." + (ready > 0 ? $" {ready} wrapped order{(ready == 1 ? "" : "s")} waiting to be picked up." : "");
         GM.ChangeScreen(ScreenId.Shop);
     }
 
@@ -631,7 +713,7 @@ public class ShopDay : MonoBehaviour
         if (!Progress.Knows(PatternDesignSkill))
         {
             var s = content.Skill(PatternDesignSkill);
-            LastMessage = $"You haven't learned to design patterns yet. ({(s != null ? Progress.HowToLearn(s) : "")})";
+            LastMessage = "You haven't learned to design patterns yet. Keep making things; who knows what you'll pick up.";
             GM.ChangeScreen(ScreenId.PatternStudio);
             return;
         }
@@ -874,11 +956,13 @@ public class ShopDay : MonoBehaviour
         var notYet = Progress.MissingFor(Selected.item);
         if (notYet.Count > 0)
         {
-            LastMessage = $"You haven't learned {notYet[0].displayName} yet. ({Progress.HowToLearn(notYet[0])})";
+            LastMessage = $"You haven't learned {notYet[0].displayName} yet.";
             GM.ChangeScreen(ScreenId.Workbench);
             return;
         }
         if (Selected.needsDesign) { DesignCommission(Selected); return; }
+        // First time: gather the supplies from the cupboard, ticking them off the order's list (GatherUI).
+        if (!Selected.gathered && !Selected.patternOnly) { LastMessage = ""; GM.ChangeScreen(ScreenId.Gather); return; }
         int index =Mathf.Clamp(Selected.step, 0, Selected.Steps.Length - 1);
         var kind = Selected.Steps[index].kind;
         string blocked = null;
@@ -991,14 +1075,22 @@ public class ShopDay : MonoBehaviour
 
     public void KeepWorking() => StartCrafting();
 
-    /// Night: the piece is done and waits for the customer to collect it tomorrow.
+    /// Night: the piece is done, wrapped and set aside until its customer comes back for it. They don't
+    /// say when: the doorbell will tell.
     public void SetAside()
     {
         Selected.finished = true;
         Selected.accuracy = LastAccuracy;
+        foreach (var id in new List<string>(Selected.extras))   // the special touches go on now
+        {
+            var s = content.Supply(id);
+            if (s == null || shop.Stock(id) < s.decorateAmount) { Selected.extras.Remove(id); continue; }
+            shop.Use(new List<MaterialNeed> { new MaterialNeed { supplyId = id, amount = s.decorateAmount } });
+        }
+        if (Selected.pickupDay <= Save.day) Selected.pickupDay = Save.day + PickupDelay();
         GM.Persist();
         var customer = CustomerFor(Selected.customerId);
-        LastMessage = $"The {Selected.item.itemName.ToLower()} is set aside for {(customer != null ? customer.displayName : "its owner")} to collect tomorrow.";
+        LastMessage = $"The {Selected.item.itemName.ToLower()} is wrapped and waiting for {(customer != null ? customer.displayName : "its owner")}. They didn't say when they'd come by.";
         Selected = null;
         GM.ChangeScreen(ScreenId.OrderBook);
     }
@@ -1027,6 +1119,27 @@ public class ShopDay : MonoBehaviour
             });
         }
 
+        // Special touches: a gamble. If they like the surprise it's worth more; if not, it costs a little goodwill.
+        var surprises = new List<string>();
+        foreach (var id in Selected.extras)
+        {
+            var s = content.Supply(id);
+            if (s == null) continue;
+            bool liked = Random.value < (customer != null ? customer.likesSurprises : 0.65f);
+            string what = s.displayName.ToLower();
+            if (liked)
+            {
+                price += Mathf.Max(1, Mathf.RoundToInt(price * s.decorateBonus));
+                points += 5;
+                surprises.Add(Pick($"And {what}! Oh, what a lovely surprise.", $"You added {what}? That's exactly the sort of thing I'd never think of. I love it."));
+            }
+            else
+            {
+                points = Mathf.Max(0, points - 4);
+                surprises.Add(Pick($"Oh. {char.ToUpper(what[0]) + what.Substring(1)}. I... didn't ask for that, but never mind.", $"Hm. The {what}. Not really my sort of thing, to be honest."));
+            }
+        }
+
         GM.AddCoins(price);
         GM.AddRelationshipPoints(Selected.customerId, points);
         Save.orders.Remove(Selected);
@@ -1052,9 +1165,14 @@ public class ShopDay : MonoBehaviour
         var knots = new List<string>();
         if (customer != null && !string.IsNullOrEmpty(customer.inkName))
         {
-            knots.Add($"{customer.inkName}_handover_{(stars >= 3 ? "good" : stars == 2 ? "okay" : "poor")}");
+            var reaction = Fresh(Variants($"{customer.inkName}_handover_{(stars >= 3 ? "good" : stars == 2 ? "okay" : "poor")}"));
+            if (reaction != null) knots.Add(reaction);
             knots.AddRange(ScenesDue(customer));
         }
-        Play(customer, knots, () => GM.ChangeScreen(ScreenId.Shop));
+        if (surprises.Count > 0 && customer != null)
+            Play(customer, knots, () => Say(customer, string.Join("\n", surprises), ("Continue", () => GM.ChangeScreen(ScreenId.Shop))));
+        else Play(customer, knots, () => GM.ChangeScreen(ScreenId.Shop));
     }
+
+    static string Pick(params string[] lines) => lines[Random.Range(0, lines.Length)];
 }

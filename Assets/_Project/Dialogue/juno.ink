@@ -61,3 +61,49 @@ Juno: I'm not a student. I'm sixteen. But I could... maybe... enter anyway?
     Juno: Yeah. Maybe. # sad
 - Juno: Thanks for not laughing, anyway.
 -> END
+
+// ---- More lines (2026-10-30). Juno is a teen: friendship only, never romanceable.
+
+=== juno_visit_skate ===
+Juno: Landed a kickflip today. Nobody saw. That still counts, right? # happy
+-> END
+
+=== juno_visit_homework ===
+Juno: I'm meant to be at the library. If my mum asks, this is a library. # neutral
+Juno: There are patterns. Patterns are reading.
+-> END
+
+=== juno_visit_1_band ===
+Juno: My friend's starting a band. I'm doing the merch. # happy
+Juno: By merch I mean I want to sew patches on everything we own.
+-> END
+
+=== juno_visit_2_nan ===
+Juno: Okay, don't tell anyone, but I showed my nan the stuff from here. # thoughtful
+Juno: She said it was "very modern". Which is either a compliment or a threat.
+-> END
+
+=== juno_visit_3_teach ===
+Juno: Can you show me how you do that? The thing with your hands. Like, the fast thing. # surprised
+Juno: Not for me. For a friend. The friend is me.
+-> END
+
+=== juno_request_gig ===
+# fits: tote, hoop_art, sampler
+# best: tote
+Juno: Gig on Saturday. I need to carry, like, cables and snacks and my whole personality. # neutral
+Juno: Something that doesn't look like it came free with a magazine.
+-> END
+
+=== juno_handover_good_wow ===
+Juno: No way. No WAY. This is actually cool. # surprised
+Juno: I'm going to pretend I made it. Kidding. Mostly. # happy
+-> END
+
+=== juno_handover_okay_cool ===
+Juno: Cool. Yeah. It's cool. I'll wear it ironically. And then also normally. # neutral
+-> END
+
+=== juno_handover_poor_honest ===
+Juno: It's... a choice? Respect the choice. # thoughtful
+-> END

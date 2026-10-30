@@ -17,6 +17,9 @@ public class Order
     public bool materialsUsed;        // fabric cut and thread set aside when work first started
     public string fabricId;           // the fabric it's stitched on
     public bool finished;             // set aside at night, ready to hand over during the day
+    public List<string> extras = new List<string>();   // special touches added as a surprise (supplyIds), used when set aside
+    public bool gathered;             // its supplies were picked from the cupboard (GatherUI) before starting
+    public int pickupDay;             // the day the customer comes back for it (kept secret from the player; 0 = not set)
     public float accuracy;            // recorded when finished
     public string commissionId;       // a commission (see CommissionDef), or empty
     public bool needsDesign;          // a commission waits for the player to design its pattern first

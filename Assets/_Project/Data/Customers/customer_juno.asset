@@ -37,5 +37,6 @@ MonoBehaviour:
   - item: {fileID: 11400000, guid: 10c1ffff1a3b659439f05d80f5834bda, type: 2}
     minRelationshipLevel: 0
   firstChapter: 1
+  likesSurprises: 0.6
   romanceable: 0
   inkName: juno

@@ -201,6 +201,22 @@ public static class PlaceholderGenerator
         Character(juno, "juno", 1, false);   // a teen: never romanceable
         Character(isla, "isla", 2, true);
         Character(rowan, "rowan", 4, true);
+        // More characters (owner, 2026-10-30): a teacher from chapter 1, and a third romance option.
+        var priya = Customer("priya", "Priya Nair", "Teaches the little ones at St. Brigid's. Cheerful, organised, always covered in glitter.",
+                 new Color(0.95f, 0.65f, 0.45f), new[] { (sampler, 0), (tablecloth, 0), (hoopArt, 1), (plushie, 2) });
+        var eli = Customer("eli", "Eli Brooks", "Runs the Driftwood, the café on the harbour (he/him). Warm, scattered, always has cold hands.",
+                 new Color(0.60f, 0.75f, 0.70f), new[] { (tablecloth, 0), (scarf, 0), (hoopArt, 1), (sweater, 2) });
+        Character(priya, "priya", 1, false);
+        Character(eli, "eli", 2, true);
+        // How much each of them likes a surprise extra on their order.
+        Likes(mara, 0.8f); Likes(tobias, 0.35f); Likes(juno, 0.6f); Likes(isla, 0.45f); Likes(rowan, 0.55f);
+        Likes(priya, 0.9f); Likes(eli, 0.85f);
+
+        // ---- Special touches: extras that can be added to finished pieces as a surprise ----
+        var lace = Supply("lace_trim", "Cotton Lace Trim", SupplyKind.Notion, CraftType.Sewing, 4, 2, new Color(0.97f, 0.95f, 0.90f), 2, "lengths", R);
+        Decorates(lace, 0.3f, tablecloth, sampler, tote, hoopArt);
+        Decorates(content_Supply("buttons_wood"), 0.2f, sweater, sewnPlushie, plushie, tote);
+        Decorates(content_Supply("ribbon_satin"), 0.2f, hoopArt, sewnPlushie, plushie, sampler);
 
         // ---- Commissions: special requests, each needing a brand-new pattern ----
         Commission("juno_skate_scarf", juno, scarf, 0, null,
@@ -469,6 +485,25 @@ public static class PlaceholderGenerator
 
     /// Links a customer to their dialogue (the knot names in Dialogue/*.ink) and sets when they arrive,
     /// unless a dialogue name is already set (so edits made by hand are kept).
+    static SupplyDef content_Supply(string id) => AssetDatabase.LoadAssetAtPath<SupplyDef>($"{Root}/Data/Supplies/supply_{id}.asset");
+
+    /// Makes a supply a special touch for these items (only if it isn't one yet, so hand edits stay).
+    static void Decorates(SupplyDef s, float bonus, params CraftItemDef[] items)
+    {
+        if (s == null || (s.decorates != null && s.decorates.Length > 0)) return;
+        s.decorates = items;
+        s.decorateAmount = 1;
+        s.decorateBonus = bonus;
+        EditorUtility.SetDirty(s);
+    }
+
+    static void Likes(CustomerDef c, float chance)
+    {
+        if (c == null || !Mathf.Approximately(c.likesSurprises, 0.65f)) return;   // keep hand-set values
+        c.likesSurprises = chance;
+        EditorUtility.SetDirty(c);
+    }
+
     static void Character(CustomerDef c, string inkName, int firstChapter, bool romanceable)
     {
         if (!string.IsNullOrEmpty(c.inkName)) return;

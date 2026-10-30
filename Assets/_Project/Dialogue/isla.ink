@@ -101,3 +101,49 @@ Isla: Everyone goes with someone.
     Isla: Thanks for this. For all of it. # happy
     ~ friendship(10)
 -> END
+
+// ---- More lines (2026-10-30)
+
+=== isla_visit_fog ===
+Isla: Fog's in. Had the horn going all night. I can still hear it. # thoughtful
+Isla: Talk to me about something that isn't fog.
+-> END
+
+=== isla_visit_gull ===
+Isla: A gull stole my sandwich. Out of my hand. Looked me in the eye while it did it. # neutral
+-> END
+
+=== isla_visit_1_wool ===
+Isla: I've been practising. Don't look so surprised. # neutral
+Isla: I have made one row that I'm not ashamed of. One.
+-> END
+
+=== isla_visit_2_stars ===
+Isla: Clear night tonight. You can see the whole Plough from the gallery. # thoughtful
+Isla: Just saying. If anyone wanted to see it.
+-> END
+
+=== isla_visit_4_morning ===
+Isla: Morning. I brought you a coffee. And then I drank half of it on the way. # happy
+Isla: The half that's left is for you.
+-> END
+
+=== isla_request_logbook ===
+# fits: tablecloth, sampler, hoop_art
+# best: tablecloth
+Isla: The keepers' table hasn't had a cloth on it since my grandad's time. # thoughtful
+Isla: Feels like it should. Something sturdy. Something that's seen a few storms.
+-> END
+
+=== isla_handover_good_quiet ===
+Isla: I'm going to say thank you, and you're not going to make a thing of it. # happy
+Isla: Thank you.
+-> END
+
+=== isla_handover_okay_nod ===
+Isla: Good. Solid. Like a decent rope. # neutral
+-> END
+
+=== isla_handover_poor_dry ===
+Isla: I've seen worse. I've made worse. Frequently. # thoughtful
+-> END

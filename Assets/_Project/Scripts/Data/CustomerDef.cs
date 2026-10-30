@@ -28,6 +28,7 @@ public class CustomerDef : ScriptableObject
     public ExpressionSprite[] portraits;
     public OrderOption[] requestable;
     public int firstChapter = 1;           // starts visiting the shop in this story chapter
+    [Range(0f, 1f)] public float likesSurprises = 0.65f;   // chance they're pleased by a special touch they didn't ask for
     public bool romanceable;               // adult characters only: friendship can grow into romance
     public string inkName;                 // the name of this character's knots in the dialogue (e.g. "mara")
 

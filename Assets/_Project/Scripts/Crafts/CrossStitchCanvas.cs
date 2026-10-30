@@ -73,7 +73,7 @@ public class CrossStitchCanvas : MonoBehaviour
             foreach (var c in pattern.cells) marks.Add(new StitchMark { x = c.x, y = c.y, mask = 3, color = c.colorIndex });
         else
             foreach (var kv in stitchProgress)
-                marks.Add(new StitchMark { x = kv.Key.x, y = kv.Key.y, mask = kv.Value, color = stitchColor[kv.Key] });
+                marks.Add(new StitchMark { x = kv.Key.x, y = kv.Key.y, mask = kv.Value, color = stitchColor[kv.Key], crossedWrong = CrossedWrong(kv.Key) });
         return marks;
     }
 
@@ -92,6 +92,7 @@ public class CrossStitchCanvas : MonoBehaviour
         stitchLines.Clear();
         stitchProgress.Clear();
         stitchColor.Clear();
+        firstLeg.Clear();
         pattern.cells.Clear();
         foreach (var kv in cellViews) kv.Value.color = GuideColor(kv.Key.x, kv.Key.y);   // the chart shows again
     }
@@ -104,8 +105,9 @@ public class CrossStitchCanvas : MonoBehaviour
             if (!cellViews.ContainsKey(cell)) continue;
             int color = Mathf.Clamp(m.color, 0, pattern.palette.Count - 1);
             if (mode == Mode.PatternFill) { if (m.mask == 3) PaintCell(cell, color); continue; }
-            if ((m.mask & 1) != 0) AddStitch(cell, 1, color);
-            if ((m.mask & 2) != 0) AddStitch(cell, 2, color);
+            int first = m.crossedWrong ? 2 : 1, second = 3 - first;   // replay the legs in the order they were made
+            if ((m.mask & first) != 0) AddStitch(cell, first, color);
+            if ((m.mask & second) != 0) AddStitch(cell, second, color);
         }
     }
 
@@ -279,10 +281,29 @@ public class CrossStitchCanvas : MonoBehaviour
         return string.Join(";", parts);
     }
 
+    // Real cross stitch: every X is made the same way, the "/" leg underneath and the "\" leg crossing over
+    // it, so the whole piece looks even. Starting with "\" puts "/" on top: a mistake (it counts for half),
+    // which Undo can unpick. The first leg made in each square is remembered here.
+    readonly Dictionary<Vector2Int, int> firstLeg = new Dictionary<Vector2Int, int>();
+
+    /// True when this square's X was crossed the wrong way ("\" under, "/" on top).
+    public bool CrossedWrong(Vector2Int cell) =>
+        stitchProgress.TryGetValue(cell, out int done) && done == 3 && firstLeg.TryGetValue(cell, out int first) && first == 2;
+
+    /// Squares finished with the cross the wrong way round.
+    public int WrongCrosses()
+    {
+        int n = 0;
+        foreach (var kv in stitchProgress) if (CrossedWrong(kv.Key)) n++;
+        return n;
+    }
+
     void AddStitch(Vector2Int cell, int bit, int color)
     {
         stitchProgress.TryGetValue(cell, out int done);
         if ((done & bit) != 0) return; // already stitched that diagonal
+        bool firstOfCell = done == 0;
+        if (firstOfCell) firstLeg[cell] = bit;
         done |= bit;
         stitchProgress[cell] = done;
         stitchColor[cell] = color;
@@ -290,7 +311,7 @@ public class CrossStitchCanvas : MonoBehaviour
         bool slash = bit == 1;
         DrawThread(CornerPos(new Vector2Int(cell.x, slash ? cell.y : cell.y + 1)),
                    CornerPos(new Vector2Int(cell.x + 1, slash ? cell.y + 1 : cell.y)),
-                   pattern.palette[color], slash ? 5 : 9);   // the second diagonal crosses over the first
+                   pattern.palette[color], firstOfCell ? 5 : 9);   // whichever leg comes second lies on top
 
         if (done == 3) CompleteCell(cell, color);
     }
@@ -365,7 +386,8 @@ public class CrossStitchCanvas : MonoBehaviour
     /// How close the player's work matches a target pattern (0..1) - use for quality/price.
     public float Accuracy(Pattern target) => Score(Marks(), target);
 
-    /// A finished square counts when it's in the target and in the right thread colour.
+    /// A finished square counts when it's in the target and in the right thread colour (half if its X
+    /// was crossed the wrong way).
     /// Squares finished outside the target count against the score.
     public static float Score(List<StitchMark> marks, Pattern target)
     {
@@ -373,13 +395,14 @@ public class CrossStitchCanvas : MonoBehaviour
         var wanted = new Dictionary<Vector2Int, int>();
         foreach (var t in target.cells) wanted[new Vector2Int(t.x, t.y)] = t.colorIndex;
 
-        int correct = 0, extra = 0;
+        float correct = 0;
+        int extra = 0;
         foreach (var m in marks)
         {
             if (m.mask != 3) continue;
             if (!wanted.TryGetValue(new Vector2Int(m.x, m.y), out int color)) extra++;
-            else if (color == m.color) correct++;
+            else if (color == m.color) correct += m.crossedWrong ? 0.5f : 1f;   // crossed the wrong way: half
         }
-        return (float)correct / (wanted.Count + extra);
+        return correct / (wanted.Count + extra);
     }
 }

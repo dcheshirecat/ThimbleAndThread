@@ -35,5 +35,6 @@ MonoBehaviour:
   - item: {fileID: 11400000, guid: 10c1ffff1a3b659439f05d80f5834bda, type: 2}
     minRelationshipLevel: 1
   firstChapter: 2
+  likesSurprises: 0.45
   romanceable: 1
   inkName: isla

@@ -70,3 +70,48 @@ Mara: But I'm putting it in her baby book anyway, and I want the page to have a 
     ~ friendship(10)
     Mara: You're my favourite person in this whole town. Don't tell anyone. # happy
 -> END
+
+// ---- More lines (2026-10-30). Variants: any mara_visit..., mara_handover_good... knot can be picked;
+// the game prefers ones not heard lately. A number right after _visit_ is the friendship level needed.
+
+=== mara_visit_rain ===
+Mara: Is it still raining? It's always raining. I've forgotten what my hair looks like dry. # thoughtful
+-> END
+
+=== mara_visit_list ===
+Mara: I made a list of what I came in for. # neutral
+Mara: I've left the list at home. On the list, probably, is "remember the list". # sad
+-> END
+
+=== mara_visit_1_nap ===
+Mara: Two whole hours last night. In a row! I feel like a new person. A slightly damp new person. # happy
+-> END
+
+=== mara_visit_2_word ===
+Mara: She said her first word yesterday. # happy
+Mara: It was "duck". We don't have a duck. We've never had a duck. I'm choosing not to worry about it.
+-> END
+
+=== mara_visit_3_friend ===
+Mara: You know you're the only grown-up I talk to some days? Apart from the postman. # thoughtful
+Mara: And he only says "sign here".
+-> END
+
+=== mara_request_bath ===
+# fits: sampler, hoop_art, tablecloth
+# best: sampler
+Mara: The nursery walls are so bare. The books all say "a calm, stimulating space". # thoughtful
+Mara: I don't know how a room can be both. Something gentle to look at, maybe?
+-> END
+
+=== mara_handover_good_hug ===
+Mara: Can I hug you? I'm going to hug you. Sorry. Thank you. # happy
+-> END
+
+=== mara_handover_okay_fine ===
+Mara: That'll do beautifully. Honestly, anything that isn't covered in sick is a win this week. # happy
+-> END
+
+=== mara_handover_poor_kind ===
+Mara: Oh! It's... very handmade. That's the point, isn't it? # thoughtful
+-> END
