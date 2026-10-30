@@ -15,7 +15,9 @@ public class PatternDesignerUI : MonoBehaviour
 
     static readonly int[] Sizes = { 8, 10, 12, 16 };
 
-    // The designer always offers every floss the market sells, in catalogue order; owned or not.
+    // The designer shows every floss the market sells, in catalogue order; only owned ones can be used
+    // (owner's choice, 2026-10-30), the rest are greyed out. A design opened for editing keeps any
+    // squares already in a colour that's no longer owned.
     List<SupplyDef> threads = new List<SupplyDef>();
 
     int itemIndex, price, colour;
@@ -50,13 +52,15 @@ public class PatternDesignerUI : MonoBehaviour
 
         var colours = new List<Color>();
         var names = new List<string>();
+        var locked = new List<bool>();
         foreach (var t in threads)
         {
             colours.Add(t.color);
             int have = day.shop.Stock(t.supplyId);
-            names.Add(have > 0 ? $"{t.displayName} (you have {have} {t.unit})" : $"{t.displayName} (not owned yet: buy it to stitch this)");
+            names.Add(have > 0 ? $"{t.displayName} (you have {have} {t.unit})" : $"{t.displayName}: not owned yet. Buy it at the Supply Market to design with it.");
+            locked.Add(have <= 0);
         }
-        swatches.Show(colours, names);   // picks the first colour
+        swatches.Show(colours, names, locked);   // picks the first owned colour
         Refresh();
     }
 

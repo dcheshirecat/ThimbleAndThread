@@ -79,8 +79,8 @@ Items include sweaters, stuffed animals, tablecloths, scarves, tote bags and mor
   hoop needs a bigger hoop: 4" hoop up to 10x10, 6" up to 12x12, 8" up to 16x16; knitting needles and
   crochet hooks must match the yarn weight). The Workbench lists missing tools like missing materials.
 - Materials: the player can only craft with materials they own (bought). Minigames offer only owned
-  threads, yarns, fabrics and notions (eyes, stuffing...). Designing is free: the Pattern Studio shows
-  every colour/material the market sells, owned or not, and a design may use any of them; to make it,
+  threads, yarns, fabrics and notions (eyes, stuffing...). Pattern Studio (changed 2026-10-30, owner): it shows
+  every floss the market sells, but unowned ones are greyed out and LOCKED (buy first, then design); to make it,
   the player must first buy what's missing (the game lists it and points to the Supply Market).
 - Save files: 3 slots on a Save select screen (day, coins, last played; New Game / Continue / Delete,
   with an in-game confirm, never an editor or OS pop-up). Autosave on every meaningful change and when
@@ -341,9 +341,15 @@ All eight feedback points have a first version (merged to main 2026-10-30).
 4. Surprise unlocks: how/when skills unlock stays hidden until it happens, then appears in the Journal.
 5. More characters; existing characters get more varied dialogue (no repeating the same lines).
 6. Hand-over only when the customer comes back, at an unannounced time.
-7. DONE (branch designer-fixes): designer painted a square when tapping a floss/button. Grey out unowned floss.
-8. Friend trade code: a short six-character code (see the open question; needs an online service for patterns).
+7. DONE (branch designer-fixes): designer painted a square when tapping a floss/button; unowned floss greyed AND locked.
+8. Friend trade code: six characters for everything, patterns too. Owner chose an ONLINE SERVICE for this
+   (reverses the earlier "no backend" decision): a small free online database (e.g. Firebase) stores the
+   packet and hands out the code. Needs: the owner creates the project/account (Claude never handles
+   keys or settings), an internet connection when trading, thought on moderating user-made patterns, and
+   Play Store data-safety notes later. Keep the offline long code as a fallback.
 9. Rename a pattern after creating it.
+Answers: build in this order, starting with the shop scene + journal (1, 3). Character art: placeholders
+now; final art = separate drawings per option and colour (owner draws each), not tints.
 10. Optional extras on patterns (lace, buttons...) where they fit: bonus coins/points, but a customer may
     dislike the surprise.
 11. Cross stitch: under stitch then over stitch; crossing in the wrong order is a mistake.
