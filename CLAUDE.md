@@ -224,6 +224,10 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
 - Pushing to main runs .github/workflows/build-android.yml (GameCI, about an hour; it frees runner disk
   space first, which is required). APK: Actions > Build Android > run > Artifacts. Workflows can also be
   run on a branch via Run workflow. Secrets UNITY_LICENSE/EMAIL/PASSWORD are set (Personal license).
+- NEVER push or merge to main on your own (owner, 2026-10-30: "you always automatically commit to main").
+  Every push to main starts an hour-long build. Commit and push to a feature branch only; merge to main
+  only when the owner explicitly says so ("merge it", "build it"), and that includes CI fixes.
+  "Commit" means a commit on the feature branch, not a merge.
 - Merging: the owner approves merges to main. Fast-forward main from the feature branch
   (git push origin origin/<branch>:refs/heads/main); never force-push. The owner wants a new build only
   when there is something to try, so hold merges until a feature is complete.
@@ -362,5 +366,14 @@ All eight feedback points have a first version (merged to main 2026-10-30).
    Commissions so far: Juno's skate-park scarf (level 0), Mara's moon bunny (sewn plushie, pink minky,
    level 1), Tobias's Sunday cloth (tablecloth, linen evenweave, level 1).
 7. DONE: dialogue, Journal, unlocks, chapters, upgrades (see "Owner feedback" above).
-8. Next: friend share codes (patterns, items, supplies); audio; Settings screen; touch input wrapper;
+8. DONE (branch share-codes, not merged): friend share codes. Core/Trading.cs + UI/TradeUI.cs (ScreenId.Trade,
+   "Trade" button on both hubs; tabs Give / Patterns / Open / My Codes). Code = "TT1." + base64url(JSON) +
+   "." + 6-hex FNV checksum; no compression library (pattern grids are run-length encoded instead).
+   Supply gifts leave the sender's cupboard when the code is made; patterns are shared as copies (sender
+   keeps theirs; the friend gets it in the book, off the shelf). Each save opens a code once
+   (SaveData.receivedCodes) and never its own (SaveData.sentCodes, last 20, re-copyable). Save version 10.
+   Not covered: one code can still be opened by several different saves (no server to check); finished
+   items (there is no item inventory yet); selling patterns for coins (needs a "receipt" code back).
+   Clipboard copy uses GUIUtility.systemCopyBuffer (untestable in batch mode; check on the phone).
+9. Next: audio; Settings screen; touch input wrapper;
    sewing machine speed control; more complex crafting (half stitches, cables, colour changes).

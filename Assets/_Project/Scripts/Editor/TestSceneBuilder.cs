@@ -176,6 +176,7 @@ public static class TestSceneBuilder
         Button(b, "Order Book", router.GoToOrderBook, 1100);
         Button(b, "Supply Market", router.GoToMarket, 1100);
         Button(b, "Journal", router.GoToJournal, 1100);
+        Button(b, "Trade", router.GoToTrade, 1100);
         Button(b, "Settings", router.GoToSettings, 1100);
         Button(b, "Close the Shop", day.CloseShop, 1100);
 
@@ -188,6 +189,7 @@ public static class TestSceneBuilder
         Button(b, "Order Book", router.GoToOrderBook, 1100);
         Button(b, "Pattern Studio", router.GoToPatternStudio, 1100);
         Button(b, "Journal", router.GoToJournal, 1100);
+        Button(b, "Trade", router.GoToTrade, 1100);
         Button(b, "Settings", router.GoToSettings, 1100);
         Button(b, "Go to Bed", day.GoToBed, 1100);
 
@@ -269,6 +271,31 @@ public static class TestSceneBuilder
         journal.pageText.verticalOverflow = VerticalWrapMode.Overflow;
         var pageLayout = journal.pageText.gameObject.AddComponent<LayoutElement>();
         pageLayout.preferredWidth = 1800;
+        Button(Column(p, 0.5f, 0.04f), "Back", router.GoToHub);
+
+        // Trade with friends (share codes)
+        p = Panel(ScreenId.Trade, "Trade with Friends", new Color(0.78f, 0.88f, 0.95f));
+        var trade = canvasGo.AddComponent<TradeUI>();
+        trade.day = day;
+        tabRow = Row(p, 0.5f, 0.865f);
+        tabNames = new[] { "Give", "Patterns", "Open", "My Codes" };
+        trade.tabs = new Image[tabNames.Length];
+        for (int i = 0; i < tabNames.Length; i++)
+        {
+            var tab = Button(tabRow, tabNames[i], null, 440);
+            tab.GetComponentInChildren<Text>().fontSize = 56;
+            UnityEventTools.AddIntPersistentListener(tab.onClick, trade.ShowTab, i);
+            trade.tabs[i] = tab.GetComponent<Image>();
+        }
+        trade.infoText = Label(p, "Info", new Vector2(0.06f, 0.69f), new Vector2(0.94f, 0.83f), 52, TextAnchor.UpperLeft);
+        trade.rowTemplate = Button(ScrollList(p, 0.33f, 0.68f), "Trade Row Template", null, 1840);
+        trade.rowTemplate.GetComponentInChildren<Text>().fontSize = 54;
+        trade.codeField = CodeField(p, new Vector2(0.5f, 0.235f));
+        b = Row(p, 0.5f, 0.12f);
+        trade.actionA = Button(b, "Trade Action A", trade.ActionA, 860);
+        trade.actionALabel = trade.actionA.GetComponentInChildren<Text>();
+        trade.actionB = Button(b, "Trade Action B", trade.ActionB, 860);
+        trade.actionBLabel = trade.actionB.GetComponentInChildren<Text>();
         Button(Column(p, 0.5f, 0.04f), "Back", router.GoToHub);
 
         p = Panel(ScreenId.Settings, "Settings", new Color(0.78f, 0.78f, 0.82f));
@@ -592,6 +619,25 @@ public static class TestSceneBuilder
         field.textComponent = text;
         field.placeholder = hint;
         field.characterLimit = 30;
+        return field;
+    }
+
+    /// A tall text box for share codes: wraps long codes, selectable, no length limit.
+    static InputField CodeField(Transform panel, Vector2 anchor)
+    {
+        var field = NameField(panel, anchor);
+        field.name = "CodeField";
+        ((RectTransform)field.transform).sizeDelta = new Vector2(1840, 300);
+        field.characterLimit = 0;
+        field.lineType = InputField.LineType.MultiLineSubmit;
+        foreach (var t in field.GetComponentsInChildren<Text>())
+        {
+            t.fontSize = 40;
+            t.alignment = TextAnchor.UpperLeft;
+            t.horizontalOverflow = HorizontalWrapMode.Wrap;
+            t.verticalOverflow = VerticalWrapMode.Truncate;
+        }
+        ((Text)field.placeholder).text = "A friend's code goes here";
         return field;
     }
 

@@ -16,7 +16,8 @@ public class ShopManager : MonoBehaviour
 
     public bool Owns(string supplyId) => Stock(supplyId) > 0;
 
-    void Add(string supplyId, int amount)
+    /// Adds to the cupboard (bought, or a friend's gift).
+    public void Add(string supplyId, int amount)
     {
         var s = Save.stock.Find(x => x.supplyId == supplyId);
         if (s == null) Save.stock.Add(s = new SupplyStock { supplyId = supplyId });

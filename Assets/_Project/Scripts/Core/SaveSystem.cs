@@ -71,6 +71,9 @@ public static class SaveSystem
         // Version 8 had no dialogue: no flags, no scenes waiting.
         data.flags ??= new System.Collections.Generic.List<string>();
         data.pendingScenes ??= new System.Collections.Generic.List<string>();
+        // Version 9 had no trading: no codes made or opened.
+        data.sentCodes ??= new System.Collections.Generic.List<SentCode>();
+        data.receivedCodes ??= new System.Collections.Generic.List<string>();
         data.version = SaveData.CurrentVersion;
         return data;
     }

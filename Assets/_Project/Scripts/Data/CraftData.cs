@@ -99,7 +99,7 @@ public class MarketPurchase
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 9;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance
+    public const int CurrentVersion = 10;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
@@ -129,6 +129,8 @@ public class SaveData
     public List<string> journalNews = new List<string>();            // recent things learned or unlocked, newest first
     public List<string> flags = new List<string>();                  // set by dialogue (~ flag(x)); "seen:<knot>" for scenes played
     public List<string> pendingScenes = new List<string>();          // story scenes to play next time a hub is on screen
+    public List<SentCode> sentCodes = new List<SentCode>();         // share codes this save made, newest first
+    public List<string> receivedCodes = new List<string>();          // ids of friends' codes already opened
     [NonSerialized] public bool learnEverything;                     // set when upgrading a save from before skills
     public int deliveredToday;
     public int coinsToday;
@@ -157,4 +159,14 @@ public class CustomerRelationship
         }
         return false;
     }
+}
+
+/// A share code this save made (kept so it can be copied again, and so the save never opens its own).
+[Serializable]
+public class SentCode
+{
+    public string id;
+    public string code;
+    public int day;
+    public string summary;      // e.g. "Gift: 8 skeins of Pink Floss"
 }
