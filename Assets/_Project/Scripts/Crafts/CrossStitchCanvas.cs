@@ -29,7 +29,7 @@ public class CrossStitchCanvas : MonoBehaviour
     public int currentColor = 0;       // thread colour: index into pattern.palette
     public List<StitchMark> restore;   // optional: work saved earlier, redrawn when the board starts
     public Pattern design;             // optional, PatternFill: a design to keep editing (palette and coloured cells)
-    public bool paintHalf;             // designing: squares painted now are half stitches (just the "/" leg)
+    public bool paintHalf;             // designing: squares painted now are half stitches (just the top leg)
     public bool erase;                 // PatternFill: painting clears squares instead
     public DesignFrame frame;          // PatternFill: how the item is really made, shown on the board (owner, 2026-10-31)
     public Holder holder;              // Stitch: what holds the fabric taut while stitching (owner, 2026-10-31: the hoop shows)
@@ -168,15 +168,16 @@ public class CrossStitchCanvas : MonoBehaviour
                 cellViews[new Vector2Int(x, y)] = sr;
             }
         if (mode == Mode.PatternFill) BuildFrame();
-        // Half stitches on the chart: a printed "/" across the square.
+        // Half stitches on the chart: a short printed dash in the middle of the square (which leg is up to the
+        // piece: it's whichever leg lies on top of its crosses).
         if (mode == Mode.Stitch && target != null)
             foreach (var t in target.cells)
             {
                 if (!t.halfStitch) continue;
                 var mark = MakeLine(Color.Lerp(fabricColor, target.palette[t.colorIndex], 0.6f), cellSize * 0.08f);
                 mark.sortingOrder = 1;
-                mark.SetPosition(0, transform.TransformPoint(new Vector3((t.x + 0.15f) * cellSize, (t.y + 0.15f) * cellSize, 0)));
-                mark.SetPosition(1, transform.TransformPoint(new Vector3((t.x + 0.85f) * cellSize, (t.y + 0.85f) * cellSize, 0)));
+                mark.SetPosition(0, transform.TransformPoint(new Vector3((t.x + 0.3f) * cellSize, (t.y + 0.5f) * cellSize, 0)));
+                mark.SetPosition(1, transform.TransformPoint(new Vector3((t.x + 0.7f) * cellSize, (t.y + 0.5f) * cellSize, 0)));
             }
     }
 
@@ -523,6 +524,18 @@ public class CrossStitchCanvas : MonoBehaviour
         return flipped * 2 > full;
     }
 
+    /// A half stitch is the TOP leg of the piece's crosses (owner, 2026-11-01): "\" (2) when the crosses have "\" on
+    /// top, "/" (1) when they have "/" on top. Returns 0 while there are no full crosses yet: then either leg will do.
+    public static int TopLeg(List<StitchMark> marks)
+    {
+        bool anyFull = false;
+        foreach (var m in marks) if (m.mask == 3) { anyFull = true; break; }
+        return !anyFull ? 0 : MostFlipped(marks) ? 1 : 2;
+    }
+
+    /// Whether a half-stitch square holds the right single leg.
+    public static bool RightHalf(int mask, int topLeg) => topLeg == 0 ? mask == 1 || mask == 2 : mask == topLeg;
+
     void AddStitch(Vector2Int cell, int bit, int color)
     {
         stitchProgress.TryGetValue(cell, out int done);
@@ -626,14 +639,15 @@ public class CrossStitchCanvas : MonoBehaviour
         float correct = 0;
         int extra = 0;
         bool flipped = MostFlipped(marks);   // the piece's own way of crossing
+        int top = TopLeg(marks);
         var halves = new HashSet<Vector2Int>();
         foreach (var t in target.cells) if (t.halfStitch) halves.Add(new Vector2Int(t.x, t.y));
         foreach (var m in marks)
         {
             var at = new Vector2Int(m.x, m.y);
-            if (halves.Contains(at))   // a half stitch: just the "/" leg; crossed into a full X it's a mistake
+            if (halves.Contains(at))   // a half stitch: just the top leg; the other leg or a full X is a mistake
             {
-                if (wanted[at] == m.color) correct += m.mask == 1 ? 1f : m.mask == 3 ? 0.25f : 0f;
+                if (wanted[at] == m.color) correct += RightHalf(m.mask, top) ? 1f : m.mask == 3 ? 0.25f : 0.5f;
                 continue;
             }
             if (m.mask != 3) continue;

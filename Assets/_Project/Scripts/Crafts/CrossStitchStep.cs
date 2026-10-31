@@ -47,16 +47,18 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPick
         {
             if (Board == null || !Board.Ready || order.patternOnly) return null;
             int wrong = 0, overHalf = 0;
-            foreach (var m in Board.Marks())
+            var marks = Board.Marks();
+            int top = CrossStitchCanvas.TopLeg(marks);
+            foreach (var m in marks)
             {
                 var cell = order.target.cells.Find(c => c.x == m.x && c.y == m.y);
                 if (cell == null || cell.colorIndex != m.color) wrong++;
-                else if (cell.halfStitch && m.mask != 1) overHalf++;   // a half stitch made as "\" or a full X
+                else if (cell.halfStitch && !CrossStitchCanvas.RightHalf(m.mask, top)) overHalf++;   // the bottom leg, or a full X
             }
             int crossed = Board.WrongCrosses();
             var parts = new System.Collections.Generic.List<string>();
             if (wrong > 0) parts.Add(wrong == 1 ? "1 stitch in the wrong place or colour" : $"{wrong} stitches in the wrong place or colour");
-            if (overHalf > 0) parts.Add(overHalf == 1 ? "1 half stitch done wrong (it's just the / leg)" : $"{overHalf} half stitches done wrong (they're just the / leg)");
+            if (overHalf > 0) parts.Add(overHalf == 1 ? "1 half stitch done wrong (it's just the leg that lies on top of your crosses)" : $"{overHalf} half stitches done wrong (they're just the leg that lies on top of your crosses)");
             if (crossed > 0) parts.Add(crossed == 1 ? "1 cross lying the other way from the rest" : $"{crossed} crosses lying the other way from the rest");
             return parts.Count == 0 ? null : string.Join(" and ", parts);
         }

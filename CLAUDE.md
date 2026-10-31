@@ -765,3 +765,6 @@ TradeUI.CollectSales picks receipts up on opening Trade. A failed upload puts th
 Surprise Trade: 32 pool slots "SURPR"+char (TradeServer.SurpriseSlot): take a random parcel that isn't yours, then drop yours in
 an empty slot; if the pool was empty you're owed one (SaveData.surpriseOwed, "Check the Post"). Supplies only (no user patterns
 in the anonymous pool, so nothing to moderate).
+- Owner, 2026-11-01: a half stitch is the TOP leg of the piece's crosses, not the bottom one (CrossStitchCanvas.TopLeg/RightHalf:
+  "\" when the crosses have "\" on top, "/" when flipped; either leg while there are no full crosses). The chart marks half
+  squares with a short dash. Bottom leg = a mistake (scores 0.5).

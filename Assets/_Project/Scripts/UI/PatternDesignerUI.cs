@@ -251,7 +251,7 @@ public class PatternDesignerUI : MonoBehaviour
     public void Cancel() => day.CancelDesign();
 
     public Text halfLabel;
-    /// Half stitches: just the "/" leg, for smooth diagonal edges.
+    /// Half stitches: just one leg (the top one of the piece's crosses), for smooth diagonal edges.
     public void ToggleHalf()
     {
         var b = host.Board;

@@ -102,7 +102,7 @@ public class OrderFlowUI : MonoBehaviour
         var step = order.CurrentStep;
         bool stitching = step.kind == StepKind.CrossStitch;
         minigameHint.text = order.patternOnly ? "Tap or drag over the faint squares to fill them in."
-            : stitching ? "Drag corner to corner for one leg of the X, then along the other diagonal to cross it. Either leg can go on top, but keep every X crossing the same way (Undo unpicks one). Half stitches are just the / leg. Match each square's thread colour."
+            : stitching ? "Drag corner to corner for one leg of the X, then along the other diagonal to cross it. Either leg can go on top, but keep every X crossing the same way (Undo unpicks one). Half stitches (a printed dash) are just the top leg of your crosses. Match each square's thread colour."
             : StepHint(step.kind);
         if (order.Steps.Length > 1) minigameHint.text = $"{step.label}. {minigameHint.text}";
         if (screen == ScreenId.Minigame && !string.IsNullOrEmpty(day.LastMessage)) minigameHint.text += $"\n{day.LastMessage}";
@@ -470,7 +470,7 @@ public class OrderFlowUI : MonoBehaviour
                 "Your first cross stitch\nThe faint squares are the chart, printed on the fabric. Each square gets one X, in the thread colour it shows. Pick the thread from the colours under the work.",
                 "Making an X\nDrag from one corner of a square to the opposite corner: that's the first leg. Then drag along the other diagonal to cross over it. " +
                 "Either leg can go on top, but keep every X crossing the same way: an uneven piece is worth less.",
-                "Half stitches and mistakes\nA square with a printed / is a half stitch: just that one leg. Undo unpicks the last thing you did. " +
+                "Half stitches and mistakes\nA square with a printed dash is a half stitch: just one leg, the one that lies on top in your crosses. Undo unpicks the last thing you did. " +
                 "Tap Finish when the chart is covered, or Done for Now to stop and come back to it later.");
         else Explainers.Explain(save, $"step:{step.kind}", true, $"{step.label}\n{StepHint(step.kind)}");
     }
