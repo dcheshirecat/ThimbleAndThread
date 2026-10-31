@@ -753,3 +753,8 @@ work (hooped steps: inside the hoop); leaving the work ends the row.
 DONE batch 3 (4): Pattern.fabricId (designer "Cloth" button, cross stitch only, owned cross stitch fabrics; the board shows the
 cloth with its holes, CrossStitchCanvas.showCloth). Materials.FabricFor uses it (after a commission's required supply); shared
 in trade codes. Sewing designs are drawn on pattern paper (DesignFrame.Paper). Needlepoint will get canvas choices when added.
+DONE batch 4 (12; save version 22): Core/ShopDayOrders.cs. Market "Special Order" (replaces Sell Supplies; selling to Bram is
+gone, note 11) lists every supply for learned crafts (not NotSold; owned tools/books skipped); pattern shop "Order a Pattern"
+lists forSale patterns not owned/not on the shelf. Rarity: Always 1 day / level 1, Rotating 2 days / level 2, Rare 4 days /
+level 4 (ShopDay.DeliveryDays, OrderLevel). SaveData.deliveries (Delivery kind/id/amount/arrives) arrive in GoToBed
+(ReceiveDeliveries; named in the good-morning message, announced on weekends). Reserved() kept for trading.

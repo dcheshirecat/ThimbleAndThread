@@ -924,11 +924,12 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         Save.coinsToday = 0;
         Save.patternsSoldToday = 0;
         GM.NextDay();
+        string delivered = ReceiveDeliveries();
         InviteVisitors();
         GM.Persist();
-        if (IsSaturday || IsSunday) { LastMessage = ""; StartWeekendDay(); return; }
+        if (IsSaturday || IsSunday) { LastMessage = ""; if (delivered.Length > 0) Stamps.Announce(delivered.Trim()); StartWeekendDay(); return; }
         int ready = Save.orders.FindAll(o => o.finished).Count;
-        LastMessage = $"Good morning! Day {Save.day}." + (ready > 0 ? $" {ready} wrapped order{(ready == 1 ? "" : "s")} waiting to be picked up." : "");
+        LastMessage = $"Good morning! Day {Save.day}." + (ready > 0 ? $" {ready} wrapped order{(ready == 1 ? "" : "s")} waiting to be picked up." : "") + delivered;
         GM.ChangeScreen(ScreenId.Shop);
     }
 
@@ -1152,7 +1153,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
 
     // ---- Supply Market (day) ----
 
-    // ---- Selling supplies back (owner, 2026-10-31): what the open orders don't need, for half price ----
+    // ---- What the open orders still need (kept back from trades) ----
 
     /// How much of a supply the open orders will still use (that much stays in the cupboard).
     public int Reserved(string supplyId)
@@ -1161,41 +1162,6 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         foreach (var o in Save.orders)
             if (!o.finished) foreach (var m in NeedsFor(o)) if (m.supplyId == supplyId) n += m.amount;
         return n;
-    }
-
-    /// What one sale of this supply would be: an amount (a pack, or what's spare if less) and its coins.
-    /// 0 when it can't be sold (not needed is fine; reserved for an order, a book, or a tool an order needs is not).
-    public (int amount, int coins) SaleOf(SupplyDef s)
-    {
-        if (s == null || s.kind == SupplyKind.Book || s.market == MarketSlot.NotSold) return (0, 0);
-        int spare = shop.Stock(s.supplyId) - Reserved(s.supplyId);
-        if (s.kind == SupplyKind.Tool)
-        {
-            bool needed = Save.orders.Exists(o => !o.finished && ToolsFor(o).Exists(t => t.toolType == s.toolType && shop.BestFor(t) == s));
-            return needed || spare <= 0 ? (0, 0) : (1, Mathf.Max(1, s.price / 2));
-        }
-        int amount = Mathf.Min(spare, Mathf.Max(1, s.perPack));
-        if (amount <= 0) return (0, 0);
-        return (amount, Mathf.Max(1, Mathf.RoundToInt(s.price * 0.5f * amount / Mathf.Max(1, s.perPack))));
-    }
-
-    public void SellSupply(string supplyId)
-    {
-        var s = content.Supply(supplyId);
-        var (amount, coins) = SaleOf(s);
-        if (s == null || Save.night) return;
-        if (amount <= 0)
-            LastMessage = Reserved(supplyId) > 0 ? $"Your orders still need the {s.displayName.ToLower()}." : $"Bram doesn't buy {s.displayName.ToLower()}.";
-        else
-        {
-            shop.Add(supplyId, -amount);
-            GM.AddCoins(coins);
-            AudioManager.Play(Sfx.Coin);
-            LastMessage = s.kind == SupplyKind.Tool ? $"Sold your {s.displayName} for {coins} coins."
-                        : $"Sold {amount} {s.unit} of {s.displayName} for {coins} coins (you have {shop.Stock(supplyId)} left).";
-            GM.Persist();
-        }
-        GM.ChangeScreen(ScreenId.Market);   // refresh the list
     }
 
     public void BuyPack(string supplyId)

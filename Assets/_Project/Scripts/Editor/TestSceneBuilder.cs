@@ -393,7 +393,7 @@ public static class TestSceneBuilder
         ui.marketTemplate = SupplyTile(ui.shelfTemplate);
         b = Row(p, 0.5f, 0.04f);
         Button(b, "Shopping List", ui.ToggleShoppingList, 500);
-        ui.sellLabel = Button(b, "Sell Supplies", ui.ToggleSelling, 500).GetComponentInChildren<Text>();
+        ui.orderLabel = Button(b, "Special Order", ui.ToggleOrdering, 500).GetComponentInChildren<Text>();
         Button(b, "Chat with Bram", day.ChatWithMarketOwner, 400).GetComponentInChildren<Text>().text = "Chat";
         Button(b, "Back", day.LeaveMarket, 360);
         var list = Shape(p, "ShoppingListPanel", new Vector2(0.5f, 0.48f), new Vector2(1840, 1700), new Color(1f, 0.98f, 0.92f), uiSprite);
@@ -521,8 +521,9 @@ public static class TestSceneBuilder
         var psPreview = Preview(pshop.rowTemplate.transform, new Vector2(0, 0.5f), 230);
         ((RectTransform)psPreview.transform).anchoredPosition = new Vector2(150, 0);
         b = Row(p, 0.5f, 0.04f);
-        Button(b, "Chat with Ada", pshop.Chat, 860).GetComponentInChildren<Text>().text = "Chat";
-        Button(b, "Back", pshop.Leave, 860);
+        pshop.orderLabel = Button(b, "Order a Pattern", pshop.ToggleOrdering, 640).GetComponentInChildren<Text>();
+        Button(b, "Chat with Ada", pshop.Chat, 520).GetComponentInChildren<Text>().text = "Chat";
+        Button(b, "Back", pshop.Leave, 520);
 
         // Moreau's boutique: hair, tops, accessories (BoutiqueUI)
         p = Panel(ScreenId.Boutique, "Moreau's Boutique", new Color(0.92f, 0.82f, 0.88f));

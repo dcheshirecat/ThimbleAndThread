@@ -65,7 +65,7 @@ public class OrderFlowUI : MonoBehaviour
                            $"<b>Looking ahead</b>\n{day.LookingAhead()}";
 
         if (screen == ScreenId.OrderBook) BuildOrderList();
-        if (screen != ScreenId.Market && selling) { selling = false; if (sellLabel != null) sellLabel.text = "Sell Supplies"; }   // back to buying next time
+        if (screen != ScreenId.Market && ordering) { ordering = false; if (orderLabel != null) orderLabel.text = "Special Order"; }   // back to the shelves next time
         if (screen == ScreenId.Market) { day.Met(ShopDay.MarketOwnerId); BuildMarketList(save); }
         if (screen == ScreenId.PatternStudio && !day.Progress.Knows(ShopDay.PatternDesignSkill))
         {
@@ -274,7 +274,7 @@ public class OrderFlowUI : MonoBehaviour
         marketStatus.text = $"Bram's market · friendship {bram.level}{(bram.romance ? " ♥" : "")} · {save.coins} coins.  " +
                             (restock == 1 ? "New stock tomorrow." : $"New stock in {restock} days.") + $"\n{day.LastMessage}";
 
-        if (selling) { BuildSellList(save); return; }
+        if (ordering) { BuildOrderList(save); return; }
         var sale = day.shop.OnSale().FindAll(day.Progress.SupplyShown);
         foreach (var (title, kinds) in Shelves)
         {
@@ -293,48 +293,54 @@ public class OrderFlowUI : MonoBehaviour
         }
     }
 
-    // ---- Selling: your cupboard, to sell what your orders don't need ----
+    // ---- Special orders: anything Bram can get, delivered later (ShopDayOrders) ----
 
-    bool selling;
-    [Header("Market selling")] public Text sellLabel;
+    bool ordering;
+    [Header("Market special orders")] public Text orderLabel;
 
-    public void ToggleSelling()
+    public void ToggleOrdering()
     {
-        selling = !selling;
-        if (sellLabel != null) sellLabel.text = selling ? "Back to Buying" : "Sell Supplies";
+        ordering = !ordering;
+        if (orderLabel != null) orderLabel.text = ordering ? "Back to the Shelves" : "Special Order";
         day.ClearMessage();
         GameManager.Instance.ChangeScreen(ScreenId.Market);
     }
 
-    void BuildSellList(SaveData save)
+    void BuildOrderList(SaveData save)
     {
-        marketStatus.text = "Selling to Bram: he pays half price for what your orders don't need. Tap to sell a pack's worth." +
+        marketStatus.text = "Special orders: Bram can get anything in. Rarer things take longer to arrive, and need a higher level." +
                             (string.IsNullOrEmpty(day.LastMessage) ? "" : $"\n{day.LastMessage}");
+        var all = day.Orderable();
         foreach (var (title, kinds) in Shelves)
         {
-            var mine = save.stock.FindAll(st => st.amount > 0 && day.content.Supply(st.supplyId) is SupplyDef s && System.Array.IndexOf(kinds, s.kind) >= 0);
+            var mine = all.FindAll(s => System.Array.IndexOf(kinds, s.kind) >= 0);
             if (mine.Count == 0) continue;
             var shelf = NewShelf(title);
-            foreach (var st in mine)
+            foreach (var s in mine)
             {
-                var s = day.content.Supply(st.supplyId);
-                var (amount, coins) = day.SaleOf(s);
                 string id = s.supplyId;
+                bool level = day.CanOrderAtLevel(s.market);
                 var tile = Instantiate(marketTemplate, shelf);
                 tile.gameObject.SetActive(true);
-                tile.name = $"Sell_{id}";
-                tile.onClick.AddListener(() => day.SellSupply(id));
-                tile.GetComponent<Image>().color = amount > 0 ? TileColor : SoldOutTileColor;
+                tile.name = $"Order_{id}";
+                tile.onClick.AddListener(() => day.OrderSupply(id));
+                tile.GetComponent<Image>().color = !level ? SoldOutTileColor
+                    : s.market == MarketSlot.Rare ? RareTileColor : s.market == MarketSlot.Rotating ? UncommonTileColor : TileColor;
                 var icon = tile.transform.Find("Icon").GetComponent<Image>();
                 icon.sprite = s.icon;
                 icon.color = s.icon != null ? Color.white : s.color;
-                tile.transform.Find("Name").GetComponent<Text>().text = s.displayName;
-                tile.transform.Find("Info").GetComponent<Text>().text = s.kind == SupplyKind.Tool ? (amount > 0 ? $"Sell: {coins} coins" : s.market == MarketSlot.NotSold ? "Not for sale" : "Needed for an order")
-                    : $"You have {st.amount} {s.unit}\n" + (amount > 0 ? $"Sell {amount}: {coins} coins" : "Your orders need it");
+                if (!level) icon.color *= new Color(0.6f, 0.6f, 0.6f, 0.6f);
+                tile.transform.Find("Name").GetComponent<Text>().text = $"{ShopManager.Rarity(s)}\n{s.displayName}";
+                int days = ShopDay.DeliveryDays(s.market), coming = day.OnOrder("supply", id);
+                string info = !level ? $"From level {ShopDay.OrderLevel(s.market)}"
+                    : $"{s.price} coins{(s.kind == SupplyKind.Tool || s.kind == SupplyKind.Book ? "" : $" for {s.perPack} {s.unit}")}\n{(days == 1 ? "Arrives tomorrow" : $"Takes {days} days")}";
+                if (coming > 0) info += $"\n<b>{coming} on the way</b>";
+                tile.transform.Find("Info").GetComponent<Text>().text = info;
                 marketRows.Add(tile.gameObject);
             }
         }
     }
+
 
     RectTransform NewShelf(string title)
     {
@@ -364,6 +370,7 @@ public class OrderFlowUI : MonoBehaviour
         tile.transform.Find("Name").GetComponent<Text>().text = $"Shop upgrade\n{u.displayName}";
         tile.transform.Find("Info").GetComponent<Text>().text = $"{u.price} coins\n{u.description}";
     }
+
 
     void AddTile(RectTransform shelf, SupplyDef s)
     {

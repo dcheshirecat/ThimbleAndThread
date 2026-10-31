@@ -10,6 +10,16 @@ public class PatternShopUI : MonoBehaviour
     public ShopDay day;
     public Text statusText;
     public Button rowTemplate;           // a pattern for sale: text and a RawImage preview
+    public Text orderLabel;              // "Order a Pattern": any pattern Ada can send for, delivered later
+    bool ordering;
+
+    public void ToggleOrdering()
+    {
+        ordering = !ordering;
+        orderLabel.text = ordering ? "Back to the Shelf" : "Order a Pattern";
+        day.ClearMessage();
+        Show();
+    }
 
     readonly List<GameObject> rows = new List<GameObject>();
 
@@ -25,7 +35,8 @@ public class PatternShopUI : MonoBehaviour
 
     void OnScreenChanged(ScreenId id)
     {
-        if (id != ScreenId.PatternShop || GameManager.Instance.Save == null) return;
+        if (id != ScreenId.PatternShop) { if (ordering) { ordering = false; orderLabel.text = "Order a Pattern"; } return; }
+        if (GameManager.Instance.Save == null) return;
         day.Met(ShopDay.PatternShopOwnerId);
         Show();
     }
@@ -54,6 +65,7 @@ public class PatternShopUI : MonoBehaviour
         }
         rows.Clear();
         rowTemplate.gameObject.SetActive(false);
+        if (ordering) { ShowOrders(save); return; }
         var stock = day.PatternsForSale();
         if (stock.Count == 0)
         {
@@ -86,5 +98,30 @@ public class PatternShopUI : MonoBehaviour
         row.GetComponentInChildren<Text>().text = label;
         rows.Add(row.gameObject);
         return row.gameObject;
+    }
+
+    /// Any pattern Ada can send for: rarer ones take longer and need a higher level (ShopDayOrders).
+    void ShowOrders(SaveData save)
+    {
+        statusText.text = "Ada can send for any pattern. Rarer ones take longer to come, and need a higher level." +
+                          (string.IsNullOrEmpty(day.LastMessage) ? "" : $"\n{day.LastMessage}");
+        var list = day.OrderablePatterns();
+        if (list.Count == 0) { Row("PatternShop_NoOrders", "Nothing more to send for right now.").GetComponent<Button>().interactable = false; return; }
+        foreach (var d in list)
+        {
+            var pattern = d.ToPattern();
+            string id = d.patternId;
+            bool level = day.CanOrderAtLevel(d.rarity);
+            int days = ShopDay.DeliveryDays(d.rarity);
+            var row = Row($"OrderPattern_{id}",
+                $"<b>{d.displayName}</b>  ·  {d.item.itemName}\n{RarityName(d.rarity)}  ·  complexity {Stars(ShopDay.Complexity(pattern))}  ·  " +
+                (level ? $"{d.shopPrice} coins  ·  {(days == 1 ? "arrives tomorrow" : $"takes {days} days")}" : $"from level {ShopDay.OrderLevel(d.rarity)}"));
+            row.GetComponent<Button>().onClick.AddListener(() => day.OrderPattern(id));
+            row.GetComponent<Image>().color = !level ? new Color(0.78f, 0.76f, 0.74f) : d.rarity == MarketSlot.Rare ? new Color(1f, 0.92f, 0.62f)
+                : d.rarity == MarketSlot.Rotating ? new Color(0.88f, 0.93f, 1f) : new Color(0.98f, 0.95f, 0.88f);
+            row.GetComponent<Button>().interactable = level && save.coins >= d.shopPrice;
+            var preview = row.GetComponentInChildren<RawImage>(true);
+            if (preview != null) { preview.texture = PatternPreview.Make(pattern); preview.gameObject.SetActive(true); }
+        }
     }
 }

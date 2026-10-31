@@ -46,6 +46,7 @@ public static class SaveSystem
         // Version 2 had no patterns; ShopDay gives the starter book patterns to a save that has none.
         data.orders ??= new System.Collections.Generic.List<Order>();
         data.stall ??= new System.Collections.Generic.List<StallItem>();
+        data.deliveries ??= new System.Collections.Generic.List<Delivery>();
         data.visitorsToday ??= new System.Collections.Generic.List<string>();
         data.ownedSupplies ??= new System.Collections.Generic.List<string>();
         data.unlockedItems ??= new System.Collections.Generic.List<string>();
