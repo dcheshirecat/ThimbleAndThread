@@ -8,6 +8,7 @@ using UnityEngine;
 /// (Undo unpicks it); the work is saved and scored like any traced line.
 public abstract class MachineSewingStep : TracingStep
 {
+    protected override bool HandNeedle => false;   // the machine has its own needle
     const float MaxSpeed = 0.42f;        // share of the area per second at full pedal
     const float CornerSpeed = 0.1f;      // safe speed through the sharpest corner
     const float SharpTurn = 70f;         // degrees of turn (over a short stretch) that count as the sharpest

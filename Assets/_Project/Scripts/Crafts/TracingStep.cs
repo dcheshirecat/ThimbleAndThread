@@ -15,6 +15,9 @@ public abstract class TracingStep : PieceStep, IMistakes
     protected virtual Color GuideColor => new Color(1f, 1f, 1f, 0.85f);
     /// Length of one stitch, in 0..1 of the area; 0 draws a continuous line (a cut, a strand of yarn).
     protected virtual float StitchLength => 0.028f;
+    /// Whether a needle is shown making the stitches (not for cuts, yarn strands, or the machine).
+    protected virtual bool HandNeedle => StitchLength > 0;
+    Vector2 lastPoke;
 
     /// Draws what's being worked on, under the line. Default: a square sheet of the fabric.
     protected virtual void DrawPiece() => Square(Vector2.one * 0.5f, 0.9f, area.fabricColor, 0);
@@ -107,6 +110,7 @@ public abstract class TracingStep : PieceStep, IMistakes
     protected override void OnPress(Vector2 p)
     {
         StartStroke();
+        if (HandNeedle) { Tool(CraftTool.Kind.Needle).MoveTo(World(p), true); lastPoke = p; }
         AddPoint(p);
     }
 
@@ -131,6 +135,12 @@ public abstract class TracingStep : PieceStep, IMistakes
     {
         points.Add(p);
         Cover(p);
+        if (HandNeedle)
+        {
+            var needle = Tool(CraftTool.Kind.Needle);
+            needle.MoveTo(World(p));
+            if ((p - lastPoke).magnitude >= StitchLength * 2f) { needle.Poke(); lastPoke = p; }   // down and up: one stitch
+        }
         foreach (var line in strokeLines[strokeLines.Count - 1]) Extend(line, p);
     }
 

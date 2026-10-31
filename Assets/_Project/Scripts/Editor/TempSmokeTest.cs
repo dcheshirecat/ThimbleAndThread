@@ -117,7 +117,7 @@ public static class TempSmokeTest
                     for (int i = 0; i < knit.Stitches; i++)
                     {
                         if (knit.stitches[i].color >= 0) colourwork++;
-                        if (itemId == "sweater" && step.piece == "front" && i == knit.Stitches / 2) { yield return null; Shot($"{itemId}_{order.step}_half"); }
+                        if (itemId == "sweater" && step.piece == "front" && i == knit.Stitches / 2) { for (int f = 0; f < 4; f++) yield return null; Shot($"{itemId}_{order.step}_half"); }
                         Call(piece, "OnPress", new Vector2(0.5f, 0.5f));
                         bool goWrong = step.piece == "back" && i == 30;
                         Call(piece, "OnRelease", new Vector2(0.5f, knit.Purl(i) != goWrong ? 0.6f : 0.4f));
@@ -135,6 +135,7 @@ public static class TempSmokeTest
                         Call(piece, "OnPress", pts[0]);
                         foreach (var p in pts) Call(piece, "OnDrag", p + (step.kind == StepKind.SewUp ? new Vector2(0.045f, 0.045f) * 0.7f : Vector2.zero));
                         Call(piece, "OnRelease", pts[pts.Count - 1]);
+                        if (step.kind == StepKind.SewUp) { for (int f = 0; f < 3; f++) yield return null; Shot("sewup_needle"); }
                     }
                     Debug.Log($"SMOKE   traced: coverage {tracing.Coverage:0.00}, score {tracing.Score():0.00}");
                     if (step.kind == StepKind.SewUp) Expect(guides.Count == 2 && tracing.Score() > 0.7f, $"seams sewn a little off the line still count with the bent-tip needle ({tracing.Score():0.00})");

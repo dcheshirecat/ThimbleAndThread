@@ -5,6 +5,8 @@ using UnityEngine;
 /// to wrap the thread twice, then let go to pull the needle through. Closer to the mark is better.
 public class FrenchKnotsStep : PlacementStep
 {
+    protected override bool SewnOn => true;
+
     const float WrapsNeeded = 2f;       // turns round the press point
 
     Vector2 pressAt;

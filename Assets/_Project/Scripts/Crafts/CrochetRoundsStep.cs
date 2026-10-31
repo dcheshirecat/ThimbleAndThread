@@ -59,6 +59,7 @@ public class CrochetRoundsStep : PieceStep
         loop.enabled = hooked && current.enabled;
         if (!current.enabled) return;
         current.transform.position = World(slots[Done]);
+        if (!hooked) Tool(CraftTool.Kind.Hook).MoveTo(World(slots[Done]));
         loop.transform.position = World(slots[Done]);
     }
 
@@ -70,6 +71,7 @@ public class CrochetRoundsStep : PieceStep
         float reach = Reach * (1f + Assist);   // a comfier hook catches the loop more easily
         if (d > reach) return;
         hooked = true;
+        Tool(CraftTool.Kind.Hook).Poke();
         hookNeatness = 1f - Mathf.InverseLerp(0.015f * (1f + 2f * Assist), reach, d);
         Show();
     }
@@ -80,6 +82,7 @@ public class CrochetRoundsStep : PieceStep
         flicking = false;
         if (Vector2.Distance(p, pressAt) < MinFlick) return;
         hooked = false;
+        Tool(CraftTool.Kind.Hook).Pull(p - pressAt);
         State.points.Add(new Vector2(hookNeatness, 0));
         MakeStitch(Done - 1);
         Show();

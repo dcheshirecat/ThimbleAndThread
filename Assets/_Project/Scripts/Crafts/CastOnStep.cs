@@ -28,6 +28,9 @@ public class CastOnStep : PieceStep
         if (Count >= first.Count) return;
         State.points.Add(Loop(Count));
         AddLoop(Count - 1);
+        var needles = Tool(CraftTool.Kind.KnittingNeedles, Knit.cell * 1.6f);
+        needles.MoveTo(World(Loop(Count - 1)));
+        needles.Poke();
     }
 
     public override void Undo()

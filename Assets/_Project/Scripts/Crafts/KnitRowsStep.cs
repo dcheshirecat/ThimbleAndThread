@@ -47,8 +47,9 @@ public class KnitRowsStep : PieceStep, IMistakes
         foreach (var g in guide) Destroy(g);
         guide.Clear();
         current.enabled = Done < Knit.Stitches;
-        if (!current.enabled) return;
+        if (!current.enabled) { Tool(CraftTool.Kind.KnittingNeedles, Knit.cell * 1.6f).Hide(); return; }
         current.transform.position = World(Knit.CellCenter(Done));
+        Tool(CraftTool.Kind.KnittingNeedles, Knit.cell * 1.6f).MoveTo(World(Knit.CellCenter(Done)));
         // The marker takes the colour of the yarn the next stitch needs (colourwork changes yarn).
         var needs = Knit.ColorOf(Done, Color.white);
         current.color = new Color(needs.r, needs.g, needs.b, 0.55f);
@@ -80,6 +81,7 @@ public class KnitRowsStep : PieceStep, IMistakes
         State.points.Add(new Vector2(evenness, wrong ? 1 : 0));
         if (wrong) AudioManager.Play(Sfx.Click);
         DrawStitch(Done - 1);
+        Tool(CraftTool.Kind.KnittingNeedles).Poke();
         ShowNext();
     }
 

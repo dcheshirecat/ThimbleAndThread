@@ -5,6 +5,8 @@ using UnityEngine;
 /// once both ends are on, the handle loops above the bag.
 public class AttachHandlesStep : PlacementStep
 {
+    protected override bool SewnOn => true;
+
     static readonly Color Strap = new Color(0.55f, 0.42f, 0.28f);   // cotton webbing
 
     LineRenderer handle;

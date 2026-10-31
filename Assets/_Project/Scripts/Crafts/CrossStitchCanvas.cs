@@ -173,6 +173,10 @@ public class CrossStitchCanvas : MonoBehaviour
     }
 
     Vector3 CellCenter(int x, int y) => new Vector3((x + 0.5f) * cellSize, (y + 0.5f) * cellSize, 0);
+    CraftTool needle;
+    /// The needle in hand while stitching (see CraftTool).
+    CraftTool Needle => needle ??= CraftTool.Make(transform, CraftTool.Kind.Needle, cellSize * 2.4f, material, 40);
+
     Vector3 CornerPos(Vector2Int c) => transform.TransformPoint(new Vector3(c.x * cellSize, c.y * cellSize, 0));
 
     // Works with mouse in the editor and a single touch on iPad (Unity maps touch to mouse
@@ -231,6 +235,8 @@ public class CrossStitchCanvas : MonoBehaviour
         strokeStart = Marks();
         if (mode == Mode.PatternFill) { Paint(CellAt(local)); return; }
         dragStartCorner = NearestCorner(local);
+        Needle.MoveTo(CornerPos(dragStartCorner.Value), true);
+        Needle.Poke();
         previewLine = MakeLine(Color.gray, 0.04f);
         previewLine.SetPosition(0, CornerPos(dragStartCorner.Value));
         previewLine.SetPosition(1, CornerPos(dragStartCorner.Value));
@@ -241,6 +247,7 @@ public class CrossStitchCanvas : MonoBehaviour
         if (mode == Mode.PatternFill) { if (OnBoard(local)) Paint(CellAt(local)); return; }
         if (previewLine != null)
             previewLine.SetPosition(1, transform.TransformPoint(local));
+        if (mode == Mode.Stitch && needle != null) needle.MoveTo(transform.TransformPoint(local));
     }
 
     void OnRelease(Vector3 local)
@@ -250,6 +257,8 @@ public class CrossStitchCanvas : MonoBehaviour
             var a = dragStartCorner.Value;
             var b = NearestCorner(local);
             dragStartCorner = null;
+            Needle.MoveTo(CornerPos(b));
+            Needle.Poke();
             if (previewLine) Destroy(previewLine.gameObject);
 
             // Valid stitch = diagonal across exactly one cell

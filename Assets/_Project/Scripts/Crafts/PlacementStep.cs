@@ -20,6 +20,8 @@ public abstract class PlacementStep : PieceStep, IMistakes
     protected virtual void Changed() { }
     /// Whether a tap here may place something.
     protected virtual bool CanPlace(Vector2 p) => true;
+    /// Whether things are sewn on with a needle (shown poking in as each is placed).
+    protected virtual bool SewnOn => false;
 
     protected List<Vector2> Placed => State.points;
     /// The faint marks' colour; light work needs dark marks and the other way round.
@@ -41,6 +43,7 @@ public abstract class PlacementStep : PieceStep, IMistakes
         if (Placed.Count >= Marks.Count || !CanPlace(p)) return;
         Placed.Add(p);
         placed.Add(DrawPlaced(p));
+        if (SewnOn) { var needle = Tool(CraftTool.Kind.Needle); needle.MoveTo(World(p), true); needle.Poke(); }
         Changed();
     }
 
