@@ -547,6 +547,48 @@ Test live (create, open, open again fails, own code refused) before merging.
   the hint (OrderFlowUI.Update). CrochetEyesStep / CrochetStuffStep (MinigameHost picks them for crochet items),
   SewPartsStep. Recipe: yarn, ring, head, eyes, stuff, close the head, body, stuff, ears, sew together.
 
+## Owner feedback round 7, 2026-10-31 (TO DO, after the crochet plushie and introductions; branch minigames)
+Merge to main after each solid, tested batch (owner: "merge, commit and push everything once making a bulk of changes").
+Not yet merged: d0327d9 (crochet plushie) and a030d25 (introductions) are on minigames only; main = 5b1efef.
+1. Stamp pop-ups (e.g. "New craft: Cross Stitch") must not appear during the opening/introductions: only once the
+   player is in their shop (Shop screen, no dialogue).
+2. Goals reached during dialogue or crafting: announce at a neutral moment, not mid-dialogue/action. Or (owner's
+   alternative): a round notifications icon with a count badge that opens a list.
+3. Journal tabs overflow the journal's borders (8 tabs at width 208): fit them inside.
+4. More NPCs and dialogue: 20+ characters in the finished game.
+5. Pause + save at any point; Settings as a GEAR icon on the top bar, right of the coin counter.
+6. A THIRD unlockable shop selling pre-made patterns to sell, by complexity and rarity (rarer = pricier, fancier,
+   more varied techniques).
+7. A clock/timer showing the day passing (symbolic; the player can still open/close any time). Customer flow
+   should follow a real day.
+8. Pattern Studio: when the item uses an embroidery hoop, show the hoop while designing.
+9. The Shops button exists from the start, greyed out until a shop opens (not hidden).
+10. Other shops (market, boutique...) open at specific hours of the in-game day.
+11. Customers only ask for items within the player's skills (they can want something not on display, but never
+   something the player can't make). Book patterns for locked crafts don't appear until that craft is unlocked.
+12. Boutique: try on clothes/hair/accessories before buying.
+13. Never show an NPC's name before they introduce themselves (anywhere). Every name in the journal gets a small
+   CIRCULAR portrait to its LEFT.
+14. Boutique stock changes every 4 days (like the market).
+15. Top bar: a weekday counter (left of the coins or elsewhere on top): day 1 = Monday; each weekday its own colour
+   and symbol.
+16. Sundays have a different routine. Saturdays: visit friends (high enough friendship) or go on dates.
+17. Day and chapter shown clearly at the TOP (not small text at the bottom).
+18. Keep making all mini-games more in-depth.
+19. Sell supplies you don't need for coins.
+20. Sundays: a stall at the local market; many customers; sell as many handmade goods and patterns as you can
+   (incentive to craft/design without orders). Unlocked and explained on the first Sunday.
+   GENERAL: everything not there at the very start (shops, skills, items...) gets a brief, well-timed explainer
+   pop-up when it unlocks.
+21. Edit the display from the display itself: move items between display and storage.
+22. Cross stitch: any leg may go on top, as long as it's CONSISTENT across the piece (less consistent = fewer
+   points); replaces the "/ under, \ over" rule. The first cross stitch explains each step in pop-ups.
+23. BUG: Finish/Continue sometimes needs two presses. Find out why and fix. (One known cause: ShopDay.FinishCrafting
+   warns once about mistakes left; a second Finish keeps them. Check for others.)
+24. Pattern Studio: can't design for an item whose craft isn't learned. Designing should reflect how that pattern is
+   really made (not just a square grid for everything).
+Also planned: needlepoint, quilting, loom weaving (new crafts; ask the owner how they unlock in the story).
+
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
 2. DONE (on main): item recipes. CraftItemDef.steps (RecipeStep: StepKind, label,
