@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af2bf79f2df3bdf48932578e82012d62, type: 3}
+  m_Name: customer_theo
+  m_EditorClassIdentifier: Assembly-CSharp::CustomerDef
+  customerId: theo
+  displayName: Theo Lindqvist
+  bio: Tobias's grandson (he/him), nineteen, back from the city to learn the boats.
+  fullBody: {fileID: 21300000, guid: 6875cc88d5dccfe4ca7a3a363305fe1a, type: 3}
+  portraits:
+  - expression: 0
+    sprite: {fileID: 21300000, guid: 014c33c7182956149a7ead74a4886399, type: 3}
+  - expression: 1
+    sprite: {fileID: 21300000, guid: 82f7aa8d6e28e0841b981e32c4d3eab7, type: 3}
+  - expression: 2
+    sprite: {fileID: 21300000, guid: ca72bb404fb2a994c80b673e1960a13c, type: 3}
+  - expression: 3
+    sprite: {fileID: 21300000, guid: 9e13bdb919a81814e9fd5296a1726cc9, type: 3}
+  - expression: 4
+    sprite: {fileID: 21300000, guid: 5016f27c1b99f8b4aa7c9bf48b7462a6, type: 3}
+  requestable:
+  - item: {fileID: 11400000, guid: d72160bbb003b8b45bd0243d7c440a5c, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: c290e0d30e10d3a43b2e345eaef53cd3, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: e7e94861e1dcdf847ba6112533c4cabe, type: 2}
+    minRelationshipLevel: 1
+  - item: {fileID: 11400000, guid: 759bb51d40664bf49943bb326c33d641, type: 2}
+    minRelationshipLevel: 1
+  firstChapter: 2
+  likesSurprises: 0.6
+  preferences: []
+  makes: 
+  shopOwner: 0
+  romanceable: 0
+  inkName: theo

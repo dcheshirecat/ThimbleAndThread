@@ -304,6 +304,28 @@ public static class PlaceholderGenerator
         Character(sol, "sol", 2, false);
         Character(dot, "dot", 3, false);
         Likes(hal, 0.3f); Likes(nadia, 0.75f); Likes(sol, 0.7f); Likes(dot, 0.6f);
+        var gwen = Customer("gwen", "Gwen Tallow", "The harbourmaster (she/her). Loud, capable; lost her husband to the sea.",
+                 new Color(0.95f, 0.80f, 0.30f), new[] { (sampler, 0), (tote, 0), (tablecloth, 1), (scarf, 1), (hoopArt, 1) });
+        var benji = Customer("benji", "Benji Marsh", "A carpenter getting married in the spring (he/him). Kind, anxious, over-prepares.",
+                 new Color(0.70f, 0.55f, 0.40f), new[] { (hoopArt, 0), (tablecloth, 0), (sampler, 0), (tote, 1) });
+        var midge = Customer("midge", "Midge Lowe", "Runs the second-hand bookshop on Ropewalk (she/her). Reads everything; sharp tongue.",
+                 new Color(0.55f, 0.45f, 0.60f), new[] { (sampler, 0), (tote, 0), (hoopArt, 1), (scarf, 1) });
+        var kit = Customer("kit", "Kit Calloway", "A painter who moved here for the light (they/them). Paint on everything, wildly enthusiastic.",
+                 new Color(0.40f, 0.70f, 0.60f), new[] { (sweater, 0), (scarf, 0), (plushie, 0), (hoopArt, 1), (sewnPlushie, 1) });
+        var owen = Customer("owen", "Owen Price", "The vicar at St. Brigid's (he/him). Gentle, keeps bees, tells terrible jokes.",
+                 new Color(0.35f, 0.35f, 0.45f), new[] { (tablecloth, 0), (sampler, 0), (scarf, 1), (sweater, 2) });
+        Character(gwen, "gwen", 2, false);
+        Character(benji, "benji", 3, false);
+        Character(midge, "midge", 2, false);
+        Character(kit, "kit", 4, false);
+        Character(owen, "owen", 3, false);
+        Likes(gwen, 0.4f); Likes(benji, 0.85f); Likes(midge, 0.5f); Likes(kit, 0.9f); Likes(owen, 0.7f);
+        Makes(midge, CraftType.CrossStitch);
+        Makes(kit, CraftType.Embroidery);
+        var theo = Customer("theo", "Theo Lindqvist", "Tobias's grandson (he/him), nineteen, back from the city to learn the boats.",
+                 new Color(0.40f, 0.50f, 0.60f), new[] { (scarf, 0), (tote, 0), (sweater, 1), (tablecloth, 1) });
+        Character(theo, "theo", 2, false);
+        Likes(theo, 0.6f);
         Makes(nadia, CraftType.Knitting);
         Makes(dot, CraftType.CrossStitch);
 

@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af2bf79f2df3bdf48932578e82012d62, type: 3}
+  m_Name: customer_gwen
+  m_EditorClassIdentifier: Assembly-CSharp::CustomerDef
+  customerId: gwen
+  displayName: Gwen Tallow
+  bio: The harbourmaster (she/her). Loud, capable; lost her husband to the sea.
+  fullBody: {fileID: 21300000, guid: cf05c4b5458ac124cbdca0d7bfd536f3, type: 3}
+  portraits:
+  - expression: 0
+    sprite: {fileID: 21300000, guid: e8d83908852100444b6bfa57e8b1582c, type: 3}
+  - expression: 1
+    sprite: {fileID: 21300000, guid: 26a297720f4b9374d826bdfbd283fa1f, type: 3}
+  - expression: 2
+    sprite: {fileID: 21300000, guid: baf703d3ed30fd54fa92bf73999be98a, type: 3}
+  - expression: 3
+    sprite: {fileID: 21300000, guid: 48beaee95bbbcf14eb67305d13cf6f41, type: 3}
+  - expression: 4
+    sprite: {fileID: 21300000, guid: d4e50f45709d75849a9d291c1ccd406b, type: 3}
+  requestable:
+  - item: {fileID: 11400000, guid: 624106ae6949e67438c1436949d015e1, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: c290e0d30e10d3a43b2e345eaef53cd3, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: 759bb51d40664bf49943bb326c33d641, type: 2}
+    minRelationshipLevel: 1
+  - item: {fileID: 11400000, guid: d72160bbb003b8b45bd0243d7c440a5c, type: 2}
+    minRelationshipLevel: 1
+  - item: {fileID: 11400000, guid: 10c1ffff1a3b659439f05d80f5834bda, type: 2}
+    minRelationshipLevel: 1
+  firstChapter: 2
+  likesSurprises: 0.4
+  preferences: []
+  makes: 
+  shopOwner: 0
+  romanceable: 0
+  inkName: gwen

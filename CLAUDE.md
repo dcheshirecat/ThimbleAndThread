@@ -648,7 +648,10 @@ DONE batch 5 (item 4, first part): 15 characters now. New customers with full in
 fits/best, hand-over reactions, suggest reactions, scenes 1-3, a Saturday visit): Hal Penrose (retired postman, races
 pigeons, ch1), Nadia Kowalski (night-shift midwife, ch2, knits), Sol Reyes (lifeguard, they/them, ch2), Dot Pascoe (81,
 tea room, Aunt Win's oldest friend, ch3, cross stitches; her scene 3 hints the torn book pages were given to people).
-Plus Ada Finch (pattern shop). All friendship only. Still to reach 20+: about 5 more.
+Plus Ada Finch (pattern shop). All friendship only.
+DONE: 20 characters. Also Gwen Tallow (harbourmaster, ch2), Benji Marsh (carpenter getting married to Sam, ch3), Midge Lowe
+(bookshop on Ropewalk, ch2), Kit Calloway (painter, they/them, ch4), Owen Price (vicar, beekeeper, ch3), Theo Lindqvist
+(Tobias's grandson, ch2). Same knot set as the others. Character art: placeholders (customer_<id>_*.png).
 DONE batch 6 (item 18, mini-games deeper): PressStep is real ironing: a care label per material (PressStep.RightHeat: acrylic/
 felt/fleece/minky cool, wool/merino/alpaca/mohair warm, else hot), a 3-setting heat dial under the work; too cool = 3 passes
 (two settings too cool never finishes), too hot = scorches as you go, holding still on warm/hot = a scorch; scorches are
