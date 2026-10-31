@@ -42,7 +42,7 @@ public partial class ShopDay
         {
             int n = 0;
             foreach (DecorSlot s in System.Enum.GetValues(typeof(DecorSlot))) if (Placed(s) is DecorDef d) n += d.charm;
-            return Mathf.Min(MaxCharm, n);
+            return Mathf.Min(MaxCharm, n + ChoreCharmToday());
         }
     }
 

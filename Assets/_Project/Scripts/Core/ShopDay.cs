@@ -924,6 +924,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         Save.deliveredToday = 0;
         Save.coinsToday = 0;
         Save.patternsSoldToday = 0;
+        Save.flags.RemoveAll(f => f.StartsWith("chore:") || f.StartsWith("window:"));   // yesterday's pastimes
         GM.NextDay();
         string delivered = ReceiveDeliveries();
         InviteVisitors();

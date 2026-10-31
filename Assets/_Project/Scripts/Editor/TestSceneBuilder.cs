@@ -286,6 +286,41 @@ public static class TestSceneBuilder
         Button(sm, "Menu Close", shopScene.ToggleShops, 800).GetComponentInChildren<Text>().text = "Close";
         shopsLayer.SetActive(false);
         shopScene.shopsMenu = shopsLayer;
+        // Passing the time between customers: the kettle, chores, the window (ShopDayPastime)
+        shopScene.choreArea = Shape(mid, "Chore Area", new Vector2(0.5f, 0.5f), new Vector2(1800, 900), new Color(0, 0, 0, 0), null);
+        shopScene.choreArea.GetComponent<Image>().raycastTarget = false;
+        shopScene.speckTemplate = Button(shopScene.choreArea, "Speck", null, 90);
+        Place(shopScene.speckTemplate, new Vector2(0.5f, 0.5f), new Vector2(95, 70));
+        shopScene.speckTemplate.GetComponentInChildren<Text>().text = "";
+        shopScene.speckTemplate.gameObject.SetActive(false);
+        var pastime = Button(p, "Pass the Time", shopScene.TogglePastime, 600);
+        Place(pastime, new Vector2(0.5f, 0.118f), new Vector2(640, 110));
+        pastime.GetComponentInChildren<Text>().fontSize = 54;
+        var ptColors = pastime.colors;
+        ptColors.disabledColor = new Color(0.6f, 0.6f, 0.6f, 0.55f);
+        pastime.colors = ptColors;
+        shopScene.pastimeButton = pastime.gameObject;
+        var ptLayer = new GameObject("Pastime Layer", typeof(RectTransform), typeof(Image), typeof(Button));
+        ptLayer.transform.SetParent(p, false);
+        Stretch((RectTransform)ptLayer.transform);
+        ptLayer.GetComponent<Image>().color = new Color(0, 0, 0, 0.001f);   // a tap outside the menu closes it
+        UnityEventTools.AddPersistentListener(ptLayer.GetComponent<Button>().onClick, shopScene.TogglePastime);
+        var ptMenu = Shape(ptLayer.transform, "Pastime Menu", new Vector2(0.5f, 0.32f), new Vector2(1200, 900), new Color(1, 0.97f, 0.9f), uiSprite);
+        ptMenu.GetComponent<Image>().raycastTarget = true;
+        ptMenu.gameObject.AddComponent<ClickBlocker>();
+        var pm = Column(ptMenu, 0.5f, 0.5f);
+        shopScene.kettleButton = Button(pm, "Put the Kettle On", shopScene.PutKettleOn, 1000);
+        shopScene.choreButtons = new UnityEngine.UI.Button[ShopDay.Chores.Length];
+        for (int i = 0; i < ShopDay.Chores.Length; i++)
+        {
+            var cb = Button(pm, $"Chore {ShopDay.Chores[i].id}", null, 1000);
+            cb.GetComponentInChildren<Text>().text = ShopDay.Chores[i].name;
+            UnityEventTools.AddIntPersistentListener(cb.onClick, shopScene.StartChore, i);
+            shopScene.choreButtons[i] = cb;
+        }
+        shopScene.windowButton = Button(pm, "Look Out of the Window", shopScene.LookOutside, 1000);
+        ptLayer.SetActive(false);
+        shopScene.pastimeLayer = ptLayer;
         shopScene.pageLabel = Label(p, "PageName", new Vector2(0.2f, 0.778f), new Vector2(0.8f, 0.812f), 52, TextAnchor.MiddleCenter);
         shopScene.pageLabel.raycastTarget = false;   // the Shops button sits beside it
         var b = Row(p, 0.5f, 0.05f);

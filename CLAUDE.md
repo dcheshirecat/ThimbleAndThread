@@ -775,3 +775,7 @@ Data/Decor DecorDef (slot Wall/Counter/Floor/Corner, price, charm, minLevel); 12
 decorPlaced ("slot:id"). Buying places it if the spot is empty. Customize has tabs Your Look / Your Shop (cycle owned pieces
 per spot). Shop scene: ShopSceneUI.decorSpots (on the counter, in front of it, beside the door, on the wall). Charm = placed
 pieces' charm (max 25): hand-over price +charm%.
+DONE batch 7 (14): Core/ShopDayPastime.cs + "Pass the Time" on the shop page (a menu; tap outside closes it): Put the Kettle On
+(30 game minutes, or until the next visitor if sooner), three chores (Dust / Sweep / Tidy the Thread Drawer: tap away 8 specks on
+the shop page; +2 charm for the day each, 10 minutes; flags chore:<id>:<day>), Look Out of the Window (once a game hour: a town
+moment, people you've met more likely; flags window:<day>:<hour>). Yesterday's flags are cleared in GoToBed.
