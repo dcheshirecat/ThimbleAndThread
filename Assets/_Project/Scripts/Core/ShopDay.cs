@@ -9,7 +9,7 @@ using UnityEngine;
 /// and sets finished pieces aside until the customer comes back for them (on a day the player isn't told).
 /// Nothing has a deadline.
 /// Every change autosaves through GameManager.Persist.
-public class ShopDay : MonoBehaviour
+public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
 {
     public ContentLibrary content;
     public ShopManager shop;
@@ -108,7 +108,7 @@ public class ShopDay : MonoBehaviour
             Progress.CheckQuests();
             CheckShops();
         }
-        if (Save == null || Save.night) { BellRinging = false; return; }
+        if (Save == null || Save.night || IsSunday) { BellRinging = false; return; }   // Sundays: the stall keeps its own time
         if (GM.Current == ScreenId.Dialogue || GM.Current == ScreenId.Title || GM.Current == ScreenId.SaveSelect || GM.Current == ScreenId.Customize
             || GM.Current == ScreenId.Tutorial || GM.Current == ScreenId.Settings || !Save.player.created) return;   // the day waits
         Tick();
@@ -807,6 +807,8 @@ public class ShopDay : MonoBehaviour
     /// Plays waiting story scenes when a hub screen comes up.
     void OnScreenChanged(ScreenId id)
     {
+        // Back on a Saturday morning (e.g. after loading): the day off begins.
+        if (id == ScreenId.Shop && !playing && Save != null && !Save.night && IsSaturday && !Save.flags.Contains(SaturdayDoneFlag)) { StartSaturday(); return; }
         if (playing || Save == null || Save.pendingScenes.Count == 0 || (id != ScreenId.Shop && id != ScreenId.Workroom)) return;
         var knot = Save.pendingScenes[0];
         Save.pendingScenes.RemoveAt(0);
@@ -916,6 +918,7 @@ public class ShopDay : MonoBehaviour
         GM.NextDay();
         InviteVisitors();
         GM.Persist();
+        if (IsSaturday || IsSunday) { LastMessage = ""; StartWeekendDay(); return; }
         int ready = Save.orders.FindAll(o => o.finished).Count;
         LastMessage = $"Good morning! Day {Save.day}." + (ready > 0 ? $" {ready} wrapped order{(ready == 1 ? "" : "s")} waiting to be picked up." : "");
         GM.ChangeScreen(ScreenId.Shop);
@@ -962,7 +965,7 @@ public class ShopDay : MonoBehaviour
 
     /// Who an order is for, as the player reads it ("you" for things made for yourself).
     public string NameFor(string customerId) =>
-        customerId == PlayerProfile.SelfId ? "you" : !Save.met.Contains(customerId) ? "???"   // no names before they've said them
+        customerId == PlayerProfile.SelfId ? "you" : customerId == StallId ? "your market stall" : !Save.met.Contains(customerId) ? "???"   // no names before they've said them
         : CustomerFor(customerId) is CustomerDef c ? c.displayName : customerId;
 
     /// Pattern Studio: puts an order for yourself in the book, to wear once it's made (sweaters, scarves).
@@ -1784,6 +1787,7 @@ public class ShopDay : MonoBehaviour
             if (s == null || shop.Stock(id) < s.decorateAmount) { Selected.extras.Remove(id); continue; }
             shop.Use(new List<MaterialNeed> { new MaterialNeed { supplyId = id, amount = s.decorateAmount } });
         }
+        if (Selected.customerId == StallId) { SetAsideForStall(); return; }   // waits for Sunday's market
         if (Selected.customerId == PlayerProfile.SelfId)   // made for yourself: into the wardrobe
         {
             var yarn = content.Supply(Selected.fabricId);

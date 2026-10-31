@@ -150,3 +150,16 @@ Bram: Bram Okafor. This is my market. Fabric, thread, yarn, tools, and the best 
 ~ note(Runs the Supply Market.)
 Bram: Your great-aunt was my best customer. No pressure. # thoughtful
 -> END
+
+// ---- Saturdays (owner, 2026-10-31): the shop is closed; friends at level 2+ can be visited (name_saturday*),
+// and someone you're seeing takes you on a date (name_date*). Add variants freely.
+
+=== bram_saturday ===
+Bram takes you to the wholesale market at dawn. He haggles like it's a sport and wins every round. # happy
+Bram: Never pay the first price. Unless it's for lemon sweets. Then pay anything. # happy
+-> END
+
+=== bram_date ===
+Bram rows you round the bay at sunset. He's terrible at rowing and laughs about it the whole time. # happy
+Bram: We're going in circles. Best circles of my life. # happy
+-> END

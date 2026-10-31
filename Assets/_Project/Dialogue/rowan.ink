@@ -171,3 +171,16 @@ Rowan: Rowan Hale. Knot & Needle, across the square. Pleasure. # happy
 Rowan: Checking out the competition. Purely professional.
 Rowan: Your window display's better than mine. I hate that. # thoughtful
 -> END
+
+// ---- Saturdays (owner, 2026-10-31): the shop is closed; friends at level 2+ can be visited (name_saturday*),
+// and someone you're seeing takes you on a date (name_date*). Add variants freely.
+
+=== rowan_saturday ===
+Rowan closes the Knot & Needle for an hour and you swap techniques over cold tea. # thoughtful
+Rowan: Don't tell anyone we're friends. It's bad for the rivalry. # happy
+-> END
+
+=== rowan_date ===
+Rowan takes you to the open-air cinema on the beach. You share a blanket they crocheted. # happy
+Rowan: I made the blanket two-person-sized. That was... on purpose. # thoughtful
+-> END

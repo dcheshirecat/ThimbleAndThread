@@ -146,3 +146,18 @@ Mara: We live above the bakery. This is Poppy. She's asleep, which is a miracle,
 ~ note(Has a baby daughter, Poppy, and almost no sleep.)
 Mara: I heard the shop had opened again. I used to come in with my mum when I was little. # happy
 -> END
+
+// ---- Saturdays (owner, 2026-10-31): the shop is closed; friends at level 2+ can be visited (name_saturday*),
+// and someone you're seeing takes you on a date (name_date*). Add variants freely.
+
+=== mara_saturday ===
+Mara answers the door with Poppy on her hip and a muslin over her shoulder. # happy
+Mara: You came! Sit anywhere that isn't sticky. So, the floor. # happy
+You spend the afternoon on a picnic blanket in the back garden, Poppy grabbing at the grass.
+Mara: This is the first Saturday in months I haven't felt like a zombie. Thank you. # happy
+-> END
+
+=== mara_saturday_park ===
+You push the pram round the harbour park while Mara finally drinks a hot coffee, start to finish. # happy
+Mara: Look at that. It's still hot. I'd forgotten coffee was supposed to be hot. # surprised
+-> END

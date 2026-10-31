@@ -154,3 +154,16 @@ Eli: I'm Eli. The Driftwood, down on the harbour? The café with the wonky sign.
 ~ note(Runs the Driftwood, the café on the harbour.)
 Eli: I've been meaning to come in for weeks. Your shop smells better than my coffee. That's a worry.
 -> END
+
+// ---- Saturdays (owner, 2026-10-31): the shop is closed; friends at level 2+ can be visited (name_saturday*),
+// and someone you're seeing takes you on a date (name_date*). Add variants freely.
+
+=== eli_saturday ===
+Eli lets you behind the counter at the Driftwood to try making latte art. Yours looks like a potato. # happy
+Eli: That's a very confident potato. I'm putting it on the menu. # happy
+-> END
+
+=== eli_date ===
+Eli closes the café early and cooks for you: a pie that's mostly crust and entirely love. # happy
+Eli: I'll be honest, I only know how to cook pie. Lucky you like pie. # happy
+-> END

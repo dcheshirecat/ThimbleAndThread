@@ -127,3 +127,11 @@ Ada: Ada Finch. I draw patterns. Drew them with your great-aunt for fifty years,
 ~ note(Runs the pattern shop. Drew patterns with your great-aunt for fifty years.)
 Ada: Your shop sells patterns now, I hear. Then you'll be needing better ones than Win's book. # thoughtful
 -> END
+
+// ---- Saturdays (owner, 2026-10-31): the shop is closed; friends at level 2+ can be visited (name_saturday*),
+// and someone you're seeing takes you on a date (name_date*). Add variants freely.
+
+=== ada_saturday ===
+Ada makes you sit with her cat while she draws, and talks about the town fifty years ago. # happy
+Ada: The shop was a fish shop before Win took it. She scrubbed it for a month. Still smelled of mackerel at Christmas. # happy
+-> END

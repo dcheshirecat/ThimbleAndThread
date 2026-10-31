@@ -634,6 +634,16 @@ DONE batch 3 (items 6, 7, 10; save version 20):
   friendship only, knew Aunt Win). Opens after 3 patterns sold or chapter 2 (flag shop:patterns). PatternDef.forSale/
   rarity/shopPrice; 13 patterns (PlaceholderGenerator ShopPattern); per 4-day period 3 common, 2 uncommon, 35% one rare,
   only crafts learned and not owned; ShopDay.Complexity 1-5; bought patterns go in the book.
+DONE batch 4 (items 16, 20; save version 21; owner hadn't answered the plan, built as proposed, easy to change):
+- Core/ShopDayWeekend.cs (ShopDay is partial). GoToBed: a Saturday or Sunday starts its own way (StartWeekendDay).
+- Saturday: shop closed; Dialogue choices: Visit <friend> (met, level 2+, max 4, romance first) / Go on a date with <romance>
+  (ink name_saturday*, name_date*; fallback lines), Walk along the harbour, Stay in and craft. +8 friendship (+12 date),
+  stamps, then CloseShop (evening). Flag saturday:<day>. ShopDay.OnScreenChanged restarts it after a reload.
+- Sunday: market stall (ScreenId.Stall, UI/StallUI.cs; GameManager.HubScreen = Stall on Sundays once flag stall:open).
+  10:00-16:00, shoppers every 6-14 game minutes want a stall piece (SaveData.stall, StallItem) or a copy of a pattern (max 2
+  per pattern per Sunday); Sell / Ask for More (50%: +20% or they leave) / Keep It; Pack Up -> evening. First Sunday:
+  stamp + 2-page explainer. Pattern Studio "Make One for the Stall" (Order.customerId ShopDay.StallId) -> SetAside puts it
+  on the stall.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.

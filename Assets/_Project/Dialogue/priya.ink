@@ -131,3 +131,16 @@ Priya: I'm Priya. I teach the little ones up at St. Brigid's. # happy
 ~ note(Teaches the youngest class at St. Brigid's: twenty-eight children.)
 Priya: I've heard this shop has a pattern for everything. I have a class of twenty-eight. I need everything.
 -> END
+
+// ---- Saturdays (owner, 2026-10-31): the shop is closed; friends at level 2+ can be visited (name_saturday*),
+// and someone you're seeing takes you on a date (name_date*). Add variants freely.
+
+=== priya_saturday ===
+Priya has her class's art projects spread over her kitchen table. You help her mount thirty paper fish. # happy
+Priya: Every single one of them is a masterpiece. Don't tell the other twenty-nine. # happy
+-> END
+
+=== priya_saturday_walk ===
+A long walk on the cliff path with Priya, a flask of tea and a tin of her mum's shortbread. # happy
+Priya: Saturdays are for walking until your legs complain. # happy
+-> END

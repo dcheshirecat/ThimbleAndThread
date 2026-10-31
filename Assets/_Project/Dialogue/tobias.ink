@@ -148,3 +148,17 @@ Tobias: I knew your great-aunt. Forty years I came through that door.
 ~ note(Knew your great-aunt for forty years.)
 Tobias: Thought I'd see who'd taken the keys. # thoughtful
 -> END
+
+// ---- Saturdays (owner, 2026-10-31): the shop is closed; friends at level 2+ can be visited (name_saturday*),
+// and someone you're seeing takes you on a date (name_date*). Add variants freely.
+
+=== tobias_saturday ===
+Tobias takes you out on his boat, the Elsa May. He doesn't say much. He doesn't need to. # thoughtful
+Tobias: She'd have liked you. Elsa. She liked people who listened. # happy
+~ note(His boat is called the Elsa May.)
+-> END
+
+=== tobias_saturday_nets ===
+You help Tobias mend nets on the quay. It's not so different from darning. # thoughtful
+Tobias: Over, under, pull it snug. Same knot my grandad taught me. # happy
+-> END

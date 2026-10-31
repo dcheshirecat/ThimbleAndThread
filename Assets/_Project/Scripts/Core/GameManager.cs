@@ -5,7 +5,7 @@ public enum ScreenId
 {
     Title, Shop, Dialogue, Workbench, Minigame, Result,
     Market, PatternStudio, Journal, Settings, DaySummary,
-    SaveSelect, OrderBook, Workroom, PatternEdit, PatternDesigner, Tutorial, Trade, Gather, Customize, Boutique, PatternShop   // new values go at the end so saved scene references keep their numbers
+    SaveSelect, OrderBook, Workroom, PatternEdit, PatternDesigner, Tutorial, Trade, Gather, Customize, Boutique, PatternShop, Stall   // new values go at the end so saved scene references keep their numbers
 }
 
 /// Central game state: current screen, save data, coins, relationships.
@@ -31,7 +31,8 @@ public class GameManager : MonoBehaviour
     public int Slot { get; private set; } = -1;
 
     /// The hub for the current time of day: the shop by day, the workroom by night.
-    public ScreenId HubScreen => Save != null && Save.night ? ScreenId.Workroom : ScreenId.Shop;
+    public ScreenId HubScreen => Save == null ? ScreenId.Shop : Save.night ? ScreenId.Workroom
+                                 : Week.IsSunday(Save.day) && Save.flags.Contains(ShopDay.StallFlag) ? ScreenId.Stall : ScreenId.Shop;
 
     /// Raised after a slot is started or loaded, so other systems can rebuild from Save.
     public event Action<bool> OnGameLoaded;   // true for a brand-new game

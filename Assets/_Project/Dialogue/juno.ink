@@ -138,3 +138,16 @@ Juno: It's been shut forever. I kind of assumed it was haunted.
 ~ note(Goes to the skate park most days.)
 Juno: Is it haunted? It's fine if it's haunted. # happy
 -> END
+
+// ---- Saturdays (owner, 2026-10-31): the shop is closed; friends at level 2+ can be visited (name_saturday*),
+// and someone you're seeing takes you on a date (name_date*). Add variants freely.
+
+=== juno_saturday ===
+Juno drags you to the skate park and makes you film their tricks. Most of them end in the grass. # happy
+Juno: Don't post the bad ones. Okay, post one bad one. People like a bit of failure. # happy
+-> END
+
+=== juno_saturday_thrift ===
+You and Juno go through every charity shop in town. They find a jacket and a plan to cover it in patches. # happy
+Juno: You're doing the embroidery, obviously. I'll pay you in chips. # happy
+-> END

@@ -140,3 +140,16 @@ Celeste: Celeste Moreau. This is my boutique. Hair, clothes, the odd miracle. # 
 ~ note(Owns Moreau's, the boutique on the square.)
 Celeste: Hm. Good bones. We can work with that.
 -> END
+
+// ---- Saturdays (owner, 2026-10-31): the shop is closed; friends at level 2+ can be visited (name_saturday*),
+// and someone you're seeing takes you on a date (name_date*). Add variants freely.
+
+=== celeste_saturday ===
+Celeste invites you to her flat above the boutique and pulls out sketchbooks full of dresses she's never made. # thoughtful
+Celeste: Don't look at that one. Or that one. Fine, look. # happy
+-> END
+
+=== celeste_date ===
+Celeste takes you dancing at the harbour hall. She leads. Obviously. # happy
+Celeste: You're a terrible dancer. Don't stop. # happy
+-> END

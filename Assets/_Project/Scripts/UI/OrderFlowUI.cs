@@ -22,7 +22,7 @@ public class OrderFlowUI : MonoBehaviour
     public RectTransform shelfTemplate;   // a grid of supply tiles
     public Button marketTemplate;         // one supply tile (children Icon, Name, Info), inside shelfTemplate
     [Header("Pattern edit")] public Text patternText, shelfLabel, deleteLabel; public RawImage patternPreview;
-    public GameObject editDesignButton, deleteButton, makeForMeButton;
+    public GameObject editDesignButton, deleteButton, makeForMeButton, makeForStallButton;
 
     readonly List<GameObject> orderRows = new List<GameObject>();
     readonly List<GameObject> patternRows = new List<GameObject>();
@@ -157,6 +157,7 @@ public class OrderFlowUI : MonoBehaviour
         shelfLabel.text = p.onShelf ? "Take Off Display" : "Put on Display";
         editDesignButton.SetActive(p.designed);
         if (makeForMeButton != null) makeForMeButton.SetActive(PlayerProfile.Wearable(p.itemId));
+        if (makeForStallButton != null) makeForStallButton.SetActive(day.StallOpen && day.Progress.CanMake(day.ItemFor(p.itemId)));
         deleteButton.SetActive(p.designed);
         deleteLabel.text = day.ConfirmingDelete ? "Tap Again to Delete" : "Delete";
         SetPreview(patternPreview, day.DesignFor(p));

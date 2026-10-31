@@ -474,6 +474,30 @@ public static class TestSceneBuilder
         custom.messageText = Label(p, "Message", new Vector2(0.06f, 0.075f), new Vector2(0.94f, 0.1f), 52, TextAnchor.MiddleCenter);
         Button(Column(p, 0.5f, 0.01f), "Done", custom.Done, 800);
 
+        // The Sunday market stall (StallUI): the table, the shopkeeper behind it, and the shopper in front
+        p = Panel(ScreenId.Stall, "", new Color(0.78f, 0.88f, 0.95f));
+        var stall = canvasGo.AddComponent<StallUI>();
+        stall.day = day;
+        stall.clockText = Label(p, "Clock", new Vector2(0.05f, 0.9f), new Vector2(0.95f, 0.97f), 58, TextAnchor.MiddleCenter);
+        var awning = Shape(p, "Awning", new Vector2(0.5f, 0.84f), new Vector2(1900, 160), new Color(0.90f, 0.45f, 0.45f), uiSprite);
+        Shape(awning, "Stripe", new Vector2(0.5f, 0.5f), new Vector2(1900, 50), new Color(1f, 0.95f, 0.9f), uiSprite);
+        stall.keeper = Keeper(p, new Vector2(0.5f, 0.66f), content);
+        stall.keeper.transform.localScale = Vector3.one * 0.7f;
+        var table = Shape(p, "Table", new Vector2(0.5f, 0.5f), new Vector2(1800, 480), new Color(0.62f, 0.45f, 0.30f), uiSprite);
+        stall.tableText = Label(table, "OnTable", new Vector2(0.05f, 0.06f), new Vector2(0.95f, 0.94f), 46, TextAnchor.UpperLeft);
+        stall.tableText.color = Color.white;
+        var shopperCard = Shape(p, "Shopper", new Vector2(0.5f, 0.27f), new Vector2(1840, 560), new Color(1f, 0.98f, 0.92f), uiSprite);
+        stall.shopperText = Label(shopperCard, "Line", new Vector2(0.05f, 0.4f), new Vector2(0.95f, 0.95f), 54, TextAnchor.MiddleCenter);
+        b = Row(shopperCard, 0.5f, 0.2f);
+        stall.sellButton = Button(b, "Stall Sell", stall.Sell, 520).gameObject;
+        stall.sellButton.GetComponentInChildren<Text>().text = "Sell";
+        stall.haggleButton = Button(b, "Stall Haggle", stall.Haggle, 560).gameObject;
+        stall.haggleButton.GetComponentInChildren<Text>().text = "Ask for More";
+        stall.declineLabel = Button(b, "Stall Decline", stall.Decline, 520).GetComponentInChildren<Text>();
+        stall.shopperPanel = shopperCard.gameObject;
+        stall.messageText = Label(p, "Message", new Vector2(0.05f, 0.1f), new Vector2(0.95f, 0.16f), 50, TextAnchor.MiddleCenter);
+        Button(Column(p, 0.5f, 0.05f), "Pack Up the Stall", stall.PackUp, 900);
+
         // Finch's Pattern Parlour: ready-made patterns to sell (PatternShopUI)
         p = Panel(ScreenId.PatternShop, "Finch's Pattern Parlour", new Color(0.80f, 0.86f, 0.78f));
         var pshop = canvasGo.AddComponent<PatternShopUI>();
@@ -530,12 +554,13 @@ public static class TestSceneBuilder
         p = Panel(ScreenId.PatternEdit, "Pattern", new Color(0.93f, 0.78f, 0.90f));
         ui.patternPreview = Preview(p, new Vector2(0.5f, 0.71f), 860);
         ui.patternText = Label(p, "Details", new Vector2(0.08f, 0.34f), new Vector2(0.92f, 0.55f), 64, TextAnchor.MiddleLeft);
-        b = Column(p, 0.28f, 0.18f);
+        b = Column(p, 0.28f, 0.2f);
         Button(b, "Price Up", day.PriceUp, 860);
         Button(b, "Price Down", day.PriceDown, 860);
         ui.editDesignButton = Button(b, "Edit Design", day.EditDesign, 860).gameObject;
         ui.makeForMeButton = Button(b, "Make One for Me", day.MakeForMyself, 860).gameObject;
-        b = Column(p, 0.72f, 0.18f);
+        ui.makeForStallButton = Button(b, "Make One for the Stall", day.MakeForStall, 860).gameObject;
+        b = Column(p, 0.72f, 0.2f);
         ui.shelfLabel = Button(b, "Shelf", day.ToggleShelf, 860).GetComponentInChildren<Text>();
         var delete = Button(b, "Delete", day.DeletePattern, 860);
         ui.deleteButton = delete.gameObject;

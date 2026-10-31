@@ -178,3 +178,16 @@ Isla: I'm Isla. The lighthouse. Well, not the lighthouse. I keep it.
 ~ note(Keeps the lighthouse.)
 Isla: Your aunt mended my jumpers. I'm told I'm hard on jumpers. # thoughtful
 -> END
+
+// ---- Saturdays (owner, 2026-10-31): the shop is closed; friends at level 2+ can be visited (name_saturday*),
+// and someone you're seeing takes you on a date (name_date*). Add variants freely.
+
+=== isla_saturday ===
+Isla shows you round the lighthouse, all 117 steps of it. At the top, the whole coast is laid out like a map. # happy
+Isla: I count the ships. Old habit. Today it's eleven. # thoughtful
+-> END
+
+=== isla_date ===
+Isla takes you up the lighthouse after dark. The beam sweeps over the water, again and again. # thoughtful
+Isla: I've watched this light for nine years. It's better with you here. # happy
+-> END
