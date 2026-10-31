@@ -779,3 +779,6 @@ DONE batch 7 (14): Core/ShopDayPastime.cs + "Pass the Time" on the shop page (a 
 (30 game minutes, or until the next visitor if sooner), three chores (Dust / Sweep / Tidy the Thread Drawer: tap away 8 specks on
 the shop page; +2 charm for the day each, 10 minutes; flags chore:<id>:<day>), Look Out of the Window (once a game hour: a town
 moment, people you've met more likely; flags window:<day>:<hour>). Yesterday's flags are cleared in GoToBed.
+DONE batch 8 (13): Saturdays also offer the craft circle at the tea room (+25 XP in your most practised craft, +3 friendship with up
+to 3 met crafty friends, a stamp) and the church-hall jumble sale (3 random shown supplies at half price, buy one or browse).
+Sundays: 25% of stall shoppers are someone you've met (once each per Sunday; Shopper.friend); a sale to them is +4 friendship.
