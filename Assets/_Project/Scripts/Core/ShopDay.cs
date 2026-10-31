@@ -684,6 +684,28 @@ public class ShopDay : MonoBehaviour
         GM.ChangeScreen(ScreenId.PatternEdit);   // refresh the screen
     }
 
+    /// Who an order is for, as the player reads it ("you" for things made for yourself).
+    public string NameFor(string customerId) =>
+        customerId == PlayerProfile.SelfId ? "you" : CustomerFor(customerId) is CustomerDef c ? c.displayName : customerId;
+
+    /// Pattern Studio: puts an order for yourself in the book, to wear once it's made (sweaters, scarves).
+    public void MakeForMyself()
+    {
+        var p = SelectedPattern;
+        var item = p != null ? content.Item(p.itemId) : null;
+        if (item == null || !PlayerProfile.Wearable(item.itemId)) return;
+        if (!Progress.CanMake(item)) { LastMessage = $"You haven't learned {Progression.CraftName(item.craft)} yet."; GM.ChangeScreen(ScreenId.PatternEdit); return; }
+        var order = new Order
+        {
+            id = System.Guid.NewGuid().ToString("N"), customerId = PlayerProfile.SelfId, itemId = item.itemId, item = item,
+            dayPlaced = Save.day, target = DesignFor(p),
+        };
+        Save.orders.Add(order);
+        LastMessage = $"A {item.itemName.ToLower()} for you is in the order book. Work on it at night.";
+        GM.Persist();
+        GM.ChangeScreen(ScreenId.PatternEdit);
+    }
+
     public void ToggleShelf()
     {
         if (!SelectedPattern.onShelf && SelectedPattern.designed && SelectedPattern.design.cells.Count == 0)
@@ -1137,6 +1159,24 @@ public class ShopDay : MonoBehaviour
             var s = content.Supply(id);
             if (s == null || shop.Stock(id) < s.decorateAmount) { Selected.extras.Remove(id); continue; }
             shop.Use(new List<MaterialNeed> { new MaterialNeed { supplyId = id, amount = s.decorateAmount } });
+        }
+        if (Selected.customerId == PlayerProfile.SelfId)   // made for yourself: into the wardrobe
+        {
+            var yarn = content.Supply(Selected.fabricId);
+            var made = new MadeItem
+            {
+                id = Selected.id, itemId = Selected.itemId, name = $"{Selected.target.displayName} {Selected.item.itemName.ToLower()}".Trim(),
+                yarn = yarn != null ? yarn.color : Color.white,
+                motif = Selected.target.palette.Count > 0 ? Selected.target.palette[0] : Color.white,
+            };
+            Save.player.made.Add(made);
+            Save.player.wornMade = made.id;   // put it straight on
+            Save.orders.Remove(Selected);
+            GM.Persist();
+            LastMessage = $"You're wearing your new {Selected.item.itemName.ToLower()}! Change what you wear in Settings > Change Your Look.";
+            Selected = null;
+            GM.ChangeScreen(ScreenId.OrderBook);
+            return;
         }
         if (Selected.pickupDay <= Save.day) Selected.pickupDay = Save.day + PickupDelay();
         GM.Persist();

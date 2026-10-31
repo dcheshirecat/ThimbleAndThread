@@ -353,7 +353,10 @@ All eight feedback points have a first version (merged to main 2026-10-30).
    Your Look): name, pronouns (she/her, he/him, they/them; Core/PlayerProfile.cs PlayerText.Fill fills
    {name} {they} {them} {their} {is} {niece}... in dialogue and the Journal), skin, hair style/colour, top/colour.
    UI/ShopkeeperView.cs draws the player (placeholder shapes) in the shop, Customize and the boutique.
-   Still to do: wearing items the player MADE.
+   DONE (branch garments): wearing what you MAKE: Pattern Studio "Make One for Me" (sweaters, scarves;
+   PlayerProfile.Wearable) puts an order for PlayerProfile.SelfId ("me") in the book; Set Aside puts it in
+   PlayerProfile.made (MadeItem: yarn + motif colour) and wears it (wornMade); Customize "Your Makes" row
+   switches; ShopkeeperView draws the sweater (yarn + colourwork patch) or scarf. Save version 14.
 16. DONE (owner, 2026-10-30) Shop owners you can befriend/romance (CustomerDef.shopOwner: never visit as
    customers; ShopDay.ChatWith once a day in their shop, +3; buying adds friendship): Bram Okafor runs the
    Supply Market (ShopDay.MarketOwnerId), Celeste Moreau runs Moreau's Boutique (UI/BoutiqueUI.cs,
@@ -397,11 +400,19 @@ now; final art = separate drawings per option and colour (owner draws each), not
     dislike the surprise.
 11. DONE Cross stitch: "/" under then "\\" over; StitchMark.crossedWrong when made the other way (drawn with the
     second leg on top, counts half in Score). Was: under stitch then over stitch; crossing in the wrong order is a mistake.
-12. Mistakes in general: possible everywhere, undoable, but if left they affect the result.
+12. DONE Mistakes in general: possible everywhere, undoable, but if left they affect the result. Crafts/ICraftStep.cs
+    IMistakes.MistakesLeft (cross stitch colour/place/crossing, knitting wrong stitches, traced strokes off the
+    line, misplaced things); ShopDay.FinishCrafting warns once, a second Finish keeps them. Knitting: a wrong
+    swipe now makes the wrong stitch (points y = 1), Undo unpicks back to it.
 13. DONE Starting an order: ScreenId.Gather / UI/GatherUI.cs (Order.gathered): the list = ShopDay.NeedsFor +
     ToolsFor; tap cupboard tiles to tick; wrong picks get a hint; Start Crafting once all ticked. Was: scroll through the inventory and pick the items to use, ticking off a needs list.
-14. Crafting animations: the needle making each stitch, the hook making each loop, per craft.
-15. Craft upgrades (owner, 2026-10-30): buy better tools that make crafting easier, e.g. sharp fabric
+14. DONE (placeholder drawings) Crafting animations: Crafts/CraftTool.cs (Needle, Hook, KnittingNeedles) drawn over
+    the work: cross stitch corners, hand sewing/embroidery lines, sewn-on handles and French knots, crochet dip
+    and pull, knitting and casting on. The machine keeps its own needle.
+15. DONE Craft upgrades (owner, 2026-10-30). Built as SupplyDef.assist (0..1) with ShopManager.BestFor(need) and
+    ShopDay.HelpingTool -> StepArea.assist -> PieceStep.Assist: tracing tolerance x(1+assist), machine corner speed
+    and skid, knitting rhythm, crochet reach, placement. Seven premium tools (generator). Cross stitch has none yet.
+    Original note: buy better tools that make crafting easier, e.g. sharp fabric
     scissors make cut lines straighter, sharper needles make stitching more forgiving. Plan: tools already
     exist as SupplyDef (kind Tool, toolType, size) and gate steps; add a quality tier per tool with an
     "assist" effect that the step reads from the best owned tool of that type (ShopManager.BestTool):

@@ -14,6 +14,22 @@ public class PlayerProfile
     public int skin = 2, hairStyle, hairColor, top, topColor;   // indices into the Appearance options
     public string wornHair = "", wornTop = "", wornAccessory = "";   // boutique items (CosmeticDef ids) worn, "" = none
     public List<string> owned = new List<string>();                 // boutique items bought
+    public List<MadeItem> made = new List<MadeItem>();              // things the player made for themselves
+    public string wornMade = "";                                    // the MadeItem worn (a sweater or a scarf), "" = none
+
+    /// The customer id of orders the player makes for themselves.
+    public const string SelfId = "me";
+    /// Items the player can wear when they make one for themselves.
+    public static bool Wearable(string itemId) => itemId == "sweater" || itemId == "scarf";
+}
+
+/// Something the player made for themselves (owner, 2026-10-30: wear what you make, seen in the shop).
+[System.Serializable]
+public class MadeItem
+{
+    public string id, itemId, name;
+    public Color yarn = Color.white;   // the main colour
+    public Color motif = Color.white;  // the pattern's first colour (a sweater's colourwork)
 }
 
 /// The player's pronouns in dialogue and story text. Writers use tokens (see Docs/ADDING_CONTENT.md):

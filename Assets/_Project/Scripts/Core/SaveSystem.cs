@@ -78,6 +78,8 @@ public static class SaveSystem
         // Version 11 had no player profile: they'll be asked to make their shopkeeper next time they play.
         data.player ??= new PlayerProfile();
         data.player.owned ??= new System.Collections.Generic.List<string>();
+        data.player.made ??= new System.Collections.Generic.List<MadeItem>();
+        data.player.wornMade ??= "";
         data.knownPrefs ??= new System.Collections.Generic.List<string>();
         // Version 12 knitted scarves and sweaters as one square: the new garment pieces don't fit that work,
         // so unfinished ones start over (their yarn was already taken, so it isn't taken again).

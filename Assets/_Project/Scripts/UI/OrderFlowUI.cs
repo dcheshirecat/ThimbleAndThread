@@ -21,7 +21,7 @@ public class OrderFlowUI : MonoBehaviour
     public RectTransform shelfTemplate;   // a grid of supply tiles
     public Button marketTemplate;         // one supply tile (children Icon, Name, Info), inside shelfTemplate
     [Header("Pattern edit")] public Text patternText, shelfLabel, deleteLabel; public RawImage patternPreview;
-    public GameObject editDesignButton, deleteButton;
+    public GameObject editDesignButton, deleteButton, makeForMeButton;
 
     readonly List<GameObject> orderRows = new List<GameObject>();
     readonly List<GameObject> patternRows = new List<GameObject>();
@@ -65,7 +65,7 @@ public class OrderFlowUI : MonoBehaviour
         var order = day.Selected;
         if (order == null) return;
         var customer = day.CustomerFor(order.customerId);
-        string who = customer != null ? customer.displayName : order.customerId;
+        string who = day.NameFor(order.customerId);
         int progress = Mathf.RoundToInt(order.Progress() * 100);
 
         bool night = save.night;
@@ -141,6 +141,7 @@ public class OrderFlowUI : MonoBehaviour
         if (!string.IsNullOrEmpty(day.LastMessage)) patternText.text += $"\n\n{day.LastMessage}";
         shelfLabel.text = p.onShelf ? "Take Off Display" : "Put on Display";
         editDesignButton.SetActive(p.designed);
+        if (makeForMeButton != null) makeForMeButton.SetActive(PlayerProfile.Wearable(p.itemId));
         deleteButton.SetActive(p.designed);
         deleteLabel.text = day.ConfirmingDelete ? "Tap Again to Delete" : "Delete";
         SetPreview(patternPreview, day.DesignFor(p));
@@ -160,7 +161,7 @@ public class OrderFlowUI : MonoBehaviour
             string state = order.finished ? "Ready to hand over" : $"{Mathf.RoundToInt(order.Progress() * 100)}%";
             string id = order.id;
             orderRows.Add(AddRow(orderTemplate, $"Order_{id}",
-                $"{order.item.itemName}{kind} for {(customer != null ? customer.displayName : order.customerId)}  ·  {state}",
+                $"{order.item.itemName}{kind} for {day.NameFor(order.customerId)}  ·  {state}",
                 () => day.SelectOrder(id)));
         }
     }

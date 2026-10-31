@@ -63,6 +63,13 @@ big enough for the pattern and a tapestry needle. Every Thread you add becomes a
 Pattern Studio automatically. On the market, each supply shows its icon on its shelf (Fabric,
 Embroidery Floss, Yarn, Notions, Tools).
 
+## Better tools
+
+A tool supply (kind Tool) can have **Assist** (0 to 1): how much better than the basic one it is. The best
+owned tool that fits a step helps with it, and the step says so: scissors and needles widen the line you
+must follow, a sewing machine takes corners faster, knitting needles forgive an uneven rhythm, a hook catches
+loops more easily. Same **Tool Type** (and size, for needles and hooks) as the basic tool it improves.
+
 ## Things you can make (items)
 
 1. Art: a 512 x 512 icon in `Art/Items/` (and later 1024 x 1024 finished-item art).
@@ -104,6 +111,7 @@ panel, the top edge stays open and is hemmed, and the handle is sewn on just bel
   shoulder). Then Sew Up joins them, then Weave Ends and Block.
 - **Square** (any other knitted item): the pattern's grid as texture, as above.
 Colourwork yarns aren't counted from the cupboard yet; only the main yarn is.
+Sweaters and scarves can also be made for the player to wear (Pattern Studio > Make One for Me).
 **Embroidery patterns** (e.g. "Little Whale") use the grid like sewing ones: the filled squares are the
 shape that's backstitched round and satin-filled in the first colour, and squares in the second colour
 are French knots in that colour.

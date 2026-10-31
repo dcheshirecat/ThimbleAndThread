@@ -399,6 +399,7 @@ public static class TestSceneBuilder
         custom.nameField = NameField(p, new Vector2(0.5f, 0.87f));
         custom.nameField.name = "PlayerNameField";
         custom.nameField.characterLimit = 20;
+        ((Text)custom.nameField.placeholder).text = "Your name";
         b = Row(p, 0.5f, 0.795f);
         custom.pronounButtons = new Image[PlayerText.Sets.Length];
         for (int i = 0; i < PlayerText.Sets.Length; i++)
@@ -410,12 +411,13 @@ public static class TestSceneBuilder
         }
         custom.preview = Keeper(p, new Vector2(0.5f, 0.53f), content);
         custom.preview.transform.localScale = Vector3.one * 0.85f;
-        b = Column(p, 0.5f, 0.25f);
+        b = Group<VerticalLayoutGroup>(p, 0.5f, 0.27f, 22);
         custom.skinLabel = OptionRow(b, "Skin", custom.NextSkin);
         custom.hairStyleLabel = OptionRow(b, "Hair Style", custom.NextHairStyle);
         custom.hairColorLabel = OptionRow(b, "Hair Colour", custom.NextHairColor);
         custom.topLabel = OptionRow(b, "Top", custom.NextTop);
         custom.topColorLabel = OptionRow(b, "Top Colour", custom.NextTopColor);
+        custom.madeLabel = OptionRow(b, "Your Makes", custom.NextMade);
         custom.messageText = Label(p, "Message", new Vector2(0.06f, 0.075f), new Vector2(0.94f, 0.1f), 52, TextAnchor.MiddleCenter);
         Button(Column(p, 0.5f, 0.01f), "Done", custom.Done, 800);
 
@@ -453,6 +455,7 @@ public static class TestSceneBuilder
         Button(b, "Price Up", day.PriceUp, 860);
         Button(b, "Price Down", day.PriceDown, 860);
         ui.editDesignButton = Button(b, "Edit Design", day.EditDesign, 860).gameObject;
+        ui.makeForMeButton = Button(b, "Make One for Me", day.MakeForMyself, 860).gameObject;
         b = Column(p, 0.72f, 0.18f);
         ui.shelfLabel = Button(b, "Shelf", day.ToggleShelf, 860).GetComponentInChildren<Text>();
         var delete = Button(b, "Delete", day.DeletePattern, 860);
@@ -587,10 +590,10 @@ public static class TestSceneBuilder
         h.childForceExpandWidth = h.childForceExpandHeight = false;
         var label = RowLabel(row.transform, 900);
         label.color = Ink;
-        label.GetComponent<LayoutElement>().preferredHeight = 130;
+        label.GetComponent<LayoutElement>().preferredHeight = 120;
         var nextButton = Button(row.transform, $"Next {name}", next, 300);
         nextButton.GetComponentInChildren<Text>().text = ">";
-        nextButton.GetComponent<LayoutElement>().preferredHeight = 130;
+        nextButton.GetComponent<LayoutElement>().preferredHeight = 120;
         return label;
     }
 

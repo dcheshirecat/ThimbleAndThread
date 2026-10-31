@@ -147,7 +147,7 @@ public class JournalUI : MonoBehaviour
             var row = Instantiate(rowTemplate, rowTemplate.transform.parent);
             row.gameObject.SetActive(true);
             row.name = $"JournalOrder_{id}";
-            row.GetComponentInChildren<Text>().text = $"{(order.item != null ? order.item.itemName : order.itemId)}{kind} for {(customer != null ? customer.displayName : order.customerId)}  ·  {state}";
+            row.GetComponentInChildren<Text>().text = $"{(order.item != null ? order.item.itemName : order.itemId)}{kind} for {day.NameFor(order.customerId)}  ·  {state}";
             row.onClick.AddListener(() => { overlay.SetActive(false); day.SelectOrder(id); });
             rows.Add(row.gameObject);
         }

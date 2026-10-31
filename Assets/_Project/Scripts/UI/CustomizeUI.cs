@@ -9,7 +9,7 @@ public class CustomizeUI : MonoBehaviour
     public ShopDay day;
     public InputField nameField;
     public Image[] pronounButtons;       // in PlayerText.Sets order
-    public Text skinLabel, hairStyleLabel, hairColorLabel, topLabel, topColorLabel, messageText;
+    public Text skinLabel, hairStyleLabel, hairColorLabel, topLabel, topColorLabel, madeLabel, messageText;
     public ShopkeeperView preview;
 
     PlayerProfile P => GameManager.Instance.Save.player;
@@ -39,6 +39,15 @@ public class CustomizeUI : MonoBehaviour
     public void NextTopColor() { P.topColor = (P.topColor + 1) % Appearance.Cloth.Length; Show(); }
     public void NextHairStyle() { P.hairStyle = NextUnlocked(P.hairStyle, Appearance.HairStyles.Length, Appearance.FreeHairStyles, CosmeticSlot.Hair); Show(); }
     public void NextTop() { P.top = NextUnlocked(P.top, Appearance.Tops.Length, Appearance.FreeTops, CosmeticSlot.Top); Show(); }
+
+    /// Steps through the things the player made for themselves (and wearing none of them).
+    public void NextMade()
+    {
+        var list = P.made;
+        int i = list.FindIndex(m => m.id == P.wornMade);
+        P.wornMade = i + 1 < list.Count ? list[i + 1].id : "";
+        Show();
+    }
 
     int NextUnlocked(int current, int count, int free, CosmeticSlot slot)
     {
@@ -79,6 +88,11 @@ public class CustomizeUI : MonoBehaviour
         hairColorLabel.text = $"Hair colour {P.hairColor + 1}";
         topLabel.text = Appearance.Tops[Mathf.Clamp(P.top, 0, Appearance.Tops.Length - 1)];
         topColorLabel.text = $"Colour {P.topColor + 1}";
+        if (madeLabel != null)
+        {
+            var made = P.made.Find(m => m.id == P.wornMade);
+            madeLabel.text = P.made.Count == 0 ? "Made by you: nothing yet" : made != null ? $"Wearing: {made.name}" : "Made by you: not wearing";
+        }
         preview.Apply(P);
     }
 }

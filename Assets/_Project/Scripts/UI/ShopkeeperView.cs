@@ -39,10 +39,26 @@ public class ShopkeeperView : MonoBehaviour
         apron.color = p.top == 1 ? new Color(0.97f, 0.95f, 0.90f) : Color.Lerp(body.color, Color.black, 0.25f);
         Size(apron.rectTransform, 0.5f, 0.55f, p.top == 1 ? 260 : 90, p.top == 1 ? 420 : 600);
 
-        // Accessory
+        // Something the player made: a sweater (in its yarn, with its colourwork on the chest) or a scarf.
+        var made = !string.IsNullOrEmpty(p.wornMade) && p.made != null ? p.made.Find(m => m.id == p.wornMade) : null;
+        if (made != null && made.itemId == "sweater")
+        {
+            body.color = made.yarn;
+            apron.enabled = true;
+            apron.color = made.motif;
+            Size(apron.rectTransform, 0.5f, 0.6f, 170, 150);
+        }
+
+        // Accessory (a made scarf takes its place)
         var acc = content != null && !string.IsNullOrEmpty(p.wornAccessory) ? System.Array.Find(content.cosmetics, c => c != null && c.cosmeticId == p.wornAccessory) : null;
         accessory.enabled = acc != null;
-        if (acc != null)
+        if (made != null && made.itemId == "scarf")
+        {
+            accessory.enabled = true;
+            accessory.color = made.yarn;
+            Size(accessory.rectTransform, 0.5f, 0.97f, 340, 100);
+        }
+        else if (acc != null)
         {
             accessory.color = acc.color;
             var art = accessory.rectTransform;
