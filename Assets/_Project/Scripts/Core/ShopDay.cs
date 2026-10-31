@@ -133,6 +133,7 @@ public class ShopDay : MonoBehaviour
             if (o.item == null) Debug.LogWarning($"Dropping saved order for unknown item '{o.itemId}'.");
             return o.item == null;
         });
+        foreach (var o in Save.orders) o.KeepUpWithRecipe();
 
         // Supplies: starter kit for new games; older saves get counted stock and threads on their patterns.
         shop.SetUpStock(isNewGame);

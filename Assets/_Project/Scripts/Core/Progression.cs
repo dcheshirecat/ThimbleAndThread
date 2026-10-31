@@ -38,6 +38,7 @@ public class Progression
         SupplyKind.Yarn => CraftOpen(CraftType.Knitting) || CraftOpen(CraftType.Crochet),
         SupplyKind.Stuffing or SupplyKind.Eyes => CraftOpen(CraftType.Sewing) || CraftOpen(CraftType.Crochet),
         SupplyKind.Tool when s.toolType == "hoop" || s.toolType == "tapestry_needle" => true,   // cross stitch uses these too
+        SupplyKind.Tool when s.toolType == "marking_pen" => CraftOpen(CraftType.Embroidery) || CraftOpen(CraftType.Sewing),
         _ => CraftOpen(s.craft),
     };
 

@@ -17,6 +17,8 @@ public abstract class TracingStep : PieceStep, IMistakes
     protected virtual float StitchLength => 0.028f;
     /// Whether a needle is shown making the stitches (not for cuts, yarn strands, or the machine).
     protected virtual bool HandNeedle => StitchLength > 0;
+    /// A twisted, rope-like line (stem stitch): a lighter twist laid over each stitch.
+    protected virtual bool Twisted => false;
     Vector2 lastPoke;
 
     /// Draws what's being worked on, under the line. Default: a square sheet of the fabric.
@@ -250,7 +252,10 @@ public abstract class TracingStep : PieceStep, IMistakes
         var shadow = Line(new Vector2[0], new Color(0, 0, 0, 0.3f), 0.016f, 2);
         var thread = Line(new Vector2[0], ThreadColor, 0.011f, 3);
         if (StitchLength > 0) { MakeDashed(shadow, StitchLength); MakeDashed(thread, StitchLength); }
-        return new[] { shadow, thread };
+        if (!Twisted) return new[] { shadow, thread };
+        var twist = Line(new Vector2[0], Color.Lerp(ThreadColor, Color.white, 0.35f), 0.005f, 4);
+        MakeDashed(twist, StitchLength * 0.5f);
+        return new[] { shadow, thread, twist };
     }
 
     void Cover(Vector2 p)

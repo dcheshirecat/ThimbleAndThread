@@ -529,6 +529,11 @@ Test live (create, open, open again fails, own code refused) before merging.
   their shop (tap = chat). The market hides supplies for crafts not yet learned (Progression.SupplyShown).
   Save version 19 (older saves: both shops open).
 - Owner wants LOOM WEAVING as a craft at some point (add with needlepoint and quilting).
+- DONE Embroidered hoop (mini-games part 3, Crafts/EmbroiderySteps.cs): Trace the design (TransferDesign, marking
+  pen), Hoop, Pull it drum-tight (TightenHoop: tug outwards at each ripple), Backstitch, Satin fill at an even
+  slant (printed guide lines; strokes off the slant are mistakes), Stem-stitch the waves (TracingStep.Twisted),
+  French knots, Gather the back (FinishBack). Orders keep up with longer recipes: Order.recipe + KeepUpWithRecipe
+  (on load) moves saved progress to the matching steps; new steps before the current one count as done.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.

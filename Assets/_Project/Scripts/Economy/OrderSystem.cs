@@ -28,6 +28,7 @@ public class Order
     public int fit;                   // for an indirect request: 1 = the pattern fit, 2 = the best fit (more friendship)
     public int step;                  // the recipe step being worked on (index into Steps)
     public List<StepProgress> steps = new List<StepProgress>();   // saved progress per step
+    public List<StepKind> recipe = new List<StepKind>();          // the recipe's steps when last loaded (see KeepUpWithRecipe)
 
     [NonSerialized] public CraftItemDef item;   // looked up from itemId after loading
 
@@ -54,6 +55,44 @@ public class Order
         };
     }
     static readonly RecipeStep[] DesignOnly = { new RecipeStep { kind = StepKind.CrossStitch, label = "Design the pattern" } };
+
+    /// Recipes grow in updates (new steps in the middle). An order remembers the steps it had; when the item's
+    /// recipe has changed, its saved progress moves to the matching steps, and new steps before the one being
+    /// worked on count as done (scored like the steps already done), so nobody is sent back.
+    public void KeepUpWithRecipe()
+    {
+        var now = Steps;
+        var kinds = new List<StepKind>();
+        foreach (var s in now) kinds.Add(s.kind);
+        bool started = step > 0 || steps.Count > 0;
+        if (recipe == null || recipe.Count == 0 || finished || !started || legacyKnit || patternOnly) { recipe = kinds; return; }
+        bool same = recipe.Count == kinds.Count;
+        for (int i = 0; same && i < kinds.Count; i++) same = recipe[i] == kinds[i];
+        if (same) return;
+
+        var moved = new List<StepProgress>();
+        var from = new int[kinds.Count];
+        int j = 0, newStep = -1;
+        for (int i = 0; i < kinds.Count; i++)
+        {
+            int k = recipe.IndexOf(kinds[i], j);
+            from[i] = k;
+            if (k >= 0) { j = k + 1; moved.Add(k < steps.Count ? steps[k] : new StepProgress()); if (k == step) newStep = i; }
+            else moved.Add(new StepProgress());
+        }
+        if (newStep < 0)   // the step being worked on was taken out: carry on with the next one that's still there
+        {
+            newStep = kinds.Count - 1;
+            for (int i = 0; i < kinds.Count; i++) if (from[i] > step) { newStep = i; break; }
+        }
+        float sum = 0; int n = 0;
+        foreach (var p in moved) if (p.done) { sum += p.score; n++; }
+        for (int i = 0; i < newStep; i++)
+            if (from[i] < 0 && !moved[i].done) { moved[i].done = true; moved[i].progress = 1f; moved[i].score = n > 0 ? sum / n : 1f; }
+        steps = moved;
+        step = newStep;
+        recipe = kinds;
+    }
 
     public RecipeStep CurrentStep => Steps[Mathf.Clamp(step, 0, Steps.Length - 1)];
     public bool IsLastStep => step >= Steps.Length - 1;

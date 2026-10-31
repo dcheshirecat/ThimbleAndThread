@@ -111,6 +111,12 @@ public static class PlaceholderGenerator
             Step(StepKind.HemTop, "Hem the top", tools: Tool("sewing_machine", "Sewing machine")),
             Step(StepKind.AttachHandles, "Attach the handle", materials: Need("webbing", 1), tools: Tool("sewing_needle", "Hand sewing needle")));
         AddStep(tote, Step(StepKind.Press, "Press it"));
+        // The embroidered hoop the way an embroiderer does it (owner, 2026-10-31): transfer, hoop, tighten,
+        // outline, satin at a slant, stem-stitched waves, knots, gather the back.
+        InsertBefore(hoopArt, StepKind.HoopFabric, Step(StepKind.TransferDesign, "Trace the design onto the fabric", tools: Tool("marking_pen", "Fabric marking pen")));
+        InsertBefore(hoopArt, StepKind.Backstitch, Step(StepKind.TightenHoop, "Pull it drum-tight", tools: Tool("hoop", "Embroidery hoop")));
+        InsertBefore(hoopArt, StepKind.FrenchKnots, Step(StepKind.StemStitch, "Stem-stitch the waves", thread: 0, threadAmount: 6, tools: embroideryNeedle));
+        AddStep(hoopArt, Step(StepKind.FinishBack, "Gather the back", tools: embroideryNeedle));
         // Sewing the way a sewist does (owner, 2026-10-31): pin the pattern, clip curves, box corners, ladder stitch.
         var pinsTool = Tool("pins", "Pins");
         InsertBefore(sewnPlushie, StepKind.CutPieces, Step(StepKind.PinPattern, "Pin the pattern to the fabric", tools: pinsTool));

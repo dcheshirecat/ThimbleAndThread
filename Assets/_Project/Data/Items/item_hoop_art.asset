@@ -29,6 +29,21 @@ MonoBehaviour:
   patternPrice: 12
   requiredSupplyIds: []
   steps:
+  - kind: 31
+    label: Trace the design onto the fabric
+    tools:
+    - toolType: marking_pen
+      minSize: 0
+      label: Fabric marking pen
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 19
     label: Hoop the fabric
     tools:
@@ -45,6 +60,22 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: 
+  - kind: 32
+    label: Pull it drum-tight
+    tools:
+    - toolType: hoop
+      minSize: 0
+      label: Embroidery hoop
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 20
     label: Backstitch the outline
     tools:
@@ -59,6 +90,7 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 10
+    piece: 
   - kind: 21
     label: Fill with satin stitch
     tools:
@@ -73,6 +105,22 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 15
+    piece: 
+  - kind: 33
+    label: Stem-stitch the waves
+    tools:
+    - toolType: embroidery_needle
+      minSize: 0
+      label: Embroidery needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 6
+    piece: 
   - kind: 22
     label: Add French knots
     tools:
@@ -87,3 +135,20 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 1
     threadAmount: 2
+    piece: 
+  - kind: 34
+    label: Gather the back
+    tools:
+    - toolType: embroidery_needle
+      minSize: 0
+      label: Embroidery needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  garment: 0

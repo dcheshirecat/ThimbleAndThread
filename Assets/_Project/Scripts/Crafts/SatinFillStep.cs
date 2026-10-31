@@ -2,9 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// Embroidery recipe step: fill the shape with satin stitch, dragging back and forth across it.
-/// Cover it all; stitches that stray outside the outline lower the quality.
-public class SatinFillStep : PieceStep
+/// Cover it all; stitches that stray outside the outline lower the quality. Satin stitches lie side by
+/// side at one even slant (the printed guide lines): stitches at another angle look messy and count as mistakes.
+public class SatinFillStep : PieceStep, IMistakes
 {
+    const float SlantTolerance = 25f;   // degrees off the slant that still look even
     const float Reach = 0.035f;         // how much of the fabric one pass of thread covers, either side
     const int Grid = 14;                // checkpoints across the shape
 
@@ -14,6 +16,42 @@ public class SatinFillStep : PieceStep
 
     protected override float ShapePadding => 0.25f;
     List<Vector2> Points => State.points;
+    float slant;
+
+    /// How well each stroke keeps the slant (0..1, by length).
+    float Even(int from, int to)
+    {
+        float good = 0, all = 0;
+        for (int i = from + 1; i < to; i++)
+        {
+            var d = Points[i] - Points[i - 1];
+            float len = d.magnitude;
+            if (len < 0.004f) continue;
+            float angle = Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg;
+            float off = Mathf.Abs(Mathf.DeltaAngle(angle, slant));
+            off = Mathf.Min(off, 180f - off);                    // back and forth both count
+            all += len;
+            if (off <= SlantTolerance * (1f + Assist)) good += len;
+        }
+        return all > 0 ? good / all : 1f;
+    }
+
+    int Stroke(int s, out int to)
+    {
+        to = s + 1 < Starts.Count ? Starts[s + 1] : Points.Count;
+        return Starts[s];
+    }
+
+    /// Strokes mostly at the wrong slant.
+    public string MistakesLeft
+    {
+        get
+        {
+            int n = 0;
+            for (int s = 0; s < Starts.Count; s++) { int from = Stroke(s, out int to); if (to - from > 2 && Even(from, to) < 0.6f) n++; }
+            return n == 0 ? null : n == 1 ? "1 patch of satin stitch at the wrong slant" : $"{n} patches of satin stitch at the wrong slant";
+        }
+    }
     List<int> Starts => State.strokeStarts;
 
     protected override void Build()
@@ -27,6 +65,19 @@ public class SatinFillStep : PieceStep
                 if (PieceShape.Inside(Shape.Outline, p)) spots.Add(p);
             }
         covered = new bool[spots.Count];
+        // The slant: across the shape's narrower side, tilted a little, as satin stitch is usually worked.
+        slant = (max.x - min.x) > (max.y - min.y) ? 70f : 20f;
+        var dir = new Vector2(Mathf.Cos(slant * Mathf.Deg2Rad), Mathf.Sin(slant * Mathf.Deg2Rad));
+        var across = new Vector2(-dir.y, dir.x);
+        var mid = (min + max) * 0.5f;
+        float reach = (max - min).magnitude * 0.5f;
+        for (int g = -2; g <= 2; g++)   // a few printed guide lines
+        {
+            var c = mid + across * (g * reach * 0.35f);
+            var guide = new List<Vector2>();
+            for (int k = -10; k <= 10; k++) { var q = c + dir * (k * reach / 10f); if (PieceShape.Inside(Shape.Outline, q)) guide.Add(q); }
+            if (guide.Count > 1) Dashes(guide, new Color(0.20f, 0.35f, 0.85f, 0.5f), 0.004f, 1);
+        }
         Redraw();
     }
 
@@ -94,6 +145,9 @@ public class SatinFillStep : PieceStep
         int inside = 0;
         foreach (var p in Points)
             if (PieceShape.Inside(Shape.Outline, p) || PieceShape.DistanceToLine(Shape.Outline.Closed(), p) < Reach) inside++;
-        return State.progress * inside / Points.Count;
+        float even = 0; int strokesCounted = 0;
+        for (int s = 0; s < Starts.Count; s++) { int from = Stroke(s, out int to); if (to - from > 1) { even += Even(from, to); strokesCounted++; } }
+        even = strokesCounted > 0 ? even / strokesCounted : 1f;
+        return State.progress * inside / Points.Count * Mathf.Lerp(0.5f, 1f, even);
     }
 }
