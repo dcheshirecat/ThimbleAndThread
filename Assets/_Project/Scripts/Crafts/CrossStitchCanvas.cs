@@ -36,13 +36,14 @@ public class CrossStitchCanvas : MonoBehaviour
     public bool picking;               // Stitch: the stitch picker is in hand; touching a square unpicks it
     public bool showCloth;             // PatternFill: the chosen cloth under the grid, with its woven holes
 
-    public enum Holder { None, Hoop, QSnap }
+    public enum Holder { None, Hoop, QSnap, Frame }   // Frame: needlepoint canvas on wooden stretcher bars
+    public bool tent;                  // needlepoint: tent stitch, one "/" per square; a drag along a diagonal stitches the whole row
 
     /// How many squares wide the board must be drawn so the holder fits round it in the same space.
     public static float SpanFor(Holder h, int width, int height) => h switch
     {
         Holder.Hoop => Mathf.Sqrt(width * width + height * height) + 2.2f,   // the square sits inside the round hoop
-        Holder.QSnap => Mathf.Max(width, height) + 1.8f,
+        Holder.QSnap or Holder.Frame => Mathf.Max(width, height) + 1.8f,
         _ => Mathf.Max(width, height),
     };
 
@@ -313,22 +314,35 @@ public class CrossStitchCanvas : MonoBehaviour
             screw.SetPosition(0, transform.TransformPoint(centre + Vector3.up * (r + cellSize * 0.3f)));
             screw.SetPosition(1, transform.TransformPoint(centre + Vector3.up * (r + cellSize * 1.0f)));
         }
-        else if (holder == Holder.QSnap)   // a square frame of plastic tubes with clamps over the fabric
+        else if (holder == Holder.QSnap || holder == Holder.Frame)   // a square frame: plastic tubes and clamps, or wooden stretcher bars and tacks
         {
+            bool wood = holder == Holder.Frame;
             float half = Mathf.Max(width, height) / 2f * cellSize + cellSize * 0.5f;
             fabric.transform.localScale = Vector3.one * half * 2f;
             for (int side = 0; side < 4; side++)
             {
                 var dir = side switch { 0 => Vector3.up, 1 => Vector3.right, 2 => Vector3.down, _ => Vector3.left };
                 var along = new Vector3(-dir.y, dir.x, 0);
-                var bar = MakeLine(new Color(0.88f, 0.88f, 0.92f), cellSize * 0.5f);
+                var bar = MakeLine(wood ? new Color(0.72f, 0.55f, 0.36f) : new Color(0.88f, 0.88f, 0.92f), cellSize * 0.5f);
                 bar.sortingOrder = 6;
                 bar.SetPosition(0, transform.TransformPoint(centre + dir * half - along * (half + cellSize * 0.25f)));
                 bar.SetPosition(1, transform.TransformPoint(centre + dir * half + along * (half + cellSize * 0.25f)));
-                var clamp = MakeLine(new Color(0.75f, 0.78f, 0.86f), cellSize * 0.62f);
-                clamp.sortingOrder = 7;
-                clamp.SetPosition(0, transform.TransformPoint(centre + dir * half - along * half * 0.5f));
-                clamp.SetPosition(1, transform.TransformPoint(centre + dir * half + along * half * 0.5f));
+                if (wood)   // brass tacks along each bar
+                    for (int t = -2; t <= 2; t++)
+                    {
+                        var tack = MakeLine(new Color(0.85f, 0.70f, 0.30f), cellSize * 0.22f);
+                        tack.sortingOrder = 7;
+                        var at = centre + dir * half + along * half * 0.4f * t;
+                        tack.SetPosition(0, transform.TransformPoint(at - along * cellSize * 0.06f));
+                        tack.SetPosition(1, transform.TransformPoint(at + along * cellSize * 0.06f));
+                    }
+                else
+                {
+                    var clamp = MakeLine(new Color(0.75f, 0.78f, 0.86f), cellSize * 0.62f);
+                    clamp.sortingOrder = 7;
+                    clamp.SetPosition(0, transform.TransformPoint(centre + dir * half - along * half * 0.5f));
+                    clamp.SetPosition(1, transform.TransformPoint(centre + dir * half + along * half * 0.5f));
+                }
             }
         }
         fabric.sharedMaterial = material;
@@ -471,6 +485,16 @@ public class CrossStitchCanvas : MonoBehaviour
 
             // Valid stitch = diagonal across exactly one cell
             int dx = b.x - a.x, dy = b.y - a.y;
+            if (tent && Mathf.Abs(dx) == Mathf.Abs(dy) && Mathf.Abs(dx) > 1)   // needlepoint: a whole diagonal row at once
+            {
+                bool slash = dx * dy > 0;
+                int x0 = Mathf.Min(a.x, b.x), y0 = Mathf.Min(a.y, b.y), y1 = Mathf.Max(a.y, b.y);
+                for (int k = 0; k < Mathf.Abs(dx); k++)
+                    AddStitch(new Vector2Int(x0 + k, slash ? y0 + k : y1 - 1 - k), slash ? 1 : 2, currentColor);
+                AudioManager.Play(Sfx.Stitch);
+                EndStroke();
+                return;
+            }
             if (Mathf.Abs(dx) == 1 && Mathf.Abs(dy) == 1)   // otherwise missed: gentle fail feedback here
             {
                 var cell = new Vector2Int(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y));
@@ -622,6 +646,23 @@ public class CrossStitchCanvas : MonoBehaviour
         lr.sortingOrder = 5;
         lr.numCapVertices = 4;
         return lr;
+    }
+
+    /// Needlepoint: each square of the target wants one tent stitch ("/") in its colour. A stitch slanting the other way
+    /// or crossed into an X counts for little; stitches off the chart count against it.
+    public static float TentScore(List<StitchMark> marks, Pattern target)
+    {
+        if (target.cells.Count == 0) return 1f;
+        var wanted = new Dictionary<Vector2Int, int>();
+        foreach (var t in target.cells) wanted[new Vector2Int(t.x, t.y)] = t.colorIndex;
+        float correct = 0;
+        int extra = 0;
+        foreach (var m in marks)
+        {
+            if (!wanted.TryGetValue(new Vector2Int(m.x, m.y), out int color)) { extra++; continue; }
+            if (color == m.color) correct += m.mask == 1 ? 1f : m.mask == 2 ? 0.4f : 0.3f;
+        }
+        return correct / (wanted.Count + extra);
     }
 
     /// How close the player's work matches a target pattern (0..1) - use for quality/price.

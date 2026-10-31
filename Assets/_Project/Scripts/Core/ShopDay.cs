@@ -1471,6 +1471,13 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         if (o.patternOnly || StepMaterialsUsed(o, index)) return needs;
         var step = o.Steps[index];
         if (step.kind == StepKind.CrossStitch) return Materials.For(o.target, Materials.FabricFor(o.target, content, shop, o.requiredSupplyId), content);
+        if (step.kind == StepKind.TentStitch && o.target != null) return Materials.For(o.target, null, content);   // the design's floss (the canvas came earlier)
+        if (step.kind == StepKind.BackgroundFill && o.target != null)
+        {
+            int squares = o.target.width * o.target.height - o.target.cells.Count;
+            if (squares > 0) needs.Add(new MaterialNeed { supplyId = CrossStitchStep.BackgroundThread, amount = squares });
+            return needs;
+        }
         if (step.materials != null)
             foreach (var m in step.materials) needs.Add(new MaterialNeed { supplyId = m.supplyId, amount = m.amount });
         if (step.threadAmount > 0 && o.target != null)
@@ -1630,6 +1637,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         {
             var needs = NeedsForStep(Selected, index);
             if (kind == StepKind.CrossStitch) Selected.fabricId = Materials.FabricFor(Selected.target, content, shop, Selected.requiredSupplyId)?.supplyId;
+            if (kind == StepKind.MountCanvas) Selected.fabricId = "mono_canvas";
             shop.Use(needs);
             if (kind == StepKind.CrossStitch) Selected.materialsUsed = true;
             else Selected.StepState(index).materialsUsed = true;

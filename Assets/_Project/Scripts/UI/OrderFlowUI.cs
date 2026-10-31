@@ -110,13 +110,15 @@ public class OrderFlowUI : MonoBehaviour
         if (screen == ScreenId.Minigame && !order.patternOnly) ExplainStep(step);
         if (stitching && order.item.craft != CraftType.CrossStitch && order.Steps.Length == 1)
             minigameHint.text += $" (The {CraftName(order.item.craft)} minigame is coming soon; cross stitch stands in.)";
-        minigameThreads.gameObject.SetActive(stitching);
-        minigameThreads.label.gameObject.SetActive(stitching);
-        if (screen == ScreenId.Minigame && stitching)
+        bool board = stitching || step.kind == StepKind.TentStitch || step.kind == StepKind.BackgroundFill;   // needlepoint uses the board too
+        minigameThreads.gameObject.SetActive(board);
+        minigameThreads.label.gameObject.SetActive(board);
+        if (screen == ScreenId.Minigame && board)
         {
+            var chart = step.kind == StepKind.BackgroundFill ? CrossStitchStep.BackgroundOf(order.target) : order.target;
             var names = new List<string>();
-            foreach (var id in order.target.threads) { var t = day.content.Supply(id); names.Add(t != null ? t.displayName : "Thread"); }
-            minigameThreads.Show(order.target.palette, names);
+            foreach (var id in chart.threads) { var t = day.content.Supply(id); names.Add(t != null ? t.displayName : "Thread"); }
+            minigameThreads.Show(chart.palette, names);
         }
 
         resultText.text = $"{order.item.itemName} for {who}\n\n" +
@@ -478,6 +480,9 @@ public class OrderFlowUI : MonoBehaviour
     static string StepHint(StepKind kind) => kind switch
     {
         StepKind.Hem => "Drag along the dashed line to sew the hem all the way round. Lift your finger and carry on wherever you like.",
+        StepKind.MountCanvas => "Tap each mark round the edge to tack the canvas to the stretcher bars, pulling it straight as you go.",
+        StepKind.TentStitch => "Tent stitch: one diagonal per square, every one slanting the same way (/), in the colour the chart shows. Drag corner to corner; drag further along a diagonal to stitch a whole row at once, as needlepointers do.",
+        StepKind.BackgroundFill => "Fill every empty square in the background colour, in tent stitch (/). Long diagonal drags fill a row at a time.",
         StepKind.ChooseFabric => "Tap the fabric to make it from. Only fabrics you have enough of are shown.",
         StepKind.CutPieces => "Cut along the marked line. The fabric is folded, so front and back are cut together.",
         StepKind.Pin => "Tap each white mark around the edge to pin the two pieces together.",

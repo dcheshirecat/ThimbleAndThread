@@ -472,6 +472,37 @@ public static class PlaceholderGenerator
               book: knotsBook, friend: juno, friendLevel: 1);
         RequireSkill(hoopArt, StepKind.FrenchKnots, "french_knots");
 
+        // ---- Needlepoint (owner, 2026-10-31: new crafts): tent stitch on stiff canvas mounted on stretcher bars. Taught by
+        // Dot (friendship 3), or from a book, or once your cross stitch is good enough (level 5). ----
+        var np = CraftType.Needlepoint;
+        var canvas = Supply("mono_canvas", "Mono Canvas 14ct", SupplyKind.Fabric, np, 8, 1, new Color(0.93f, 0.90f, 0.80f), 1, "pieces", A);
+        Supply("stretcher_bars", "Stretcher Bars", SupplyKind.Tool, np, 16, 1, new Color(0.70f, 0.55f, 0.38f), 1, "set", A, 0, "stretcher_bars");
+        Supply("velvet_backing", "Velvet Cushion Backing", SupplyKind.Fabric, np, 9, 1, new Color(0.45f, 0.22f, 0.30f), 1, "pieces", A);
+        Supply("cushion_pad", "Cushion Pad", SupplyKind.Notion, np, 6, 1, new Color(0.96f, 0.96f, 0.94f), 1, "pads", A);
+        var npBook = Supply("book_needlepoint", "Needlepoint for Cross Stitchers", SupplyKind.Book, cs, 30, 1, new Color(0.55f, 0.30f, 0.35f), 1, "book", R);
+        var cushion = Item("cushion", "Needlepoint Cushion", np, 55, 14, new Color(0.75f, 0.40f, 0.45f));
+        Recipe(cushion,
+            Step(StepKind.MountCanvas, "Tack the canvas to the stretcher bars", materials: Need("mono_canvas", 1), tools: Tool("stretcher_bars", "Stretcher bars")),
+            Step(StepKind.TentStitch, "Tent-stitch the design", tools: Tool("tapestry_needle", "Tapestry needle")),
+            Step(StepKind.BackgroundFill, "Fill in the background", tools: Tool("tapestry_needle", "Tapestry needle")),
+            Step(StepKind.Press, "Block it square"),
+            new RecipeStep
+            {
+                kind = StepKind.Hem, label = "Whip-stitch the backing on",
+                tools = new[] { Tool("tapestry_needle", "Tapestry needle") },
+                materials = new[] { Need("velvet_backing", 1), Need("cushion_pad", 1) },
+            });
+        Skill("craft_needlepoint", "Needlepoint", "Tent stitches on stiff canvas, every one slanting the same way: cushions and more.", true, np,
+              levelCraft: cs, craftLevel: 5, book: npBook, friend: dot, friendLevel: 3);
+        Wants(dot, cushion, 1);
+        Wants(owen, cushion, 0);
+        Wants(hal, cushion, 1);
+        Wants(gwen, cushion, 2);
+        Makes(ada, np);
+        // A needlepoint chart: '1'.. the design in tent stitch; the rest is filled in with the background colour.
+        BookPattern("rose_cushion", "Tea Rose Cushion", cushion, 14, new[] { red, charcoal },
+            "..........\n...111....\n..11111...\n..11211...\n..11111...\n...111....\n....2.....\n...222....\n....2.....\n..........");
+
         // ---- The story, in chapters: each opens a craft and sets goals for the next ----
         Chapter(1, "The Shop at the Edge of the Sea",
             "The key is heavier than you expected. Your great-aunt's haberdashery smells of lavender and old wool, and her " +

@@ -1,0 +1,109 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c7901b20ad305e48a66e74441e500f0, type: 3}
+  m_Name: item_cushion
+  m_EditorClassIdentifier: Assembly-CSharp::CraftItemDef
+  itemId: cushion
+  itemName: Needlepoint Cushion
+  craft: 5
+  icon: {fileID: 21300000, guid: 28e2e016d73f7ea4fb8be1016484efe2, type: 3}
+  requiredPattern:
+    id: 
+    displayName: 
+    craft: 0
+    width: 0
+    height: 0
+    palette: []
+    threads: []
+    cells: []
+    fabricId: 
+  basePrice: 55
+  patternPrice: 14
+  requiredSupplyIds: []
+  steps:
+  - kind: 36
+    label: Tack the canvas to the stretcher bars
+    tools:
+    - toolType: stretcher_bars
+      minSize: 0
+      label: Stretcher bars
+      exactSize: 0
+      matchYarn: 0
+    materials:
+    - supplyId: mono_canvas
+      amount: 1
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 37
+    label: Tent-stitch the design
+    tools:
+    - toolType: tapestry_needle
+      minSize: 0
+      label: Tapestry needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 38
+    label: Fill in the background
+    tools:
+    - toolType: tapestry_needle
+      minSize: 0
+      label: Tapestry needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 23
+    label: Block it square
+    tools: []
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 1
+    label: Whip-stitch the backing on
+    tools:
+    - toolType: tapestry_needle
+      minSize: 0
+      label: Tapestry needle
+      exactSize: 0
+      matchYarn: 0
+    materials:
+    - supplyId: velvet_backing
+      amount: 1
+    - supplyId: cushion_pad
+      amount: 1
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  garment: 0

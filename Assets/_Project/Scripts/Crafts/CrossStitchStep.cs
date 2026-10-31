@@ -1,33 +1,84 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// Recipe step: stitch (or, for a pattern-only order, fill in) the order's pattern on the cross stitch board.
-/// The stitches are saved in Order.work.
+/// The stitches are saved in Order.work. Needlepoint uses it too (owner, 2026-10-31: new crafts): TentStitch works the
+/// design in tent stitch on canvas on stretcher bars; BackgroundFill then fills every other square in the background
+/// colour (Order.backgroundWork), with the design already stitched.
 public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPicker
 {
     Order order;
+    StepKind kind;
+    int stepIndex;
 
     public CrossStitchCanvas Board { get; private set; }
+
+    bool Tent => kind == StepKind.TentStitch || kind == StepKind.BackgroundFill;
+    bool Background => kind == StepKind.BackgroundFill;
+    Pattern target;   // what this step stitches: the design, or the background
+
+    /// Needlepoint: the background colour (always-stocked white floss).
+    public const string BackgroundThread = "floss_white";
+    public static readonly Color BackgroundColor = new Color(0.98f, 0.98f, 0.96f);
+
+    /// The background: every square the design leaves empty, in the background colour (after the design's colours).
+    public static Pattern BackgroundOf(Pattern design)
+    {
+        var bg = new Pattern { width = design.width, height = design.height, craft = design.craft };
+        bg.palette.AddRange(design.palette);
+        bg.threads.AddRange(design.threads);
+        int c = bg.palette.Count;
+        bg.palette.Add(BackgroundColor);
+        bg.threads.Add(BackgroundThread);
+        var used = new HashSet<Vector2Int>();
+        foreach (var cell in design.cells) used.Add(new Vector2Int(cell.x, cell.y));
+        for (int x = 0; x < design.width; x++)
+            for (int y = 0; y < design.height; y++)
+                if (!used.Contains(new Vector2Int(x, y))) bg.cells.Add(new StitchCell { x = x, y = y, colorIndex = c });
+        return bg;
+    }
+
+    /// Only the background's own stitches (the design's squares stay as they were).
+    List<StitchMark> BackgroundMarks()
+    {
+        var mine = new List<StitchMark>();
+        foreach (var m in Board.Marks())
+            if (!order.target.cells.Exists(c => c.x == m.x && c.y == m.y)) mine.Add(m);
+        return mine;
+    }
 
     public void Begin(Order forOrder, int stepIndex, StepArea area)
     {
         order = forOrder;
-        var target = order.target;
+        this.stepIndex = Mathf.Clamp(stepIndex, 0, order.Steps.Length - 1);
+        kind = order.Steps[this.stepIndex].kind;
+        target = Background ? BackgroundOf(order.target) : order.target;
         // Stitched in a hoop, or in the Q-Snap frame once you have one (owner, 2026-10-31: the hoop shows while stitching).
-        var holder = order.patternOnly ? CrossStitchCanvas.Holder.None
+        var holder = order.patternOnly ? CrossStitchCanvas.Holder.None : Tent ? CrossStitchCanvas.Holder.Frame
                    : area.shop != null && area.shop.Owns("qsnap_frame") ? CrossStitchCanvas.Holder.QSnap : CrossStitchCanvas.Holder.Hoop;
         Board = MakeBoard(transform, area, target.width, target.height, holder);
         Board.holder = holder;
         Board.mode = order.patternOnly ? CrossStitchCanvas.Mode.PatternFill : CrossStitchCanvas.Mode.Stitch;
         Board.target = target;
-        Board.restore = order.work;
+        Board.tent = Tent;
+        var restore = new List<StitchMark>(order.work);
+        if (Background) restore.AddRange(order.backgroundWork);
+        Board.restore = restore;
         Board.fabricColor = area.fabricColor;
         Board.assist = area.assist;
     }
 
     public float SaveWork()
     {
+        if (Background)
+        {
+            if (Board != null && Board.Ready) order.backgroundWork = BackgroundMarks();
+            order.StepState(stepIndex).progress = Done(order.backgroundWork);
+            return CrossStitchCanvas.TentScore(order.backgroundWork, target);
+        }
         if (Board != null && Board.Ready) order.work = Board.Marks();   // before Ready the board is still empty
-        return CrossStitchCanvas.Score(order.work, order.target);
+        if (Tent) order.StepState(stepIndex).progress = Done(order.work);
+        return Tent ? CrossStitchCanvas.TentScore(order.work, order.target) : CrossStitchCanvas.Score(order.work, order.target);
     }
 
     public void Undo()
@@ -46,6 +97,7 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPick
         get
         {
             if (Board == null || !Board.Ready || order.patternOnly) return null;
+            if (Tent) return TentMistakes();
             int wrong = 0, overHalf = 0;
             var marks = Board.Marks();
             int top = CrossStitchCanvas.TopLeg(marks);
@@ -56,12 +108,33 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPick
                 else if (cell.halfStitch && !CrossStitchCanvas.RightHalf(m.mask, top)) overHalf++;   // the bottom leg, or a full X
             }
             int crossed = Board.WrongCrosses();
-            var parts = new System.Collections.Generic.List<string>();
+            var parts = new List<string>();
             if (wrong > 0) parts.Add(wrong == 1 ? "1 stitch in the wrong place or colour" : $"{wrong} stitches in the wrong place or colour");
             if (overHalf > 0) parts.Add(overHalf == 1 ? "1 half stitch done wrong (it's just the leg that lies on top of your crosses)" : $"{overHalf} half stitches done wrong (they're just the leg that lies on top of your crosses)");
             if (crossed > 0) parts.Add(crossed == 1 ? "1 cross lying the other way from the rest" : $"{crossed} crosses lying the other way from the rest");
             return parts.Count == 0 ? null : string.Join(" and ", parts);
         }
+    }
+
+    /// Share of this step's squares with a stitch in them.
+    float Done(List<StitchMark> marks) => target.cells.Count == 0 ? 1f : Mathf.Clamp01(marks.FindAll(m => target.cells.Exists(c => c.x == m.x && c.y == m.y)).Count / (float)target.cells.Count);
+
+    /// Needlepoint: stitches off the chart or in the wrong colour, slanting the wrong way, or crossed into an X.
+    string TentMistakes()
+    {
+        int wrong = 0, slant = 0, crossed = 0;
+        foreach (var m in Background ? BackgroundMarks() : Board.Marks())
+        {
+            var cell = target.cells.Find(c => c.x == m.x && c.y == m.y);
+            if (cell == null || cell.colorIndex != m.color) wrong++;
+            else if (m.mask == 2) slant++;
+            else if (m.mask == 3) crossed++;
+        }
+        var parts = new List<string>();
+        if (wrong > 0) parts.Add(wrong == 1 ? "1 stitch in the wrong place or colour" : $"{wrong} stitches in the wrong place or colour");
+        if (slant > 0) parts.Add(slant == 1 ? "1 stitch slanting the wrong way (tent stitches all go /)" : $"{slant} stitches slanting the wrong way (tent stitches all go /)");
+        if (crossed > 0) parts.Add(crossed == 1 ? "1 square crossed into an X (needlepoint is one stitch a square)" : $"{crossed} squares crossed into Xs (needlepoint is one stitch a square)");
+        return parts.Count == 0 ? null : string.Join(" and ", parts);
     }
 
     /// A board fitted into the area, as big as it can be while its squares stay square.

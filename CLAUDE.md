@@ -782,3 +782,11 @@ moment, people you've met more likely; flags window:<day>:<hour>). Yesterday's f
 DONE batch 8 (13): Saturdays also offer the craft circle at the tea room (+25 XP in your most practised craft, +3 friendship with up
 to 3 met crafty friends, a stamp) and the church-hall jumble sale (3 random shown supplies at half price, buy one or browse).
 Sundays: 25% of stall shoppers are someone you've met (once each per Sunday; Shopper.friend); a sale to them is +4 friendship.
+DONE batch 9 (16, needlepoint): CraftType.Needlepoint (appended). Learned from Dot (friendship 3), the book "Needlepoint for Cross
+Stitchers" (rare, shown with cross stitch), or cross stitch level 5. Supplies (craft Needlepoint, always stocked once learned):
+mono_canvas, stretcher_bars (tool), velvet_backing, cushion_pad. Item "cushion" (Needlepoint Cushion): MountCanvas (Crafts/
+MountCanvasStep.cs: tap 16 tack marks round the stretcher bars), TentStitch (CrossStitchStep with CrossStitchCanvas.tent: one "/"
+per square, a long diagonal drag stitches the whole row; Holder.Frame = wooden bars with brass tacks; TentScore), BackgroundFill
+(CrossStitchStep.BackgroundOf: every empty square in floss_white; Order.backgroundWork), Press (block it), Hem ("Whip-stitch the
+backing on": velvet backing + cushion pad). Book pattern Tea Rose Cushion. Dot, Owen, Hal, Gwen ask for cushions.
+Still to do from 16: quilting, loom weaving, more characters.
