@@ -17,6 +17,10 @@ public class PatternDef : ScriptableObject
     public CraftItemDef item;           // what this pattern makes
     public int price = 10;              // starting shelf price; the player can change it
     public bool startsOnShelf = true;   // part of the great-aunt's book at the start of the game
+    [Header("Sold at the pattern shop (Finch's)")]
+    public bool forSale;                // on sale at the pattern shop (never in the book at the start)
+    public MarketSlot rarity = MarketSlot.Always;   // Always = common, Rotating = uncommon, Rare
+    public int shopPrice = 30;          // what the pattern costs to buy there
     public SupplyDef[] threads = new SupplyDef[0];   // the floss for '1', '2'... (sets the colours)
     public Color[] palette = { new Color(0.85f, 0.25f, 0.30f) };   // only used when no threads are set
     [TextArea(8, 20)] public string grid;

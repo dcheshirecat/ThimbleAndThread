@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d664e9494a15d3747aae761ccc2f60d0, type: 3}
+  m_Name: pattern_daisy_hoop
+  m_EditorClassIdentifier: Assembly-CSharp::PatternDef
+  patternId: daisy_hoop
+  displayName: Daisy Hoop
+  item: {fileID: 11400000, guid: 10c1ffff1a3b659439f05d80f5834bda, type: 2}
+  price: 11
+  startsOnShelf: 0
+  forSale: 1
+  rarity: 1
+  shopPrice: 28
+  threads:
+  - {fileID: 11400000, guid: c015a8ceaf1be4542ac24705d68e1cf3, type: 2}
+  - {fileID: 11400000, guid: 11a8a09fea3051240bb7917ab0916824, type: 2}
+  palette:
+  - {r: 0.85, g: 0.25, b: 0.3, a: 1}
+  grid: '........
+
+    ...11...
+
+    ..1111..
+
+    .112211.
+
+    .112211.
+
+    ..1111..
+
+    ...11...
+
+    ........'

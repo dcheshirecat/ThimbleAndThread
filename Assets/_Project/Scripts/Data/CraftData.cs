@@ -107,13 +107,15 @@ public class MarketPurchase
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 19;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique)
+    public const int CurrentVersion = 20;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique). 20: the day clock (clock, nextArrival)
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
     public int coins = 50;
     public int day = 1;
     public bool night;                        // false = shop open (day), true = workroom (night)
+    public int clock;                         // the time of day in minutes (ShopDay.OpensAt..ClosesAt; 0 = opening time)
+    public int nextArrival;                   // when the next visitor reaches the door, in minutes (0 = not on their way yet)
     public List<SupplyStock> stock = new List<SupplyStock>();   // the supply cupboard
     public int marketSeed;                    // picks this save's rotating market stock (0 = not set yet)
     public List<string> ownedSupplies = new List<string>();     // version 3 and older; converted into stock on load

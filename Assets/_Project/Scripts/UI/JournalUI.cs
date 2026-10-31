@@ -57,8 +57,8 @@ public class JournalUI : MonoBehaviour
         if (Save == null) return;
         overlay.SetActive(true);
         overlay.transform.SetAsLastSibling();
-        if (marketLink != null) marketLink.SetActive(!Save.night && day.ShopOpen(ScreenId.Market));
-        if (boutiqueLink != null) boutiqueLink.SetActive(!Save.night && day.ShopOpen(ScreenId.Boutique));
+        if (marketLink != null) marketLink.SetActive(!Save.night && day.ShopOpenNow(ScreenId.Market));
+        if (boutiqueLink != null) boutiqueLink.SetActive(!Save.night && day.ShopOpenNow(ScreenId.Boutique));
         Show();
         StartCoroutine(Slide(true));
         AudioManager.Play(Sfx.Click);
@@ -187,8 +187,7 @@ public class JournalUI : MonoBehaviour
             {
                 // Someone around town you haven't met yet (owner, 2026-10-31): ??? and no face until they
                 // introduce themselves. Only people who are about by now, so it doesn't hint at what's coming.
-                bool about = cust.shopOwner ? (cust.customerId == ShopDay.MarketOwnerId ? day.ShopOpen(ScreenId.Market) : day.ShopOpen(ScreenId.Boutique))
-                                            : cust.firstChapter <= Save.chapter;
+                bool about = cust.shopOwner ? day.ShopOpen(ShopDay.ShopOf(cust.customerId)) : cust.firstChapter <= Save.chapter;
                 if (about) { FriendCard("???", null, null, "You haven't met them yet."); shown++; }
                 continue;
             }

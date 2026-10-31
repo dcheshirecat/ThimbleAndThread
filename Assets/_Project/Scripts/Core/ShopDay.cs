@@ -58,11 +58,43 @@ public class ShopDay : MonoBehaviour
     // ---- The doorbell: rings on any screen, with a buzz, until someone opens the door ----
 
     // Visitors come now and then, not one after another (owner, 2026-10-31: time to do other things between).
-    const float BellRepeat = 45f;                          // rings again while no one answers
-    const float FirstVisitorMin = 8f, FirstVisitorMax = 15f;    // the day's first visitor
-    const float NextVisitorMin = 30f, NextVisitorMax = 75f;     // seconds (on any screen but a conversation) until the next
-    bool firstVisitor = true;
-    float bellTimer = -1f;
+    // The day has a clock (owner, 2026-10-31): the shop opens at 9 and it's closing time at 6. Time passes on
+    // any screen but a conversation or Settings, about an hour a minute; visitors follow a real day, busier
+    // around lunch and late afternoon. The player can still close up at any time, and stay open past six
+    // (no one new comes then; whoever didn't make it comes another day).
+    public const int OpensAt = 9 * 60, ClosesAt = 18 * 60;
+    const float MinutesPerSecond = 1f;                     // game minutes per real second
+    const float BellRepeat = 45f;                          // rings again while no one answers (real seconds)
+    float bellTimer = -1f, clockCarry;
+
+    public static string TimeText(int minutes) => $"{(minutes / 60 + 11) % 12 + 1}:{minutes % 60:00} {(minutes < 12 * 60 ? "am" : "pm")}";
+    public bool ClosingTime => Save != null && Save.clock >= ClosesAt;
+
+    /// Minutes until the next visitor: shorter in the busy hours.
+    static int Gap(int clock)
+    {
+        bool busy = (clock >= 11 * 60 + 30 && clock < 13 * 60 + 30) || (clock >= 15 * 60 && clock < 17 * 60);
+        return busy ? Random.Range(12, 31) : Random.Range(30, 71);
+    }
+
+    // ---- Shop hours (owner, 2026-10-31: the other shops open at set hours) ----
+
+    public static (int opens, int closes) HoursOf(ScreenId shop) =>
+        shop == ScreenId.Boutique ? (10 * 60, 18 * 60) : shop == ScreenId.PatternShop ? (11 * 60, 17 * 60) : (9 * 60, 17 * 60);
+
+    /// Open today and within its hours.
+    public bool ShopOpenNow(ScreenId shop)
+    {
+        if (!ShopOpen(shop)) return false;
+        var (opens, closes) = HoursOf(shop);
+        return Save.clock >= opens && Save.clock < closes;
+    }
+
+    public string HoursText(ScreenId shop)
+    {
+        var (opens, closes) = HoursOf(shop);
+        return Save.clock < opens ? $"opens at {TimeText(opens)}" : Save.clock >= closes ? $"closed (open {TimeText(opens)} to {TimeText(closes)})" : $"open until {TimeText(closes)}";
+    }
     public bool BellRinging { get; private set; }
     public event System.Action OnBell;
 
@@ -76,20 +108,33 @@ public class ShopDay : MonoBehaviour
             Progress.CheckQuests();
             CheckShops();
         }
-        if (Save == null || Save.night || CustomersWaiting == 0 || GM.Current == ScreenId.Dialogue || GM.Current == ScreenId.Title
-            || GM.Current == ScreenId.SaveSelect || GM.Current == ScreenId.Customize || GM.Current == ScreenId.Tutorial
-            || GM.Current == ScreenId.Settings || !Save.player.created)   // Settings pauses the day
+        if (Save == null || Save.night) { BellRinging = false; return; }
+        if (GM.Current == ScreenId.Dialogue || GM.Current == ScreenId.Title || GM.Current == ScreenId.SaveSelect || GM.Current == ScreenId.Customize
+            || GM.Current == ScreenId.Tutorial || GM.Current == ScreenId.Settings || !Save.player.created) return;   // the day waits
+        Tick();
+        if (CustomersWaiting == 0) { BellRinging = false; return; }
+        if (BellRinging)   // no one's answered: ring again now and then
         {
-            if (Save == null || Save.night || CustomersWaiting == 0) { BellRinging = false; bellTimer = -1f; }
+            if ((bellTimer -= Time.unscaledDeltaTime) <= 0) { bellTimer = BellRepeat; RingBell(); }
             return;
         }
-        if (bellTimer < 0)   // someone's on their way...
-        {
-            bellTimer = BellRinging ? BellRepeat : firstVisitor ? Random.Range(FirstVisitorMin, FirstVisitorMax) : Random.Range(NextVisitorMin, NextVisitorMax);
-            firstVisitor = false;
-        }
-        bellTimer -= Time.unscaledDeltaTime;
-        if (bellTimer <= 0) { bellTimer = -1f; RingBell(); }
+        if (Save.nextArrival <= 0) Save.nextArrival = Save.clock + Gap(Save.clock);   // someone's on their way...
+        if (Save.clock >= Save.nextArrival && !ClosingTime) { Save.nextArrival = 0; bellTimer = BellRepeat; RingBell(); }
+    }
+
+    /// The clock moves on, up to closing time.
+    void Tick()
+    {
+        if (Save.clock < OpensAt) Save.clock = OpensAt;
+        if (Save.clock >= ClosesAt) return;
+        clockCarry += Time.unscaledDeltaTime * MinutesPerSecond;
+        int whole = (int)clockCarry;
+        if (whole <= 0) return;
+        clockCarry -= whole;
+        Save.clock = Mathf.Min(ClosesAt, Save.clock + whole);
+        if (Save.clock == ClosesAt)
+            Stamps.Notice(CustomersWaiting > 0 ? "Six o'clock: closing time.\n<size=40>Anyone who didn't make it will come another day.</size>"
+                                                : "Six o'clock: closing time.\n<size=40>Flip the sign when you're ready.</size>");
     }
 
     void RingBell()
@@ -102,7 +147,7 @@ public class ShopDay : MonoBehaviour
     }
 
     /// The door's been opened: the bell stops until the next visitor arrives.
-    public void AnswerDoor() { BellRinging = false; bellTimer = -1f; }
+    public void AnswerDoor() { BellRinging = false; bellTimer = -1f; Save.nextArrival = Save.clock + Gap(Save.clock); }
 
     void OnDestroy()
     {
@@ -170,8 +215,9 @@ public class ShopDay : MonoBehaviour
     /// order they've decided to collect today (the player only finds out when the bell rings).
     void InviteVisitors()
     {
-        firstVisitor = true;
         bellTimer = -1f;
+        Save.clock = OpensAt;
+        Save.nextArrival = OpensAt + Random.Range(8, 21);   // the day's first visitor comes soon after opening
         var list = Save.visitorsToday;
         list.Clear();
         foreach (var c in content.customers)
@@ -1180,12 +1226,17 @@ public class ShopDay : MonoBehaviour
     // opens on day 2, the boutique after three hand-overs (or chapter 2). Their owners greet you at the door
     // and see you off (ink knots name_greet*, name_bye*, name_thanks* after buying something). ----
 
-    public const string MarketFlag = "shop:market", BoutiqueFlag = "shop:boutique";
-    public const int MarketOpensDay = 2, BoutiqueDeliveries = 3;
+    public const string MarketFlag = "shop:market", BoutiqueFlag = "shop:boutique", PatternShopFlag = "shop:patterns";
+    public const int MarketOpensDay = 2, BoutiqueDeliveries = 3, PatternShopSales = 3;
     bool boughtThisVisit;
 
-    public bool ShopOpen(ScreenId shop) => Save != null && Save.flags.Contains(shop == ScreenId.Market ? MarketFlag : BoutiqueFlag);
-    public bool AnyShopOpen => ShopOpen(ScreenId.Market) || ShopOpen(ScreenId.Boutique);
+    /// The shop a shop owner runs.
+    public static ScreenId ShopOf(string ownerId) =>
+        ownerId == MarketOwnerId ? ScreenId.Market : ownerId == PatternShopOwnerId ? ScreenId.PatternShop : ScreenId.Boutique;
+
+    public static string FlagOf(ScreenId shop) => shop == ScreenId.Market ? MarketFlag : shop == ScreenId.Boutique ? BoutiqueFlag : PatternShopFlag;
+    public bool ShopOpen(ScreenId shop) => Save != null && Save.flags.Contains(FlagOf(shop));
+    public bool AnyShopOpen => ShopOpen(ScreenId.Market) || ShopOpen(ScreenId.Boutique) || ShopOpen(ScreenId.PatternShop);
 
     public void CheckShops()
     {
@@ -1193,6 +1244,8 @@ public class ShopDay : MonoBehaviour
             OpenShop(MarketFlag, "The Supply Market", "Fabric, thread, yarn and tools, just across the square.");   // no names before they introduce themselves
         if (Save.totalDelivered >= BoutiqueDeliveries || Save.chapter >= 2)
             OpenShop(BoutiqueFlag, "The Boutique", "Clothes, hair and accessories: a new boutique across the square has opened its doors.");
+        if (Save.totalPatternsSold >= PatternShopSales || Save.chapter >= 2)   // once the shop sells patterns, a pattern shop takes an interest
+            OpenShop(PatternShopFlag, "The Pattern Shop", "Ready-made patterns to sell in your shop, from simple to rare and fancy.");
     }
 
     void OpenShop(string flag, string name, string detail)
@@ -1203,10 +1256,76 @@ public class ShopDay : MonoBehaviour
         Explainers.Explain(Save, flag, false, flag == MarketFlag
             ? $"{name} is open\nBy day, tap Shops at the top right to cross the square. Buy fabric, floss, yarn and tools there: " +
               "some things are always in stock, others change every few days, and now and then something rare turns up."
-            : $"{name} is open\nBy day, tap Shops at the top right. Clothes, hairstyles and accessories for your shopkeeper: try a look, then buy it.");
+            : flag == BoutiqueFlag
+            ? $"{name} is open\nBy day, tap Shops at the top right. Clothes, hairstyles and accessories for your shopkeeper: try a look, then buy it."
+            : $"{name} is open\nBy day, tap Shops at the top right. Buy ready-made patterns to put on your display: the rarer ones cost more, " +
+              "but they're fancier, use more techniques, and customers pay more for them. New ones come in every few days.");
         Progress.AddNews($"{name} is open. Find it under Shops.");
         GM.Persist();
     }
+
+    // ---- The pattern shop (owner, 2026-10-31): Ada Finch sells ready-made patterns to put on display, by
+    // complexity and rarity (rarer = pricier, fancier, more techniques). Stock changes every 4 days. ----
+
+    public const string PatternShopOwnerId = "ada";
+    public const int PatternShopDays = 4;
+
+    public int PatternShopRestock => PatternShopDays - (Save.day - 1) % PatternShopDays;
+
+    /// This period's patterns: a few common and uncommon ones, sometimes a rare one; only for crafts the player
+    /// has learned, and not ones already in the book.
+    public List<PatternDef> PatternsForSale()
+    {
+        var pool = new List<PatternDef>();
+        foreach (var d in content.patterns)
+            if (d != null && d.forSale && d.item != null && Progress.CraftOpen(d.item.craft) && !Save.patterns.Exists(p => p.id == d.patternId))
+                pool.Add(d);
+        pool.Sort((a, b) => string.CompareOrdinal(a.patternId, b.patternId));
+        if (Save.marketSeed == 0) Save.marketSeed = Random.Range(1, int.MaxValue);
+        var rng = new System.Random(unchecked(Save.marketSeed * 13 + 3 + (Save.day - 1) / PatternShopDays));
+        var picked = new List<PatternDef>();
+        void Pick(MarketSlot slot, int n)
+        {
+            var some = pool.FindAll(d => d.rarity == slot);
+            for (int i = some.Count - 1; i > 0; i--) { int j = rng.Next(i + 1); (some[i], some[j]) = (some[j], some[i]); }
+            picked.AddRange(some.GetRange(0, Mathf.Min(n, some.Count)));
+        }
+        Pick(MarketSlot.Always, 3);
+        Pick(MarketSlot.Rotating, 2);
+        if (rng.NextDouble() < 0.35) Pick(MarketSlot.Rare, 1);
+        return picked;
+    }
+
+    /// How involved a pattern is, 1 to 5: its size, how many colours, and half stitches.
+    public static int Complexity(Pattern p)
+    {
+        if (p == null) return 1;
+        var colours = new HashSet<int>();
+        bool halves = false;
+        foreach (var c in p.cells) { colours.Add(c.colorIndex); halves |= c.halfStitch; }
+        int score = (p.width * p.height > 100 ? 1 : 0) + (p.cells.Count > 60 ? 1 : 0) + Mathf.Max(0, colours.Count - 1) + (halves ? 1 : 0);
+        return Mathf.Clamp(1 + score, 1, 5);
+    }
+
+    public void BuyPattern(string patternId)
+    {
+        var d = System.Array.Find(content.patterns, x => x != null && x.patternId == patternId);
+        if (d == null || Save.night || Save.patterns.Exists(p => p.id == patternId)) return;
+        if (!GM.TrySpend(d.shopPrice)) { LastMessage = $"Not enough coins for {d.displayName} ({d.shopPrice} coins)."; }
+        else
+        {
+            Save.patterns.Add(new OwnedPattern { id = d.patternId, name = d.displayName, itemId = d.item.itemId, price = d.price, onShelf = false });
+            GM.AddRelationshipPoints(PatternShopOwnerId, 2);
+            boughtThisVisit = true;
+            LastMessage = $"Bought the {d.displayName} pattern. It's in your book: put it on display from the display page.";
+            if (d.rarity == MarketSlot.Rare) Stamps.Earn(Save, "patterns:rare", "A rare pattern", d.displayName, StampTheme.Shop);
+            GM.Persist();
+        }
+        GM.ChangeScreen(ScreenId.PatternShop);   // refresh
+    }
+
+    public void ChatWithPatternShopOwner() => ChatWith(PatternShopOwnerId, ScreenId.PatternShop);
+    public void LeavePatternShop() => LeaveShop(PatternShopOwnerId);
 
     public bool CanChat(string customerId) => !Save.flags.Contains($"chat:{customerId}:{Save.day}");
 
@@ -1214,6 +1333,11 @@ public class ShopDay : MonoBehaviour
     public void EnterShop(string ownerId, ScreenId shop)
     {
         if (Save == null || Save.night || !ShopOpen(shop)) return;
+        if (!ShopOpenNow(shop))
+        {
+            Stamps.Notice($"{(shop == ScreenId.Market ? "The Supply Market" : shop == ScreenId.Boutique ? "The boutique" : "The pattern shop")} {HoursText(shop)}.");
+            return;
+        }
         boughtThisVisit = false;
         LastMessage = "";
         var who = CustomerFor(ownerId);

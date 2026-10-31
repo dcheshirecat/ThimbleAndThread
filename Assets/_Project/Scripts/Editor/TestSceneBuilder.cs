@@ -243,7 +243,7 @@ public static class TestSceneBuilder
         shops.colors = shopsColors;
         shops.GetComponentInChildren<Text>().fontSize = 56;
         shopScene.shopsButton = shops.gameObject;
-        var shopsMenu = Shape(p, "Shops Menu", new Vector2(0.72f, 0.72f), new Vector2(900, 560), new Color(1, 0.97f, 0.9f), uiSprite);
+        var shopsMenu = Shape(p, "Shops Menu", new Vector2(0.72f, 0.7f), new Vector2(900, 760), new Color(1, 0.97f, 0.9f), uiSprite);
         shopsMenu.GetComponent<Image>().raycastTarget = true;
         var sm = Column(shopsMenu, 0.5f, 0.5f);
         var menuMarket = Button(sm, "Menu Market", shopScene.GoToMarket, 800);
@@ -252,6 +252,9 @@ public static class TestSceneBuilder
         var menuBoutique = Button(sm, "Menu Boutique", shopScene.GoToBoutique, 800);
         menuBoutique.GetComponentInChildren<Text>().text = "The Boutique";
         shopScene.boutiqueButton = menuBoutique.gameObject;
+        var menuPatterns = Button(sm, "Menu Patterns", shopScene.GoToPatternShop, 800);
+        menuPatterns.GetComponentInChildren<Text>().text = "The Pattern Shop";
+        shopScene.patternShopButton = menuPatterns.gameObject;
         Button(sm, "Menu Close", shopScene.ToggleShops, 800).GetComponentInChildren<Text>().text = "Close";
         shopsMenu.gameObject.SetActive(false);
         shopScene.shopsMenu = shopsMenu.gameObject;
@@ -470,6 +473,23 @@ public static class TestSceneBuilder
         custom.madeLabel = OptionRow(b, "Your Makes", custom.NextMade);
         custom.messageText = Label(p, "Message", new Vector2(0.06f, 0.075f), new Vector2(0.94f, 0.1f), 52, TextAnchor.MiddleCenter);
         Button(Column(p, 0.5f, 0.01f), "Done", custom.Done, 800);
+
+        // Finch's Pattern Parlour: ready-made patterns to sell (PatternShopUI)
+        p = Panel(ScreenId.PatternShop, "Finch's Pattern Parlour", new Color(0.80f, 0.86f, 0.78f));
+        var pshop = canvasGo.AddComponent<PatternShopUI>();
+        pshop.day = day;
+        pshop.statusText = Label(p, "Status", new Vector2(0.22f, 0.79f), new Vector2(0.96f, 0.92f), 52, TextAnchor.MiddleCenter);
+        OwnerPortrait(p, content.Customer(ShopDay.PatternShopOwnerId), pshop.Chat);
+        pshop.rowTemplate = Button(ScrollList(p, 0.12f, 0.77f), "PatternShop Template", null, 1840);
+        TallRow(pshop.rowTemplate, 280, 48);
+        var psText = pshop.rowTemplate.GetComponentInChildren<Text>();
+        ((RectTransform)psText.transform).offsetMin = new Vector2(300, 0);
+        psText.alignment = TextAnchor.MiddleLeft;
+        var psPreview = Preview(pshop.rowTemplate.transform, new Vector2(0, 0.5f), 230);
+        ((RectTransform)psPreview.transform).anchoredPosition = new Vector2(150, 0);
+        b = Row(p, 0.5f, 0.04f);
+        Button(b, "Chat with Ada", pshop.Chat, 860).GetComponentInChildren<Text>().text = "Chat";
+        Button(b, "Back", pshop.Leave, 860);
 
         // Moreau's boutique: hair, tops, accessories (BoutiqueUI)
         p = Panel(ScreenId.Boutique, "Moreau's Boutique", new Color(0.92f, 0.82f, 0.88f));

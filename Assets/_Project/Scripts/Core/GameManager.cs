@@ -5,7 +5,7 @@ public enum ScreenId
 {
     Title, Shop, Dialogue, Workbench, Minigame, Result,
     Market, PatternStudio, Journal, Settings, DaySummary,
-    SaveSelect, OrderBook, Workroom, PatternEdit, PatternDesigner, Tutorial, Trade, Gather, Customize, Boutique   // new values go at the end so saved scene references keep their numbers
+    SaveSelect, OrderBook, Workroom, PatternEdit, PatternDesigner, Tutorial, Trade, Gather, Customize, Boutique, PatternShop   // new values go at the end so saved scene references keep their numbers
 }
 
 /// Central game state: current screen, save data, coins, relationships.

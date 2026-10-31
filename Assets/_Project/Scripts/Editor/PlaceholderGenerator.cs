@@ -371,6 +371,40 @@ public static class PlaceholderGenerator
         BookPattern("market_tote", "Market Tote", tote, 10, new[] { navy },
             "111111111\n111111111\n111111111\n111111111\n111111111\n111111111\n111111111");
 
+        // ---- Ada Finch's pattern shop (owner, 2026-10-31): ready-made patterns by complexity and rarity ----
+        ShopPattern("lighthouse", "Lighthouse", sampler, 10, 25, MarketSlot.Always, new[] { content_Supply("floss_red"), content_Supply("floss_navy") },
+            "...11...\n..1111..\n...22...\n...11...\n...22...\n...11...\n..2222..\n.222222.\n22222222\n........");
+        ShopPattern("starfish", "Starfish", sampler, 8, 20, MarketSlot.Always, new[] { content_Supply("floss_coral") },
+            "....1...\n...111..\n1111111.\n.11111..\n..111...\n.11.11..\n11...11.\n........");
+        ShopPattern("shell_border", "Shell Border", tablecloth, 12, 30, MarketSlot.Always, new[] { content_Supply("floss_teal") },
+            "........\n.1....1.\n111..111\n1.1..1.1\n111..111\n........\n11111111\n........");
+        ShopPattern("simple_stripe", "Simple Stripe", scarf, 9, 22, MarketSlot.Always, new[] { content_Supply("floss_red") },
+            "........\n11111111\n........\n........\n11111111\n........\n........\n11111111");
+        ShopPattern("daisy_hoop", "Daisy Hoop", hoopArt, 11, 28, MarketSlot.Always, new[] { content_Supply("floss_yellow"), content_Supply("floss_white") },
+            "........\n...11...\n..1111..\n.112211.\n.112211.\n..1111..\n...11...\n........");
+        ShopPattern("harbour_cottage", "Harbour Cottage", sampler, 16, 55, MarketSlot.Rotating, new[] { content_Supply("floss_red"), content_Supply("floss_cream"), content_Supply("floss_navy") },
+            "............\n.....a1.....\n....a111....\n...a11111...\n..a1111111..\n..22222222..\n..23322332..\n..23322332..\n..22233222..\n..22233222..\n333333333333\n............");
+        ShopPattern("snowflake_jumper", "Snowflake Jumper", sweater, 20, 60, MarketSlot.Rotating, new[] { content_Supply("floss_white") },
+            "..........\n....1.....\n..1.1.1...\n...111....\n.1111111..\n...111....\n..1.1.1...\n....1.....\n..........\n..........");
+        ShopPattern("bear_cub", "Bear Cub", plushie, 14, 45, MarketSlot.Rotating, new[] { content_Supply("floss_brown"), content_Supply("floss_charcoal") },
+            "11....11\n11111111\n.111111.\n.121121.\n.111111.\n..1221..\n.111111.\n........");
+        ShopPattern("sailor_tote", "Sailor Tote", tote, 13, 40, MarketSlot.Rotating, new[] { content_Supply("floss_royal") },
+            "111111111\n111111111\n111111111\n111111111\n111111111\n111111111\n111111111\n111111111");
+        ShopPattern("rose_garden", "Rose Garden", hoopArt, 16, 55, MarketSlot.Rotating, new[] { content_Supply("floss_rose"), content_Supply("floss_forest") },
+            "..........\n...1111...\n..111111..\n..112111..\n..111111..\n...1111...\n....22....\n..2222....\n....2222..\n....22....");
+        ShopPattern("midnight_sea", "Midnight Sea", tablecloth, 26, 110, MarketSlot.Rare, new[] { content_Supply("floss_navy"), content_Supply("floss_metallic_silver"), content_Supply("floss_sky") },
+            "..............\n...2......2...\n..222....222..\n...2......2...\n..............\n3a.3a.3a.3a.3a\n11111111111111\n1a1a1a1a1a1a1a\n11111111111111\n..............\n....2....2....\n...222..222...\n....2....2....\n..............");
+        ShopPattern("golden_koi", "Golden Koi", sampler, 24, 100, MarketSlot.Rare, new[] { content_Supply("floss_orange"), content_Supply("floss_metallic_gold"), content_Supply("floss_white") },
+            "............\n......11....\n....11111...\n...1121111..\n..11112111a.\n.a1111121111\n..1111111a..\n...11111....\n....a11.....\n...11..11...\n..3.3..3.3..\n............");
+        ShopPattern("fox_in_ferns", "Fox in the Ferns", sweater, 28, 120, MarketSlot.Rare, new[] { content_Supply("floss_rust"), content_Supply("floss_forest"), content_Supply("floss_white") },
+            "............\n..1......1..\n..11....11..\n..11111111..\n..13111131..\n..11111111..\n...113311...\n....1111....\n2....11....2\n22..2112..22\n.22222222222\n............");
+
+        // Ada Finch runs the pattern shop: an old friend of the great-aunt, a retired pattern designer (she/her).
+        var ada = Customer("ada", "Ada Finch", "Runs Finch's Pattern Parlour (she/her). A retired pattern designer who knew your great-aunt for fifty years.",
+                 new Color(0.45f, 0.55f, 0.45f), new (CraftItemDef, int)[0]);
+        Character(ada, "ada", 1, false);
+        ShopOwner(ada);
+
         Tutorial();
 
         // ---- Skills: crafts open with the story; techniques come from levels, books and friends ----
@@ -434,6 +468,18 @@ public static class PlaceholderGenerator
     }
 
     /// Creates the book pattern, or gives an older one its threads if it has none yet.
+    /// A pattern sold at the pattern shop (not in the book at the start).
+    static void ShopPattern(string id, string name, CraftItemDef item, int price, int shopPrice, MarketSlot rarity, SupplyDef[] threads, string grid)
+    {
+        var def = BookPattern(id, name, item, price, threads, grid);
+        if (def.forSale) return;   // already set up (hand edits stay)
+        def.startsOnShelf = false;
+        def.forSale = true;
+        def.rarity = rarity;
+        def.shopPrice = shopPrice;
+        EditorUtility.SetDirty(def);
+    }
+
     static PatternDef BookPattern(string id, string name, CraftItemDef item, int price, SupplyDef[] threads, string grid)
     {
         Directory.CreateDirectory($"{Root}/Data/Patterns");

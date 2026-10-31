@@ -313,3 +313,12 @@ These need a bit of code first. You can start the art now:
   layers stack. Name them `player_<layer>_<name>_<colour>.png`, e.g. `player_hair_bob_brown.png`.
   Before building it, decide what can be customized (the player only, or customers too?) and
   whether colours are separate drawings or tinted from one greyscale drawing.
+
+
+## Patterns for the pattern shop (Ada Finch's)
+
+A pattern sold at the pattern shop is a normal Pattern asset (Assets/_Project/Data/Patterns) with **For Sale** ticked,
+**Starts On Shelf** unticked, a **Rarity** (Always = common, Rotating = uncommon, Rare) and a **Shop Price** (what the
+player pays). **Price** is what it then sells for on the display. Each 4-day period the shop stocks 3 common and
+2 uncommon patterns, and sometimes 1 rare one, only for crafts the player has learned. Rarer patterns should be bigger,
+use more colours and half stitches: the shop shows a complexity of 1 to 5 worked out from that.

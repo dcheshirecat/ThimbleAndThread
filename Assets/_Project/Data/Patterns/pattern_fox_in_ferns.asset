@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d664e9494a15d3747aae761ccc2f60d0, type: 3}
+  m_Name: pattern_fox_in_ferns
+  m_EditorClassIdentifier: Assembly-CSharp::PatternDef
+  patternId: fox_in_ferns
+  displayName: Fox in the Ferns
+  item: {fileID: 11400000, guid: e7e94861e1dcdf847ba6112533c4cabe, type: 2}
+  price: 28
+  startsOnShelf: 0
+  forSale: 1
+  rarity: 2
+  shopPrice: 120
+  threads:
+  - {fileID: 11400000, guid: 62b0c4e4f4bcf2548b64eadb2cf0bfd9, type: 2}
+  - {fileID: 11400000, guid: f810647f9c74b5b46afe9a5e688440b6, type: 2}
+  - {fileID: 11400000, guid: 11a8a09fea3051240bb7917ab0916824, type: 2}
+  palette:
+  - {r: 0.85, g: 0.25, b: 0.3, a: 1}
+  grid: '............
+
+    ..1......1..
+
+    ..11....11..
+
+    ..11111111..
+
+    ..13111131..
+
+    ..11111111..
+
+    ...113311...
+
+    ....1111....
+
+    2....11....2
+
+    22..2112..22
+
+    .22222222222
+
+    ............'

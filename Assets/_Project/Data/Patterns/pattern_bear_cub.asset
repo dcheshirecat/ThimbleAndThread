@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d664e9494a15d3747aae761ccc2f60d0, type: 3}
+  m_Name: pattern_bear_cub
+  m_EditorClassIdentifier: Assembly-CSharp::PatternDef
+  patternId: bear_cub
+  displayName: Bear Cub
+  item: {fileID: 11400000, guid: c6e1e2e9b2b49e64cb78d15551c8b572, type: 2}
+  price: 14
+  startsOnShelf: 0
+  forSale: 1
+  rarity: 0
+  shopPrice: 45
+  threads:
+  - {fileID: 11400000, guid: f49bc586d5ec33a49a368f738619be11, type: 2}
+  - {fileID: 11400000, guid: b81d7c06b971771439cf0e44cbf02416, type: 2}
+  palette:
+  - {r: 0.85, g: 0.25, b: 0.3, a: 1}
+  grid: '11....11
+
+    11111111
+
+    .111111.
+
+    .121121.
+
+    .111111.
+
+    ..1221..
+
+    .111111.
+
+    ........'

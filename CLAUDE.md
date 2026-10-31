@@ -624,6 +624,16 @@ DONE batch 2 (items 11, 12, 14, 19, 21, 22, 24, 8 and the GENERAL explainers):
 - 19: Market "Sell Supplies": ShopDay.SaleOf/SellSupply, half price, one pack at a time, never what open orders still
   need (Reserved) or a tool an order relies on; books and NotSold tools can't be sold.
 - 21: tapping a displayed pattern shows actions under it: put away, swap for one from the book, price up/down, edit.
+DONE batch 3 (items 6, 7, 10; save version 20):
+- Day clock (ShopDay.OpensAt 9:00, ClosesAt 18:00, 1 game minute per real second, paused in dialogue/Settings):
+  SaveData.clock, nextArrival; visitors arrive at clock times, gaps 12-30 min in the busy hours (11:30-13:30, 15-17),
+  else 30-70; none new after closing (a notice at six). The top bar shows the time.
+- Shop hours (ShopDay.HoursOf): market 9-5, boutique 10-6, pattern shop 11-5; ShopOpenNow; the Shops menu shows
+  each shop's hours and greys out shut ones; EnterShop outside hours shows a notice.
+- The pattern shop (ScreenId.PatternShop, UI/PatternShopUI.cs): Ada Finch (customer "ada", Dialogue/ada.ink, she/her,
+  friendship only, knew Aunt Win). Opens after 3 patterns sold or chapter 2 (flag shop:patterns). PatternDef.forSale/
+  rarity/shopPrice; 13 patterns (PlaceholderGenerator ShopPattern); per 4-day period 3 common, 2 uncommon, 35% one rare,
+  only crafts learned and not owned; ShopDay.Complexity 1-5; bought patterns go in the book.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.

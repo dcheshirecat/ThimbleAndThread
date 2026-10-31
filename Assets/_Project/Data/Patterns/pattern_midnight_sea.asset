@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d664e9494a15d3747aae761ccc2f60d0, type: 3}
+  m_Name: pattern_midnight_sea
+  m_EditorClassIdentifier: Assembly-CSharp::PatternDef
+  patternId: midnight_sea
+  displayName: Midnight Sea
+  item: {fileID: 11400000, guid: 759bb51d40664bf49943bb326c33d641, type: 2}
+  price: 26
+  startsOnShelf: 0
+  forSale: 1
+  rarity: 2
+  shopPrice: 110
+  threads:
+  - {fileID: 11400000, guid: afb5e79371a63194dac821d613cf75d6, type: 2}
+  - {fileID: 11400000, guid: 061f0fd0272d9c34aa6f3b389ce12fda, type: 2}
+  - {fileID: 11400000, guid: cadf77c5c1b160341a47300fe0735de6, type: 2}
+  palette:
+  - {r: 0.85, g: 0.25, b: 0.3, a: 1}
+  grid: '..............
+
+    ...2......2...
+
+    ..222....222..
+
+    ...2......2...
+
+    ..............
+
+    3a.3a.3a.3a.3a
+
+    11111111111111
+
+    1a1a1a1a1a1a1a
+
+    11111111111111
+
+    ..............
+
+    ....2....2....
+
+    ...222..222...
+
+    ....2....2....
+
+    ..............'

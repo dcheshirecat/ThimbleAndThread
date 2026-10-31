@@ -158,6 +158,21 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     public GameObject shopsButton, marketButton, boutiqueButton;   // only the shops that have opened show
     public void GoToMarket() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.MarketOwnerId, ScreenId.Market); }
     public void GoToBoutique() { shopsMenu.SetActive(false); day.EnterShop(BoutiqueUI.OwnerId, ScreenId.Boutique); }
+    public void GoToPatternShop() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.PatternShopOwnerId, ScreenId.PatternShop); }
+    public GameObject patternShopButton;
+
+    /// A shop in the menu: there once it has opened; its hours under its name, greyed out while it's shut.
+    void ShopEntry(GameObject entry, ScreenId shop, string name)
+    {
+        if (entry == null) return;
+        entry.SetActive(day.ShopOpen(shop));
+        if (!entry.activeSelf) return;
+        bool now = day.ShopOpenNow(shop);
+        var label = entry.GetComponentInChildren<Text>();
+        string text = $"{name}\n<size=40>{day.HoursText(shop)}</size>";
+        if (label.text != text) label.text = text;
+        entry.GetComponent<Button>().interactable = now;
+    }
 
     void ShowShops()
     {
@@ -170,8 +185,9 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
                 button.GetComponentInChildren<Text>().color = day.AnyShopOpen ? new Color(0.2f, 0.15f, 0.2f) : new Color(0.2f, 0.15f, 0.2f, 0.35f);
             }
         }
-        if (marketButton != null) marketButton.SetActive(day.ShopOpen(ScreenId.Market));
-        if (boutiqueButton != null) boutiqueButton.SetActive(day.ShopOpen(ScreenId.Boutique));
+        ShopEntry(marketButton, ScreenId.Market, "Supply Market");
+        ShopEntry(boutiqueButton, ScreenId.Boutique, "The Boutique");
+        ShopEntry(patternShopButton, ScreenId.PatternShop, "The Pattern Shop");
         if (!day.AnyShopOpen && shopsMenu.activeSelf) shopsMenu.SetActive(false);
     }
 
