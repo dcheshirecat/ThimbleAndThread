@@ -409,11 +409,13 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         {
             Offer = OrderGenerator.FromPattern(c, item, DesignFor(p), Save.day);
             Offer.fromPatternId = p.id;
+            NoteLike(c, p);
             Reaction(c, "yes", () => Say(c, $"Could you make me a {item.itemName.ToLower()} like that?", Offer.target, ("Take the Order", AcceptOffer), ("Not Today", DeclineOffer)));
         }
         else if (makesIt)
         {
             SaleOffer = p;
+            NoteLike(c, p);
             Reaction(c, "buy", () => Say(c, $"Could I buy the {p.name} pattern? I'd like to make it myself.", DesignFor(p), ($"Sell It ({p.price} coins)", AcceptOffer), ("Not Today", DeclineOffer)));
         }
         else Reaction(c, "no", () => Leave($"{c.displayName} wasn't taken with the {p.name}."),
@@ -459,15 +461,16 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         var matches = Shelf.FindAll(p => wants.Exists(i => i.itemId == p.itemId) && Progress.CanMake(ItemFor(p.itemId)));
         if (matches.Count == 0)
         {
-            string hoped = wants.Count > 0 ? $" I was hoping for something like a {wants[Random.Range(0, wants.Count)].itemName.ToLower()}." : "";
-            Say(c, $"Nothing on display for me today.{hoped} Maybe next time!",
-                ("Continue", () => Leave($"{c.displayName} browsed the display but didn't find anything.{hoped.Replace("I was", "They were")}")));
+            // Never say what they were after (owner, 2026-10-31): the player works it out from who they are.
+            Say(c, "Nothing on display for me today. Maybe next time!",
+                ("Continue", () => Leave($"{c.displayName} browsed the display but didn't find anything.")));
             return;
         }
         var pick = matches[Random.Range(0, matches.Count)];
         if (c.makes != null && System.Array.IndexOf(c.makes, ItemFor(pick.itemId).craft) >= 0)
         {
             SaleOffer = pick;   // they make this kind of thing themselves: they buy the pattern
+            NoteLike(c, pick);
             Say(c, $"Oh, I love your {pick.name} pattern! May I buy it? I'd like to make it myself.",
                 DesignFor(pick), ($"Sell It ({pick.price} coins)", AcceptOffer), ("Not Today", DeclineOffer));
         }
@@ -475,6 +478,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         {
             Offer = OrderGenerator.FromPattern(c, ItemFor(pick.itemId), DesignFor(pick), Save.day);
             Offer.fromPatternId = pick.id;
+            NoteLike(c, pick);
             Say(c, $"Your {pick.name} pattern is lovely! Could you make me a {Offer.item.itemName.ToLower()} with it?\n\n(No rush, whenever you have time.)",
                 Offer.target, ("Take the Order", AcceptOffer), ("Not Today", DeclineOffer));
         }
@@ -493,30 +497,34 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             var item = ItemFor(p.itemId);
             if (!Progress.CanMake(item)) continue;
             var pattern = p;
-            options.Add(($"Offer {p.name} ({item.itemName})", () => OfferPattern(c, pattern, best.Contains(pattern.itemId) ? 2 : fits.Contains(pattern.itemId) ? 1 : 0, fits)));
+            options.Add(($"Offer {p.name} ({item.itemName})", () => OfferPattern(c, pattern, best.Contains(pattern.itemId) ? 2 : fits.Contains(pattern.itemId) ? 1 : 0)));
         }
-        options.Add(("I don't have anything for that, sorry.", () =>
-        {
-            string hoped = fits.Count > 0 && ItemFor(fits[0]) is CraftItemDef i ? $" Something like a {i.itemName.ToLower()} would have done." : "";
-            Leave($"{c.displayName} will look elsewhere.{hoped}");
-        }));
+        options.Add(("I don't have anything for that, sorry.", () => Leave($"{c.displayName} will look elsewhere.")));
         Say(c, "What do you think? Have you got anything like that?", options.ToArray());
     }
 
-    void OfferPattern(CustomerDef c, OwnedPattern p, int fit, List<string> fits)
+    void OfferPattern(CustomerDef c, OwnedPattern p, int fit)
     {
         if (fit == 0)
         {
-            string hint = fits.Count > 0 && ItemFor(fits[0]) is CraftItemDef i ? $" (They were thinking of something like a {i.itemName.ToLower()}.)" : "";
             Say(c, "Hmm. It's lovely, but it's not really what I had in mind. Maybe another time.",
-                ("Continue", () => Leave($"{c.displayName} didn't take the {p.name}.{hint}")));
+                ("Continue", () => Leave($"{c.displayName} didn't take the {p.name}.")));
             return;
         }
+        NoteLike(c, p);
         Offer = OrderGenerator.FromPattern(c, ItemFor(p.itemId), DesignFor(p), Save.day);
         Offer.fromPatternId = p.id;
         Offer.fit = fit;
         Say(c, fit == 2 ? "Oh! That's exactly it. How did you know?" : "Oh, that could work! Yes, let's do that.",
             DesignFor(p), ("Continue", AcceptOffer));
+    }
+
+    /// They said they love this pattern (by ordering it, buying it, or saying so): the Journal notes it, and only that
+    /// (owner, 2026-10-31: likes are logged only when they're said or shown outright).
+    void NoteLike(CustomerDef c, OwnedPattern p)
+    {
+        string entry = $"{c.customerId}:like:your {p.name} pattern";
+        if (!Save.knownPrefs.Contains(entry)) Save.knownPrefs.Add(entry);
     }
 
     void Leave(string message)
@@ -1802,7 +1810,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             Save.player.wornMade = made.id;   // put it straight on
             Save.orders.Remove(Selected);
             GM.Persist();
-            LastMessage = $"You're wearing your new {Selected.item.itemName.ToLower()}! Change what you wear in Settings > Change Your Look.";
+            LastMessage = $"You're wearing your new {Selected.item.itemName.ToLower()}! Change what you wear by tapping your portrait (top left).";
             Selected = null;
             GM.ChangeScreen(ScreenId.OrderBook);
             return;

@@ -138,14 +138,30 @@ public class Progression
     public int Level(CraftType craft) => 1 + Xp(craft) / XpPerLevel;
     public int XpToNext(CraftType craft) => XpPerLevel - Xp(craft) % XpPerLevel;
 
+    // Your own level (owner, 2026-10-31: an XP bar and a level, top left): all your experience together. Each level
+    // takes a little longer than the last: level L starts at 30 * L * (L - 1) (60, 180, 360, 600...).
+    public int TotalXp { get { int n = 0; foreach (var x in Save.craftXp) n += x.xp; return n; } }
+    static int LevelStart(int level) => 30 * level * (level - 1);
+    public int PlayerLevel { get { int l = 1; while (TotalXp >= LevelStart(l + 1)) l++; return l; } }
+    public float LevelProgress
+    {
+        get
+        {
+            int l = PlayerLevel, from = LevelStart(l);
+            return Mathf.Clamp01((TotalXp - from) / (float)(LevelStart(l + 1) - from));
+        }
+    }
+
     /// Adds experience (more with a better lamp). Returns a message if it was a level up, else null.
     public string AddXp(CraftType craft, int amount)
     {
         amount = Mathf.RoundToInt(amount * (1f + UpgradeAmount(UpgradeEffect.CraftLamp) / 100f));
         var entry = Save.craftXp.Find(x => x.craft == craft);
         if (entry == null) Save.craftXp.Add(entry = new CraftXp { craft = craft });
-        int before = Level(craft);
+        int before = Level(craft), playerBefore = PlayerLevel;
         entry.xp += amount;
+        if (PlayerLevel > playerBefore)
+            Stamps.Earn(Save, $"player_level:{PlayerLevel}", $"Level {PlayerLevel}", "You're getting the hang of this shop.", StampTheme.Shop);
         if (Level(craft) == before) return null;
         string msg = $"{CraftName(craft)} level {Level(craft)}!";
         AddNews(msg);

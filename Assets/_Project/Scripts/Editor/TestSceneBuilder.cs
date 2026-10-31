@@ -207,22 +207,22 @@ public static class TestSceneBuilder
         Shape(doorRt, "Window", new Vector2(0.5f, 0.75f), new Vector2(220, 200), new Color(0.75f, 0.88f, 0.95f), uiSprite);
         Shape(doorRt, "Knob", new Vector2(0.82f, 0.45f), new Vector2(50, 50), new Color(0.95f, 0.80f, 0.35f), Knob());
         shopScene.door = doorRt;
-        var bubble = Shape(mid, "Bubble", new Vector2(0.5f, 0.8f), new Vector2(1500, 190), Color.white, uiSprite);
+        var bubble = Shape(mid, "Bubble", new Vector2(0.5f, 0.745f), new Vector2(1500, 170), Color.white, uiSprite);
         shopScene.bubble = bubble.gameObject;
         shopScene.bubbleText = MakeText(bubble, "Text", "", 56);
         Stretch((RectTransform)shopScene.bubbleText.transform);
         shopScene.statusText = Label(mid, "Status", new Vector2(0.06f, 0.16f), new Vector2(0.94f, 0.27f), 52, TextAnchor.UpperCenter);
         // Left: orders waiting to be picked up
         var left = shopScene.pages[0];
-        Label(left, "Heading", new Vector2(0.06f, 0.78f), new Vector2(0.94f, 0.86f), 80, TextAnchor.MiddleCenter).text = "Waiting for pickup";
-        shopScene.pickupEmpty = Label(left, "Info", new Vector2(0.08f, 0.7f), new Vector2(0.92f, 0.78f), 52, TextAnchor.UpperCenter);
-        shopScene.pickupTemplate = Button(StackList(left, 0.68f), "Pickup Template", null, 1800);
+        Label(left, "Heading", new Vector2(0.06f, 0.71f), new Vector2(0.94f, 0.77f), 76, TextAnchor.MiddleCenter).text = "Waiting for pickup";
+        shopScene.pickupEmpty = Label(left, "Info", new Vector2(0.08f, 0.64f), new Vector2(0.92f, 0.71f), 52, TextAnchor.UpperCenter);
+        shopScene.pickupTemplate = Button(StackList(left, 0.63f), "Pickup Template", null, 1800);
         TallRow(shopScene.pickupTemplate, 230, 54);
         // Right: the pattern display
         var right = shopScene.pages[2];
-        Label(right, "Heading", new Vector2(0.06f, 0.78f), new Vector2(0.94f, 0.86f), 80, TextAnchor.MiddleCenter).text = "The pattern display";
-        shopScene.displayInfo = Label(right, "Info", new Vector2(0.08f, 0.69f), new Vector2(0.92f, 0.78f), 50, TextAnchor.UpperCenter);
-        shopScene.displayTemplate = Button(StackList(right, 0.67f), "Display Template", null, 1800);
+        Label(right, "Heading", new Vector2(0.06f, 0.71f), new Vector2(0.94f, 0.77f), 76, TextAnchor.MiddleCenter).text = "The pattern display";
+        shopScene.displayInfo = Label(right, "Info", new Vector2(0.08f, 0.63f), new Vector2(0.92f, 0.71f), 50, TextAnchor.UpperCenter);
+        shopScene.displayTemplate = Button(StackList(right, 0.62f), "Display Template", null, 1800);
         TallRow(shopScene.displayTemplate, 260, 52);
         var dtText = shopScene.displayTemplate.GetComponentInChildren<Text>();
         ((RectTransform)dtText.transform).offsetMin = new Vector2(300, 0);
@@ -234,17 +234,23 @@ public static class TestSceneBuilder
         sign.GetComponentInChildren<Text>().text = "OPEN";
         sign.GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
         sign.GetComponent<Image>().color = new Color(0.55f, 0.80f, 0.55f);
-        Place(sign, new Vector2(0.115f, 0.955f), new Vector2(380, 150));
-        shopScene.coinText = TopBar(p, day, 0.355f, Ink).coinText;
+        Place(sign, new Vector2(0.115f, 0.893f), new Vector2(380, 140));
+        shopScene.coinText = TopBar(p, day, 0.375f, Ink, content).coinText;
         var shops = Button(p, "Shops", shopScene.ToggleShops, 380);
-        Place(shops, new Vector2(0.82f, 0.902f), new Vector2(420, 110));
+        Place(shops, new Vector2(0.82f, 0.838f), new Vector2(420, 110));
         var shopsColors = shops.colors;
         shopsColors.disabledColor = new Color(0.6f, 0.6f, 0.6f, 0.55f);   // greyed out until a shop opens
         shops.colors = shopsColors;
         shops.GetComponentInChildren<Text>().fontSize = 56;
         shopScene.shopsButton = shops.gameObject;
-        var shopsMenu = Shape(p, "Shops Menu", new Vector2(0.72f, 0.7f), new Vector2(900, 760), new Color(1, 0.97f, 0.9f), uiSprite);
+        var shopsLayer = new GameObject("Shops Layer", typeof(RectTransform), typeof(Image), typeof(Button));
+        shopsLayer.transform.SetParent(p, false);
+        Stretch((RectTransform)shopsLayer.transform);
+        shopsLayer.GetComponent<Image>().color = new Color(0, 0, 0, 0.001f);   // invisible, but catches taps outside the menu
+        UnityEventTools.AddPersistentListener(shopsLayer.GetComponent<Button>().onClick, shopScene.ToggleShops);
+        var shopsMenu = Shape(shopsLayer.transform, "Shops Menu", new Vector2(0.72f, 0.64f), new Vector2(900, 760), new Color(1, 0.97f, 0.9f), uiSprite);
         shopsMenu.GetComponent<Image>().raycastTarget = true;
+        shopsMenu.gameObject.AddComponent<ClickBlocker>();
         var sm = Column(shopsMenu, 0.5f, 0.5f);
         var menuMarket = Button(sm, "Menu Market", shopScene.GoToMarket, 800);
         menuMarket.GetComponentInChildren<Text>().text = "Supply Market";
@@ -256,9 +262,9 @@ public static class TestSceneBuilder
         menuPatterns.GetComponentInChildren<Text>().text = "The Pattern Shop";
         shopScene.patternShopButton = menuPatterns.gameObject;
         Button(sm, "Menu Close", shopScene.ToggleShops, 800).GetComponentInChildren<Text>().text = "Close";
-        shopsMenu.gameObject.SetActive(false);
-        shopScene.shopsMenu = shopsMenu.gameObject;
-        shopScene.pageLabel = Label(p, "PageName", new Vector2(0.2f, 0.825f), new Vector2(0.8f, 0.865f), 56, TextAnchor.MiddleCenter);
+        shopsLayer.SetActive(false);
+        shopScene.shopsMenu = shopsLayer;
+        shopScene.pageLabel = Label(p, "PageName", new Vector2(0.2f, 0.778f), new Vector2(0.8f, 0.812f), 52, TextAnchor.MiddleCenter);
         shopScene.pageLabel.raycastTarget = false;   // the Shops button sits beside it
         var b = Row(p, 0.5f, 0.05f);
         Button(b, "Pickups Arrow", shopScene.Left, 420).GetComponentInChildren<Text>().text = "< Pickups";
@@ -278,8 +284,10 @@ public static class TestSceneBuilder
         // Workroom (night)
         p = Panel(ScreenId.Workroom, "Workroom", new Color(0.22f, 0.24f, 0.40f), "Art/Backgrounds/bg_workroom_night.png");
         p.Find("Title").GetComponent<Text>().color = Color.white;
-        ((RectTransform)p.Find("Title")).anchoredPosition = new Vector2(0, -640);   // below the top bar
-        TopBar(p, day, 0.2f, Color.white);
+        var wTitle = (RectTransform)p.Find("Title");   // below the top bar, at a fraction of the screen so it clears it on any phone
+        wTitle.anchorMin = new Vector2(0, 0.79f); wTitle.anchorMax = new Vector2(1, 0.79f);
+        wTitle.anchoredPosition = Vector2.zero;
+        TopBar(p, day, 0.2f, Color.white, content);
         ui.workroomStatus = Label(p, "Status", new Vector2(0.08f, 0.58f), new Vector2(0.92f, 0.82f), 68, TextAnchor.MiddleLeft);
         ui.workroomStatus.color = Color.white;
         b = Column(p, 0.5f, 0.35f);
@@ -440,7 +448,6 @@ public static class TestSceneBuilder
         var vib = Button(Column(p, 0.5f, 0.585f), "Vibration", settings.ToggleHaptics, 1000);
         settings.hapticsLabel = vib.GetComponentInChildren<Text>();
         b = Column(p, 0.5f, 0.4f);
-        Button(b, "Change Your Look", router.GoToCustomize, 1100);
         Button(b, "How to Play", router.GoToTutorial, 1100);
         Button(b, "Save and Quit to Title", gm.QuitToTitle, 1100);
         Button(b, "Back", router.GoToHub, 1100);
@@ -617,7 +624,8 @@ public static class TestSceneBuilder
         var cover = bookGo.GetComponent<Image>();
         cover.sprite = uiSprite;
         cover.type = Image.Type.Sliced;
-        cover.color = new Color(0.55f, 0.32f, 0.25f);   // the cover (also catches taps, so they don't close the book)
+        cover.color = new Color(0.55f, 0.32f, 0.25f);   // the cover
+        bookGo.AddComponent<ClickBlocker>();   // taps on the book itself never close it
         journal.book = bookRt;
         var paper = Shape(bookRt, "Paper", new Vector2(0.5f, 0.5f), Vector2.zero, new Color(0.98f, 0.95f, 0.87f), uiSprite);
         paper.anchorMin = new Vector2(0.035f, 0.012f); paper.anchorMax = new Vector2(0.985f, 0.988f);
@@ -729,7 +737,6 @@ public static class TestSceneBuilder
         b = Row(paper, 0.5f, 0.05f);
         // The stores open from the Shops menu by the coins (owner, 2026-10-31), not from the journal.
         Button(b, "Journal Trade", journal.GoToTrade, 330).GetComponentInChildren<Text>().text = "Trade";
-        Button(b, "Journal Settings", journal.GoToSettings, 380).GetComponentInChildren<Text>().text = "Settings";
         Button(b, "Journal Close", journal.Close, 330).GetComponentInChildren<Text>().text = "Close";
         foreach (var t in b.GetComponentsInChildren<Text>()) t.fontSize = 50;
         overlay.SetActive(false);
@@ -1145,11 +1152,37 @@ public static class TestSceneBuilder
 
     /// The top bar (UI/TopBar.cs) along a hub screen: the weekday badge (centred at x = weekdayX), coins, the
     /// settings gear at the top right, and the day and chapter beneath.
-    static TopBar TopBar(Transform panel, ShopDay day, float weekdayX, Color textColor)
+    static TopBar TopBar(Transform panel, ShopDay day, float weekdayX, Color textColor, ContentLibrary content)
     {
         var bar = panel.gameObject.AddComponent<TopBar>();
         bar.day = day;
-        const float y = 0.955f;
+        const float top = 0.958f, y = 0.893f;   // the personal area and the gear on top; the day and coins below
+        // Top left (owner, 2026-10-31): your portrait, your level and an experience bar. Tap = your look and your shop.
+        var me = Button(panel, "Personal", bar.OpenPersonal, 760);
+        Place(me, new Vector2(0.215f, top), new Vector2(780, 170));
+        me.GetComponent<Image>().color = new Color(1, 1, 1, 0.85f);
+        var meText = me.GetComponentInChildren<Text>();
+        meText.alignment = TextAnchor.UpperLeft;
+        meText.fontSize = 52;
+        var meTextRt = (RectTransform)meText.transform;
+        meTextRt.anchorMin = Vector2.zero; meTextRt.anchorMax = Vector2.one;
+        meTextRt.offsetMin = new Vector2(200, 60); meTextRt.offsetMax = new Vector2(-20, -10);
+        bar.levelText = meText;
+        var frame = Shape(me.transform, "Portrait", new Vector2(0, 0.5f), new Vector2(160, 160), new Color(0.85f, 0.78f, 0.68f), Knob());
+        frame.anchoredPosition = new Vector2(95, 0);
+        frame.gameObject.AddComponent<Mask>().showMaskGraphic = true;
+        frame.GetComponent<Image>().raycastTarget = false;
+        bar.portrait = Keeper(frame, new Vector2(0.5f, 0.5f), content);
+        bar.portrait.transform.localScale = Vector3.one * 0.32f;
+        ((RectTransform)bar.portrait.transform).anchoredPosition = new Vector2(0, -150);
+        var track = Shape(me.transform, "XpBar", new Vector2(0, 0), new Vector2(540, 44), new Color(0.80f, 0.74f, 0.66f), uiSprite);
+        track.pivot = new Vector2(0, 0.5f);
+        track.anchoredPosition = new Vector2(200, 46);
+        var fill = Shape(track, "Fill", new Vector2(0.5f, 0.5f), new Vector2(540, 44), new Color(0.45f, 0.70f, 0.50f), null);
+        bar.xpFill = fill.GetComponent<Image>();
+        fill.anchorMin = Vector2.zero; fill.anchorMax = Vector2.one;   // TopBar narrows it to the progress
+        fill.offsetMin = fill.offsetMax = Vector2.zero;
+        track.GetComponent<Image>().raycastTarget = bar.xpFill.raycastTarget = false;
         var week = Shape(panel, "Weekday", new Vector2(weekdayX, y), new Vector2(470, 150), new Color(1, 1, 1, 0.85f), uiSprite);
         var badge = Shape(week, "Badge", new Vector2(0.16f, 0.5f), new Vector2(130, 130), Color.white, Knob());
         bar.weekdayBadge = badge.GetComponent<Image>();
@@ -1165,12 +1198,12 @@ public static class TestSceneBuilder
         Stretch((RectTransform)bar.coinText.transform);
         ((RectTransform)bar.coinText.transform).offsetMin = new Vector2(140, 0);
         var gear = Button(panel, "Settings Gear", bar.OpenSettings, 150);
-        Place(gear, new Vector2(0.915f, y), new Vector2(150, 150));
+        Place(gear, new Vector2(0.915f, top), new Vector2(150, 150));
         gear.GetComponentInChildren<Text>().text = "";
         var gearIcon = Shape(gear.transform, "Gear", new Vector2(0.5f, 0.5f), new Vector2(118, 118), Ink, AssetDatabase.LoadAssetAtPath<Sprite>($"{Root}/Art/UI/icon_gear.png"));
         if (gearIcon.GetComponent<Image>().sprite == null) Object.DestroyImmediate(gearIcon.gameObject);
         if (gearIcon == null) gear.GetComponentInChildren<Text>().text = "Set";
-        bar.dayText = Label(panel, "DayChapter", new Vector2(0.04f, 0.87f), new Vector2(0.7f, 0.93f), 58, TextAnchor.MiddleLeft);
+        bar.dayText = Label(panel, "DayChapter", new Vector2(0.04f, 0.812f), new Vector2(0.68f, 0.862f), 54, TextAnchor.MiddleLeft);
         bar.dayText.color = textColor;
         return bar;
     }

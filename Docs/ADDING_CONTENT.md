@@ -187,7 +187,7 @@ The game looks for knots by name (the character's **Ink Name**, set on the custo
 - `chapter_1`, `chapter_2`...: story scenes, played when a chapter begins.
 
 **The player's name and pronouns.** The player picks a name and she/her, he/him or they/them when the
-game starts (and can change them in Settings > Change Your Look). Write these tokens in any line or
+game starts (and can change them by tapping their portrait, top left). Write these tokens in any line or
 choice and the game fills them in:
 
 | Token | she/her | he/him | they/them |

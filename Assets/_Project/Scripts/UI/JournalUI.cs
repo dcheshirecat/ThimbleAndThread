@@ -7,7 +7,7 @@ using UnityEngine.UI;
 /// The Journal: a storybook that slides in from the side over whatever screen is showing (owner,
 /// 2026-10-30: the old hub menu became this side journal). Tabs along the top turn to a page: orders,
 /// the story so far, friendships, crafts and skills, the supply cupboard, recent news. Links at the
-/// bottom go to the Supply Market (by day), Trade and Settings. Turning a page flips it over at the spine.
+/// bottom go to Trade (Settings is the gear on the top bar). Turning a page flips it over at the spine.
 public class JournalUI : MonoBehaviour
 {
     public enum Page { Orders, Story, Friends, Skills, Supplies, Stamps, Goals }   // no News tab (owner, 2026-10-31)
@@ -80,7 +80,6 @@ public class JournalUI : MonoBehaviour
     public void GoToMarket() { overlay.SetActive(false); day.EnterShop(ShopDay.MarketOwnerId, ScreenId.Market); }
     public void GoToTrade() { overlay.SetActive(false); router.GoToTrade(); }
     public void GoToBoutique() { overlay.SetActive(false); day.EnterShop(BoutiqueUI.OwnerId, ScreenId.Boutique); }
-    public void GoToSettings() { overlay.SetActive(false); router.GoToSettings(); }
 
     IEnumerator Slide(bool opening)
     {
@@ -201,6 +200,9 @@ public class JournalUI : MonoBehaviour
             var dislikes = new List<string>();
             foreach (var pref in cust.preferences ?? new Preference[0])
                 if (pref != null && Save.knownPrefs.Contains($"{cust.customerId}:{pref.id}")) (pref.likes ? likes : dislikes).Add(pref.text);
+            string likePrefix = cust.customerId + ":like:";   // what they've said they love (ShopDay.NoteLike)
+            foreach (var k in Save.knownPrefs)
+                if (k.StartsWith(likePrefix)) likes.Add(k.Substring(likePrefix.Length));
             if (likes.Count > 0) sb.AppendLine("Likes: " + string.Join(", ", likes));
             if (dislikes.Count > 0) sb.AppendLine("Dislikes: " + string.Join(", ", dislikes));
             if (r.romance) sb.AppendLine(Save.flags.Contains($"{cust.inkName}_together") ? "♥ Together." : "♥ You're seeing each other.");

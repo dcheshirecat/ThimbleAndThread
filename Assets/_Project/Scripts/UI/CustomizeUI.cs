@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-/// The customization scene at the start of a game (and from Settings later): the player's name, the
+/// The customization scene at the start of a game (and from your portrait, top left, later): the player's name, the
 /// pronouns everyone uses for them, and how their shopkeeper looks. Hair styles and tops beyond the free
 /// ones come from the boutique; only owned ones can be picked here.
 public class CustomizeUI : MonoBehaviour
@@ -73,10 +73,9 @@ public class CustomizeUI : MonoBehaviour
         string name = nameField.text.Trim();
         if (name.Length == 0) { messageText.text = "What should everyone call you?"; return; }
         P.name = name.Length > 20 ? name.Substring(0, 20) : name;
-        bool first = !P.created;
         P.created = true;
         GameManager.Instance.Persist();
-        GameManager.Instance.ChangeScreen(first ? GameManager.Instance.HubScreen : ScreenId.Settings);
+        GameManager.Instance.ChangeScreen(GameManager.Instance.HubScreen);
     }
 
     void Show()
