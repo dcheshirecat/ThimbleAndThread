@@ -51,6 +51,8 @@ public class ShopDay : MonoBehaviour
     {
         var who = CustomerFor(customerId);
         if (who != null) Stamps.Earn(Save, $"friend:{customerId}:{level}", who.displayName, $"Friendship level {level}", StampTheme.Friendship);
+        if (who != null && level >= CommissionOfferLevel && Progress.Knows(PatternDesignSkill) && !who.shopOwner)
+            Stamps.Earn(Save, "ability:offer_commission", "Commissions", $"You can offer to make something special for close friends like {who.displayName}. They'll decide.", StampTheme.Skill);
     }
 
     // ---- The doorbell: rings on any screen, with a buzz, until someone opens the door ----
@@ -248,7 +250,97 @@ public class ShopDay : MonoBehaviour
         GM.ChangeScreen(ScreenId.Shop);
     }
 
+    /// After their hello, the player decides (owner, 2026-10-31): see what they're after, suggest any pattern
+    /// on display, or (with good friends) offer to make them something special.
     void WhatTheyWant(CustomerDef c)
+    {
+        var options = new List<(string, System.Action)> { ("See what they're after", () => TheirIdea(c)) };
+        if (Shelf.Count > 0) options.Add(("Suggest a pattern on display", () => SuggestPattern(c)));
+        if (CanOfferCommission(c)) options.Add(("Offer to make something special", () => OfferCommission(c)));
+        if (options.Count == 1) { TheirIdea(c); return; }
+        Narrate(c, $"{c.displayName} looks around the shop.", options.ToArray());
+    }
+
+    /// From this friendship level, the player may offer a commission; the customer still decides.
+    public const int CommissionOfferLevel = 2;
+
+    bool CanOfferCommission(CustomerDef c) =>
+        Progress.Knows(PatternDesignSkill) && GM.GetRelationship(c.customerId).level >= CommissionOfferLevel
+        && !Save.orders.Exists(o => o.customerId == c.customerId && !string.IsNullOrEmpty(o.commissionId));
+
+    /// They might say yes: more likely the closer you are. A story commission of theirs comes first; otherwise
+    /// they pick something they'd like, and the player designs it from scratch.
+    void OfferCommission(CustomerDef c)
+    {
+        int level = GM.GetRelationship(c.customerId).level;
+        System.Action notNow = () => Say(c, Pick("That's so kind. I can't think of anything I need just now, though.",
+                                                 "Ooh. Let me think about it. Not today, but ask me again sometime?",
+                                                 "You'd do that? I'm flattered. Maybe another time."),
+                                         ("Continue", () => Leave($"{c.displayName} wasn't after a commission today.")));
+        if (Random.value > Mathf.Clamp01(0.5f + 0.12f * (level - CommissionOfferLevel))) { notNow(); return; }
+        var story = CommissionFor(c);
+        if (story != null)
+        {
+            Offer = NewCommission(story);
+            var needs = story.requiredSupply != null ? $" It must be made with {story.requiredSupply.displayName}." : "";
+            Say(c, $"Actually... yes. {story.request}\n\n(A commission: you'll design a brand-new {story.item.itemName.ToLower()} pattern for it.{needs})",
+                ("Take the Commission", AcceptOffer), ("Not Today", DeclineOffer));
+            return;
+        }
+        var wants = OrderGenerator.Wants(c, level).FindAll(i => Progress.CanMake(i));
+        if (wants.Count == 0) { notNow(); return; }
+        var item = wants[Random.Range(0, wants.Count)];
+        Offer = new Order
+        {
+            id = System.Guid.NewGuid().ToString("N"), customerId = c.customerId, itemId = item.itemId, item = item, dayPlaced = Save.day,
+            commissionId = OwnCommissionPrefix + System.Guid.NewGuid().ToString("N"), needsDesign = true, fit = 2,
+            target = new Pattern { displayName = $"{c.displayName}'s {item.itemName}", craft = item.craft, width = 8, height = 8 },
+        };
+        Say(c, Pick($"Something just for me? Then... a {item.itemName.ToLower()}. One nobody else has.",
+                    $"Oh, I'd love that. A {item.itemName.ToLower()}, maybe? Surprise me with the design."),
+            ("Take the Commission", AcceptOffer), ("Not Today", DeclineOffer));
+    }
+
+    /// Commissions the player offered (not story ones) have ids starting with this.
+    public const string OwnCommissionPrefix = "own:";
+
+    /// The player shows them any pattern on display: they may order it, buy the pattern, or pass.
+    void SuggestPattern(CustomerDef c)
+    {
+        var options = new List<(string, System.Action)>();
+        foreach (var p in Shelf)
+        {
+            var pattern = p;
+            var item = ItemFor(p.itemId);
+            options.Add(($"{p.name} ({item.itemName})", () => Suggested(c, pattern)));
+        }
+        options.Add(("Never mind", () => TheirIdea(c)));
+        Narrate(c, "Which pattern do you show them?", options.ToArray());
+    }
+
+    void Suggested(CustomerDef c, OwnedPattern p)
+    {
+        var item = ItemFor(p.itemId);
+        bool wanted = OrderGenerator.Wants(c, GM.GetRelationship(c.customerId).level).Exists(i => i.itemId == p.itemId);
+        if (wanted && Progress.CanMake(item) && Random.value < 0.8f)
+        {
+            Offer = OrderGenerator.FromPattern(c, item, DesignFor(p), Save.day);
+            Offer.fromPatternId = p.id;
+            Say(c, Pick("Oh, that's lovely! Would you make me one?", $"Now that I see it... yes. Could you make me a {item.itemName.ToLower()} like that?"),
+                Offer.target, ("Take the Order", AcceptOffer), ("Not Today", DeclineOffer));
+        }
+        else if (Random.value < (wanted ? 0.7f : 0.35f))
+        {
+            SaleOffer = p;
+            Say(c, $"I'd love that pattern, actually. Could I buy it and make it myself?",
+                DesignFor(p), ($"Sell It ({p.price} coins)", AcceptOffer), ("Not Today", DeclineOffer));
+        }
+        else Say(c, Pick("It's lovely, but it's not really for me.", "Hm. Not quite my thing, I'm afraid."),
+                 ("Continue", () => Leave($"{c.displayName} wasn't taken with the {p.name}.")));
+    }
+
+    /// What the customer came in for (a story commission, a request, or a browse of the display).
+    void TheirIdea(CustomerDef c)
     {
         var commission = CommissionFor(c);
         if (commission != null && Random.value < CommissionChance)
@@ -309,7 +401,6 @@ public class ShopDay : MonoBehaviour
         foreach (var p in Shelf)
         {
             var item = ItemFor(p.itemId);
-            if (!Progress.CanMake(item)) continue;
             var pattern = p;
             options.Add(($"Offer {p.name} ({item.itemName})", () => OfferPattern(c, pattern, best.Contains(pattern.itemId) ? 2 : fits.Contains(pattern.itemId) ? 1 : 0, fits)));
         }
@@ -328,6 +419,13 @@ public class ShopDay : MonoBehaviour
             string hint = fits.Count > 0 && ItemFor(fits[0]) is CraftItemDef i ? $" (They were thinking of something like a {i.itemName.ToLower()}.)" : "";
             Say(c, "Hmm. It's lovely, but it's not really what I had in mind. Maybe another time.",
                 ("Continue", () => Leave($"{c.displayName} didn't take the {p.name}.{hint}")));
+            return;
+        }
+        if (!Progress.CanMake(ItemFor(p.itemId)))   // you can't make it yet: they'll make it themselves
+        {
+            SaleOffer = p;
+            Say(c, "Oh, that's just right! Could I buy the pattern? I'll have a go at making it myself.",
+                DesignFor(p), ($"Sell It ({p.price} coins)", AcceptOffer), ("Not Today", DeclineOffer));
             return;
         }
         Offer = OrderGenerator.FromPattern(c, ItemFor(p.itemId), DesignFor(p), Save.day);
@@ -1341,6 +1439,17 @@ public class ShopDay : MonoBehaviour
                 id = System.Guid.NewGuid().ToString("N"), name = Selected.target.displayName, itemId = Selected.itemId,
                 price = Mathf.Max(1, Selected.item.patternPrice), designed = true, design = Selected.target,
             });
+        }
+
+        if (commission == null && Selected.commissionId != null && Selected.commissionId.StartsWith(OwnCommissionPrefix))
+        {
+            points += 10;   // something made just for them
+            Save.patterns.Add(new OwnedPattern
+            {
+                id = System.Guid.NewGuid().ToString("N"), name = Selected.target.displayName, itemId = Selected.itemId,
+                price = Mathf.Max(1, Selected.item.patternPrice), designed = true, design = Selected.target,
+            });
+            Stamps.Earn(Save, "commission:own", "Made to order", $"Your own design for {name}.", StampTheme.Craft);
         }
 
         // Special touches: a gamble. If they like the surprise it's worth more; if not, it costs a little goodwill.

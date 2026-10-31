@@ -83,6 +83,10 @@ public static class SaveSystem
         data.knownPrefs ??= new System.Collections.Generic.List<string>();
         data.stamps ??= new System.Collections.Generic.List<Stamp>();
         data.notes ??= new System.Collections.Generic.List<string>();
+        if (data.version < 17)   // cross stitch fabric was counted in squares (400 a piece); now in pieces
+            foreach (var st in data.stock)
+                if (st != null && (st.supplyId == "aida_14ct" || st.supplyId == "aida_cream" || st.supplyId == "aida_18ct" || st.supplyId == "linen_28ct"))
+                    st.amount = Mathf.CeilToInt(st.amount / 400f);
         data.met ??= new System.Collections.Generic.List<string>();
         if (data.version < 16)   // everyone they'd made friends with or had an order from, they'd met
         {

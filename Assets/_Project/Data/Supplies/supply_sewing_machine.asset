@@ -26,4 +26,8 @@ MonoBehaviour:
   market: 3
   toolType: sewing_machine
   size: 0
-  generatorVersion: 5
+  assist: 0
+  decorates: []
+  decorateAmount: 1
+  decorateBonus: 0.25
+  generatorVersion: 6

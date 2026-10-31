@@ -342,7 +342,8 @@ public class OrderFlowUI : MonoBehaviour
     string CommissionText(Order order)
     {
         var c = day.CommissionOf(order);
-        if (c == null) return "";
+        if (c == null)
+            return order.needsDesign ? "A commission you offered: design a brand-new pattern for it first (it isn't judged).\n\n" : "";
         var text = $"Commission: \"{c.request}\"\n";
         if (c.requiredSupply != null) text += $"Must be made with {c.requiredSupply.displayName}.\n";
         if (order.needsDesign) text += "First, design a brand-new pattern for it (it isn't judged).\n";

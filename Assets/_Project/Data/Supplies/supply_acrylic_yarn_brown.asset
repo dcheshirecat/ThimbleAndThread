@@ -30,4 +30,4 @@ MonoBehaviour:
   decorates: []
   decorateAmount: 1
   decorateBonus: 0.25
-  generatorVersion: 5
+  generatorVersion: 6

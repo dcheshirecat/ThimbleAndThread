@@ -14,7 +14,7 @@ public static class TradeServer
 {
     /// The Realtime Database address, e.g. "https://thimble-trades-default-rtdb.europe-west1.firebasedatabase.app".
     /// Empty = online codes are off (the long codes still work).
-    public const string DatabaseUrl = "";
+    public const string DatabaseUrl = "https://thimble-trades-default-rtdb.firebaseio.com";
 
     /// Letters and digits that can't be mixed up (no I, O, 0 or 1).
     const string Alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

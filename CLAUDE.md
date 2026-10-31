@@ -464,7 +464,7 @@ cross stitch game is very fun, even if a bit simple."
   restarting. Saves already opened with the v13-v15 builds had already restarted; nothing to recover.
 - Pattern naming is a pop-up when the design is Done (PatternDesignerUI.namePopup; also renames when editing).
 - Save version 16.
-Trade codes (branch trade-online, NOT merged yet): Core/TradeServer.cs uploads the long code to the owner's
+Trade codes (DONE, merged 2026-10-31; live-tested against https://thimble-trades-default-rtdb.firebaseio.com): Core/TradeServer.cs uploads the long code to the owner's
 Firebase Realtime Database at trades/CODE (6 chars from ABCDEFGHJKLMNPQRSTUVWXYZ23456789) and claims it with a
 GET (X-Firebase-ETag) then a conditional DELETE (if-match), so a code opens once. TradeServer.DatabaseUrl is
 empty until the owner sends the address (it isn't a secret; the repo is public, so the rules are the guard).
@@ -472,6 +472,17 @@ Long codes still work offline. SentCode.shortCode shows under My Codes. Rules th
   trades/$code: .read if $code matches /^[A-HJ-NP-Z2-9]{6}$/; .write if it matches and (new: no data yet and
   packet is a string under 60000 chars) or (delete: data exists and newData doesn't).
 Test live (create, open, open again fails, own code refused) before merging.
+
+## Owner feedback round 5, 2026-10-31 (DONE)
+- Every visit, after the hello, the player chooses (ShopDay.WhatTheyWant): "See what they're after" (TheirIdea:
+  the old story commission / request / browse), "Suggest a pattern on display" (any displayed pattern; they order
+  it, buy the pattern, or pass), and from friendship level 2 (CommissionOfferLevel, needs Pattern Design)
+  "Offer to make something special": the customer decides (50% + 12% per level above 2); a story commission of
+  theirs comes first, else they pick an item they want and the player designs it (commissionId "own:..."; its
+  pattern goes in the book at hand-over, +10 friendship). One open commission per customer. A stamp announces it.
+- Requests may be answered with any displayed pattern; one the player can't make yet is bought as a pattern.
+- Cross stitch fabric comes in pieces (one holds up to 16 x 16 stitches, Materials.FabricPieces), one per project;
+  new games start with 2. Save version 17 converts squares (400 a piece, rounded up); old trade codes too.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.

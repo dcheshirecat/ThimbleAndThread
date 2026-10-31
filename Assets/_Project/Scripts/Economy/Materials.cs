@@ -39,7 +39,7 @@ public static class Materials
     {
         var required = string.IsNullOrEmpty(requiredId) ? null : content.Supply(requiredId);
         if (required != null && required.kind == SupplyKind.Fabric && required.craft == CraftType.CrossStitch) return required;
-        int squares = p.width * p.height;
+        int squares = FabricPieces(p);
         var aidas = new List<SupplyDef>(System.Array.FindAll(content.supplies,
             s => s != null && s.kind == SupplyKind.Fabric && s.craft == CraftType.CrossStitch));
         aidas.Sort((a, b) => b.tier.CompareTo(a.tier));
@@ -48,12 +48,18 @@ public static class Materials
         return aidas.Count > 0 ? aidas[0] : null;
     }
 
+    /// Cross stitch fabric comes in pieces (owner, 2026-10-31: it runs out as you use it): one piece holds a
+    /// design up to 16 x 16 stitches; bigger ones take more.
+    public const int PieceStitches = 16;
+    public static int FabricPieces(Pattern p) =>
+        Mathf.Max(1, Mathf.CeilToInt(p.width / (float)PieceStitches) * Mathf.CeilToInt(p.height / (float)PieceStitches));
+
     /// Everything a stitched pattern needs: the fabric piece and the floss for each colour.
     public static List<MaterialNeed> For(Pattern p, SupplyDef fabric, ContentLibrary content)
     {
         EnsureThreads(p, content);
         var needs = new List<MaterialNeed>();
-        if (fabric != null) needs.Add(new MaterialNeed { supplyId = fabric.supplyId, amount = p.width * p.height });
+        if (fabric != null) needs.Add(new MaterialNeed { supplyId = fabric.supplyId, amount = FabricPieces(p) });
         var perThread = new Dictionary<string, int>();
         foreach (var c in p.cells)
         {

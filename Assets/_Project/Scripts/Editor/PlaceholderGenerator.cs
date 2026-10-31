@@ -115,10 +115,11 @@ public static class PlaceholderGenerator
         var cs = CraftType.CrossStitch;
 
         // Cross stitch fabric: pieces of 400 squares; a project uses its pattern's width x height.
-        Supply("aida_14ct",  "White Aida 14ct",        SupplyKind.Fabric, cs, 10, 1, new Color(0.95f, 0.95f, 0.90f), 400, "squares", A, 1);
-        Supply("aida_cream", "Cream Aida 14ct",        SupplyKind.Fabric, cs, 12, 1, new Color(0.96f, 0.91f, 0.78f), 400, "squares", R);
-        Supply("aida_18ct",  "Fine Aida 18ct",         SupplyKind.Fabric, cs, 25, 2, new Color(0.90f, 0.90f, 0.95f), 400, "squares", R);
-        Supply("linen_28ct", "Linen Evenweave 28ct",   SupplyKind.Fabric, cs, 45, 3, new Color(0.88f, 0.82f, 0.70f), 400, "squares", X);
+        // Cut pieces, one per project (a piece holds a design up to 16 x 16 stitches: Materials.FabricPieces).
+        Supply("aida_14ct",  "White Aida 14ct",        SupplyKind.Fabric, cs, 4,  1, new Color(0.95f, 0.95f, 0.90f), 1, "pieces", A, 2);
+        Supply("aida_cream", "Cream Aida 14ct",        SupplyKind.Fabric, cs, 5,  1, new Color(0.96f, 0.91f, 0.78f), 1, "pieces", R);
+        Supply("aida_18ct",  "Fine Aida 18ct",         SupplyKind.Fabric, cs, 10, 2, new Color(0.90f, 0.90f, 0.95f), 1, "pieces", R);
+        Supply("linen_28ct", "Linen Evenweave 28ct",   SupplyKind.Fabric, cs, 18, 3, new Color(0.88f, 0.82f, 0.70f), 1, "pieces", X);
         // Sewing fabric, in pieces (recipes will say how many pieces an item needs).
         Supply("felt_cream",      "Cream Felt",          SupplyKind.Fabric, CraftType.Sewing, 5,  1, new Color(0.97f, 0.93f, 0.82f), 4, "pieces", A);
         Supply("felt_brown",      "Brown Felt",          SupplyKind.Fabric, CraftType.Sewing, 5,  1, new Color(0.55f, 0.38f, 0.25f), 4, "pieces", R);
@@ -432,7 +433,7 @@ public static class PlaceholderGenerator
     }
 
     // Bump when the catalogue's details change, so supplies made by an older generator get updated.
-    const int SupplyGeneratorVersion = 5;
+    const int SupplyGeneratorVersion = 6;   // 6: cross stitch fabric in pieces
 
     /// Gives an item its steps, unless it already has some (so steps set by hand are kept).
     static void Recipe(CraftItemDef item, params RecipeStep[] steps)

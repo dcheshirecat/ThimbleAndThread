@@ -26,6 +26,7 @@ MonoBehaviour:
   market: 0
   toolType: 
   size: 0
+  assist: 0
   decorates:
   - {fileID: 11400000, guid: 10c1ffff1a3b659439f05d80f5834bda, type: 2}
   - {fileID: 11400000, guid: 36d9c86e2a5e0424e95b16024db48f5f, type: 2}
@@ -33,4 +34,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 624106ae6949e67438c1436949d015e1, type: 2}
   decorateAmount: 1
   decorateBonus: 0.2
-  generatorVersion: 5
+  generatorVersion: 6

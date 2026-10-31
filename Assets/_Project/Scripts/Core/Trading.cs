@@ -156,6 +156,8 @@ public class Trading
             var s = content.Supply(x.supplyId);
             if (s == null) { error = "This gift has supplies from a newer version of the game. Update to open it."; return null; }
             if (!CanGive(s) || x.amount <= 0 || x.amount > MaxAmount) { error = "That code doesn't look right."; return null; }
+            // Codes made before cross stitch fabric came in pieces counted it in squares (400 a piece).
+            if (s.kind == SupplyKind.Fabric && s.craft == CraftType.CrossStitch && x.amount >= 100) x.amount = Mathf.CeilToInt(x.amount / 400f);
         }
         foreach (var x in packet.supplies) shop.Add(x.supplyId, x.amount);
         return Describe(packet.supplies);

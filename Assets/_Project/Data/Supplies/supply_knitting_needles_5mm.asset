@@ -26,4 +26,8 @@ MonoBehaviour:
   market: 1
   toolType: knitting_needles
   size: 4
-  generatorVersion: 5
+  assist: 0
+  decorates: []
+  decorateAmount: 1
+  decorateBonus: 0.25
+  generatorVersion: 6

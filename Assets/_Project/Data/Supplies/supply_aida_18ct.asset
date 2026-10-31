@@ -18,12 +18,16 @@ MonoBehaviour:
   craft: 0
   icon: {fileID: 21300000, guid: 07ba41914fa8a564e9097eef51383481, type: 3}
   color: {r: 0.9, g: 0.9, b: 0.95, a: 1}
-  price: 25
+  price: 10
   tier: 2
-  perPack: 400
-  unit: squares
+  perPack: 1
+  unit: pieces
   starterPacks: 0
   market: 0
   toolType: 
   size: 0
-  generatorVersion: 5
+  assist: 0
+  decorates: []
+  decorateAmount: 1
+  decorateBonus: 0.25
+  generatorVersion: 6
