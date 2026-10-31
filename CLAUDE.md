@@ -649,6 +649,10 @@ fits/best, hand-over reactions, suggest reactions, scenes 1-3, a Saturday visit)
 pigeons, ch1), Nadia Kowalski (night-shift midwife, ch2, knits), Sol Reyes (lifeguard, they/them, ch2), Dot Pascoe (81,
 tea room, Aunt Win's oldest friend, ch3, cross stitches; her scene 3 hints the torn book pages were given to people).
 Plus Ada Finch (pattern shop). All friendship only. Still to reach 20+: about 5 more.
+DONE batch 6 (item 18, mini-games deeper): PressStep is real ironing: a care label per material (PressStep.RightHeat: acrylic/
+felt/fleece/minky cool, wool/merino/alpaca/mohair warm, else hot), a 3-setting heat dial under the work; too cool = 3 passes
+(two settings too cool never finishes), too hot = scorches as you go, holding still on warm/hot = a scorch; scorches are
+IMistakes, Undo dabs the last off. Points: presses (x,y), scorch (x-2,y), heat (-10-h,-10); old saves count at the right heat.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.

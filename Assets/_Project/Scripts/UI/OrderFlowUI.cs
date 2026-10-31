@@ -473,7 +473,7 @@ public class OrderFlowUI : MonoBehaviour
         StepKind.SewSides => "Hold anywhere to run the machine down one side, along the bottom and up the other; slide up to go faster. Slow down at the corners.",
         StepKind.HemTop => "Fold the top edge over and sew along the dashed line.",
         StepKind.AttachHandles => "Tap where each end of the handle goes, on the faint marks just below the top.",
-        StepKind.Press => "Drag the iron all over the piece until the creases are gone.",
+        StepKind.Press => "Read the care label and set the iron's heat with the dial below the work, then drag the iron all over the piece until the creases are gone. Too hot, or holding it still, scorches (Undo dabs a scorch off).",
         StepKind.WeaveEnds => "Drag the loose tail along the dashed path to weave it into the back of the stitches.",
         StepKind.HoopFabric => "Press the outer ring down all the way round so the fabric is drum-tight.",
         StepKind.Backstitch => "Backstitch along the printed line. The closer you follow it, the neater it looks.",
