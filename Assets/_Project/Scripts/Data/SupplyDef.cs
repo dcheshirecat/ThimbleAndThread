@@ -30,6 +30,9 @@ public class SupplyDef : ScriptableObject
     [Header("Tools and sizes")]
     public string toolType;                // tools: "hoop", "tapestry_needle", "crochet_hook", "knitting_needles", "scissors"...
     public int size;                       // hoops: largest pattern side that fits (squares); hooks, needles, yarn: yarn weight
+    [Range(0f, 1f)] public float assist;   // tools: how much a better one helps (0 = basic). Sharp scissors and needles widen the
+                                           // line you must follow; a better machine takes corners faster; good needles and hooks
+                                           // forgive an uneven rhythm. Steps use the best owned tool that fits.
 
     [Header("Special touches (optional extras, e.g. lace, buttons, ribbon)")]
     public CraftItemDef[] decorates;       // items this can be added to as a surprise extra (empty = not an extra)

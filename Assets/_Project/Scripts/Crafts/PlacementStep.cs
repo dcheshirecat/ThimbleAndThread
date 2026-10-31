@@ -61,7 +61,7 @@ public abstract class PlacementStep : PieceStep
         {
             float best = float.MaxValue;
             foreach (var e in Placed) best = Mathf.Min(best, Vector2.Distance(m, e));
-            sum += 1f - Mathf.InverseLerp(Perfect, Miss, best);
+            sum += 1f - Mathf.InverseLerp(Perfect * (1f + Assist), Miss, best);
         }
         return Marks.Count > 0 ? sum / Marks.Count : 1f;
     }

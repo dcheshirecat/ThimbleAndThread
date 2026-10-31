@@ -949,6 +949,19 @@ public class ShopDay : MonoBehaviour
         return tools;
     }
 
+    /// The best owned tool helping with a step: the one with the highest assist among those the step uses
+    /// (a basic tool doesn't count), or null.
+    public SupplyDef HelpingTool(Order o, int index)
+    {
+        SupplyDef best = null;
+        foreach (var need in ToolsForStep(o, index))
+        {
+            var t = shop.BestFor(need);
+            if (t != null && t.assist > 0f && (best == null || t.assist > best.assist)) best = t;
+        }
+        return best;
+    }
+
     /// Needles or a hook to match the chosen yarn's weight (any size until a yarn is chosen).
     ToolNeed ForYarn(Order o, ToolNeed t)
     {
@@ -1016,7 +1029,9 @@ public class ShopDay : MonoBehaviour
         LastMessage = "";
         Selected.finished = false;   // reopening a set-aside piece makes it a work in progress again
         var fabric = content.Supply(Selected.fabricId);
-        minigame.Open(Selected, fabric != null ? fabric.color : new Color(0.95f, 0.95f, 0.90f), content, shop);
+        var helper = HelpingTool(Selected, index);
+        if (helper != null) LastMessage = $"Your {helper.displayName} make{(helper.displayName.EndsWith("s") ? "" : "s")} this easier.";
+        minigame.Open(Selected, fabric != null ? fabric.color : new Color(0.95f, 0.95f, 0.90f), content, shop, helper != null ? helper.assist : 0f);
         GM.ChangeScreen(ScreenId.Minigame);
     }
 
@@ -1065,7 +1080,7 @@ public class ShopDay : MonoBehaviour
             StartCrafting();
             if (GM.Current == ScreenId.Minigame)
             {
-                LastMessage = $"{done}: done!{learned}";
+                LastMessage = ($"{done}: done!{learned} " + LastMessage).Trim();   // keeps "your shears make this easier"
                 GM.ChangeScreen(ScreenId.Minigame);   // shows it with the new step's hint
             }
             else LastMessage = $"{done}: done!{learned} {LastMessage}";

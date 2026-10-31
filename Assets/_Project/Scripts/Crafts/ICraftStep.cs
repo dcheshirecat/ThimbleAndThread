@@ -32,4 +32,5 @@ public struct StepArea
     public Color fabricColor;      // the fabric the order is made on
     public ContentLibrary content;
     public ShopManager shop;
+    public float assist;           // 0..1: how much the best tool for this step helps (SupplyDef.assist)
 }

@@ -139,13 +139,18 @@ public class ShopManager : MonoBehaviour
         return best;
     }
 
-    public bool HasTool(ToolNeed need)
+    public bool HasTool(ToolNeed need) => BestFor(need) != null;
+
+    /// The owned tool that does the job best (the most helpful one that fits), or null.
+    public SupplyDef BestFor(ToolNeed need)
     {
+        SupplyDef best = null;
         foreach (var s in content.supplies)
             if (s != null && s.kind == SupplyKind.Tool && s.toolType == need.toolType && Owns(s.supplyId)
-                && (need.exactSize ? s.size == need.minSize : s.size >= need.minSize))
-                return true;
-        return false;
+                && (need.exactSize ? s.size == need.minSize : s.size >= need.minSize)
+                && (best == null || s.assist > best.assist))
+                best = s;
+        return best;
     }
 
     public List<ToolNeed> MissingTools(List<ToolNeed> needs) => needs.FindAll(n => !HasTool(n));

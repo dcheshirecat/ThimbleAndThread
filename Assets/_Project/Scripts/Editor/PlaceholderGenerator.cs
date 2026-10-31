@@ -189,6 +189,14 @@ public static class PlaceholderGenerator
         // Books: bought once and kept; each teaches a skill (see the skills below).
         var knotsBook = Supply("book_knots", "A Little Book of Knots", SupplyKind.Book, CraftType.Embroidery, 15, 1, new Color(0.55f, 0.35f, 0.45f), 1, "book", R);
         var designBook = Supply("book_pattern_design", "The Pattern Maker's Notebook", SupplyKind.Book, cs, 25, 1, new Color(0.30f, 0.40f, 0.55f), 1, "book", R);
+        // Better tools (owner, 2026-10-30: craft upgrades): each helps a little (SupplyDef.assist).
+        Assist(Supply("scissors_sharp", "Sharp Dressmaker's Shears", SupplyKind.Tool, CraftType.Sewing, 32, 2, new Color(0.45f, 0.50f, 0.60f), 1, "pair", R, 0, "scissors"), 0.6f);
+        Assist(Supply("sewing_needle_sharps", "Fine Sharps Needles", SupplyKind.Tool, CraftType.Sewing, 9, 2, new Color(0.85f, 0.85f, 0.90f), 1, "pack", R, 0, "sewing_needle"), 0.5f);
+        Assist(Supply("embroidery_needle_gold", "Gold-Eye Embroidery Needles", SupplyKind.Tool, CraftType.Embroidery, 12, 2, new Color(0.90f, 0.78f, 0.35f), 1, "pack", R, 0, "embroidery_needle"), 0.5f);
+        Assist(Supply("tapestry_needle_bent", "Bent-Tip Tapestry Needle", SupplyKind.Tool, cs, 8, 2, new Color(0.65f, 0.70f, 0.80f), 1, "needle", R, 0, "tapestry_needle"), 0.5f);
+        Assist(Supply("knitting_needles_bamboo_5mm", "5mm Bamboo Knitting Needles", SupplyKind.Tool, CraftType.Knitting, 22, 2, new Color(0.85f, 0.75f, 0.50f), 1, "pair", R, 0, "knitting_needles", 4), 0.6f);
+        Assist(Supply("crochet_hook_ergo_5mm", "5mm Soft-Grip Crochet Hook", SupplyKind.Tool, CraftType.Crochet, 16, 2, new Color(0.60f, 0.45f, 0.75f), 1, "hook", R, 0, "crochet_hook", 4), 0.6f);
+        Assist(Supply("sewing_machine_quilter", "Quilter's Sewing Machine", SupplyKind.Tool, CraftType.Sewing, 140, 3, new Color(0.35f, 0.55f, 0.65f), 1, "machine", X, 0, "sewing_machine"), 0.7f);
         Supply("sewing_machine",  "Great-Aunt's Sewing Machine", SupplyKind.Tool, CraftType.Sewing, 0, 1, new Color(0.25f, 0.30f, 0.30f), 1, "machine", MarketSlot.NotSold, 1, "sewing_machine");
         Supply("marking_pen",     "Fabric Marking Pen", SupplyKind.Tool, CraftType.Sewing, 4,  1, new Color(0.35f, 0.55f, 0.85f), 1, "pen", R, 0, "marking_pen");
 
@@ -558,6 +566,14 @@ public static class PlaceholderGenerator
         s.decorates = items;
         s.decorateAmount = 1;
         s.decorateBonus = bonus;
+        EditorUtility.SetDirty(s);
+    }
+
+    /// Sets a tool's quality (how much it helps), if not set yet.
+    static void Assist(SupplyDef s, float assist)
+    {
+        if (s == null || s.assist > 0f) return;
+        s.assist = assist;
         EditorUtility.SetDirty(s);
     }
 

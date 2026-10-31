@@ -39,7 +39,7 @@ public abstract class MachineSewingStep : TracingStep
         for (int i = 0; i < s.Count; i++)
         {
             float turn = Mathf.Abs(Turn(i));
-            safeSpeed[i] = Mathf.Lerp(MaxSpeed * 1.05f, CornerSpeed, Mathf.Clamp01(turn / SharpTurn));
+            safeSpeed[i] = Mathf.Lerp(MaxSpeed * 1.05f, CornerSpeed * (1f + 1.5f * Assist), Mathf.Clamp01(turn / SharpTurn));   // a better machine holds corners
         }
         along = ResumePoint();
         needleStart = s.Count > 0 ? s[0] : Vector2.one * 0.5f;
@@ -126,7 +126,7 @@ public abstract class MachineSewingStep : TracingStep
         {
             // Too fast for this bend: the fabric skids outward, away from the turn.
             float outward = -Mathf.Sign(Turn(Mathf.RoundToInt(along)));
-            skid += outward * (speed - safe) * Skid * dt;
+            skid += outward * (speed - safe) * Skid * (1f - 0.5f * Assist) * dt;
         }
         else skid = Mathf.MoveTowards(skid, 0, Settle * Mathf.Abs(skid) * dt + 0.01f * dt);
         skid = Mathf.Clamp(skid, -0.12f, 0.12f);

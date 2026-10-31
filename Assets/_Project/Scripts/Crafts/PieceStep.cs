@@ -22,6 +22,8 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
     bool pressing;
 
     protected StepProgress State => order.StepState(stepIndex);
+    /// 0..1: how much a better tool helps with this step (see SupplyDef.assist).
+    protected float Assist => area.assist;
     protected RecipeStep Recipe => order.Steps[Mathf.Clamp(stepIndex, 0, order.Steps.Length - 1)];
     KnitLayout knitLayout;
     /// Knitting: where this step's stitches go (the garment piece it works on).

@@ -71,7 +71,7 @@ public class KnitRowsStep : PieceStep
         if (lastStitchTime >= 0)
         {
             float gap = now - lastStitchTime;
-            if (rhythm > 0.08f) evenness = 1f - 0.6f * Mathf.Clamp01(Mathf.Abs(gap - rhythm) / rhythm);
+            if (rhythm > 0.08f) evenness = 1f - 0.6f * (1f - 0.7f * Assist) * Mathf.Clamp01(Mathf.Abs(gap - rhythm) / rhythm);   // smooth needles forgive
             rhythm = rhythm < 0 ? gap : Mathf.Lerp(rhythm, gap, 0.3f);
         }
         lastStitchTime = now;

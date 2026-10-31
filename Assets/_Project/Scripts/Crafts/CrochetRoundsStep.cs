@@ -67,9 +67,10 @@ public class CrochetRoundsStep : PieceStep
         if (Done >= slots.Count) return;
         if (hooked) { flicking = true; pressAt = p; return; }
         float d = Vector2.Distance(p, slots[Done]);
-        if (d > Reach) return;
+        float reach = Reach * (1f + Assist);   // a comfier hook catches the loop more easily
+        if (d > reach) return;
         hooked = true;
-        hookNeatness = 1f - Mathf.InverseLerp(0.015f, Reach, d);
+        hookNeatness = 1f - Mathf.InverseLerp(0.015f * (1f + 2f * Assist), reach, d);
         Show();
     }
 

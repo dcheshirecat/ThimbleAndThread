@@ -19,7 +19,8 @@ public abstract class TracingStep : PieceStep
     /// Draws what's being worked on, under the line. Default: a square sheet of the fabric.
     protected virtual void DrawPiece() => Square(Vector2.one * 0.5f, 0.9f, area.fabricColor, 0);
 
-    const float Tolerance = 0.035f;    // how far from the line still counts, as a share of the area
+    const float BaseTolerance = 0.035f;    // how far from the line still counts, as a share of the area
+    float Tolerance => BaseTolerance * (1f + Assist);   // sharp scissors, good needles: more forgiving
     const int Samples = 160;           // checkpoints along the line
 
     readonly List<Vector2> points = new List<Vector2>();

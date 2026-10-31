@@ -23,12 +23,13 @@ public class MinigameHost : MonoBehaviour
     public ICraftStep Step => step;
 
     /// Opens the order's current step.
-    public void Open(Order order, Color fabricColor, ContentLibrary content, ShopManager shop)
+    public void Open(Order order, Color fabricColor, ContentLibrary content, ShopManager shop, float assist = 0f)
     {
         Close();
         var area = Area(fabricColor);
         area.content = content;
         area.shop = shop;
+        area.assist = assist;
         stepObject = new GameObject($"Step_{order.CurrentStep.kind}");
         stepObject.transform.SetParent(transform, false);
         step = Create(order.CurrentStep.kind, stepObject);
