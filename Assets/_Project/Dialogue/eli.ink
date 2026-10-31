@@ -143,3 +143,14 @@ Eli: That would look so good in the café. Could you? # happy
 === eli_suggest_no ===
 Eli: It's beautiful. I'd get coffee on it within the hour, though. I know myself. # thoughtful
 -> END
+
+// ---- First meeting (owner, 2026-10-31): they introduce themselves. ~ met() puts their name and portrait
+// in the Journal (until then they show as ???). Played once, instead of the usual hello.
+
+=== eli_intro ===
+Eli: Hi! Sorry, is it okay to come in? The sign said open but signs lie. Mine does. # happy
+Eli: I'm Eli. The Driftwood, down on the harbour? The café with the wonky sign. # happy
+~ met()
+~ note(Runs the Driftwood, the café on the harbour.)
+Eli: I've been meaning to come in for weeks. Your shop smells better than my coffee. That's a worry.
+-> END

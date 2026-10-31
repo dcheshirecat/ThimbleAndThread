@@ -593,11 +593,20 @@ public static class TestSceneBuilder
         friendCard.transform.SetParent(journalList, false);
         friendCard.GetComponent<Image>().color = new Color(0.97f, 0.93f, 0.85f);
         var fv = friendCard.GetComponent<VerticalLayoutGroup>();
-        fv.padding = new RectOffset(30, 30, 24, 24);
+        fv.padding = new RectOffset(30, 270, 24, 24);   // room on the right for their portrait
         fv.spacing = 14;
         fv.childControlWidth = fv.childControlHeight = true;
         fv.childForceExpandWidth = true; fv.childForceExpandHeight = false;
         friendCard.GetComponent<LayoutElement>().preferredWidth = 1650;
+        friendCard.GetComponent<LayoutElement>().minHeight = 280;
+        var fFace = Shape(friendCard.transform, "Portrait", new Vector2(1, 1), new Vector2(220, 220), Color.white, null);
+        fFace.pivot = new Vector2(1, 1);
+        fFace.anchoredPosition = new Vector2(-30, -26);
+        fFace.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+        fFace.GetComponent<Image>().preserveAspect = true;
+        var fUnknown = MakeText(fFace, "Unknown", "?", 140);
+        Stretch((RectTransform)fUnknown.transform);
+        fUnknown.color = new Color(0.97f, 0.93f, 0.85f);
         var fName = MakeText(friendCard.transform, "Name", "", 52);
         fName.alignment = TextAnchor.MiddleLeft; fName.color = Ink;
         var fBar = new GameObject("Bar", typeof(RectTransform), typeof(Image), typeof(LayoutElement));

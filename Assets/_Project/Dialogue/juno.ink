@@ -126,3 +126,15 @@ Juno: Wait, I could make that. Can I make that? I'm making that. # surprised
 === juno_suggest_no ===
 Juno: It's nice. It's very... nice. That's the problem. # neutral
 -> END
+
+// ---- First meeting (owner, 2026-10-31): they introduce themselves. ~ met() puts their name and portrait
+// in the Journal (until then they show as ???). Played once, instead of the usual hello.
+
+=== juno_intro ===
+A teenager with headphones round their neck and paint on their jeans pushes the door with one finger. # neutral
+Juno: Hey. I'm Juno. I walk past here every day on the way to the skate park. # happy
+~ met()
+Juno: It's been shut forever. I kind of assumed it was haunted.
+~ note(Goes to the skate park most days.)
+Juno: Is it haunted? It's fine if it's haunted. # happy
+-> END

@@ -241,8 +241,13 @@ public class ShopDay : MonoBehaviour
             Save.visitorsToday.RemoveAt(0);
             if (customer == null) continue;
             Visitor = customer;
-            Met(customer.customerId);
             GM.Persist();
+            // A first visit: they introduce themselves (owner, 2026-10-31), then say what they're after.
+            if (!Save.met.Contains(customer.customerId))
+            {
+                Introduce(customer, () => WhatTheyWant(customer));
+                return;
+            }
             // Back to collect a finished order: hand it over (their reaction plays, then any scenes).
             var pickup = PickupFor(customer);
             if (pickup != null)
@@ -532,9 +537,11 @@ public class ShopDay : MonoBehaviour
         Beat(who, runner, null, () => Play(who, knots, done));
     }
 
-    void Beat(CustomerDef who, DialogueRunner runner, DialogueRunner.Line last, System.Action done)
+    /// One line (or a choice). Reads the line after it before showing it, so its commands have run: a
+    /// ~ met() right after someone says their name puts the name up on that very line.
+    void Beat(CustomerDef who, DialogueRunner runner, DialogueRunner.Line last, System.Action done, DialogueRunner.Line ahead = null, bool read = false)
     {
-        var line = runner.Next();
+        var line = read ? ahead : runner.Next();
         if (line == null) { done(); return; }
         if (line.choices != null)
         {
@@ -547,7 +554,8 @@ public class ShopDay : MonoBehaviour
             Show(who, last, null, options);
             return;
         }
-        Show(who, line, null, new List<(string, System.Action)> { ("Continue", () => Beat(who, runner, line, done)) });
+        var next = runner.Next();
+        Show(who, line, null, new List<(string, System.Action)> { ("Continue", () => Beat(who, runner, line, done, next, true)) });
     }
 
     /// A line said by a customer (outside Ink): their face, the text, and answer buttons.
@@ -573,6 +581,11 @@ public class ShopDay : MonoBehaviour
     {
         string speaker = line?.speaker;
         var face = FaceFor(speaker, who, line?.tags);
+        if (speaker != null)   // not introduced yet: no name to put to the face
+        {
+            var c = who != null && Speaks(who, speaker) ? who : System.Array.Find(content.customers, x => x != null && Speaks(x, speaker));
+            if (c != null && !Save.met.Contains(c.customerId)) speaker = "???";
+        }
         if (previewTexture != null) Destroy(previewTexture);
         previewTexture = preview != null ? PatternPreview.Make(preview) : null;
         dialogue.Show(speaker, face, line?.text ?? "", options, previewTexture);
@@ -637,6 +650,7 @@ public class ShopDay : MonoBehaviour
                     Progress.AddNews($"Noted in your journal about {who.displayName}: {arg}");
                 }
                 break;
+            case "met": if (who != null) Met(who.customerId); break;   // ~ met(): they've just said their name
             case "flag": if (!Save.flags.Contains(arg)) Save.flags.Add(arg); break;
             case "unflag": Save.flags.Remove(arg); break;
             default: Debug.LogWarning($"Unknown dialogue command: {call}"); break;
@@ -1129,11 +1143,12 @@ public class ShopDay : MonoBehaviour
         if (Save == null || Save.night || !ShopOpen(shop)) return;
         boughtThisVisit = false;
         LastMessage = "";
-        Met(ownerId);
         var who = CustomerFor(ownerId);
-        var options = new List<(string, System.Action)> { ("Have a look around", () => GM.ChangeScreen(shop)) };
-        if (CanChat(ownerId)) options.Add(("Stop for a chat", () => ChatWith(ownerId, shop)));
-        if (!SayKnot(who, OwnerKnot(who, "greet"), options)) GM.ChangeScreen(shop);
+        bool first = !Save.met.Contains(ownerId);   // the first time in: they introduce themselves
+        var options = new List<(string, System.Action)> { ("Have a look around", () => { Met(ownerId); GM.ChangeScreen(shop); }) };
+        if (CanChat(ownerId) && !first) options.Add(("Stop for a chat", () => ChatWith(ownerId, shop)));
+        string knot = first ? OwnerKnot(who, "intro") : null;
+        if (!SayKnot(who, knot ?? OwnerKnot(who, "greet"), options)) { Met(ownerId); GM.ChangeScreen(shop); }
     }
 
     /// Leaving a shop: the owner sees you off (thanking you if you bought something), then back to your shop.
@@ -1164,18 +1179,31 @@ public class ShopDay : MonoBehaviour
     {
         if (who == null || knot == null || !content.Ink.Has(knot)) return false;
         var runner = new DialogueRunner(content.Ink, knot, c => Condition(who, c), c => Command(who, c));
-        var lines = new List<DialogueRunner.Line>();
-        for (var l = runner.Next(); l != null && l.choices == null && lines.Count < 20; l = runner.Next()) lines.Add(l);
-        if (lines.Count == 0) return false;
+        var first = runner.Next();
+        if (first == null || first.choices != null) return false;
         if (GM.Current != ScreenId.Dialogue) GM.ChangeScreen(ScreenId.Dialogue);
-        ShowLines(who, lines, 0, answers);
+        ShowLines(who, runner, first, answers, 0);
         return true;
     }
 
-    void ShowLines(CustomerDef who, List<DialogueRunner.Line> lines, int i, List<(string, System.Action)> answers)
+    /// Shows a line, reading one ahead to know whether it's the last (which gets the answers). Reading
+    /// ahead runs the next line's commands, so a ~ met() just after someone says their name shows it at once.
+    void ShowLines(CustomerDef who, DialogueRunner runner, DialogueRunner.Line line, List<(string, System.Action)> answers, int count)
     {
-        if (i == lines.Count - 1) { Show(who, lines[i], null, answers); return; }
-        Show(who, lines[i], null, new List<(string, System.Action)> { ("Continue", () => ShowLines(who, lines, i + 1, answers)) });
+        var next = count < 20 ? runner.Next() : null;
+        if (next == null || next.choices != null) { Show(who, line, null, answers); return; }
+        Show(who, line, null, new List<(string, System.Action)> { ("Continue", () => ShowLines(who, runner, next, answers, count + 1)) });
+    }
+
+    /// Someone's first visit (owner, 2026-10-31): their introduction (name_intro*), after which they're met
+    /// (their name and portrait go in the Journal). Without an intro knot, a plain hello.
+    void Introduce(CustomerDef who, System.Action then)
+    {
+        System.Action done = () => { Met(who.customerId); GM.Persist(); then(); };
+        string knot = string.IsNullOrEmpty(who.inkName) ? null : Fresh(Variants($"{who.inkName}_intro"));
+        if (knot != null) { Play(who, new List<string> { knot }, done); return; }
+        Met(who.customerId);
+        Say(who, $"Hello! I'm {who.displayName}. I don't think we've met.", ("Continue", done));
     }
 
     public void ChatWith(string customerId, ScreenId back)

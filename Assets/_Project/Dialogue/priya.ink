@@ -120,3 +120,14 @@ Priya: I could do that one at my evening class! Could I have the pattern? # happ
 === priya_suggest_no ===
 Priya: It's lovely, but it wouldn't survive twenty-eight six-year-olds. # thoughtful
 -> END
+
+// ---- First meeting (owner, 2026-10-31): they introduce themselves. ~ met() puts their name and portrait
+// in the Journal (until then they show as ???). Played once, instead of the usual hello.
+
+=== priya_intro ===
+Priya: Hello! Hello. Sorry, there's glitter on my hands, it's on everything, I've given up. # happy
+Priya: I'm Priya. I teach the little ones up at St. Brigid's. # happy
+~ met()
+~ note(Teaches the youngest class at St. Brigid's: twenty-eight children.)
+Priya: I've heard this shop has a pattern for everything. I have a class of twenty-eight. I need everything.
+-> END

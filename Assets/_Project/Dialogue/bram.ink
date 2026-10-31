@@ -138,3 +138,15 @@ Bram: I've wrapped it in yesterday's paper. The crossword's half done, sorry. # 
 === bram_thanks_2_proud ===
 Bram: Bring me back a photo of whatever that turns into. I mean it. # happy
 -> END
+
+// ---- First meeting (owner, 2026-10-31): they introduce themselves. ~ met() puts their name and portrait
+// in the Journal (until then they show as ???). Played once, instead of the usual hello.
+
+=== bram_intro ===
+A big man behind the counter looks up from a ledger and breaks into a grin. # happy
+Bram: Well, look at that! You'll be the one who's opened the old haberdashery. # happy
+Bram: Bram Okafor. This is my market. Fabric, thread, yarn, tools, and the best lemon sweets on the coast. # happy
+~ met()
+~ note(Runs the Supply Market.)
+Bram: Your great-aunt was my best customer. No pressure. # thoughtful
+-> END

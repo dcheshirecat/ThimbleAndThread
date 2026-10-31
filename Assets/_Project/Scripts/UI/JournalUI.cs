@@ -57,8 +57,8 @@ public class JournalUI : MonoBehaviour
         if (Save == null) return;
         overlay.SetActive(true);
         overlay.transform.SetAsLastSibling();
-        if (marketLink != null) marketLink.SetActive(!Save.night);
-        if (boutiqueLink != null) boutiqueLink.SetActive(!Save.night);
+        if (marketLink != null) marketLink.SetActive(!Save.night && day.ShopOpen(ScreenId.Market));
+        if (boutiqueLink != null) boutiqueLink.SetActive(!Save.night && day.ShopOpen(ScreenId.Boutique));
         Show();
         StartCoroutine(Slide(true));
         AudioManager.Play(Sfx.Click);
@@ -79,7 +79,7 @@ public class JournalUI : MonoBehaviour
     // Links: close the book, then go.
     public void GoToMarket() { overlay.SetActive(false); day.EnterShop(ShopDay.MarketOwnerId, ScreenId.Market); }
     public void GoToTrade() { overlay.SetActive(false); router.GoToTrade(); }
-    public void GoToBoutique() { overlay.SetActive(false); router.GoToBoutique(); }
+    public void GoToBoutique() { overlay.SetActive(false); day.EnterShop(BoutiqueUI.OwnerId, ScreenId.Boutique); }
     public void GoToSettings() { overlay.SetActive(false); router.GoToSettings(); }
 
     IEnumerator Slide(bool opening)
@@ -182,7 +182,16 @@ public class JournalUI : MonoBehaviour
         int shown = 0;
         foreach (var cust in day.content.customers)
         {
-            if (cust == null || !Save.met.Contains(cust.customerId)) continue;
+            if (cust == null) continue;
+            if (!Save.met.Contains(cust.customerId))
+            {
+                // Someone around town you haven't met yet (owner, 2026-10-31): ??? and no face until they
+                // introduce themselves. Only people who are about by now, so it doesn't hint at what's coming.
+                bool about = cust.shopOwner ? (cust.customerId == ShopDay.MarketOwnerId ? day.ShopOpen(ScreenId.Market) : day.ShopOpen(ScreenId.Boutique))
+                                            : cust.firstChapter <= Save.chapter;
+                if (about) { FriendCard("???", null, null, "You haven't met them yet."); shown++; }
+                continue;
+            }
             var r = GameManager.Instance.GetRelationship(cust.customerId);
             var sb = new StringBuilder();
             foreach (var n in Save.notes)
@@ -199,18 +208,34 @@ public class JournalUI : MonoBehaviour
             foreach (var s in day.content.skills)   // only once it's happened: what they'll teach is a surprise
                 if (s != null && s.friend == cust && s.friendLevel > 0 && Progress.Knows(s.skillId) && r.level >= s.friendLevel)
                     sb.AppendLine($"Taught you {s.displayName}.");
-            FriendCard(cust.displayName, r, sb.ToString().TrimEnd());
+            FriendCard(cust.displayName, r, cust.GetPortrait(Expression.Neutral), sb.ToString().TrimEnd());
             shown++;
         }
         return shown == 0 ? "<b>Friends</b>\n\nYou haven't met anyone yet. Customers ring the bell during the day." : "<b>Friends</b>";
     }
 
-    void FriendCard(string name, CustomerRelationship r, string body)
+    void FriendCard(string name, CustomerRelationship r, Sprite face, string body)
     {
         if (friendTemplate == null) return;
         var card = Instantiate(friendTemplate, friendTemplate.transform.parent);
         card.SetActive(true);
         card.name = $"Friend_{name}";
+        var portrait = card.transform.Find("Portrait");
+        if (portrait != null)
+        {
+            var img = portrait.GetComponent<Image>();
+            img.sprite = face;
+            img.color = face != null ? Color.white : new Color(0.55f, 0.5f, 0.48f);   // a blank frame until you've met
+            portrait.Find("Unknown").gameObject.SetActive(face == null);
+        }
+        if (r == null)   // not met yet
+        {
+            card.transform.Find("Name").GetComponent<Text>().text = $"<b>{name}</b>";
+            card.transform.Find("Bar").gameObject.SetActive(false);
+            card.transform.Find("Body").GetComponent<Text>().text = body;
+            rows.Add(card);
+            return;
+        }
         int need = r.PointsForNextLevel();
         float fill = need > 0 ? Mathf.Clamp01(r.points / (float)need) : 1f;
         card.transform.Find("Name").GetComponent<Text>().text = $"<b>{name}</b>   friendship level {r.level}";

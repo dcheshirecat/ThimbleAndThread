@@ -167,6 +167,9 @@ The game looks for knots by name (the character's **Ink Name**, set on the custo
   (`mara_visit_rain`, `mara_visit_list`...). A number straight after `_visit_` is the friendship level
   needed (`mara_visit_2`, `mara_visit_2_word`). Each visit picks one the player hasn't heard lately, so
   more greetings = less repetition.
+- First meetings: `mara_intro` (or variants `mara_intro_...`) plays the first time someone visits (or you
+  first walk into their shop) instead of the usual hello. Put `~ met()` straight after the line where they
+  say their name: until then their name shows as ??? (in the dialogue and the Journal's Friends page).
 - Shop owners (Bram, Celeste) also greet you at their door and see you off: `bram_greet...` when you
   walk in, `bram_bye...` when you leave without buying, `bram_thanks...` when you bought something.
   Same rules as greetings (a number after the kind is the friendship level needed, e.g. `bram_greet_2_friend`).

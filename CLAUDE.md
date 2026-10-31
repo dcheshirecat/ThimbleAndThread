@@ -529,6 +529,11 @@ Test live (create, open, open again fails, own code refused) before merging.
   their shop (tap = chat). The market hides supplies for crafts not yet learned (Progression.SupplyShown).
   Save version 19 (older saves: both shops open).
 - Owner wants LOOM WEAVING as a craft at some point (add with needlepoint and quilting).
+- DONE First meetings (owner, 2026-10-31): a customer's first visit (ShopDay.Introduce) and a shop owner's first
+  greeting (EnterShop) play ink name_intro*, where ~ met() marks them met as they say their name; until then
+  the dialogue nameplate says ??? and the Journal's Friends page shows a ??? card with a blank "?" portrait
+  (only for people about by now: firstChapter reached, or their shop open). Friend cards show the portrait.
+  Dialogue reads one line ahead (ShopDay.Beat, ShowLines) so a line's following commands have run.
 - DONE Embroidered hoop (mini-games part 3, Crafts/EmbroiderySteps.cs): Trace the design (TransferDesign, marking
   pen), Hoop, Pull it drum-tight (TightenHoop: tug outwards at each ripple), Backstitch, Satin fill at an even
   slant (printed guide lines; strokes off the slant are mistakes), Stem-stitch the waves (TracingStep.Twisted),

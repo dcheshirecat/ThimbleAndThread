@@ -134,3 +134,15 @@ Mara: I've been practising, you know! I'd love to try that one myself. Slowly. W
 === mara_suggest_no ===
 Mara: It's gorgeous. It's just not... baby-proof. Nothing is, right now. # thoughtful
 -> END
+
+// ---- First meeting (owner, 2026-10-31): they introduce themselves. ~ met() puts their name and portrait
+// in the Journal (until then they show as ???). Played once, instead of the usual hello.
+
+=== mara_intro ===
+A young woman edges in sideways, a pram first, apologising to the doorframe. # thoughtful
+Mara: Hi. Sorry. Hello. I'm Mara. # thoughtful
+~ met()
+Mara: We live above the bakery. This is Poppy. She's asleep, which is a miracle, so I'm whispering.
+~ note(Has a baby daughter, Poppy, and almost no sleep.)
+Mara: I heard the shop had opened again. I used to come in with my mum when I was little. # happy
+-> END

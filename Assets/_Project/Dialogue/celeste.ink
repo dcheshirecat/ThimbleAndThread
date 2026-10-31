@@ -128,3 +128,15 @@ Celeste: Wear it out of the shop. Let the square see. # happy
 === celeste_thanks_2_proud ===
 Celeste: You look wonderful. Don't make it weird. # happy
 -> END
+
+// ---- First meeting (owner, 2026-10-31): they introduce themselves. ~ met() puts their name and portrait
+// in the Journal (until then they show as ???). Played once, instead of the usual hello.
+
+=== celeste_intro ===
+A woman in a sharp black dress glances up from pinning a hem on a mannequin. # thoughtful
+Celeste: Ah. The new shopkeeper. Let me look at you. # thoughtful
+Celeste: Celeste Moreau. This is my boutique. Hair, clothes, the odd miracle. # happy
+~ met()
+~ note(Owns Moreau's, the boutique on the square.)
+Celeste: Hm. Good bones. We can work with that.
+-> END

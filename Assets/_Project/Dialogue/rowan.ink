@@ -159,3 +159,15 @@ Rowan: Ooh, I'll make that myself. Professional curiosity. Don't tell my custome
 === rowan_suggest_no ===
 Rowan: It's good. It's just not me. I'll know it when I see it. # thoughtful
 -> END
+
+// ---- First meeting (owner, 2026-10-31): they introduce themselves. ~ met() puts their name and portrait
+// in the Journal (until then they show as ???). Played once, instead of the usual hello.
+
+=== rowan_intro ===
+Someone in a beautifully cut coat lingers by your window display, then strolls in as if they own the place. # happy
+Rowan: Rowan Hale. Knot & Needle, across the square. Pleasure. # happy
+~ met()
+~ note(Runs Knot & Needle, the other craft shop in town.)
+Rowan: Checking out the competition. Purely professional.
+Rowan: Your window display's better than mine. I hate that. # thoughtful
+-> END

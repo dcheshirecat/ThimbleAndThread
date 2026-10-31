@@ -166,3 +166,15 @@ Isla: I'll take the pattern. I'm going to beat this knitting thing if it takes m
 === isla_suggest_no ===
 Isla: Too delicate for the tower. It'd be in the sea by Tuesday. # neutral
 -> END
+
+// ---- First meeting (owner, 2026-10-31): they introduce themselves. ~ met() puts their name and portrait
+// in the Journal (until then they show as ???). Played once, instead of the usual hello.
+
+=== isla_intro ===
+A woman in a salt-stiff coat looks the shop over like she's checking it for leaks. # neutral
+Isla: You're the new one. The great-{niece}. # neutral
+Isla: I'm Isla. The lighthouse. Well, not the lighthouse. I keep it.
+~ met()
+~ note(Keeps the lighthouse.)
+Isla: Your aunt mended my jumpers. I'm told I'm hard on jumpers. # thoughtful
+-> END

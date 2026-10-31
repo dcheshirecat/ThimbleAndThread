@@ -136,3 +136,15 @@ Tobias: Pretty. Not for an old fisherman, though. What would I do with it? # neu
 === tobias_suggest_no_fuss ===
 Tobias: No. Too much fuss for me. You keep it for someone who'll love it. # neutral
 -> END
+
+// ---- First meeting (owner, 2026-10-31): they introduce themselves. ~ met() puts their name and portrait
+// in the Journal (until then they show as ???). Played once, instead of the usual hello.
+
+=== tobias_intro ===
+An old man in a fisherman's jumper stands in the doorway a long moment before he comes in. # neutral
+Tobias: Tobias. Most folk say Old Tobias. I don't mind it. # neutral
+~ met()
+Tobias: I knew your great-aunt. Forty years I came through that door.
+~ note(Knew your great-aunt for forty years.)
+Tobias: Thought I'd see who'd taken the keys. # thoughtful
+-> END
