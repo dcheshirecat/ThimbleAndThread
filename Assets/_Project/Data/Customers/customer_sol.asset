@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af2bf79f2df3bdf48932578e82012d62, type: 3}
+  m_Name: customer_sol
+  m_EditorClassIdentifier: Assembly-CSharp::CustomerDef
+  customerId: sol
+  displayName: Sol Reyes
+  bio: Lifeguard on the main beach (they/them). Surfs at dawn, collects sea glass, sings badly.
+  fullBody: {fileID: 21300000, guid: c21329310e8e2e6468e9d8f3eef92062, type: 3}
+  portraits:
+  - expression: 0
+    sprite: {fileID: 21300000, guid: cc67c3819bbc392409f8b101a7eb691a, type: 3}
+  - expression: 1
+    sprite: {fileID: 21300000, guid: dd12a3fbf09c53e4f9ff1368bc93a184, type: 3}
+  - expression: 2
+    sprite: {fileID: 21300000, guid: aee4013cf5b88f84c92f96b290c84bae, type: 3}
+  - expression: 3
+    sprite: {fileID: 21300000, guid: cb1dd5fd0cfb2694094a3ef6f98cc96c, type: 3}
+  - expression: 4
+    sprite: {fileID: 21300000, guid: 7ff9c191d311e8f4ebcfa2864f807587, type: 3}
+  requestable:
+  - item: {fileID: 11400000, guid: c290e0d30e10d3a43b2e345eaef53cd3, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: e7e94861e1dcdf847ba6112533c4cabe, type: 2}
+    minRelationshipLevel: 1
+  - item: {fileID: 11400000, guid: d72160bbb003b8b45bd0243d7c440a5c, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: 10c1ffff1a3b659439f05d80f5834bda, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: 624106ae6949e67438c1436949d015e1, type: 2}
+    minRelationshipLevel: 0
+  firstChapter: 2
+  likesSurprises: 0.7
+  preferences: []
+  makes: 
+  shopOwner: 0
+  romanceable: 0
+  inkName: sol

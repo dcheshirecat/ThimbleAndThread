@@ -290,6 +290,23 @@ public static class PlaceholderGenerator
                  new Color(0.60f, 0.75f, 0.70f), new[] { (tablecloth, 0), (scarf, 0), (hoopArt, 1), (sweater, 2) });
         Character(priya, "priya", 1, false);
         Character(eli, "eli", 2, true);
+        // More townsfolk (owner, 2026-10-31: 20+ characters in the finished game).
+        var hal = Customer("hal", "Hal Penrose", "Retired postman (he/him). Delivered to every door in town for forty years; races pigeons.",
+                 new Color(0.45f, 0.50f, 0.65f), new[] { (tablecloth, 0), (scarf, 0), (sampler, 0), (hoopArt, 1) });
+        var nadia = Customer("nadia", "Nadia Kowalski", "Midwife at the cottage hospital (she/her), mostly on nights. Practical, tired, very funny.",
+                 new Color(0.55f, 0.70f, 0.85f), new[] { (sewnPlushie, 0), (scarf, 0), (sweater, 1), (hoopArt, 0), (plushie, 1) });
+        var sol = Customer("sol", "Sol Reyes", "Lifeguard on the main beach (they/them). Surfs at dawn, collects sea glass, sings badly.",
+                 new Color(0.95f, 0.60f, 0.30f), new[] { (tote, 0), (sweater, 1), (scarf, 0), (hoopArt, 0), (sampler, 0) });
+        var dot = Customer("dot", "Dot Pascoe", "Runs the tea room above the bakery (she/her). Eighty-one; your great-aunt's oldest friend.",
+                 new Color(0.80f, 0.65f, 0.75f), new[] { (tablecloth, 0), (sampler, 0), (hoopArt, 0), (plushie, 1), (sewnPlushie, 1) });
+        Character(hal, "hal", 1, false);
+        Character(nadia, "nadia", 2, false);
+        Character(sol, "sol", 2, false);
+        Character(dot, "dot", 3, false);
+        Likes(hal, 0.3f); Likes(nadia, 0.75f); Likes(sol, 0.7f); Likes(dot, 0.6f);
+        Makes(nadia, CraftType.Knitting);
+        Makes(dot, CraftType.CrossStitch);
+
         // How much each of them likes a surprise extra on their order.
         Likes(mara, 0.8f); Likes(tobias, 0.35f); Likes(juno, 0.6f); Likes(isla, 0.45f); Likes(rowan, 0.55f);
         Likes(priya, 0.9f); Likes(eli, 0.85f);

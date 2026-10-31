@@ -644,6 +644,11 @@ DONE batch 4 (items 16, 20; save version 21; owner hadn't answered the plan, bui
   per pattern per Sunday); Sell / Ask for More (50%: +20% or they leave) / Keep It; Pack Up -> evening. First Sunday:
   stamp + 2-page explainer. Pattern Studio "Make One for the Stall" (Order.customerId ShopDay.StallId) -> SetAside puts it
   on the stall.
+DONE batch 5 (item 4, first part): 15 characters now. New customers with full ink files (intro, visits, 3 requests with
+fits/best, hand-over reactions, suggest reactions, scenes 1-3, a Saturday visit): Hal Penrose (retired postman, races
+pigeons, ch1), Nadia Kowalski (night-shift midwife, ch2, knits), Sol Reyes (lifeguard, they/them, ch2), Dot Pascoe (81,
+tea room, Aunt Win's oldest friend, ch3, cross stitches; her scene 3 hints the torn book pages were given to people).
+Plus Ada Finch (pattern shop). All friendship only. Still to reach 20+: about 5 more.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
