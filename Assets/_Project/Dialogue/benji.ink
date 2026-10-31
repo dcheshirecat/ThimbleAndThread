@@ -90,3 +90,29 @@ Benji: Will you come to the wedding? Sam says you have to. I say you have to. # 
 Benji shows you round his workshop: shavings everywhere, a radio, a half-built cradle he won't explain. # happy
 Benji: That's for... later. Much later. Don't tell Sam. # surprised
 -> END
+
+// ---- In his workshop (Marsh's Workshop, the furniture shop) ----
+
+=== benji_workshop ===
+A workshop that smells of pine shavings and varnish. A young man looks up from a half-finished chair and nearly drops his plane. # surprised
+Benji: Oh! A customer. A real one. Hi. I'm Benji. Marsh. This is my workshop. It's also my dad's, but he's mostly retired. # happy
+~ met()
+~ note(A carpenter with a workshop down the lane. He makes furniture.)
+Benji: Everything's made here. If it wobbles, bring it back. It won't wobble. Probably. # thoughtful
+-> END
+
+=== benji_greet ===
+Benji: Hi! Mind the shavings. Have a look round. # happy
+-> END
+
+=== benji_greet_sawdust ===
+Benji: Sorry about the noise. I'm sanding a cradle. For a friend. Not for me. Not yet. # thoughtful
+-> END
+
+=== benji_bye ===
+Benji: See you! Tell people about the chairs. If they ask. # happy
+-> END
+
+=== benji_thanks ===
+Benji: Thank you! I'll carry it over myself. Well, my dad will. I'll supervise. # happy
+-> END

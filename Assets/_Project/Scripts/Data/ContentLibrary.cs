@@ -15,6 +15,7 @@ public class ContentLibrary : ScriptableObject
     public ChapterDef[] chapters = new ChapterDef[0];
     public UpgradeDef[] upgrades = new UpgradeDef[0];
     public CosmeticDef[] cosmetics = new CosmeticDef[0];
+    public DecorDef[] decor = new DecorDef[0];
     public QuestDef[] quests = new QuestDef[0];
     public TextAsset[] dialogue = new TextAsset[0];   // the .ink files in Assets/_Project/Dialogue
 

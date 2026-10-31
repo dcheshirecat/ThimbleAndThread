@@ -195,6 +195,25 @@ public static class TestSceneBuilder
         Keeper(mid, new Vector2(0.36f, 0.5f), content);
         var counter = Shape(mid, "Counter", new Vector2(0.4f, 0.38f), new Vector2(1500, 280), new Color(0.55f, 0.36f, 0.22f), uiSprite);
         Shape(counter, "CounterTop", new Vector2(0.5f, 1f), new Vector2(1560, 50), new Color(0.68f, 0.47f, 0.30f), uiSprite);
+        // Your furniture and decorations, in their spots (DecorSlot order: wall, counter, floor, by the door). Each sits on
+        // what holds it (the counter, the floor in front of it, beside the door), so it stays put on any phone.
+        shopScene.decorSpots = new Image[4];
+        RectTransform DecorSpot(int i, Transform parent, Vector2 anchor, Vector2 pivot, Vector2 pos, Vector2 size)
+        {
+            var spot = Shape(parent, $"Decor_{(DecorSlot)i}", anchor, size, Color.white, null);
+            spot.pivot = pivot;
+            spot.anchoredPosition = pos;
+            var img = spot.GetComponent<Image>();
+            img.preserveAspect = true;
+            img.raycastTarget = false;
+            shopScene.decorSpots[i] = img;
+            spot.gameObject.SetActive(false);
+            return spot;
+        }
+        DecorSpot(0, mid, new Vector2(0.14f, 0.66f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(300, 260));
+        DecorSpot(1, counter, new Vector2(0.72f, 1f), new Vector2(0.5f, 0f), new Vector2(0, 25), new Vector2(200, 200));
+        DecorSpot(2, counter, new Vector2(0.5f, 0f), new Vector2(0.5f, 1f), new Vector2(0, -20), new Vector2(760, 170));
+        DecorSpot(3, mid, new Vector2(0.8f, 0.6f), new Vector2(0f, 0f), new Vector2(185, -340), new Vector2(200, 380));
         var doorButton = Button(mid, "Door", shopScene.TapDoor, 360);
         doorButton.GetComponentInChildren<Text>().text = "";
         var doorRt = (RectTransform)doorButton.transform;
@@ -248,7 +267,7 @@ public static class TestSceneBuilder
         Stretch((RectTransform)shopsLayer.transform);
         shopsLayer.GetComponent<Image>().color = new Color(0, 0, 0, 0.001f);   // invisible, but catches taps outside the menu
         UnityEventTools.AddPersistentListener(shopsLayer.GetComponent<Button>().onClick, shopScene.ToggleShops);
-        var shopsMenu = Shape(shopsLayer.transform, "Shops Menu", new Vector2(0.72f, 0.64f), new Vector2(900, 760), new Color(1, 0.97f, 0.9f), uiSprite);
+        var shopsMenu = Shape(shopsLayer.transform, "Shops Menu", new Vector2(0.72f, 0.62f), new Vector2(900, 900), new Color(1, 0.97f, 0.9f), uiSprite);
         shopsMenu.GetComponent<Image>().raycastTarget = true;
         shopsMenu.gameObject.AddComponent<ClickBlocker>();
         var sm = Column(shopsMenu, 0.5f, 0.5f);
@@ -261,6 +280,9 @@ public static class TestSceneBuilder
         var menuPatterns = Button(sm, "Menu Patterns", shopScene.GoToPatternShop, 800);
         menuPatterns.GetComponentInChildren<Text>().text = "The Pattern Shop";
         shopScene.patternShopButton = menuPatterns.gameObject;
+        var menuFurniture = Button(sm, "Menu Furniture", shopScene.GoToFurniture, 800);
+        menuFurniture.GetComponentInChildren<Text>().text = "The Workshop";
+        shopScene.furnitureButton = menuFurniture.gameObject;
         Button(sm, "Menu Close", shopScene.ToggleShops, 800).GetComponentInChildren<Text>().text = "Close";
         shopsLayer.SetActive(false);
         shopScene.shopsMenu = shopsLayer;
@@ -461,7 +483,7 @@ public static class TestSceneBuilder
         Button(b, "Back", router.GoToHub, 1100);
 
         // Customization: name, pronouns, look (CustomizeUI)
-        p = Panel(ScreenId.Customize, "Your Shopkeeper", new Color(0.93f, 0.85f, 0.80f));
+        p = Panel(ScreenId.Customize, "", new Color(0.93f, 0.85f, 0.80f));   // the tabs sit where a title would
         var custom = canvasGo.AddComponent<CustomizeUI>();
         custom.day = day;
         custom.nameField = NameField(p, new Vector2(0.5f, 0.87f));
@@ -479,7 +501,29 @@ public static class TestSceneBuilder
         }
         custom.preview = Keeper(p, new Vector2(0.5f, 0.53f), content);
         custom.preview.transform.localScale = Vector3.one * 0.85f;
+        // Your look / your shop (furniture and decorations), from the portrait (owner, 2026-10-31)
+        b = Row(p, 0.5f, 0.935f);
+        custom.tabRow = b.gameObject;
+        custom.lookTab = Button(b, "Your Look", custom.ShowLook, 600).GetComponent<Image>();
+        custom.shopTab = Button(b, "Your Shop", custom.ShowShop, 600).GetComponent<Image>();
+        var shopRows = Group<VerticalLayoutGroup>(p, 0.5f, 0.55f, 30);
+        custom.shopGroup = shopRows.gameObject;
+        custom.decorLabels = new Text[4];
+        for (int i = 0; i < 4; i++)
+        {
+            var row = OptionRow(shopRows, $"Spot {i}", null);
+            UnityEventTools.AddIntPersistentListener(row.transform.parent.GetComponentInChildren<Button>().onClick, custom.NextDecor, i);
+            custom.decorLabels[i] = row;
+        }
+        custom.charmText = Label(p, "Charm", new Vector2(0.08f, 0.2f), new Vector2(0.92f, 0.32f), 52, TextAnchor.MiddleCenter);
+        custom.charmText.transform.SetParent(shopRows, true);
+        custom.charmText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        var charmLe = custom.charmText.gameObject.AddComponent<LayoutElement>();
+        charmLe.preferredHeight = 200; charmLe.preferredWidth = 1600;
+        ((RectTransform)custom.charmText.transform).sizeDelta = new Vector2(1600, 200);
+        shopRows.gameObject.SetActive(false);
         b = Group<VerticalLayoutGroup>(p, 0.5f, 0.27f, 22);
+        custom.lookGroup = b.gameObject;
         custom.skinLabel = OptionRow(b, "Skin", custom.NextSkin);
         custom.hairStyleLabel = OptionRow(b, "Hair Style", custom.NextHairStyle);
         custom.hairColorLabel = OptionRow(b, "Hair Colour", custom.NextHairColor);
@@ -512,6 +556,20 @@ public static class TestSceneBuilder
         stall.shopperPanel = shopperCard.gameObject;
         stall.messageText = Label(p, "Message", new Vector2(0.05f, 0.1f), new Vector2(0.95f, 0.16f), 50, TextAnchor.MiddleCenter);
         Button(Column(p, 0.5f, 0.05f), "Pack Up the Stall", stall.PackUp, 900);
+
+        // Marsh's Workshop: furniture and decorations for your shop (FurnitureUI)
+        p = Panel(ScreenId.Furniture, "Marsh's Workshop", new Color(0.86f, 0.78f, 0.66f));
+        var furniture = canvasGo.AddComponent<FurnitureUI>();
+        furniture.day = day;
+        furniture.statusText = Label(p, "Status", new Vector2(0.22f, 0.79f), new Vector2(0.96f, 0.92f), 52, TextAnchor.MiddleCenter);
+        OwnerPortrait(p, content.Customer(ShopDay.FurnitureOwnerId), furniture.Chat);
+        furniture.shelf = Shelf(ScrollList(p, 0.12f, 0.77f));
+        furniture.shelf.name = "Workshop Floor";
+        furniture.tileTemplate = SupplyTile(furniture.shelf);
+        furniture.tileTemplate.name = "Decor Template";
+        b = Row(p, 0.5f, 0.04f);
+        Button(b, "Chat with Benji", furniture.Chat, 860).GetComponentInChildren<Text>().text = "Chat";
+        Button(b, "Back", furniture.Leave, 860);
 
         // Finch's Pattern Parlour: ready-made patterns to sell (PatternShopUI)
         p = Panel(ScreenId.PatternShop, "Finch's Pattern Parlour", new Color(0.80f, 0.86f, 0.78f));

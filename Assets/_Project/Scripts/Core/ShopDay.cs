@@ -80,7 +80,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     // ---- Shop hours (owner, 2026-10-31: the other shops open at set hours) ----
 
     public static (int opens, int closes) HoursOf(ScreenId shop) =>
-        shop == ScreenId.Boutique ? (10 * 60, 18 * 60) : shop == ScreenId.PatternShop ? (11 * 60, 17 * 60) : (9 * 60, 17 * 60);
+        shop == ScreenId.Boutique ? (10 * 60, 18 * 60) : shop == ScreenId.PatternShop ? (11 * 60, 17 * 60)
+        : shop == ScreenId.Furniture ? (8 * 60, 16 * 60) : (9 * 60, 17 * 60);
 
     /// Open today and within its hours.
     public bool ShopOpenNow(ScreenId shop)
@@ -1209,11 +1210,13 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
 
     /// The shop a shop owner runs.
     public static ScreenId ShopOf(string ownerId) =>
-        ownerId == MarketOwnerId ? ScreenId.Market : ownerId == PatternShopOwnerId ? ScreenId.PatternShop : ScreenId.Boutique;
+        ownerId == MarketOwnerId ? ScreenId.Market : ownerId == PatternShopOwnerId ? ScreenId.PatternShop
+        : ownerId == FurnitureOwnerId ? ScreenId.Furniture : ScreenId.Boutique;
 
-    public static string FlagOf(ScreenId shop) => shop == ScreenId.Market ? MarketFlag : shop == ScreenId.Boutique ? BoutiqueFlag : PatternShopFlag;
+    public static string FlagOf(ScreenId shop) => shop == ScreenId.Market ? MarketFlag : shop == ScreenId.Boutique ? BoutiqueFlag
+        : shop == ScreenId.Furniture ? FurnitureFlag : PatternShopFlag;
     public bool ShopOpen(ScreenId shop) => Save != null && Save.flags.Contains(FlagOf(shop));
-    public bool AnyShopOpen => ShopOpen(ScreenId.Market) || ShopOpen(ScreenId.Boutique) || ShopOpen(ScreenId.PatternShop);
+    public bool AnyShopOpen => ShopOpen(ScreenId.Market) || ShopOpen(ScreenId.Boutique) || ShopOpen(ScreenId.PatternShop) || ShopOpen(ScreenId.Furniture);
 
     public void CheckShops()
     {
@@ -1223,6 +1226,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             OpenShop(BoutiqueFlag, "The Boutique", "Clothes, hair and accessories: a new boutique across the square has opened its doors.");
         if (Save.totalPatternsSold >= PatternShopSales || Save.chapter >= 2)   // once the shop sells patterns, a pattern shop takes an interest
             OpenShop(PatternShopFlag, "The Pattern Shop", "Ready-made patterns to sell in your shop, from simple to rare and fancy.");
+        if (Save.day >= FurnitureOpensDay || Progress.PlayerLevel >= FurnitureLevel)
+            OpenShop(FurnitureFlag, "The Workshop", "Furniture and decorations for your shop, made by the carpenter down the lane.");
     }
 
     void OpenShop(string flag, string name, string detail)
@@ -1235,6 +1240,9 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
               "some things are always in stock, others change every few days, and now and then something rare turns up."
             : flag == BoutiqueFlag
             ? $"{name} is open\nBy day, tap Shops at the top right. Clothes, hairstyles and accessories for your shopkeeper: try a look, then buy it."
+            : flag == FurnitureFlag
+            ? $"{name} is open\nBy day, tap Shops at the top right. Furniture and decorations for your shop: a charming shop earns a little more " +
+              "from every order. Put pieces out by tapping your portrait, top left."
             : $"{name} is open\nBy day, tap Shops at the top right. Buy ready-made patterns to put on your display: the rarer ones cost more, " +
               "but they're fancier, use more techniques, and customers pay more for them. New ones come in every few days.");
         Progress.AddNews($"{name} is open. Find it under Shops.");
@@ -1312,7 +1320,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         if (Save == null || Save.night || !ShopOpen(shop)) return;
         if (!ShopOpenNow(shop))
         {
-            Stamps.Notice($"{(shop == ScreenId.Market ? "The Supply Market" : shop == ScreenId.Boutique ? "The boutique" : "The pattern shop")} {HoursText(shop)}.");
+            Stamps.Notice($"{(shop == ScreenId.Market ? "The Supply Market" : shop == ScreenId.Boutique ? "The boutique" : shop == ScreenId.Furniture ? "The workshop" : "The pattern shop")} {HoursText(shop)}.");
             return;
         }
         boughtThisVisit = false;
@@ -1321,7 +1329,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         bool first = !Save.met.Contains(ownerId);   // the first time in: they introduce themselves
         var options = new List<(string, System.Action)> { ("Have a look around", () => { Met(ownerId); GM.ChangeScreen(shop); }) };
         if (CanChat(ownerId) && !first) options.Add(("Stop for a chat", () => ChatWith(ownerId, shop)));
-        string knot = first ? OwnerKnot(who, "intro") : null;
+        string knot = first ? OwnerKnot(who, shop == ScreenId.Furniture ? "workshop" : "intro") : null;   // Benji meets you in his workshop
         if (!SayKnot(who, knot ?? OwnerKnot(who, "greet"), options)) { Met(ownerId); GM.ChangeScreen(shop); }
     }
 
@@ -1797,6 +1805,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         string name = customer != null ? customer.displayName : Selected.customerId;
         int level = GM.GetRelationship(Selected.customerId).level;
         int price = PricingCalculator.Compute(Selected.item, Selected.accuracy, TierOf(Selected), level, Selected.patternOnly);
+        price += Mathf.RoundToInt(price * Charm / 100f);   // a charming shop (furniture and decorations)
         int points = PricingCalculator.RelationshipReward(Selected.accuracy);
         if (Selected.fit == 2) points = Mathf.RoundToInt(points * 1.5f);   // exactly what they hoped for
         var commission = CommissionOf(Selected);

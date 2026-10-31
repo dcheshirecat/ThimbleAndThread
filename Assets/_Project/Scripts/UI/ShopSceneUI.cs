@@ -71,6 +71,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         ShowCoins();
         BuildPickups();
         BuildDisplay();
+        ShowDecor();
         bool someoneComing = day.CustomersWaiting > 0;
         bubble.SetActive(Ringing);
         bubbleText.text = Ringing ? "Ding-dong! Someone's at the door." : "";
@@ -159,7 +160,24 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     public void GoToMarket() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.MarketOwnerId, ScreenId.Market); }
     public void GoToBoutique() { shopsMenu.SetActive(false); day.EnterShop(BoutiqueUI.OwnerId, ScreenId.Boutique); }
     public void GoToPatternShop() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.PatternShopOwnerId, ScreenId.PatternShop); }
-    public GameObject patternShopButton;
+    public void GoToFurniture() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.FurnitureOwnerId, ScreenId.Furniture); }
+    public GameObject patternShopButton, furnitureButton;
+
+    // ---- Your furniture and decorations, in their spots (DecorSlot order) ----
+    public Image[] decorSpots;
+
+    void ShowDecor()
+    {
+        if (decorSpots == null) return;
+        for (int i = 0; i < decorSpots.Length; i++)
+        {
+            var d = day.Placed((DecorSlot)i);
+            decorSpots[i].gameObject.SetActive(d != null);
+            if (d == null) continue;
+            decorSpots[i].sprite = d.icon;
+            decorSpots[i].color = d.icon != null ? Color.white : d.color;
+        }
+    }
 
     /// A shop in the menu: there once it has opened; its hours under its name, greyed out while it's shut.
     void ShopEntry(GameObject entry, ScreenId shop, string name)
@@ -188,6 +206,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         ShopEntry(marketButton, ScreenId.Market, "Supply Market");
         ShopEntry(boutiqueButton, ScreenId.Boutique, "The Boutique");
         ShopEntry(patternShopButton, ScreenId.PatternShop, "The Pattern Shop");
+        ShopEntry(furnitureButton, ScreenId.Furniture, "The Workshop");
         if (!day.AnyShopOpen && shopsMenu.activeSelf) shopsMenu.SetActive(false);
     }
 

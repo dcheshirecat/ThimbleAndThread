@@ -40,6 +40,7 @@ public class ContentLibraryRefresher : AssetPostprocessor
         lib.commissions = Find<CommissionDef>();
         lib.skills = Find<SkillDef>();
         lib.cosmetics = Find<CosmeticDef>();
+        lib.decor = Find<DecorDef>();
         lib.chapters = Find<ChapterDef>();
         lib.upgrades = Find<UpgradeDef>();
         lib.quests = Find<QuestDef>();

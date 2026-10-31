@@ -768,3 +768,10 @@ in the anonymous pool, so nothing to moderate).
 - Owner, 2026-11-01: a half stitch is the TOP leg of the piece's crosses, not the bottom one (CrossStitchCanvas.TopLeg/RightHalf:
   "\" when the crosses have "\" on top, "/" when flipped; either leg while there are no full crosses). The chart marks half
   squares with a short dash. Bottom leg = a mistake (scores 0.5).
+DONE batch 6 (7, and the shop half of 1; save version 24): Marsh's Workshop (ScreenId.Furniture, UI/FurnitureUI.cs,
+Core/ShopDayDecor.cs) run by Benji Marsh (customer "benji", not shopOwner: he still visits as a customer; first visit to the
+workshop plays benji_workshop, plus benji_greet/bye/thanks). Opens day 6 or player level 2 (flag shop:furniture), 8:00-16:00.
+Data/Decor DecorDef (slot Wall/Counter/Floor/Corner, price, charm, minLevel); 12 placeholder pieces. SaveData.decor (owned),
+decorPlaced ("slot:id"). Buying places it if the spot is empty. Customize has tabs Your Look / Your Shop (cycle owned pieces
+per spot). Shop scene: ShopSceneUI.decorSpots (on the counter, in front of it, beside the door, on the wall). Charm = placed
+pieces' charm (max 25): hand-over price +charm%.

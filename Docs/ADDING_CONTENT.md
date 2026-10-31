@@ -280,6 +280,13 @@ Accessory), **Style Index** and a placeholder **Color**/**Icon**. Hair styles: 0
 0 glasses, 1 hat, 2 brooch, 3 neckerchief. The shopkeeper is drawn from simple shapes for now
 (UI/ShopkeeperView.cs); your layered drawings per option and colour will replace them.
 
+## Furniture and decorations (Marsh's Workshop)
+
+In `Data/Decor/` (**Create > Craft > Decor**): id (permanent), name, **Slot** (Wall, Counter, Floor, Corner = by the
+door), price, **Charm** (each point makes customers pay 1% more, up to 25%), **Min Level** (your level before Benji
+sells it) and a placeholder **Color**/**Icon**. Bought pieces are put out from your portrait (top left) > Your Shop.
+Art: `Art/Decor/decor_<id>.png`, 512 x 512, transparent background (it's drawn in the shop at its spot).
+
 ## Patterns for the shelf (great-aunt's book)
 
 Patterns you design in the game's Pattern Studio are saved with your game. To add one to the book:

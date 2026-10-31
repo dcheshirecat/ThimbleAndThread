@@ -370,6 +370,20 @@ public static class PlaceholderGenerator
 
         // ---- The boutique's stock: hairstyles, tops and accessories for the shopkeeper ----
         Cosmetic("hair_bun", "Top Knot", CosmeticSlot.Hair, 3, 25, new Color(0.40f, 0.26f, 0.18f));
+
+        // ---- Marsh's Workshop: furniture and decorations for the shop (DecorDef) ----
+        Decor("sampler_frame", "Framed Sampler", DecorSlot.Wall, 40, 2, 1, new Color(0.75f, 0.55f, 0.40f));
+        Decor("harbour_painting", "Harbour Painting", DecorSlot.Wall, 90, 4, 2, new Color(0.45f, 0.62f, 0.80f));
+        Decor("cuckoo_clock", "Cuckoo Clock", DecorSlot.Wall, 160, 6, 3, new Color(0.55f, 0.38f, 0.25f));
+        Decor("teacup_plant", "Plant in a Teacup", DecorSlot.Counter, 30, 2, 1, new Color(0.45f, 0.72f, 0.45f));
+        Decor("brass_lamp", "Brass Lamp", DecorSlot.Counter, 80, 4, 2, new Color(0.90f, 0.75f, 0.35f));
+        Decor("button_jar", "Jar of Buttons", DecorSlot.Counter, 55, 3, 1, new Color(0.85f, 0.60f, 0.70f));
+        Decor("rag_rug", "Rag Rug", DecorSlot.Floor, 50, 3, 1, new Color(0.80f, 0.45f, 0.40f));
+        Decor("knitted_pouffe", "Knitted Pouffe", DecorSlot.Floor, 100, 5, 2, new Color(0.60f, 0.70f, 0.85f));
+        Decor("patchwork_rug", "Patchwork Rug", DecorSlot.Floor, 180, 7, 4, new Color(0.85f, 0.70f, 0.45f));
+        Decor("umbrella_stand", "Umbrella Stand", DecorSlot.Corner, 45, 2, 1, new Color(0.35f, 0.40f, 0.45f));
+        Decor("fern", "Tall Fern", DecorSlot.Corner, 70, 4, 2, new Color(0.30f, 0.60f, 0.35f));
+        Decor("dress_form", "Dress Form", DecorSlot.Corner, 150, 6, 3, new Color(0.92f, 0.85f, 0.75f));
         Cosmetic("hair_curly", "Big Curls", CosmeticSlot.Hair, 4, 30, new Color(0.40f, 0.26f, 0.18f));
         Cosmetic("top_cardigan", "Cosy Cardigan", CosmeticSlot.Top, 2, 35, new Color(0.60f, 0.45f, 0.70f));
         Cosmetic("acc_glasses", "Round Glasses", CosmeticSlot.Accessory, 0, 20, new Color(0.20f, 0.18f, 0.20f));
@@ -872,6 +886,18 @@ public static class PlaceholderGenerator
         var def = ScriptableObject.CreateInstance<CosmeticDef>();
         def.cosmeticId = id; def.displayName = name; def.slot = slot; def.styleIndex = style; def.price = price; def.color = c;
         def.icon = MakeSprite($"{Root}/Art/Cosmetics/cosmetic_{id}.png", 256, 256, c);
+        AssetDatabase.CreateAsset(def, assetPath);
+    }
+
+    static void Decor(string id, string name, DecorSlot slot, int price, int charm, int level, Color c)
+    {
+        string assetPath = $"{Root}/Data/Decor/decor_{id}.asset";
+        if (AssetDatabase.LoadAssetAtPath<DecorDef>(assetPath) != null) return;
+        System.IO.Directory.CreateDirectory($"{Root}/Data/Decor");
+        System.IO.Directory.CreateDirectory($"{Root}/Art/Decor");
+        var def = ScriptableObject.CreateInstance<DecorDef>();
+        def.decorId = id; def.displayName = name; def.slot = slot; def.price = price; def.charm = charm; def.minLevel = level; def.color = c;
+        def.icon = MakeSprite($"{Root}/Art/Decor/decor_{id}.png", 256, 256, c);
         AssetDatabase.CreateAsset(def, assetPath);
     }
 

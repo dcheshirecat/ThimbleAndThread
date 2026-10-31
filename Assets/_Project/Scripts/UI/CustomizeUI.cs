@@ -11,6 +11,24 @@ public class CustomizeUI : MonoBehaviour
     public Image[] pronounButtons;       // in PlayerText.Sets order
     public Text skinLabel, hairStyleLabel, hairColorLabel, topLabel, topColorLabel, madeLabel, messageText;
     public ShopkeeperView preview;
+    public GameObject lookGroup, shopGroup, tabRow;   // "Your Look" / "Your Shop" (owner, 2026-10-31: your look and your shop)
+    public Image lookTab, shopTab;
+    public Text[] decorLabels;                         // one per DecorSlot
+    public Text charmText;
+    bool shopMode;
+
+    public void ShowLook() { shopMode = false; Show(); }
+    public void ShowShop() { shopMode = true; Show(); }
+
+    /// The next owned piece for a spot (or nothing there).
+    public void NextDecor(int slot)
+    {
+        var owned = day.OwnedFor((DecorSlot)slot);
+        var now = day.Placed((DecorSlot)slot);
+        int i = now != null ? owned.IndexOf(now) : -1;
+        day.Place((DecorSlot)slot, i + 1 < owned.Count ? owned[i + 1].decorId : "");
+        Show();
+    }
 
     PlayerProfile P => GameManager.Instance.Save.player;
 
@@ -29,6 +47,7 @@ public class CustomizeUI : MonoBehaviour
         if (id != ScreenId.Customize || GameManager.Instance.Save == null) return;
         nameField.text = P.name;
         messageText.text = P.created ? "Change anything you like." : "Welcome! Who's taking over the shop?";
+        shopMode = false;
         Show();
     }
 
@@ -94,5 +113,20 @@ public class CustomizeUI : MonoBehaviour
             madeLabel.text = P.made.Count == 0 ? "Made by you: nothing yet" : made != null ? $"Wearing: {made.name}" : "Made by you: not wearing";
         }
         preview.Apply(P);
+        if (tabRow != null) tabRow.SetActive(P.created);   // the first time, it's just you
+        if (lookGroup != null) { lookGroup.SetActive(!shopMode); shopGroup.SetActive(shopMode); preview.gameObject.SetActive(!shopMode); nameField.gameObject.SetActive(!shopMode); pronounButtons[0].transform.parent.gameObject.SetActive(!shopMode); }
+        if (lookTab != null) { lookTab.color = shopMode ? Color.white : new Color(1f, 0.92f, 0.7f); shopTab.color = shopMode ? new Color(1f, 0.92f, 0.7f) : Color.white; }
+        if (shopMode && decorLabels != null)
+        {
+            string[] spots = { "Wall", "Counter", "Floor", "By the door" };
+            for (int i = 0; i < decorLabels.Length; i++)
+            {
+                var d = day.Placed((DecorSlot)i);
+                int owned = day.OwnedFor((DecorSlot)i).Count;
+                decorLabels[i].text = $"{spots[i]}: " + (d != null ? d.displayName : owned > 0 ? "nothing" : "nothing yet");
+            }
+            charmText.text = day.content.decor.Length == 0 ? "" :
+                $"Charm {day.Charm}: customers pay {day.Charm}% more. Buy furniture and decorations at the workshop (Shops, by day).";
+        }
     }
 }
