@@ -154,6 +154,9 @@ Mara: Can I sit for a minute? # thoughtful
 - `* [Choice]` is an answer button; lines indented under it happen when it's picked. `- ` gathers the
   choices back together. `* {romance} [...]` only shows when the condition holds (`{not romance}`,
   `{level >= 3}` or any flag name work too).
+- `~ note(Keeps the lighthouse.)` writes something the character has just told you about themselves into the
+  Journal's Friends page (put it right after the line where they say it; no brackets inside the note). The
+  Journal only shows what they've told you, never a written bio.
 - Commands: `~ friendship(5)` adds friendship, `~ romance(1)` starts a romance (romanceable characters
   only), `~ flag(name)` / `~ unflag(name)` remember things for later conditions.
 

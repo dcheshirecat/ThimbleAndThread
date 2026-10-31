@@ -65,7 +65,7 @@ public class OrderFlowUI : MonoBehaviour
                            $"<b>Looking ahead</b>\n{day.LookingAhead()}";
 
         if (screen == ScreenId.OrderBook) BuildOrderList();
-        if (screen == ScreenId.Market) BuildMarketList(save);
+        if (screen == ScreenId.Market) { day.Met(ShopDay.MarketOwnerId); BuildMarketList(save); }
         if (screen == ScreenId.PatternStudio) BuildPatternList();
         if (screen == ScreenId.PatternEdit && day.SelectedPattern != null) ShowPattern(day.SelectedPattern);
 

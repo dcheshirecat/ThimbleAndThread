@@ -4,6 +4,7 @@
 
 === eli_visit ===
 Eli: Hi! Eli. The Driftwood, down on the harbour? The café with the wonky sign. # happy
+~ note(Runs the Driftwood, the café on the harbour.)
 Eli: I've been meaning to come in for weeks. Your shop smells better than my coffee. That's a worry.
 -> END
 
@@ -23,6 +24,7 @@ Eli: He asked about you yesterday. That's practically a speech, from him.
 
 === eli_visit_2_music ===
 Eli: Open mic night on Friday. I'm playing. Badly. On purpose, so nobody else is nervous. # happy
+~ note(Plays at the café's open mic nights.)
 -> END
 
 === eli_visit_4_morning ===
@@ -82,6 +84,7 @@ Eli: How do you make things that last? Everything I make gets eaten in ten minut
 === eli_scene_2 ===
 After closing, the Driftwood is all fairy lights and upturned chairs. Eli makes two hot chocolates with far too much cream.
 Eli: My gran ran this place. She used to say the harbour was the town's front door. # thoughtful
+~ note(The café was his gran's.)
 Eli: I just want people to feel like somebody's glad they came in.
 * [They do. I do.]
     Eli: ... Thanks. That means more than you'd think. # happy
@@ -94,6 +97,7 @@ Eli: I just want people to feel like somebody's glad they came in.
 === eli_scene_3 ===
 Eli: So the open mic went... fine. Nobody threw anything. # happy
 Eli: I wrote a song, actually. Not about anyone. It's about the harbour. Mostly.
+~ note(Writes songs. One is about the harbour. Mostly.)
 * [Will you play it for me?]
     Eli: Right now? Here? Okay. Okay. Don't look at me while I play it. # surprised
     He plays. It's about the harbour. It's also, quite clearly, about a shop with its light still on.

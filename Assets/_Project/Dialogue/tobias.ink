@@ -13,6 +13,7 @@ Tobias: There you are. Brought you mackerel. Don't make a face, it's fresh this 
 # fits: tablecloth, sampler, hoop_art
 # best: tablecloth
 Tobias: Sunday dinners have gone quiet since Elsa. # sad
+~ note(His wife, Elsa, has passed away. Sunday dinners have gone quiet.)
 Tobias: The table looks bare. Needs something on it. Something that remembers there used to be more of us round it.
 -> END
 
@@ -39,8 +40,10 @@ Tobias: It'll do the job. We all start somewhere, lad or lass. # thoughtful
 === tobias_scene_1 ===
 Tobias: Elsa used to say I couldn't tell a cross stitch from a crossword. # thoughtful
 Tobias: She'd sit by the window with her hoop while I mended nets. Both of us working with thread, she said. Different catches.
+~ note(Was a fisherman. Elsa stitched by the window while he mended nets.)
 * [What did she make?]
     Tobias: Everything. But the tablecloth. With the sea round the edge. That one I'd give the boat for. # sad
+    ~ note(Elsa made a tablecloth with the sea round its edge. He'd give anything for it.)
     ~ friendship(5)
 * [Different catches. I like that.]
     Tobias: Aye. Hers were prettier. # happy
@@ -60,6 +63,7 @@ Tobias: It's hers. I want you to have it. You'll know what to do with it better 
 === tobias_scene_3 ===
 Tobias: Your great-aunt's book. The missing pages. # thoughtful
 Tobias: I think Elsa borrowed one. Forty years ago, maybe. Never gave it back, the rascal.
+~ note(Thinks Elsa borrowed a page of your great-aunt's book. It may be in his loft.)
 Tobias: If it's anywhere, it's in the loft. I'm too old for ladders. Will you look?
 * [Of course I will.]
     ~ flag(search_loft)
@@ -81,6 +85,7 @@ Tobias: I'm not asking for tea. I'm just saying where she kept it.
 
 === tobias_visit_1_boat ===
 Tobias: Sold the boat this morning. Forty years, that boat. # sad
+~ note(Sold his boat after forty years.)
 Tobias: The lad who bought it will paint it blue. Elsa would've liked blue.
 -> END
 
@@ -88,6 +93,7 @@ Tobias: The lad who bought it will paint it blue. Elsa would've liked blue.
 Tobias: Found this in a drawer. # thoughtful
 He shows you a photograph: a young woman laughing at a table, a cloth of anchors under her elbows.
 Tobias: That's the one. That's the cloth.
+~ note(The tablecloth had anchors on it.)
 -> END
 
 === tobias_visit_3_soup ===
@@ -99,6 +105,7 @@ Tobias: You look like someone who forgets lunch.
 # fits: sweater, scarf
 # best: sweater
 Tobias: My grandson's starting on the trawlers. Seventeen. Thinks he's made of iron. # thoughtful
+~ note(His grandson, seventeen, is starting on the trawlers.)
 Tobias: He's not. Nobody is, out there at five in the morning.
 -> END
 

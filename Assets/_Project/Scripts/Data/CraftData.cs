@@ -100,7 +100,7 @@ public class MarketPurchase
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 15;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements)
+    public const int CurrentVersion = 16;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
@@ -132,7 +132,9 @@ public class SaveData
     public List<string> pendingScenes = new List<string>();          // story scenes to play next time a hub is on screen
     public PlayerProfile player = new PlayerProfile();               // name, pronouns, look (customization scene)
     public List<string> knownPrefs = new List<string>();
-    public List<Stamp> stamps = new List<Stamp>();                   // achievements, stamped in the Journal             // "customerId:preferenceId" the player has been told
+    public List<Stamp> stamps = new List<Stamp>();                   // achievements, stamped in the Journal
+    public List<string> notes = new List<string>();                  // "customerId|what you learned" from their dialogue (~ note)
+    public List<string> met = new List<string>();                    // customers who've come in (or whose shop you've visited)             // "customerId:preferenceId" the player has been told
     public List<string> recentLines = new List<string>();            // dialogue knots heard lately, newest first (to avoid repeats)
     public List<SentCode> sentCodes = new List<SentCode>();         // share codes this save made, newest first
     public List<string> receivedCodes = new List<string>();          // ids of friends' codes already opened

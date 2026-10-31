@@ -4,6 +4,7 @@
 === rowan_visit ===
 Rowan: Checking out the competition. Purely professional. # happy
 Rowan: Your window display's better than mine. I hate that.
+~ note(Runs Knot & Needle, the other craft shop in town.)
 -> END
 
 === rowan_visit_3 ===
@@ -40,6 +41,7 @@ Rowan: Rough day? Mine too. Let's call it rustic. # thoughtful
 === rowan_scene_1 ===
 Rowan: Can I tell you a secret? # thoughtful
 Rowan: I learned to crochet in this shop. Your great-aunt taught me. I was nine and furious about everything.
+~ note(Learned to crochet here, from your great-aunt, at nine years old.)
 Rowan: She gave me a hook and said "furious is fine, just be furious in rows".
 * [That sounds like her.]
     Rowan: You didn't even meet her properly, did you? I'm sorry. # sad
@@ -114,6 +116,7 @@ Rowan: I bought three. Don't judge me.
 
 === rowan_visit_2_lesson ===
 Rowan: I learned to crochet in this exact spot, you know. Your great-aunt made me redo my first chain forty times. # thoughtful
+~ note(Learned to crochet here, from your great-aunt, at nine years old.)
 Rowan: I still count my chains under my breath because of her.
 -> END
 

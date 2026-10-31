@@ -22,6 +22,7 @@ public class JournalUI : MonoBehaviour
     public Image[] tabs;                 // tab buttons, in Page order (the open one is highlighted)
     public GameObject marketLink;        // only by day
     public GameObject boutiqueLink;      // only by day
+    public GameObject friendTemplate;    // a friend's card: Name, Bar/Fill, Body
     public RectTransform stampGrid;      // the Stamps page: one stamp per achievement
     public GameObject stampTemplate;     // children Ring (Image), Word, Title, Detail (Text)
 
@@ -127,6 +128,7 @@ public class JournalUI : MonoBehaviour
         rows.Clear();
         rowTemplate.gameObject.SetActive(false);
         if (stampGrid != null) stampGrid.gameObject.SetActive(current == Page.Stamps);
+        if (friendTemplate != null) friendTemplate.SetActive(false);
         pageText.text = PlayerText.Fill(current switch
         {
             Page.Orders => Orders(),
@@ -177,15 +179,19 @@ public class JournalUI : MonoBehaviour
         return sb.ToString();
     }
 
+    /// Only people you've met, and only what they've told you themselves (owner, 2026-10-31: find things
+    /// out from their dialogue, not from the journal). Each has a meter towards the next friendship level.
     string Friends()
     {
-        var sb = new StringBuilder();
+        int shown = 0;
         foreach (var cust in day.content.customers)
         {
-            if (cust == null || cust.firstChapter > Save.chapter) continue;
+            if (cust == null || !Save.met.Contains(cust.customerId)) continue;
             var r = GameManager.Instance.GetRelationship(cust.customerId);
-            sb.AppendLine($"<b>{cust.displayName}</b>  ·  friendship level {r.level} ({r.points} of {r.PointsForNextLevel()} to the next)");
-            if (!string.IsNullOrEmpty(cust.bio)) sb.AppendLine(cust.bio);
+            var sb = new StringBuilder();
+            foreach (var n in Save.notes)
+                if (n.StartsWith(cust.customerId + "|")) sb.AppendLine("· " + n.Substring(cust.customerId.Length + 1));
+            if (sb.Length == 0) sb.AppendLine("You don't know much about them yet.");
             // Likes and dislikes, only the ones found out (by adding that touch to their order).
             var likes = new List<string>();
             var dislikes = new List<string>();
@@ -194,13 +200,29 @@ public class JournalUI : MonoBehaviour
             if (likes.Count > 0) sb.AppendLine("Likes: " + string.Join(", ", likes));
             if (dislikes.Count > 0) sb.AppendLine("Dislikes: " + string.Join(", ", dislikes));
             if (r.romance) sb.AppendLine(Save.flags.Contains($"{cust.inkName}_together") ? "♥ Together." : "♥ You're seeing each other.");
-            else if (cust.romanceable && r.level < 3) sb.AppendLine("You sense there could be more to this friendship...");
             foreach (var s in day.content.skills)   // only once it's happened: what they'll teach is a surprise
                 if (s != null && s.friend == cust && s.friendLevel > 0 && Progress.Knows(s.skillId) && r.level >= s.friendLevel)
                     sb.AppendLine($"Taught you {s.displayName}.");
-            sb.AppendLine();
+            FriendCard(cust.displayName, r, sb.ToString().TrimEnd());
+            shown++;
         }
-        return sb.ToString();
+        return shown == 0 ? "<b>Friends</b>\n\nYou haven't met anyone yet. Customers ring the bell during the day." : "<b>Friends</b>";
+    }
+
+    void FriendCard(string name, CustomerRelationship r, string body)
+    {
+        if (friendTemplate == null) return;
+        var card = Instantiate(friendTemplate, friendTemplate.transform.parent);
+        card.SetActive(true);
+        card.name = $"Friend_{name}";
+        int need = r.PointsForNextLevel();
+        float fill = need > 0 ? Mathf.Clamp01(r.points / (float)need) : 1f;
+        card.transform.Find("Name").GetComponent<Text>().text = $"<b>{name}</b>   friendship level {r.level}";
+        var bar = (RectTransform)card.transform.Find("Bar/Fill");
+        bar.anchorMax = new Vector2(fill, 1);
+        card.transform.Find("Bar/Label").GetComponent<Text>().text = $"{r.points} / {need} to level {r.level + 1}";
+        card.transform.Find("Body").GetComponent<Text>().text = PlayerText.Fill(body);
+        rows.Add(card);
     }
 
     string Skills()

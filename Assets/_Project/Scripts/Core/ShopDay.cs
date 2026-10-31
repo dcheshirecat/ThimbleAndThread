@@ -217,6 +217,7 @@ public class ShopDay : MonoBehaviour
             Save.visitorsToday.RemoveAt(0);
             if (customer == null) continue;
             Visitor = customer;
+            Met(customer.customerId);
             GM.Persist();
             // Back to collect a finished order: hand it over (their reaction plays, then any scenes).
             var pickup = PickupFor(customer);
@@ -496,6 +497,14 @@ public class ShopDay : MonoBehaviour
                         Progress.AddNews($"You and {who.displayName} are seeing each other.");
                         Stamps.Earn(Save, $"romance:{who.customerId}", $"You and {who.displayName}", "Something more than friendship.", StampTheme.Romance);
                     }
+                }
+                break;
+            case "note":   // ~ note(Keeps the lighthouse.): something they've told you about themselves, for the Journal
+                string entry = who != null ? $"{who.customerId}|{arg}" : null;
+                if (entry != null && arg.Length > 0 && !Save.notes.Contains(entry))
+                {
+                    Save.notes.Add(entry);
+                    Progress.AddNews($"Noted in your journal about {who.displayName}: {arg}");
                 }
                 break;
             case "flag": if (!Save.flags.Contains(arg)) Save.flags.Add(arg); break;
@@ -927,6 +936,12 @@ public class ShopDay : MonoBehaviour
         GM.ChangeScreen(ScreenId.Market);   // refresh the list
     }
 
+    /// Someone the player has met shows up on the Journal's Friends page.
+    public void Met(string customerId)
+    {
+        if (!string.IsNullOrEmpty(customerId) && !Save.met.Contains(customerId)) Save.met.Add(customerId);
+    }
+
     /// Bram Okafor runs the Supply Market (owner, 2026-10-30): someone to befriend, or more.
     public const string MarketOwnerId = "bram";
 
@@ -945,6 +960,7 @@ public class ShopDay : MonoBehaviour
             return;
         }
         Save.flags.Add(flag);
+        Met(customerId);
         GM.AddRelationshipPoints(customerId, 3);
         var knots = ScenesDue(who);
         if (knots.Count == 0) { var hello = VisitKnot(who); if (hello != null) knots.Add(hello); }
@@ -1027,6 +1043,24 @@ public class ShopDay : MonoBehaviour
         }
         if (step.fabricPieces > 0 && !string.IsNullOrEmpty(o.fabricId))
             needs.Add(new MaterialNeed { supplyId = o.fabricId, amount = step.ChosenAmount(o.target) });
+        // Colourwork: each of the pattern's colours is knitted in a yarn of that colour, one stitch each.
+        if (step.kind == StepKind.KnitRows && o.target != null && !string.IsNullOrEmpty(o.fabricId))
+        {
+            var knit = KnitLayout.For(o, step.piece);
+            var main = content.Supply(o.fabricId);
+            var perColour = new Dictionary<int, int>();
+            foreach (var st in knit.stitches)
+                if (st.color >= 0) { perColour.TryGetValue(st.color, out int n); perColour[st.color] = n + 1; }
+            foreach (var kv in perColour)
+            {
+                if (kv.Key >= o.target.palette.Count) continue;
+                var yarn = Materials.ColourworkYarn(o.target.palette[kv.Key], main, content, shop);
+                if (yarn == null) continue;
+                var same = needs.Find(x => x.supplyId == yarn.supplyId);
+                if (same != null) same.amount += kv.Value;
+                else needs.Add(new MaterialNeed { supplyId = yarn.supplyId, amount = kv.Value });
+            }
+        }
         return needs;
     }
 

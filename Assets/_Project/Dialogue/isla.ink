@@ -5,6 +5,7 @@
 === isla_visit ===
 Isla: You're the new one. The great-{niece}. # neutral
 Isla: I'm Isla. The lighthouse. Well, not the lighthouse. I keep it.
+~ note(Keeps the lighthouse.)
 -> END
 
 === isla_visit_3 ===
@@ -42,6 +43,7 @@ Isla: Well. The gulls won't care. # thoughtful
 Isla: Confession. # thoughtful
 She puts something on the counter. It might once have been intended as a sock.
 Isla: Three winters I've been trying. The pattern says "simple". The pattern is a liar.
+~ note(Has been trying to knit a sock for three winters.)
 * [Laugh] You laugh. She glares, and then her mouth twitches.
     Isla: Fine. It's funny. It's very funny. # happy
     ~ friendship(5)
@@ -54,6 +56,7 @@ Isla: Three winters I've been trying. The pattern says "simple". The pattern is 
 === isla_scene_2 ===
 The lighthouse stairs go round and round and round. At the top, Isla is waiting with two mugs.
 Isla: Hundred and twelve steps. You didn't even complain. I'm impressed. # happy
+~ note(The lighthouse has a hundred and twelve steps.)
 Isla: Look. That's the whole town. Your shop's the one with the light still on. It always is.
 * [It's beautiful up here.]
     Isla: It is. I don't say that to many people. # thoughtful
@@ -132,6 +135,7 @@ Isla: The half that's left is for you.
 # fits: tablecloth, sampler, hoop_art
 # best: tablecloth
 Isla: The keepers' table hasn't had a cloth on it since my grandad's time. # thoughtful
+~ note(Her grandad kept the lighthouse before her.)
 Isla: Feels like it should. Something sturdy. Something that's seen a few storms.
 -> END
 

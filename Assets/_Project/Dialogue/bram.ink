@@ -6,6 +6,7 @@
 
 === bram_visit ===
 Bram: {name}! My favourite customer. Don't tell the others. Actually, tell them, it's good for business. # happy
+~ note(Runs the Supply Market.)
 -> END
 
 === bram_visit_delivery ===
@@ -15,6 +16,7 @@ Bram: That's normal. That's a normal thing for a grown man to do.
 
 === bram_visit_sweets ===
 Bram: Lemon sweet? I keep a tin for the kids. And for me. Mostly for me. # happy
+~ note(Keeps a tin of lemon sweets behind the till.)
 -> END
 
 === bram_visit_2_aunt ===
@@ -31,6 +33,7 @@ Bram: Especially not Rowan. Rowan has a nose for good skeins.
 Bram: Got a minute? # thoughtful
 He pulls a creased receipt out of his till drawer. On the back, in neat old-fashioned writing: "Tuesday: navy, red, white, a little gold. Ask after his mother."
 Bram: Your great-aunt. Every week she asked after my mum. Every single week.
+~ note(Your great-aunt asked after his mum every single week.)
 * [She sounds like she cared about you.]
     Bram: She did. Whole town, really. And now you're doing it. You know that? # happy
     ~ friendship(5)
@@ -49,11 +52,13 @@ Bram: Help me? It's soothing. Forty years and I still find it soothing. # happy
 * [Ask why he never got married]
     Bram: Ha! Straight in. I like that. # surprised
     Bram: Never met anyone who'd put up with the buttons. # thoughtful
+    ~ note(Never married. Sorts buttons by colour to relax.)
     ~ friendship(5)
 -> END
 
 === bram_scene_3 ===
 Bram: Harbour lights festival next week. I always do the hot chocolate stall. # thoughtful
+~ note(Runs the hot chocolate stall at the harbour lights festival.)
 Bram: It's a two-person stall, really. I just never had the second person.
 * [I'll be your second person.]
     Bram: Yeah? As in... yeah? # surprised

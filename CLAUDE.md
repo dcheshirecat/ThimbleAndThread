@@ -451,6 +451,21 @@ cross stitch game is very fun, even if a bit simple."
     for me. Older saves get theirs quietly (Progression.CatchUpStamps).
 12. DONE Pickups ask first ("Hand over the ..." / "Not quite yet": they come back the next day).
 
+## Owner feedback round 4, 2026-10-31 (branch round4, DONE)
+- Find things out about characters from their dialogue, not the journal: ink `~ note(text)` -> SaveData.notes
+  ("customerId|text"); the Friends page lists only people met (SaveData.met: visits, chats, their shop) and only
+  their notes (no bios, no "could be more" romance hint). ~38 notes placed in the existing .ink files.
+- A progress meter per friendship level (Journal friend cards: Name, Bar/Fill, Body).
+- Colourwork yarns are needed and used: ShopDay.NeedsForStep adds, per palette colour, the closest yarn of the
+  main yarn's weight (Materials.ColourworkYarn); 12 coloured acrylic yarns (white, black, red, navy always).
+- Cross stitch tool upgrades: CrossStitchCanvas.assist (bent-tip tapestry needle, new Q-Snap Frame): an over- or
+  undershot drag still lands on the next diagonal corner.
+- Old started sweaters keep their old one-square recipe (Order.legacyKnit, set by the v13 upgrade) instead of
+  restarting. Saves already opened with the v13-v15 builds had already restarted; nothing to recover.
+- Pattern naming is a pop-up when the design is Done (PatternDesignerUI.namePopup; also renames when editing).
+- Save version 16. Trade codes: owner is setting up Firebase Realtime Database (rules given in chat); waiting
+  for the database URL.
+
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
 2. DONE (on main): item recipes. CraftItemDef.steps (RecipeStep: StepKind, label,

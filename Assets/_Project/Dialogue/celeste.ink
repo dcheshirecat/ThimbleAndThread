@@ -5,6 +5,7 @@
 
 === celeste_visit ===
 Celeste: Ah. The new shopkeeper. Let me look at you. # thoughtful
+~ note(Owns Moreau's, the boutique on the square.)
 Celeste: Hm. Good bones. We can work with that.
 -> END
 
@@ -42,7 +43,9 @@ Celeste: Everybody in this town dresses like they're apologising. You don't. Why
 === celeste_scene_2 ===
 In the back room of Moreau's there's a sewing machine older than either of you, and a photograph of a woman in a magnificent hat.
 Celeste: My grandmother. She made every hat in this town for fifty years. # thoughtful
+~ note(Her grandmother made every hat in town for fifty years.)
 Celeste: I can't sew to save my life. I just... arrange. It feels like cheating.
+~ note(Can't sew at all. She arranges.)
 * [Arranging is a craft too.]
     Celeste: You'd say that. You're kind. It's very annoying. # happy
     ~ friendship(10)

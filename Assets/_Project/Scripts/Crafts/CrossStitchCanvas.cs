@@ -20,6 +20,7 @@ public class CrossStitchCanvas : MonoBehaviour
     public float cellSize = 0.5f;
     public Mode mode = Mode.Stitch;
     public Material material;          // sprite material for cells and threads; falls back to Sprites/Default
+    public float assist;               // 0..1 from a better needle or frame: a drag that's a bit long or short still lands
     public Color fabricColor = new Color(0.96f, 0.94f, 0.88f);   // Stitch mode: the Aida the piece is stitched on
 
     [Header("State")]
@@ -256,6 +257,17 @@ public class CrossStitchCanvas : MonoBehaviour
         {
             var a = dragStartCorner.Value;
             var b = NearestCorner(local);
+            // A better tool forgives a drag that overshoots or falls short: it lands on the next corner diagonally.
+            if (assist > 0 && !(Mathf.Abs(b.x - a.x) == 1 && Mathf.Abs(b.y - a.y) == 1))
+            {
+                var v = new Vector2(local.x / cellSize - a.x, local.y / cellSize - a.y);   // the drag, in squares
+                float reach = 1.5f + assist;
+                if (Mathf.Abs(v.x) >= 0.4f && Mathf.Abs(v.y) >= 0.4f && Mathf.Abs(v.x) <= reach && Mathf.Abs(v.y) <= reach)
+                {
+                    var c = new Vector2Int(a.x + (int)Mathf.Sign(v.x), a.y + (int)Mathf.Sign(v.y));
+                    if (c.x >= 0 && c.y >= 0 && c.x <= width && c.y <= height) b = c;
+                }
+            }
             dragStartCorner = null;
             Needle.MoveTo(CornerPos(b));
             Needle.Poke();

@@ -129,6 +129,17 @@ public static class PlaceholderGenerator
         Supply("minky_pink",      "Pink Minky",          SupplyKind.Fabric, CraftType.Sewing, 30, 3, new Color(0.98f, 0.78f, 0.85f), 2, "pieces", X);
 
         // Yarn: balls of 300 stitches. size = yarn weight (3 = DK, 4 = worsted); hooks and needles must match.
+        // Acrylic yarn in colours, for colourwork (each of a sweater pattern's colours is knitted in the closest one).
+        foreach (var (yid, yname, ycol, slot) in new[]
+        {
+            ("acrylic_yarn_white", "White", new Color(0.95f, 0.95f, 0.93f), A), ("acrylic_yarn_black", "Black", new Color(0.12f, 0.12f, 0.14f), A),
+            ("acrylic_yarn_red", "Red", new Color(0.80f, 0.15f, 0.20f), A), ("acrylic_yarn_navy", "Navy", new Color(0.15f, 0.20f, 0.45f), A),
+            ("acrylic_yarn_green", "Green", new Color(0.25f, 0.55f, 0.30f), R), ("acrylic_yarn_yellow", "Yellow", new Color(0.95f, 0.80f, 0.25f), R),
+            ("acrylic_yarn_pink", "Pink", new Color(0.95f, 0.60f, 0.70f), R), ("acrylic_yarn_sky", "Sky Blue", new Color(0.55f, 0.75f, 0.92f), R),
+            ("acrylic_yarn_brown", "Brown", new Color(0.45f, 0.30f, 0.20f), R), ("acrylic_yarn_grey", "Grey", new Color(0.55f, 0.55f, 0.58f), R),
+            ("acrylic_yarn_purple", "Purple", new Color(0.50f, 0.30f, 0.65f), R), ("acrylic_yarn_orange", "Orange", new Color(0.92f, 0.50f, 0.20f), R),
+        })
+            Supply(yid, $"{yname} Acrylic Yarn", SupplyKind.Yarn, CraftType.Knitting, 5, 1, ycol, 300, "stitches", slot, 0, "", 4);
         Supply("acrylic_yarn", "Acrylic Yarn",     SupplyKind.Yarn, CraftType.Knitting, 5,  1, new Color(0.85f, 0.45f, 0.40f), 300, "stitches", A, 0, "", 4);
         Supply("wool_basic",   "Basic Wool",       SupplyKind.Yarn, CraftType.Knitting, 8,  1, new Color(0.75f, 0.55f, 0.45f), 300, "stitches", R, 0, "", 4);
         Supply("wool_merino",  "Merino Wool",      SupplyKind.Yarn, CraftType.Knitting, 20, 3, new Color(0.55f, 0.45f, 0.75f), 300, "stitches", R, 0, "", 4);
@@ -193,6 +204,7 @@ public static class PlaceholderGenerator
         Assist(Supply("scissors_sharp", "Sharp Dressmaker's Shears", SupplyKind.Tool, CraftType.Sewing, 32, 2, new Color(0.45f, 0.50f, 0.60f), 1, "pair", R, 0, "scissors"), 0.6f);
         Assist(Supply("sewing_needle_sharps", "Fine Sharps Needles", SupplyKind.Tool, CraftType.Sewing, 9, 2, new Color(0.85f, 0.85f, 0.90f), 1, "pack", R, 0, "sewing_needle"), 0.5f);
         Assist(Supply("embroidery_needle_gold", "Gold-Eye Embroidery Needles", SupplyKind.Tool, CraftType.Embroidery, 12, 2, new Color(0.90f, 0.78f, 0.35f), 1, "pack", R, 0, "embroidery_needle"), 0.5f);
+        Assist(Supply("qsnap_frame", "Q-Snap Frame (holds 16 x 16 stitches)", SupplyKind.Tool, cs, 18, 2, new Color(0.85f, 0.85f, 0.88f), 1, "frame", R, 0, "hoop", 16), 0.4f);
         Assist(Supply("tapestry_needle_bent", "Bent-Tip Tapestry Needle", SupplyKind.Tool, cs, 8, 2, new Color(0.65f, 0.70f, 0.80f), 1, "needle", R, 0, "tapestry_needle"), 0.5f);
         Assist(Supply("knitting_needles_bamboo_5mm", "5mm Bamboo Knitting Needles", SupplyKind.Tool, CraftType.Knitting, 22, 2, new Color(0.85f, 0.75f, 0.50f), 1, "pair", R, 0, "knitting_needles", 4), 0.6f);
         Assist(Supply("crochet_hook_ergo_5mm", "5mm Soft-Grip Crochet Hook", SupplyKind.Tool, CraftType.Crochet, 16, 2, new Color(0.60f, 0.45f, 0.75f), 1, "hook", R, 0, "crochet_hook", 4), 0.6f);

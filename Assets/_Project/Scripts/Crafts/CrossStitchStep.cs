@@ -17,6 +17,7 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes
         Board.target = target;
         Board.restore = order.work;
         Board.fabricColor = area.fabricColor;
+        Board.assist = area.assist;
     }
 
     public float SaveWork()

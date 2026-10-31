@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 312a5c1e891a3ea4fabdc67715c57d28, type: 3}
+  m_Name: supply_acrylic_yarn_white
+  m_EditorClassIdentifier: Assembly-CSharp::SupplyDef
+  supplyId: acrylic_yarn_white
+  displayName: White Acrylic Yarn
+  kind: 3
+  craft: 1
+  icon: {fileID: 21300000, guid: b5c39af269ce4c546839f4e25f87ecf2, type: 3}
+  color: {r: 0.95, g: 0.95, b: 0.93, a: 1}
+  price: 5
+  tier: 1
+  perPack: 300
+  unit: stitches
+  starterPacks: 0
+  market: 1
+  toolType: 
+  size: 4
+  assist: 0
+  decorates: []
+  decorateAmount: 1
+  decorateBonus: 0.25
+  generatorVersion: 5

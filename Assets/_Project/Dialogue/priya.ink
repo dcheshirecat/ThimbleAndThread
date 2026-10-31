@@ -3,6 +3,7 @@
 
 === priya_visit ===
 Priya: Hello! I'm Priya, I teach the little ones up at St. Brigid's. # happy
+~ note(Teaches the youngest class at St. Brigid's: twenty-eight children.)
 Priya: I've heard this shop has a pattern for everything. I have a class of twenty-eight. I need everything.
 -> END
 
@@ -71,6 +72,7 @@ Priya: The children won't mind. Children love things that look homemade. It's ad
 === priya_scene_1 ===
 Priya: Can I tell you something silly? # thoughtful
 Priya: I wanted to run a shop like this when I was little. I had a cardboard till and everything.
+~ note(Dreamed of running a shop like this as a child.)
 * [What happened?]
     Priya: Teacher training happened. And I love it, I do. But sometimes I walk past here and wonder. # sad
     ~ friendship(5)
@@ -95,6 +97,7 @@ Priya: They insisted you be the biggest. I didn't argue.
 === priya_scene_3 ===
 Priya: I've signed up for evening classes. # surprised
 Priya: Stitching. At Knot & Needle. Don't be cross! Rowan was very persuasive.
+~ note(Takes evening stitching classes at Knot & Needle.)
 * [I'm proud of you.]
     Priya: Really? Oh good. I was worried you'd think I'd defected. # happy
     ~ friendship(10)

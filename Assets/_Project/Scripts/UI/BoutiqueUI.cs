@@ -34,6 +34,7 @@ public class BoutiqueUI : MonoBehaviour
     {
         if (id != ScreenId.Boutique || GameManager.Instance.Save == null) return;
         message = "";
+        day.Met(OwnerId);   // you've met Celeste once you've been in her shop
         Show();
     }
 

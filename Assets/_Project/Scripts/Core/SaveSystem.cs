@@ -82,16 +82,19 @@ public static class SaveSystem
         data.player.wornMade ??= "";
         data.knownPrefs ??= new System.Collections.Generic.List<string>();
         data.stamps ??= new System.Collections.Generic.List<Stamp>();
-        // Version 12 knitted scarves and sweaters as one square: the new garment pieces don't fit that work,
-        // so unfinished ones start over (their yarn was already taken, so it isn't taken again).
+        data.notes ??= new System.Collections.Generic.List<string>();
+        data.met ??= new System.Collections.Generic.List<string>();
+        if (data.version < 16)   // everyone they'd made friends with or had an order from, they'd met
+        {
+            foreach (var r in data.relationships) if (r != null && (r.level > 0 || r.points > 0) && !data.met.Contains(r.customerId)) data.met.Add(r.customerId);
+            foreach (var o in data.orders) if (o != null && !data.met.Contains(o.customerId)) data.met.Add(o.customerId);
+        }
+        // Version 12 knitted scarves and sweaters as one square. Ones already started carry on the way they
+        // were begun (Order.legacyKnit), so no work is lost; new ones are knitted as garments.
         if (data.version < 13)
             foreach (var o in data.orders)
-                if (o != null && !o.finished && !o.patternOnly && (o.itemId == "sweater" || o.itemId == "scarf") && o.step > 0)
-                {
-                    o.steps.Clear();
-                    o.step = 0;
-                    for (int i = 0; i < 12; i++) o.steps.Add(new StepProgress { materialsUsed = true });
-                }
+                if (o != null && !o.patternOnly && (o.itemId == "sweater" || o.itemId == "scarf") && (o.step > 0 || o.finished))
+                    o.legacyKnit = true;
         // Version 10 had no pickup days: anything already finished can be collected right away.
         foreach (var o in data.orders) if (o.finished && o.pickupDay == 0) o.pickupDay = data.day;
         foreach (var o in data.orders) o.extras ??= new System.Collections.Generic.List<string>();

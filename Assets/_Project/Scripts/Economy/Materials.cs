@@ -77,6 +77,23 @@ public static class Materials
         };
     }
 
+    /// The yarn for a colourwork colour: the closest yarn in colour, of the same weight as the main yarn
+    /// (a little preference for ones already in the cupboard).
+    public static SupplyDef ColourworkYarn(Color c, SupplyDef mainYarn, ContentLibrary content, ShopManager shop)
+    {
+        SupplyDef best = null;
+        float bestScore = float.MaxValue;
+        foreach (var s in content.supplies)
+        {
+            if (s == null || s.kind != SupplyKind.Yarn || s.market == MarketSlot.NotSold && !shop.Owns(s.supplyId)) continue;
+            if (mainYarn != null && s.size != mainYarn.size) continue;
+            float d = Mathf.Abs(s.color.r - c.r) + Mathf.Abs(s.color.g - c.g) + Mathf.Abs(s.color.b - c.b);
+            if (shop.Stock(s.supplyId) > 0) d *= 0.8f;
+            if (d < bestScore) { bestScore = d; best = s; }
+        }
+        return best;
+    }
+
     /// The smallest hoop that holds a design this many stitches across: 4" up to 10, 6" up to 12, 8" up to 16.
     public static int HoopInches(int stitches) => stitches <= 10 ? 4 : stitches <= 12 ? 6 : stitches <= 16 ? 8 : 10;
 

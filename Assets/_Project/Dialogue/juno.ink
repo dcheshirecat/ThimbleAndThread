@@ -14,6 +14,7 @@ Juno: I said "a secret shop". Very mysterious. You're welcome.
 # fits: scarf, sweater, tote
 # best: scarf
 Juno: The skate park is basically a wind tunnel with ramps. # thoughtful
+~ note(Skateboards.)
 Juno: I need something round my neck. It has to look cool though. If it looks like a present from an aunt I'm leaving it on the bus.
 -> END
 
@@ -40,6 +41,7 @@ Juno: It's... handmade. You can totally tell it's handmade. That's like, the poi
 Juno: Can I show you something? # thoughtful
 She pulls out a sketchbook. Every page is clothes: jackets covered in tiny embroidered stars, a scarf like a comet.
 Juno: My mum says it's a phase. I say it's a career.
+~ note(Fills sketchbooks with clothes. Wants to be a designer.)
 * [These are brilliant.]
     Juno: You actually think so? # surprised
     ~ friendship(5)
@@ -53,6 +55,7 @@ Juno: Ha. I'm teaching YOU now. Character development. # happy
 === juno_scene_2 ===
 Juno: There's a fashion thing at the college. Students can enter. # thoughtful
 Juno: I'm not a student. I'm sixteen. But I could... maybe... enter anyway?
+~ note(Is sixteen.)
 * [Enter. I'll help you finish the jacket.]
     ~ friendship(10)
     ~ flag(juno_contest)
@@ -75,6 +78,7 @@ Juno: There are patterns. Patterns are reading.
 
 === juno_visit_1_band ===
 Juno: My friend's starting a band. I'm doing the merch. # happy
+~ note(Does the merch for a friend's band.)
 Juno: By merch I mean I want to sew patches on everything we own.
 -> END
 

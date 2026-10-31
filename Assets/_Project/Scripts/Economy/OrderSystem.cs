@@ -32,7 +32,27 @@ public class Order
     [NonSerialized] public CraftItemDef item;   // looked up from itemId after loading
 
     /// How it's made. A pattern-only order is just the design step.
-    public RecipeStep[] Steps => item == null || patternOnly ? DesignOnly : item.Steps;
+    public bool legacyKnit;           // started before garments (save version 13): knitted as one square, on the old recipe
+    public RecipeStep[] Steps => item == null || patternOnly ? DesignOnly : legacyKnit ? LegacyKnitSteps(item) : item.Steps;
+
+    static RecipeStep[] legacySweater;
+    /// The knitting recipe from before garments: one square, cast on, knitted, cast off. Only the sweater
+    /// changed recipe (the scarf only changed shape).
+    static RecipeStep[] LegacyKnitSteps(CraftItemDef item)
+    {
+        if (item.itemId != "sweater") return item.Steps;
+        if (legacySweater != null) return legacySweater;
+        var needles = new ToolNeed { toolType = "knitting_needles", label = "Knitting needles", matchYarn = true };
+        var tapestry = new ToolNeed { toolType = "tapestry_needle", label = "Tapestry needle" };
+        RecipeStep S(StepKind k, string label, ToolNeed tool = null, int pieces = 0) =>
+            new RecipeStep { kind = k, label = label, fabricPieces = pieces, perPatternSquare = pieces > 0, tools = tool != null ? new[] { tool } : new ToolNeed[0], materials = new MaterialNeed[0] };
+        return legacySweater = new[]
+        {
+            S(StepKind.ChooseYarn, "Choose the yarn"), S(StepKind.CastOn, "Cast on", needles),
+            S(StepKind.KnitRows, "Knit the front and back", needles, 5), S(StepKind.CastOff, "Cast off", needles),
+            S(StepKind.WeaveEnds, "Weave in the ends", tapestry), S(StepKind.Press, "Block it"),
+        };
+    }
     static readonly RecipeStep[] DesignOnly = { new RecipeStep { kind = StepKind.CrossStitch, label = "Design the pattern" } };
 
     public RecipeStep CurrentStep => Steps[Mathf.Clamp(step, 0, Steps.Length - 1)];

@@ -498,7 +498,16 @@ public static class TestSceneBuilder
         // Pattern designer: transparent so the paint grid shows through
         p = Panel(ScreenId.PatternDesigner, "", Color.clear);
         p.GetComponent<Image>().raycastTarget = false;
-        designer.nameField = NameField(p, new Vector2(0.5f, 0.925f));
+        // Naming pop-up, when the design is done
+        var namePop = Shape(p, "Name Popup", new Vector2(0.5f, 0.6f), new Vector2(1800, 760), new Color(1, 0.97f, 0.9f), uiSprite);
+        namePop.GetComponent<Image>().raycastTarget = true;
+        Label(namePop, "Question", new Vector2(0.05f, 0.75f), new Vector2(0.95f, 0.95f), 64, TextAnchor.MiddleCenter).text = "Name your pattern";
+        designer.nameField = NameField(namePop, new Vector2(0.5f, 0.55f));
+        var nb = Row(namePop, 0.5f, 0.2f);
+        Button(nb, "Save to Book", designer.ConfirmSave, 700);
+        Button(nb, "Keep Designing", designer.KeepDesigning, 700);
+        designer.namePopup = namePop.gameObject;
+        namePop.gameObject.SetActive(false);
         designer.swatches = Swatches(p, 0.31f, Materials.Threads(content).Count, true, 96, 12);   // 12 a row: room for 35 (3 rows)
         designer.swatches.label.color = Color.white;
         UnityEventTools.AddPersistentListener(designer.swatches.onPick, designer.SelectColour);
@@ -512,7 +521,7 @@ public static class TestSceneBuilder
         b = Row(p, 0.5f, 0.06f);
         Button(b, "Undo", designer.Undo, 440);
         Button(b, "Clear", designer.Clear, 440);
-        Button(b, "Save", designer.Save, 440);
+        Button(b, "Done", designer.Save, 440);
         Button(b, "Cancel", designer.Cancel, 440);
 
         // The journal: a storybook overlay that slides in over any screen (JournalUI)
@@ -570,6 +579,32 @@ public static class TestSceneBuilder
         journal.pageText.gameObject.AddComponent<LayoutElement>().preferredWidth = 1650;
         journal.rowTemplate = Button(journalList, "Journal Row Template", null, 1650);
         journal.rowTemplate.GetComponentInChildren<Text>().fontSize = 50;
+        // A friend's card: name, a meter towards the next level, what you know about them
+        var friendCard = new GameObject("Friend Template", typeof(RectTransform), typeof(Image), typeof(VerticalLayoutGroup), typeof(LayoutElement));
+        friendCard.transform.SetParent(journalList, false);
+        friendCard.GetComponent<Image>().color = new Color(0.97f, 0.93f, 0.85f);
+        var fv = friendCard.GetComponent<VerticalLayoutGroup>();
+        fv.padding = new RectOffset(30, 30, 24, 24);
+        fv.spacing = 14;
+        fv.childControlWidth = fv.childControlHeight = true;
+        fv.childForceExpandWidth = true; fv.childForceExpandHeight = false;
+        friendCard.GetComponent<LayoutElement>().preferredWidth = 1650;
+        var fName = MakeText(friendCard.transform, "Name", "", 52);
+        fName.alignment = TextAnchor.MiddleLeft; fName.color = Ink;
+        var fBar = new GameObject("Bar", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+        fBar.transform.SetParent(friendCard.transform, false);
+        fBar.GetComponent<Image>().color = new Color(0.85f, 0.80f, 0.72f);
+        fBar.GetComponent<LayoutElement>().preferredHeight = 46;
+        var fFill = Shape(fBar.transform, "Fill", Vector2.zero, Vector2.zero, new Color(0.88f, 0.58f, 0.25f), uiSprite);
+        fFill.anchorMin = Vector2.zero; fFill.anchorMax = new Vector2(0.5f, 1); fFill.offsetMin = fFill.offsetMax = Vector2.zero;
+        var fLabel = MakeText(fBar.transform, "Label", "", 34);
+        Stretch((RectTransform)fLabel.transform);
+        fLabel.color = Ink;
+        var fBody = MakeText(friendCard.transform, "Body", "", 44);
+        fBody.alignment = TextAnchor.UpperLeft; fBody.color = Ink;
+        fBody.horizontalOverflow = HorizontalWrapMode.Wrap; fBody.verticalOverflow = VerticalWrapMode.Overflow;
+        journal.friendTemplate = friendCard;
+        friendCard.SetActive(false);
         var gridGo = new GameObject("StampGrid", typeof(RectTransform), typeof(GridLayoutGroup), typeof(LayoutElement));
         gridGo.transform.SetParent(journalList, false);
         var grid = gridGo.GetComponent<GridLayoutGroup>();

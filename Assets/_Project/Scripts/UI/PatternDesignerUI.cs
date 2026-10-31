@@ -9,7 +9,8 @@ public class PatternDesignerUI : MonoBehaviour
     public ShopDay day;
     public MinigameHost host;
 
-    public InputField nameField;
+    public InputField nameField;      // in the naming pop-up
+    public GameObject namePopup;      // "Name your pattern", shown when the design is done
     public Text makesLabel, sizeLabel, priceLabel;
     public ThreadSwatches swatches;   // its onPick calls SelectColour
 
@@ -44,6 +45,7 @@ public class PatternDesignerUI : MonoBehaviour
     {
         var p = day.SelectedPattern;
         nameField.text = p.name;
+        if (namePopup != null) namePopup.SetActive(false);
         itemIndex = Mathf.Max(0, System.Array.FindIndex(day.content.items, i => i != null && i.itemId == p.itemId));
         price = p.price;
         threads = Materials.Threads(day.content);
@@ -163,6 +165,7 @@ public class PatternDesignerUI : MonoBehaviour
         Refresh();
     }
 
+    /// Done designing: ask for its name (owner, 2026-10-31: a pop-up when you're done).
     public void Save()
     {
         var d = Current();
@@ -171,8 +174,19 @@ public class PatternDesignerUI : MonoBehaviour
             swatches.label.text = "Fill in some squares first: this is the commission's new pattern.";
             return;
         }
+        if (namePopup == null) { ConfirmSave(); return; }
+        namePopup.SetActive(true);
+        namePopup.transform.SetAsLastSibling();
+    }
+
+    public void ConfirmSave()
+    {
+        var d = Current();
+        if (namePopup != null) namePopup.SetActive(false);
         day.SaveDesign(Copy(d, d.width, d.height), nameField.text, day.content.items[itemIndex].itemId, price);
     }
+
+    public void KeepDesigning() { if (namePopup != null) namePopup.SetActive(false); }
 
     public void Cancel() => day.CancelDesign();
 }

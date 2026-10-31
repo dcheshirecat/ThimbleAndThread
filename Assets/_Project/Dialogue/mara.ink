@@ -6,6 +6,7 @@
 === mara_visit ===
 Mara: Oh! Hello. Sorry, I always feel like I'm interrupting. # thoughtful
 Mara: She finally fell asleep in the pram, so I've got... about four minutes.
+~ note(Has a baby daughter, and almost no sleep.)
 -> END
 
 === mara_visit_2 ===
@@ -50,6 +51,7 @@ Mara: Everyone tells me to sleep when the baby sleeps. When am I meant to do the
     Mara: You're an angel. Two sugars. Don't judge me. # happy
     ~ friendship(5)
 - Mara: Your great-aunt used to give me humbugs when I was little. This shop always felt safe.
+~ note(Grew up coming into this shop. Your great-aunt gave her humbugs.)
 -> END
 
 === mara_scene_2 ===
@@ -59,6 +61,7 @@ She holds up a lumpy square of knitting, more hole than wool.
     Mara: Liar. Lovely liar. # happy
 * [Want me to show you how to fix it?]
     Mara: Would you? I want to make her something myself. Just once. # happy
+    ~ note(Is learning to knit, to make her daughter something herself.)
     ~ friendship(5)
 - Mara: Maybe next time it'll have fewer holes. Maybe.
 -> END
@@ -94,6 +97,7 @@ Mara: It was "duck". We don't have a duck. We've never had a duck. I'm choosing 
 
 === mara_visit_3_friend ===
 Mara: You know you're the only grown-up I talk to some days? Apart from the postman. # thoughtful
+~ note(Some days you're the only grown-up she talks to.)
 Mara: And he only says "sign here".
 -> END
 

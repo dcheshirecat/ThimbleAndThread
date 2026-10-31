@@ -63,7 +63,7 @@ public class KnitLayout
     /// The layout for one step of an order: the item's garment, and the step's piece ("" = the whole thing).
     public static KnitLayout For(Order order, string piece)
     {
-        var garment = order != null && order.item != null ? order.item.garment : Garment.Square;
+        var garment = order != null && order.item != null && !order.legacyKnit ? order.item.garment : Garment.Square;
         return For(order?.target, garment, piece);
     }
 
