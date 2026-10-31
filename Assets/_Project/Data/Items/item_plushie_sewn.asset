@@ -34,35 +34,96 @@ MonoBehaviour:
     tools: []
     materials: []
     fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 28
+    label: Pin the pattern to the fabric
+    tools:
+    - toolType: pins
+      minSize: 0
+      label: Pins
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 3
     label: Cut the pieces
     tools:
     - toolType: scissors
       minSize: 0
       label: Fabric scissors
+      exactSize: 0
+      matchYarn: 0
     materials: []
     fabricPieces: 2
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 4
     label: Pin them together
     tools:
     - toolType: pins
       minSize: 0
       label: Pins
+      exactSize: 0
+      matchYarn: 0
     materials: []
     fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 5
     label: Sew the seam
     tools:
     - toolType: sewing_machine
       minSize: 0
       label: Sewing machine
+      exactSize: 0
+      matchYarn: 0
     materials: []
     fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 29
+    label: Clip the curves
+    tools:
+    - toolType: scissors
+      minSize: 0
+      label: Fabric scissors
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 6
     label: Turn it right side out
     tools: []
     materials: []
     fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 7
     label: Stuff it
     tools: []
@@ -70,6 +131,11 @@ MonoBehaviour:
     - supplyId: stuffing
       amount: 1
     fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 8
     label: Attach the eyes
     tools: []
@@ -77,11 +143,24 @@ MonoBehaviour:
     - supplyId: safety_eyes_black
       amount: 1
     fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 9
-    label: Close the opening
+    label: Ladder-stitch it closed
     tools:
     - toolType: sewing_needle
       minSize: 0
       label: Hand sewing needle
+      exactSize: 0
+      matchYarn: 0
     materials: []
     fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  garment: 0

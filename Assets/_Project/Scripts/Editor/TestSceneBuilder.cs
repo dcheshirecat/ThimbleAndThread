@@ -555,13 +555,13 @@ public static class TestSceneBuilder
         spine.offsetMin = spine.offsetMax = Vector2.zero;
         Label(paper, "BookTitle", new Vector2(0.05f, 0.93f), new Vector2(0.95f, 0.985f), 84, TextAnchor.MiddleCenter).text = "Journal";
         var jTabs = Row(paper, 0.5f, 0.895f);
-        var jTabNames = new[] { "Orders", "Story", "Friends", "Skills", "Supplies", "News", "Stamps" };
+        var jTabNames = new[] { "Orders", "Story", "Friends", "Skills", "Supplies", "News", "Stamps", "Goals" };
         journal.tabs = new Image[jTabNames.Length];
         for (int i = 0; i < jTabNames.Length; i++)
         {
-            var tab = Button(jTabs, "Tab " + jTabNames[i], null, 236);
+            var tab = Button(jTabs, "Tab " + jTabNames[i], null, 208);
             tab.GetComponentInChildren<Text>().text = jTabNames[i];
-            tab.GetComponentInChildren<Text>().fontSize = 40;
+            tab.GetComponentInChildren<Text>().fontSize = 36;
             UnityEventTools.AddIntPersistentListener(tab.onClick, journal.ShowPage, i);
             journal.tabs[i] = tab.GetComponent<Image>();
         }

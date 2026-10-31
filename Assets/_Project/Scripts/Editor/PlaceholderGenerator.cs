@@ -111,6 +111,14 @@ public static class PlaceholderGenerator
             Step(StepKind.HemTop, "Hem the top", tools: Tool("sewing_machine", "Sewing machine")),
             Step(StepKind.AttachHandles, "Attach the handle", materials: Need("webbing", 1), tools: Tool("sewing_needle", "Hand sewing needle")));
         AddStep(tote, Step(StepKind.Press, "Press it"));
+        // Sewing the way a sewist does (owner, 2026-10-31): pin the pattern, clip curves, box corners, ladder stitch.
+        var pinsTool = Tool("pins", "Pins");
+        InsertBefore(sewnPlushie, StepKind.CutPieces, Step(StepKind.PinPattern, "Pin the pattern to the fabric", tools: pinsTool));
+        InsertBefore(sewnPlushie, StepKind.TurnRightSideOut, Step(StepKind.ClipCurves, "Clip the curves", tools: Tool("scissors", "Fabric scissors")));
+        InsertBefore(tote, StepKind.CutPieces, Step(StepKind.PinPattern, "Pin the pattern to the fabric", tools: pinsTool));
+        InsertBefore(tote, StepKind.HemTop, Step(StepKind.BoxCorners, "Box the corners", tools: Tool("sewing_machine", "Sewing machine")));
+        foreach (var st in sewnPlushie.steps)
+            if (st.kind == StepKind.CloseOpening && st.label == "Close the opening") { st.label = "Ladder-stitch it closed"; EditorUtility.SetDirty(sewnPlushie); }
 
         // ---- Supplies ----
         // Market slots: Always = basics always for sale; Rotating = the selection that changes every 4 days;
@@ -374,6 +382,20 @@ public static class PlaceholderGenerator
         // ---- Shop upgrades: on the market's "For the Shop" shelf ----
         Upgrade("display_shelf", "Extra Display Shelf", "One more pattern fits on display.", 80, 1, UpgradeEffect.DisplaySpot, 1);
         Upgrade("work_lamp", "Brass Work Lamp", "Craft by better light: 25% more experience.", 100, 1, UpgradeEffect.CraftLamp, 25);
+        // ---- Achievement quests (owner, 2026-10-31): tiers, each shown once the one before is claimed ----
+        QuestTiers("deliver", QuestGoal.OrdersDelivered, "Hand over {0} orders", "Hand over your first order", new[] { 1, 5, 15, 30, 60 }, 30, 25);
+        QuestTiers("sell", QuestGoal.PatternsSold, "Sell {0} patterns", "Sell your first pattern", new[] { 1, 5, 15, 30 }, 25, 20);
+        QuestTiers("friend", QuestGoal.BestFriendship, "Grow a friendship to level {0}", null, new[] { 1, 2, 3, 4 }, 40, 30);
+        QuestTiers("meet", QuestGoal.PeopleMet, "Meet {0} people in town", null, new[] { 3, 6, 10 }, 20, 15);
+        QuestTiers("design", QuestGoal.PatternsDesigned, "Design {0} patterns", "Design your own pattern", new[] { 1, 3, 8 }, 30, 30);
+        QuestTiers("commission", QuestGoal.Commissions, "Complete {0} commissions", "Complete a commission", new[] { 1, 3, 6 }, 60, 40);
+        foreach (CraftType craft in System.Enum.GetValues(typeof(CraftType)))
+        {
+            string name = craft == CraftType.CrossStitch ? "cross stitch" : craft.ToString().ToLower();
+            QuestTiers($"make_{craft.ToString().ToLower()}", QuestGoal.ItemsMade, $"Make {{0}} {name} pieces", $"Make your first {name} piece",
+                       new[] { 1, 5, 12 }, 20, 30, craft);
+        }
+
         Upgrade("shop_sign", "Painted Shop Sign", "A customer drops by a second time each day.", 120, 2, UpgradeEffect.ExtraVisitor, 1);
         Upgrade("display_case", "Glass Display Case", "Two more patterns fit on display.", 180, 3, UpgradeEffect.DisplaySpot, 2);
 
@@ -535,6 +557,32 @@ public static class PlaceholderGenerator
         AssetDatabase.CreateAsset(def, assetPath);
     }
 
+    /// A chain of quests, each shown once the one before is claimed; rewards grow with each tier. Never
+    /// overwrites one that exists (so rewards edited by hand are kept).
+    static void QuestTiers(string id, QuestGoal goal, string title, string firstTitle, int[] targets, int coins, int xp, CraftType? craft = null)
+    {
+        Directory.CreateDirectory($"{Root}/Data/Quests");
+        QuestDef before = null;
+        for (int i = 0; i < targets.Length; i++)
+        {
+            string questId = $"{id}_{targets[i]}";
+            string assetPath = $"{Root}/Data/Quests/quest_{questId}.asset";
+            var def = AssetDatabase.LoadAssetAtPath<QuestDef>(assetPath);
+            if (def == null)
+            {
+                def = ScriptableObject.CreateInstance<QuestDef>();
+                def.questId = questId;
+                def.title = targets[i] == 1 && firstTitle != null ? firstTitle : string.Format(title, targets[i]);
+                def.goal = goal; def.target = targets[i];
+                def.oneCraft = craft.HasValue; def.craft = craft ?? CraftType.CrossStitch;
+                def.after = before;
+                def.coins = coins * (i + 1); def.xp = xp * (i + 1);
+                AssetDatabase.CreateAsset(def, assetPath);
+            }
+            before = def;
+        }
+    }
+
     static void Upgrade(string id, string name, string description, int price, int chapter, UpgradeEffect effect, int amount)
     {
         Directory.CreateDirectory($"{Root}/Data/Upgrades");
@@ -568,8 +616,7 @@ public static class PlaceholderGenerator
                 "Everything is made step by step, the way it's really done. Cross stitch: drag from corner to corner, then " +
                 "the other way to finish the X."),
             Page("Every Craft Its Own", TutorialAnim.Gestures,
-                "Knit with a swipe for each stitch, crochet with a tap and a flick, and sew or embroider by tracing the line. " +
-                "The hint at the top always tells you what to do."),
+                "Each craft you learn has its own moves, the way it's really done. The hint at the top always tells you what to do."),
             Page("No Rush", TutorialAnim.OrderBook,
                 "Orders wait in your order book. Nothing has a deadline: stop whenever you like, your work is saved, and pick " +
                 "it up another night."),

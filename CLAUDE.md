@@ -512,6 +512,18 @@ Test live (create, open, open again fails, own code refused) before merging.
      parts sewn on).
   5. NEW crafts: needlepoint and quilting.
 
+## Owner feedback, 2026-10-31 (no spoilers; goals; branch minigames)
+- Never say how the story moves on or what's coming: no chapter goals in the Journal or the end-of-day
+  summary, no "someone new will visit in the next chapter". Crafts not yet learned aren't listed (the Skills
+  page only says "N more things to learn out there..."); the tutorial no longer names the other crafts.
+- Achievement quests instead (Data/Quests, QuestDef; Progression.OpenQuests/CheckQuests/Claim; Journal
+  "Goals" tab): "Sell 5 patterns" etc., claimed for coins + experience; tiers chained by QuestDef.after; craft
+  quests hidden until the craft is learned, design/commission ones until Pattern Design. SaveData.itemsMade,
+  totalCommissions, questsClaimed, questsReady. Save version 18.
+- Sewing (mini-games part 2): pin the paper pattern (PinPatternStep), clip curves, box the tote's corners,
+  ladder-stitch the plushie closed (Crafts/SewingPrepSteps.cs, CloseOpeningStep).
+- Still to do on request: shops unlocked over time, and their owners greeting you on entering/leaving.
+
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
 2. DONE (on main): item recipes. CraftItemDef.steps (RecipeStep: StepKind, label,

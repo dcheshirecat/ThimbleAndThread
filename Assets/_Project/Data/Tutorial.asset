@@ -30,7 +30,7 @@ MonoBehaviour:
     art: {fileID: 0}
     animation: 3
   - title: Every Craft Its Own
-    text: Knit with a swipe for each stitch, crochet with a tap and a flick, and sew or embroider by tracing the line. The hint at the top always tells you what to do.
+    text: Each craft you learn has its own moves, the way it's really done. The hint at the top always tells you what to do.
     art: {fileID: 0}
     animation: 4
   - title: No Rush

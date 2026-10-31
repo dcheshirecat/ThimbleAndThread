@@ -42,6 +42,7 @@ public class ContentLibraryRefresher : AssetPostprocessor
         lib.cosmetics = Find<CosmeticDef>();
         lib.chapters = Find<ChapterDef>();
         lib.upgrades = Find<UpgradeDef>();
+        lib.quests = Find<QuestDef>();
         lib.dialogue = Find<TextAsset>(DialogueRoot);
         var tutorials = Find<TutorialDef>();
         lib.tutorial = tutorials.Length > 0 ? tutorials[0] : null;

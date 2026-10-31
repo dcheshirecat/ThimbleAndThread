@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 057e0b2b8faccd24aaf707868ba6acdf, type: 3}
+  m_Name: quest_design_3
+  m_EditorClassIdentifier: Assembly-CSharp::QuestDef
+  questId: design_3
+  title: Design 3 patterns
+  goal: 5
+  target: 3
+  oneCraft: 0
+  craft: 0
+  after: {fileID: 11400000, guid: 10c8feb9309977b449b9936f946d52cb, type: 2}
+  coins: 60
+  xp: 60

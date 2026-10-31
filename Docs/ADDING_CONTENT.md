@@ -209,7 +209,19 @@ visiting) and **Romanceable** (adult characters only), and write their `.ink` fi
 
 In `Data/Chapters/`: one asset per chapter (**Create > Craft > Chapter**): its number, title, intro,
 and goals to reach the next one (orders handed over, patterns sold, a friendship level, all totals).
-**Goal Text** is how the Journal describes them. Its story scene is the `chapter_N` knot in story.ink.
+The goals are never shown to the player (the story moving on is a surprise); **Goal Text** is just a
+note for you. Its story scene is the `chapter_N` knot in story.ink.
+
+## Goals (achievement quests)
+
+In `Data/Quests/` (**Create > Craft > Quest**): open goals on the Journal's Goals page, like "Sell 5
+patterns". When one is reached a pop-up says so, and the player taps it in the Journal to claim its
+**Coins** and **Xp** (experience). **Goal** is what it counts (orders handed over, patterns sold, things
+made, best friendship level, people met, patterns designed, commissions) and **Target** how many.
+**One Craft** counts only things made in that **Craft**, hides the quest until the craft is learned, and
+gives the experience to that craft (otherwise it goes to the craft practised most). **After** makes a
+chain: the quest shows only once the one before it has been claimed. Design and commission goals stay
+hidden until Pattern Design is learned. Keep **Quest Id** fixed once saves exist.
 
 ## Skills (crafts and techniques)
 

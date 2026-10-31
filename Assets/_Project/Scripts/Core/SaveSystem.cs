@@ -88,6 +88,11 @@ public static class SaveSystem
                 if (st != null && (st.supplyId == "aida_14ct" || st.supplyId == "aida_cream" || st.supplyId == "aida_18ct" || st.supplyId == "linen_28ct"))
                     st.amount = Mathf.CeilToInt(st.amount / 400f);
         data.met ??= new System.Collections.Generic.List<string>();
+        data.itemsMade ??= new System.Collections.Generic.List<CraftCount>();
+        data.questsClaimed ??= new System.Collections.Generic.List<string>();
+        data.questsReady ??= new System.Collections.Generic.List<string>();
+        if (data.version < 18)   // commissions weren't counted; the story ones (and one of your own) can be
+            data.totalCommissions = data.commissionsDone.Count + (data.stamps.Exists(s => s.id == "commission:own") ? 1 : 0);
         if (data.version < 16)   // everyone they'd made friends with or had an order from, they'd met
         {
             foreach (var r in data.relationships) if (r != null && (r.level > 0 || r.points > 0) && !data.met.Contains(r.customerId)) data.met.Add(r.customerId);

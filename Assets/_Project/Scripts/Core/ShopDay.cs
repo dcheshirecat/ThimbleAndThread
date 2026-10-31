@@ -66,8 +66,15 @@ public class ShopDay : MonoBehaviour
     public bool BellRinging { get; private set; }
     public event System.Action OnBell;
 
+    float questTimer;
+
     void Update()
     {
+        if (Save != null && Save.player.created && (questTimer -= Time.unscaledDeltaTime) <= 0f)
+        {
+            questTimer = 1f;
+            Progress.CheckQuests();
+        }
         if (Save == null || Save.night || CustomersWaiting == 0 || GM.Current == ScreenId.Dialogue || GM.Current == ScreenId.Title
             || GM.Current == ScreenId.SaveSelect || GM.Current == ScreenId.Customize || GM.Current == ScreenId.Tutorial || !Save.player.created)
         {
@@ -806,12 +813,11 @@ public class ShopDay : MonoBehaviour
         GM.ChangeScreen(ScreenId.DaySummary);
     }
 
-    /// For the end-of-day summary: what's coming, so there's something to look forward to.
+    /// For the end-of-day summary: what's coming, so there's something to look forward to. Never how the story
+    /// moves on or who's still to come (owner, 2026-10-31): that stays a surprise.
     public string LookingAhead()
     {
         var lines = new List<string>();
-        var c = Progress.Chapter;
-        if (c != null && content.Chapter(c.number + 1) != null) lines.Add($"Chapter {c.number}: {Progress.GoalProgress(c).Replace("\n", ". ")}.");
         foreach (var cust in content.customers)
         {
             if (cust == null || cust.firstChapter > Save.chapter || string.IsNullOrEmpty(cust.inkName)) continue;
@@ -823,9 +829,6 @@ public class ShopDay : MonoBehaviour
                     break;
                 }
         }
-        if (content.Chapter(Save.chapter + 1) is ChapterDef nextChapter)
-            foreach (var cust in content.customers)
-                if (cust != null && cust.firstChapter == nextChapter.number) lines.Add("Someone new will visit in the next chapter...");
         int restock = shop.DaysUntilRestock;
         lines.Add(restock == 1 ? "The Supply Market gets new stock tomorrow." : $"New stock at the Supply Market in {restock} days.");
         var ready = Save.orders.FindAll(o => o.finished).Count;
@@ -1422,6 +1425,12 @@ public class ShopDay : MonoBehaviour
     /// say when: the doorbell will tell.
     public void SetAside()
     {
+        if (!Selected.finished && Selected.item != null)   // one more thing made in this craft
+        {
+            var made = Save.itemsMade.Find(x => x.craft == Selected.item.craft);
+            if (made == null) Save.itemsMade.Add(made = new CraftCount { craft = Selected.item.craft });
+            made.count++;
+        }
         Selected.finished = true;
         Selected.accuracy = LastAccuracy;
         foreach (var id in new List<string>(Selected.extras))   // the special touches go on now
@@ -1526,6 +1535,7 @@ public class ShopDay : MonoBehaviour
         Save.orders.Remove(Selected);
         Save.deliveredToday++;
         Save.totalDelivered++;
+        if (commission != null || Selected.commissionId != null && Selected.commissionId.StartsWith(OwnCommissionPrefix)) Save.totalCommissions++;
         foreach (int n in new[] { 1, 5, 10, 25, 50, 100 })
             if (Save.totalDelivered == n)
                 Stamps.Earn(Save, $"delivered:{n}", n == 1 ? "First order delivered" : $"{n} orders delivered", n == 1 ? "Your first happy customer." : "The town keeps coming back.", StampTheme.Shop);

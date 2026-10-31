@@ -15,6 +15,7 @@ public class ContentLibrary : ScriptableObject
     public ChapterDef[] chapters = new ChapterDef[0];
     public UpgradeDef[] upgrades = new UpgradeDef[0];
     public CosmeticDef[] cosmetics = new CosmeticDef[0];
+    public QuestDef[] quests = new QuestDef[0];
     public TextAsset[] dialogue = new TextAsset[0];   // the .ink files in Assets/_Project/Dialogue
 
     InkLite ink;
@@ -32,6 +33,7 @@ public class ContentLibrary : ScriptableObject
 
     public SkillDef Skill(string id) => System.Array.Find(skills, s => s != null && s.skillId == id);
     public ChapterDef Chapter(int number) => System.Array.Find(chapters, c => c != null && c.number == number);
+    public QuestDef Quest(string id) => System.Array.Find(quests, q => q != null && q.questId == id);
     public UpgradeDef Upgrade(string id) => System.Array.Find(upgrades, u => u != null && u.upgradeId == id);
 
     public CustomerDef Customer(string id) => System.Array.Find(customers, c => c != null && c.customerId == id);

@@ -164,6 +164,87 @@ public class Progression
         return next;
     }
 
+    // ---- Achievement quests (owner, 2026-10-31: e.g. "Sell 5 patterns", claimed for coins and experience) ----
+
+    public int Made(CraftType craft) => Save.itemsMade.Find(x => x.craft == craft)?.count ?? 0;
+
+    public int QuestCount(QuestDef q)
+    {
+        switch (q.goal)
+        {
+            case QuestGoal.OrdersDelivered: return Save.totalDelivered;
+            case QuestGoal.PatternsSold: return Save.totalPatternsSold;
+            case QuestGoal.BestFriendship: return BestFriendLevel();
+            case QuestGoal.PeopleMet: return Save.met.Count;
+            case QuestGoal.PatternsDesigned: return Save.patterns.FindAll(p => p.designed).Count;
+            case QuestGoal.Commissions: return Save.totalCommissions;
+            default:
+                if (q.oneCraft) return Made(q.craft);
+                int all = 0;
+                foreach (var m in Save.itemsMade) all += m.count;
+                return all;
+        }
+    }
+
+    public bool QuestClaimed(QuestDef q) => Save.questsClaimed.Contains(q.questId);
+    public bool QuestDone(QuestDef q) => QuestCount(q) >= q.target;
+
+    /// Shown in the Journal: not claimed, its earlier tier claimed, and its craft (if any) already learned,
+    /// so quests never give away a craft (or designing) that's still to come.
+    public bool QuestShown(QuestDef q) =>
+        q != null && !QuestClaimed(q) && (q.after == null || QuestClaimed(q.after)) && (!q.oneCraft || CraftOpen(q.craft))
+        && (q.goal != QuestGoal.PatternsDesigned && q.goal != QuestGoal.Commissions || Knows(ShopDay.PatternDesignSkill));
+
+    /// The quests to show, the ones ready to claim first.
+    public List<QuestDef> OpenQuests()
+    {
+        var list = new List<QuestDef>();
+        foreach (var q in content.quests) if (QuestShown(q)) list.Add(q);
+        list.Sort((a, b) => QuestDone(b).CompareTo(QuestDone(a)));
+        return list;
+    }
+
+    /// Announces quests that have just been reached (once each). Returns how many.
+    public int CheckQuests()
+    {
+        int n = 0;
+        foreach (var q in content.quests)
+        {
+            if (!QuestShown(q) || !QuestDone(q) || Save.questsReady.Contains(q.questId)) continue;
+            Save.questsReady.Add(q.questId);
+            Stamps.Notice($"Goal reached: {q.title}!\n<size=40>Claim your reward in the Journal.</size>");
+            n++;
+        }
+        return n;
+    }
+
+    /// The craft practised most (of those learned): where a general quest's experience goes.
+    public CraftType MostPractised()
+    {
+        var best = CraftType.CrossStitch;
+        foreach (CraftType c in System.Enum.GetValues(typeof(CraftType)))
+            if (CraftOpen(c) && Xp(c) > Xp(best)) best = c;
+        return best;
+    }
+
+    /// Pays out a reached quest. Returns what it gave, or null if it isn't ready.
+    public string Claim(QuestDef q)
+    {
+        if (q == null || QuestClaimed(q) || !QuestDone(q)) return null;
+        Save.questsClaimed.Add(q.questId);
+        Save.questsReady.Remove(q.questId);
+        var craft = q.oneCraft ? q.craft : MostPractised();
+        if (q.coins > 0) GM.AddCoins(q.coins);
+        string levelUp = q.xp > 0 ? AddXp(craft, q.xp) : null;
+        var parts = new List<string>();
+        if (q.coins > 0) parts.Add($"{q.coins} coins");
+        if (q.xp > 0) parts.Add($"{q.xp} {CraftName(craft).ToLower()} experience");
+        string msg = $"{q.title}: {string.Join(" and ", parts)}.";
+        AddNews(msg);
+        CheckUnlocks();
+        return levelUp != null ? $"{msg}\n{levelUp}" : msg;
+    }
+
     // ---- Shop upgrades ----
 
     public bool Owns(UpgradeDef u) => Save.upgrades.Contains(u.upgradeId);

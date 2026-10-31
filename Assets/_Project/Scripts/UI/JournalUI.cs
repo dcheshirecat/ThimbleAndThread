@@ -10,7 +10,7 @@ using UnityEngine.UI;
 /// bottom go to the Supply Market (by day), Trade and Settings. Turning a page flips it over at the spine.
 public class JournalUI : MonoBehaviour
 {
-    public enum Page { Orders, Story, Friends, Skills, Supplies, News, Stamps }
+    public enum Page { Orders, Story, Friends, Skills, Supplies, News, Stamps, Goals }
 
     public ShopDay day;
     public ScreenRouter router;
@@ -137,6 +137,7 @@ public class JournalUI : MonoBehaviour
             Page.Skills => Skills(),
             Page.Supplies => Supplies(),
             Page.Stamps => StampsPage(),
+            Page.Goals => Goals(),
             _ => News(),
         });
     }
@@ -168,13 +169,8 @@ public class JournalUI : MonoBehaviour
         if (c == null) return "Your story begins...";
         sb.AppendLine($"<b>Chapter {c.number}: {c.title}</b>\n");
         sb.AppendLine(c.intro).AppendLine();
-        if (day.content.Chapter(c.number + 1) is ChapterDef next)
-        {
-            sb.AppendLine("<b>To reach the next chapter</b>");
-            sb.AppendLine(c.goalText);
-            sb.AppendLine(Progress.GoalProgress(c));
-        }
-        else sb.AppendLine("The last chapter. The festival is coming...");
+        // How the story moves on is never spelled out (owner, 2026-10-31).
+        if (day.content.Chapter(c.number + 1) == null) sb.AppendLine("The last chapter. The festival is coming...");
         sb.AppendLine($"\nDay {Save.day}. Orders handed over: {Save.totalDelivered}. Patterns sold: {Save.totalPatternsSold}.");
         return sb.ToString();
     }
@@ -227,18 +223,16 @@ public class JournalUI : MonoBehaviour
 
     string Skills()
     {
+        // Crafts and techniques only appear once learned: which ones are still to come, and how, is a
+        // surprise (owner, 2026-10-30 and 2026-10-31).
         var sb = new StringBuilder("<b>Crafts</b>\n");
+        int unknown = 0;
         foreach (CraftType craft in System.Enum.GetValues(typeof(CraftType)))
         {
-            var skill = Progress.CraftSkill(craft);
-            string name = Progression.CraftName(craft);
-            sb.AppendLine(Progress.CraftOpen(craft)
-                ? $"{name}: level {Progress.Level(craft)} ({Progress.XpToNext(craft)} experience to the next)"
-                : $"{name}: not yet.");
+            if (!Progress.CraftOpen(craft)) { unknown++; continue; }
+            sb.AppendLine($"{Progression.CraftName(craft)}: level {Progress.Level(craft)} ({Progress.XpToNext(craft)} experience to the next)");
         }
-        // Techniques only appear once learned: how and when they come is a surprise (owner, 2026-10-30).
         sb.AppendLine("\n<b>Techniques</b>");
-        int unknown = 0;
         foreach (var s in day.content.skills)
         {
             if (s == null || s.isCraft) continue;
@@ -289,6 +283,41 @@ public class JournalUI : MonoBehaviour
         }
         return Save.stamps.Count == 0 ? "<b>Stamps</b>\n\nNo stamps yet. They come as you learn, make friends and grow the shop."
                                       : $"<b>Stamps</b>  ({Save.stamps.Count})";
+    }
+
+    /// Achievement quests: open goals, claimed here for coins and experience.
+    string Goals()
+    {
+        var quests = Progress.OpenQuests();
+        foreach (var q in quests)
+        {
+            bool done = Progress.QuestDone(q);
+            var row = Instantiate(rowTemplate, rowTemplate.transform.parent);
+            row.gameObject.SetActive(true);
+            row.name = $"Quest_{q.questId}";
+            var reward = new List<string>();
+            if (q.coins > 0) reward.Add($"{q.coins} coins");
+            if (q.xp > 0) reward.Add($"{q.xp} experience");
+            row.GetComponentInChildren<Text>().text = done
+                ? $"<b>{q.title}</b>  ·  Claim {string.Join(" + ", reward)}"
+                : $"{q.title}  ·  {Mathf.Min(Progress.QuestCount(q), q.target)} / {q.target}";
+            row.interactable = done;
+            var quest = q;
+            row.onClick.AddListener(() => ClaimQuest(quest));
+            rows.Add(row.gameObject);
+        }
+        return quests.Count == 0 ? "<b>Goals</b>\n\nNothing to aim for just now. More goals come as the shop grows."
+                                 : "<b>Goals</b>\nReach one, then tap it to claim your reward.";
+    }
+
+    void ClaimQuest(QuestDef q)
+    {
+        string msg = Progress.Claim(q);
+        if (msg == null) return;
+        AudioManager.Play(Sfx.Coin);
+        Stamps.Notice(msg);
+        GameManager.Instance.Persist();
+        Show();
     }
 
     string News() => Save.journalNews.Count == 0 ? "Nothing new yet." : string.Join("\n", Save.journalNews);
