@@ -109,7 +109,7 @@ public class CrochetRoundsStep : PieceStep, IMistakes
     void ShowBall()
     {
         if (ball) Destroy(ball);
-        ball = Dot(new Vector2(0.06f, 0.04f), 0.07f, YarnColor(held), 5, shine: true);
+        ball = Dot(new Vector2(0.12f, 0.04f), 0.07f, YarnColor(held), 5, shine: true);
     }
 
     void Show()

@@ -601,6 +601,14 @@ DONE batch 1 (items 1, 2, 3, 5, 9, 13, 15, 17, 23):
 - Finish double press: the mistakes warning was appended to a long hint and overflowed off the readable area, so the first
   Finish looked like it did nothing. Now a pop-up (ShopDay.FinishWarning/FinishCanGoOn; "Fix It" / "Finish Anyway"; blockers
   show "OK"). Also: blank ink lines are skipped (no empty Continue), old dialogue buttons leave the layout at once.
+Owner, 2026-10-31 (after batch 1):
+- DONE No News tab in the Journal (journalNews is still kept in the save, just not shown).
+- DONE Yarn (and sewing fabric) is gathered like everything else: the Gather list starts with "Choose N stitches of one yarn";
+  tapping a yarn in the cupboard sets order.fabricId, the pattern's colour yarns then join the list ("for the pattern's
+  colours"), and starting counts the Choose step as done. Missing yarn shows in the order's "Missing:" list.
+- DONE Colourwork made clear: KnitRowsStep.LiveHint names the yarn in hand and the next stitch's yarn ("swipe sideways to
+  pick it up"); the mistake reads "knitted in the wrong colour" with how to fix it. A stamp showing when the player goes
+  into crafting/dialogue is put away and shown later.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.

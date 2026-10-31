@@ -7,6 +7,9 @@ using UnityEngine.UI;
 /// below, a list of what the order needs sits on top, and tapping the right things ticks them off.
 /// Picking something the order doesn't need just says so. Once everything is ticked, Start Crafting.
 /// Anything missing from the cupboard shows on the list with how much more to buy.
+/// Knitting, crochet and sewing start with a choice: which yarn (or fabric) to make it in. That's a line on
+/// the list too ("one yarn, 300 stitches"): picking one sets the order's yarn, and the yarns for the
+/// pattern's colours (colourwork, stripes) join the list, matched to it.
 public class GatherUI : MonoBehaviour
 {
     public ShopDay day;
@@ -20,6 +23,7 @@ public class GatherUI : MonoBehaviour
     {
         public MaterialNeed material;
         public ToolNeed tool;
+        public bool choice;              // the main yarn or fabric, any that fits
         public string pickedId;          // what was put on the workbench for it
         public bool Ticked => pickedId != null;
     }
@@ -45,12 +49,32 @@ public class GatherUI : MonoBehaviour
         {
             order = day.Selected;
             needs.Clear();
-            foreach (var m in day.NeedsFor(order)) needs.Add(new Need { material = m });
-            foreach (var t in day.ToolsFor(order)) needs.Add(new Need { tool = t });
+            BuildNeeds();
             messageText.text = "Tap the things this order needs to put them on the workbench.";
         }
         Show();
     }
+
+    /// The list for the order as it stands; ticks already made are kept where the line is still there.
+    void BuildNeeds()
+    {
+        var old = new List<Need>(needs);
+        needs.Clear();
+        if (day.MaterialToChoose(order))
+            needs.Add(new Need { choice = true, pickedId = ChoiceFits(order.fabricId) ? order.fabricId : null });
+        foreach (var m in day.NeedsFor(order))
+            if (!(needs.Count > 0 && needs[0].choice && m.supplyId == order.fabricId)) needs.Add(new Need { material = m });   // the choice line covers it
+        foreach (var t in day.ToolsFor(order)) needs.Add(new Need { tool = t });
+        foreach (var n in needs)
+        {
+            if (n.choice) continue;
+            var was = old.Find(o => o.Ticked && !o.choice && (n.material != null ? o.material != null && o.material.supplyId == n.material.supplyId : o.tool != null && o.tool.toolType == n.tool.toolType));
+            if (was != null && day.content.Supply(was.pickedId) is SupplyDef s && Fits(n, s)) n.pickedId = was.pickedId;
+        }
+    }
+
+    bool ChoiceFits(string supplyId) =>
+        !string.IsNullOrEmpty(supplyId) && ChooseMaterialStep.Options(order, day.content, day.shop).Exists(s => s.supplyId == supplyId);
 
     public bool AllGathered => needs.TrueForAll(n => n.Ticked);
 
@@ -61,7 +85,16 @@ public class GatherUI : MonoBehaviour
         var s = day.content.Supply(supplyId);
         if (s == null) return;
         var need = needs.Find(n => !n.Ticked && Fits(n, s));
-        if (need != null)
+        if (need != null && need.choice)   // the yarn (or fabric) it'll be made in: its colour yarns follow
+        {
+            order.fabricId = supplyId;
+            need.pickedId = supplyId;
+            BuildNeeds();
+            bool more = needs.Exists(n => n.material != null && n.material.supplyId != supplyId && day.content.Supply(n.material.supplyId)?.kind == SupplyKind.Yarn);
+            messageText.text = $"{s.displayName}: it'll be made in this." + (more ? " The pattern's colours need their own yarns too: they're on the list." : "");
+            AudioManager.Play(Sfx.Stitch);
+        }
+        else if (need != null)
         {
             need.pickedId = supplyId;
             messageText.text = $"{s.displayName}: on the workbench.";
@@ -71,6 +104,7 @@ public class GatherUI : MonoBehaviour
         {
             var picked = needs.Find(n => n.pickedId == supplyId);   // tap again to put it back
             picked.pickedId = null;
+            if (picked.choice) { order.fabricId = null; BuildNeeds(); }   // choose again
             messageText.text = $"{s.displayName}: back in the cupboard.";
         }
         else
@@ -83,6 +117,7 @@ public class GatherUI : MonoBehaviour
 
     bool Fits(Need n, SupplyDef s)
     {
+        if (n.choice) return ChoiceFits(s.supplyId);
         if (n.material != null) return s.supplyId == n.material.supplyId && day.shop.Stock(s.supplyId) >= n.material.amount;
         var t = n.tool;
         return s.kind == SupplyKind.Tool && s.toolType == t.toolType && day.shop.Owns(s.supplyId)
@@ -92,6 +127,7 @@ public class GatherUI : MonoBehaviour
     /// Same sort of thing as the line wants, but not the right one (another floss colour, a smaller hoop).
     bool Close(Need n, SupplyDef s)
     {
+        if (n.choice) return s.kind == (order.ChooseKind() == StepKind.ChooseYarn ? SupplyKind.Yarn : SupplyKind.Fabric);
         if (n.material != null) { var want = day.content.Supply(n.material.supplyId); return want != null && want.kind == s.kind; }
         return s.kind == SupplyKind.Tool && s.toolType == n.tool.toolType;
     }
@@ -108,8 +144,12 @@ public class GatherUI : MonoBehaviour
     string Label(Need n)
     {
         if (n.tool != null) return n.tool.label;
+        if (n.choice)
+            return n.Ticked && day.content.Supply(n.pickedId) is SupplyDef chosen ? $"{chosen.displayName} ({order.ChosenAmount()} {chosen.unit}): the main {Kind(chosen)}"
+                 : $"Choose {ChooseMaterialStep.Wanted(order, day.content)}";
         var s = day.content.Supply(n.material.supplyId);
-        return s != null ? $"{s.displayName} ({n.material.amount} {s.unit})" : n.material.supplyId;
+        bool colour = s != null && s.kind == SupplyKind.Yarn && s.supplyId != order.fabricId;
+        return s != null ? $"{s.displayName} ({n.material.amount} {s.unit}){(colour ? ": for the pattern's colours" : "")}" : n.material.supplyId;
     }
 
     public void StartCrafting()
@@ -122,10 +162,18 @@ public class GatherUI : MonoBehaviour
             return;
         }
         order.gathered = true;
+        // The yarn or fabric was chosen here: that's its Choose step done.
+        if (order.CurrentStep.kind is StepKind.ChooseYarn or StepKind.ChooseFabric && !string.IsNullOrEmpty(order.fabricId))
+        {
+            var st = order.StepState(order.step);
+            st.done = true; st.score = 1f; st.progress = 1f;
+            order.step++;
+        }
         day.StartCrafting();
     }
 
-    bool Missing(Need n) => n.material != null ? day.shop.Stock(n.material.supplyId) < n.material.amount : !day.shop.HasTool(n.tool);
+    bool Missing(Need n) => n.choice ? ChooseMaterialStep.Options(order, day.content, day.shop).Count == 0
+                          : n.material != null ? day.shop.Stock(n.material.supplyId) < n.material.amount : !day.shop.HasTool(n.tool);
 
     // ---- Showing ----
 
@@ -140,7 +188,8 @@ public class GatherUI : MonoBehaviour
             else if (Missing(n))
             {
                 int have = n.material != null ? day.shop.Stock(n.material.supplyId) : 0;
-                sb.AppendLine(n.material != null ? $"[  ]  {line}  (you have {have}: buy more)" : $"[  ]  {line}  (you don't have one: buy it)");
+                sb.AppendLine(n.choice ? $"[  ]  {line}  (you don't have enough of any: buy some)"
+                              : n.material != null ? $"[  ]  {line}  (you have {have}: buy more)" : $"[  ]  {line}  (you don't have one: buy it)");
             }
             else sb.AppendLine($"[  ]  {line}");
         }

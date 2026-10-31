@@ -16,6 +16,7 @@ public class StampPopup : MonoBehaviour
 
     readonly List<(Stamp stamp, string notice, bool calm)> queue = new List<(Stamp, string, bool)>();
     bool showing;
+    (Stamp stamp, string notice, bool calm) current;   // the one on screen
 
     void OnEnable()
     {
@@ -24,7 +25,17 @@ public class StampPopup : MonoBehaviour
         if (GameManager.Instance != null) GameManager.Instance.OnScreenChanged += ScreenChanged;
     }
 
-    void ScreenChanged(ScreenId id) => Next();   // held ones show once the player's in the game
+    void ScreenChanged(ScreenId id)
+    {
+        if (showing && current.calm && !Calm())   // into a conversation or crafting: put it away until later
+        {
+            queue.Insert(0, current);
+            StopAllCoroutines();
+            panel.SetActive(false);
+            showing = false;
+        }
+        Next();   // held ones show once the player is somewhere calm
+    }
 
     /// Screens where nothing is going on: a stamp or a goal can show there.
     static bool Calm()
@@ -68,7 +79,8 @@ public class StampPopup : MonoBehaviour
         if (showing || queue.Count == 0 || !isActiveAndEnabled || Quiet()) return;
         int i = Calm() ? 0 : queue.FindIndex(q => !q.calm);   // the first one that may show now
         if (i < 0) return;
-        var (s, notice, _) = queue[i];
+        current = queue[i];
+        var (s, notice, _) = current;
         queue.RemoveAt(i);
         showing = true;
         panel.SetActive(true);

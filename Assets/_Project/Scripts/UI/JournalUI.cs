@@ -10,7 +10,7 @@ using UnityEngine.UI;
 /// bottom go to the Supply Market (by day), Trade and Settings. Turning a page flips it over at the spine.
 public class JournalUI : MonoBehaviour
 {
-    public enum Page { Orders, Story, Friends, Skills, Supplies, News, Stamps, Goals }
+    public enum Page { Orders, Story, Friends, Skills, Supplies, Stamps, Goals }   // no News tab (owner, 2026-10-31)
 
     public ShopDay day;
     public ScreenRouter router;
@@ -137,8 +137,7 @@ public class JournalUI : MonoBehaviour
             Page.Skills => Skills(),
             Page.Supplies => Supplies(),
             Page.Stamps => StampsPage(),
-            Page.Goals => Goals(),
-            _ => News(),
+            _ => Goals(),
         });
     }
 
@@ -357,7 +356,6 @@ public class JournalUI : MonoBehaviour
         Show();
     }
 
-    string News() => Save.journalNews.Count == 0 ? "Nothing new yet." : string.Join("\n", Save.journalNews);
 
     static string KindName(SupplyKind k) => k switch
     {

@@ -572,8 +572,8 @@ public static class TestSceneBuilder
         spine.anchorMin = new Vector2(0, 0); spine.anchorMax = new Vector2(0.03f, 1);
         spine.offsetMin = spine.offsetMax = Vector2.zero;
         Label(paper, "BookTitle", new Vector2(0.05f, 0.93f), new Vector2(0.95f, 0.985f), 84, TextAnchor.MiddleCenter).text = "Journal";
-        var jTabRows = new[] { Row(paper, 0.5f, 0.9f), Row(paper, 0.5f, 0.853f) };   // two rows of four, inside the page
-        var jTabNames = new[] { "Orders", "Story", "Friends", "Skills", "Supplies", "News", "Stamps", "Goals" };
+        var jTabRows = new[] { Row(paper, 0.5f, 0.9f), Row(paper, 0.5f, 0.853f) };   // two rows (four, then three), inside the page
+        var jTabNames = new[] { "Orders", "Story", "Friends", "Skills", "Supplies", "Stamps", "Goals" };
         journal.tabs = new Image[jTabNames.Length];
         for (int i = 0; i < jTabNames.Length; i++)
         {

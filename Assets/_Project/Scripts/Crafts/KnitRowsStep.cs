@@ -41,7 +41,7 @@ public class KnitRowsStep : PieceStep, IMistakes
         current = Square(Vector2.zero, Knit.cell, new Color(1, 1, 1, 0.35f), 1);
         for (int i = 0; i < Done; i++) DrawStitch(i);
         held = Done > 0 ? HeldFor(Done - 1) : Knit.Stitches > 0 ? Knit.stitches[0].color : -1;
-        Label(new Vector2(0.06f, -0.02f), "yarn in hand", 0.03f, new Color(1, 1, 1, 0.7f), 5);
+        Label(new Vector2(0.12f, -0.02f), "yarn in hand", 0.03f, new Color(1, 1, 1, 0.7f), 5);
         ShowBall();
         ShowNext();
     }
@@ -50,7 +50,7 @@ public class KnitRowsStep : PieceStep, IMistakes
     void ShowBall()
     {
         if (ball != null) Destroy(ball);
-        ball = Dot(new Vector2(0.06f, 0.04f), 0.07f, Knit.PaletteColor(held, Yarn), 5, shine: true);
+        ball = Dot(new Vector2(0.12f, 0.04f), 0.07f, Knit.PaletteColor(held, Yarn), 5, shine: true);
     }
 
     void DrawStitch(int i)
@@ -82,6 +82,28 @@ public class KnitRowsStep : PieceStep, IMistakes
         {
             var c = Knit.ColorOf(i, Color.white);
             guide.Add(Stitch(Knit.CellCenter(i), Knit.cell, Knit.Purl(i), new Color(c.r, c.g, c.b, 0.5f), 2));
+        }
+    }
+
+    /// The yarn a pattern colour is knitted in (from the cupboard, matched to the main yarn), by name.
+    string YarnName(int colour)
+    {
+        var main = area.content.Supply(order.fabricId);
+        if (colour < 0 || order.target == null || colour >= order.target.palette.Count) return main != null ? main.displayName : "main yarn";
+        var y = Materials.ColourworkYarn(order.target.palette[colour], main, area.content, area.shop);
+        return y != null ? y.displayName : "contrast yarn";
+    }
+
+    /// Under the hint: which yarn is in hand, and when the next stitch needs another one.
+    public override string LiveHint
+    {
+        get
+        {
+            if (Done >= Knit.Stitches) return "All knitted. Tap Finish.";
+            int needed = Knit.stitches[Done].color;
+            return held != needed
+                ? $"The next stitch is in {YarnName(needed)}: swipe sideways to pick it up (you're holding {YarnName(held)})."
+                : $"Knitting in {YarnName(held)}.";
         }
     }
 
@@ -135,7 +157,7 @@ public class KnitRowsStep : PieceStep, IMistakes
             for (int i = 0; i < Done; i++) { if (WrongType(i)) type++; if (WrongYarn(i)) yarn++; }
             var parts = new List<string>();
             if (type > 0) parts.Add(type == 1 ? "1 wrong stitch" : $"{type} wrong stitches");
-            if (yarn > 0) parts.Add(yarn == 1 ? "1 stitch in the wrong yarn" : $"{yarn} stitches in the wrong yarn");
+            if (yarn > 0) parts.Add((yarn == 1 ? "1 stitch" : $"{yarn} stitches") + " knitted in the wrong colour (the pattern's coloured squares are knitted in their own yarn: swipe sideways when the marker changes colour)");
             return parts.Count == 0 ? null : string.Join(" and ", parts);
         }
     }
