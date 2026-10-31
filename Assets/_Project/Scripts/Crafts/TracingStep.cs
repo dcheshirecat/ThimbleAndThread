@@ -4,7 +4,7 @@ using UnityEngine;
 /// A step where the player drags along a dashed line: hemming, cutting along a pattern line,
 /// sewing a seam, closing an opening. Subclasses give the line and draw the piece; this class
 /// records the strokes (saved in the order) and scores how much of the line was followed and how closely.
-public abstract class TracingStep : PieceStep
+public abstract class TracingStep : PieceStep, IMistakes
 {
     /// The dashed line to follow, in 0..1 of the area.
     protected abstract List<Vector2> Guide();
@@ -67,6 +67,25 @@ public abstract class TracingStep : PieceStep
         foreach (var p in points) if (Distance(p) <= Tolerance * 1.5f) onLine++;
         return Coverage * onLine / points.Count;
     }
+
+    /// Strokes that mostly missed the line (undo them to take them out).
+    public string MistakesLeft
+    {
+        get
+        {
+            int n = 0;
+            for (int s = 0; s < strokeStarts.Count; s++)
+            {
+                int from = strokeStarts[s], to = s + 1 < strokeStarts.Count ? strokeStarts[s + 1] : points.Count, off = 0;
+                for (int i = from; i < to; i++) if (Distance(points[i]) > Tolerance * 1.5f) off++;
+                if (to > from && off > (to - from) * 0.4f) n++;
+            }
+            return n == 0 ? null : n == 1 ? $"1 {StrokeName} off the line" : $"{n} {StrokeName}s off the line";
+        }
+    }
+
+    /// What one stroke is called in the warning ("stitch", "cut").
+    protected virtual string StrokeName => StitchLength > 0 ? "row of stitches" : "stroke";
 
     float Distance(Vector2 p)
     {

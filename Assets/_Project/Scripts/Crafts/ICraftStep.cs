@@ -34,3 +34,11 @@ public struct StepArea
     public ShopManager shop;
     public float assist;           // 0..1: how much the best tool for this step helps (SupplyDef.assist)
 }
+
+/// A step that can say what mistakes are still in the work (owner, 2026-10-30: mistakes can happen anywhere,
+/// can be undone, and if left in they lower the result). Finish warns about them once before going on.
+public interface IMistakes
+{
+    /// e.g. "2 wrong stitches", or null when there are none.
+    string MistakesLeft { get; }
+}

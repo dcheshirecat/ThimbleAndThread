@@ -331,7 +331,7 @@ public class OrderFlowUI : MonoBehaviour
         StepKind.FrenchKnots => "On each mark: put your finger down, twirl round twice to wrap the thread, then let go.",
         StepKind.ChooseYarn => "Tap the yarn to make it from. Only yarns you have enough of are shown.",
         StepKind.CastOn => "Tap once for each stitch to cast it onto the needle.",
-        StepKind.KnitRows => "Swipe down for a knit stitch, up for a purl (the bar marks). The marker shows the yarn colour. Keep a steady rhythm.",
+        StepKind.KnitRows => "Swipe down for a knit stitch, up for a purl (the bar marks). The marker shows the yarn colour. Keep a steady rhythm. Undo unpicks a wrong stitch.",
         StepKind.SewUp => "Lay the pieces together and sew up both side seams, from the cuff to the hem.",
         StepKind.CastOff => "Drag along the top edge to cast off, so it can't unravel.",
         StepKind.MagicRing => "Wrap the yarn round: drag along the dashed circle to make a magic ring.",

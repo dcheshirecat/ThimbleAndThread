@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// Recipe step: stitch (or, for a pattern-only order, fill in) the order's pattern on the cross stitch board.
 /// The stitches are saved in Order.work.
-public class CrossStitchStep : MonoBehaviour, ICraftStep
+public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes
 {
     Order order;
 
@@ -31,6 +31,26 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep
     }
 
     public string FinishBlocker => null;
+
+    /// Stitches in the wrong colour or outside the pattern, and crosses made the wrong way round.
+    public string MistakesLeft
+    {
+        get
+        {
+            if (Board == null || !Board.Ready || order.patternOnly) return null;
+            int wrong = 0;
+            foreach (var m in Board.Marks())
+            {
+                var cell = order.target.cells.Find(c => c.x == m.x && c.y == m.y);
+                if (cell == null || cell.colorIndex != m.color) wrong++;
+            }
+            int crossed = Board.WrongCrosses();
+            var parts = new System.Collections.Generic.List<string>();
+            if (wrong > 0) parts.Add(wrong == 1 ? "1 stitch in the wrong place or colour" : $"{wrong} stitches in the wrong place or colour");
+            if (crossed > 0) parts.Add(crossed == 1 ? "1 cross the wrong way round" : $"{crossed} crosses the wrong way round");
+            return parts.Count == 0 ? null : string.Join(" and ", parts);
+        }
+    }
 
     /// A board fitted into the area, as big as it can be while its squares stay square.
     public static CrossStitchCanvas MakeBoard(Transform parent, StepArea area, int width, int height)

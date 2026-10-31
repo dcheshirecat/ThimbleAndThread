@@ -1055,8 +1055,18 @@ public class ShopDay : MonoBehaviour
     /// Finishes the step being worked on. If more steps follow, it's back to the Workbench with the
     /// next one ready (the player can stop between steps). After the last step, shows how the piece
     /// turned out and what the customer will pay: the quality is the average over all steps.
+    string warnedMistakes;   // "orderId:step" already warned about its mistakes (the second Finish goes on)
+
     public void FinishCrafting()
     {
+        // Mistakes left in: say so once; Undo fixes them, Finish again keeps them (and the lower quality).
+        if (minigame.Step is IMistakes m && m.MistakesLeft is string left && warnedMistakes != $"{Selected.id}:{Selected.step}")
+        {
+            warnedMistakes = $"{Selected.id}:{Selected.step}";
+            LastMessage = $"Still in there: {left}. Undo to fix it, or tap Finish again to leave it in.";
+            GM.ChangeScreen(ScreenId.Minigame);
+            return;
+        }
         var blocker = minigame.Step?.FinishBlocker;
         if (blocker != null)
         {

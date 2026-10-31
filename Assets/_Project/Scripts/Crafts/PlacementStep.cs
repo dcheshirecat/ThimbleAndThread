@@ -4,7 +4,7 @@ using UnityEngine;
 /// Base for steps where the player taps where things go (eyes, handle ends, buttons...).
 /// Faint marks show the right spots; each tap places one thing, up to one per mark, and each mark
 /// scores by how close the nearest placed thing is to it.
-public abstract class PlacementStep : PieceStep
+public abstract class PlacementStep : PieceStep, IMistakes
 {
     const float Perfect = 0.02f, Miss = 0.12f;   // distance for full credit, and for none
 
@@ -51,6 +51,21 @@ public abstract class PlacementStep : PieceStep
         Destroy(placed[placed.Count - 1]);
         placed.RemoveAt(placed.Count - 1);
         Changed();
+    }
+
+    public string MistakesLeft
+    {
+        get
+        {
+            int n = 0;
+            foreach (var e in Placed)
+            {
+                float best = float.MaxValue;
+                foreach (var m in Marks) best = Mathf.Min(best, Vector2.Distance(m, e));
+                if (best > Miss * 0.5f) n++;
+            }
+            return n == 0 ? null : n == 1 ? "1 in the wrong place" : $"{n} in the wrong places";
+        }
     }
 
     public override float SaveWork()
