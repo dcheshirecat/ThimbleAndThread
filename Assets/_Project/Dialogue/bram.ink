@@ -91,3 +91,50 @@ Bram: It's a two-person stall, really. I just never had the second person.
     Bram: Same time next week? It's a date. A non-date. A button date. # happy
     ~ friendship(10)
 -> END
+
+// ---- At the market door (owner, 2026-10-31): a hello when you walk in, a goodbye when you leave
+// (bram_thanks* when you bought something). Add variants freely; bram_greet_2_... needs friendship level 2.
+
+=== bram_greet ===
+Bram: Welcome in! Mind the step, it's been wonky since 1987. # happy
+-> END
+
+=== bram_greet_weather ===
+Bram: Morning! Grab a basket. The yarn's on the left, the gossip's at the till. # happy
+-> END
+
+=== bram_greet_stock ===
+Bram: Have a look round. If it's not on the shelf, it's probably under my elbow. # thoughtful
+-> END
+
+=== bram_greet_2_friend ===
+Bram: There {they} {is}! I was hoping you'd pop in. # happy
+-> END
+
+=== bram_greet_4_close ===
+Bram: Oh, it's you. Good. The shop feels finished now. # happy
+-> END
+
+=== bram_bye ===
+Bram: Just looking today? That's allowed. Come back soon! # happy
+-> END
+
+=== bram_bye_next ===
+Bram: Off you go. Don't let the seagulls near your hat. # happy
+-> END
+
+=== bram_bye_3_miss ===
+Bram: Leaving already? Fine, fine. Same time tomorrow? # thoughtful
+-> END
+
+=== bram_thanks ===
+Bram: Lovely choice. Here, have a lemon sweet for the walk back. # happy
+-> END
+
+=== bram_thanks_bag ===
+Bram: I've wrapped it in yesterday's paper. The crossword's half done, sorry. # happy
+-> END
+
+=== bram_thanks_2_proud ===
+Bram: Bring me back a photo of whatever that turns into. I mean it. # happy
+-> END

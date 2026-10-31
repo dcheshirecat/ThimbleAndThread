@@ -244,11 +244,16 @@ public static class TestSceneBuilder
         var shops = Button(p, "Shops", shopScene.ToggleShops, 380);
         Place(shops, new Vector2(0.8f, 0.865f), new Vector2(560, 120));
         shops.GetComponentInChildren<Text>().fontSize = 56;
+        shopScene.shopsButton = shops.gameObject;
         var shopsMenu = Shape(p, "Shops Menu", new Vector2(0.72f, 0.72f), new Vector2(900, 560), new Color(1, 0.97f, 0.9f), uiSprite);
         shopsMenu.GetComponent<Image>().raycastTarget = true;
         var sm = Column(shopsMenu, 0.5f, 0.5f);
-        Button(sm, "Menu Market", shopScene.GoToMarket, 800).GetComponentInChildren<Text>().text = "Supply Market";
-        Button(sm, "Menu Boutique", shopScene.GoToBoutique, 800).GetComponentInChildren<Text>().text = "Moreau's Boutique";
+        var menuMarket = Button(sm, "Menu Market", shopScene.GoToMarket, 800);
+        menuMarket.GetComponentInChildren<Text>().text = "Supply Market";
+        shopScene.marketButton = menuMarket.gameObject;
+        var menuBoutique = Button(sm, "Menu Boutique", shopScene.GoToBoutique, 800);
+        menuBoutique.GetComponentInChildren<Text>().text = "Moreau's Boutique";
+        shopScene.boutiqueButton = menuBoutique.gameObject;
         Button(sm, "Menu Close", shopScene.ToggleShops, 800).GetComponentInChildren<Text>().text = "Close";
         shopsMenu.gameObject.SetActive(false);
         shopScene.shopsMenu = shopsMenu.gameObject;
@@ -358,7 +363,8 @@ public static class TestSceneBuilder
 
         // Side screens
         p = Panel(ScreenId.Market, "Supply Market", new Color(0.85f, 0.70f, 0.60f));
-        ui.marketStatus = Label(p, "Status", new Vector2(0.06f, 0.82f), new Vector2(0.94f, 0.92f), 60, TextAnchor.MiddleCenter);
+        ui.marketStatus = Label(p, "Status", new Vector2(0.22f, 0.82f), new Vector2(0.96f, 0.92f), 56, TextAnchor.MiddleCenter);
+        OwnerPortrait(p, content.Customer(ShopDay.MarketOwnerId), day.ChatWithMarketOwner);
         var shelves = ScrollList(p, 0.14f, 0.81f);
         ui.shelfTitleTemplate = ShelfTitle(shelves);
         ui.shelfTemplate = Shelf(shelves);
@@ -366,7 +372,7 @@ public static class TestSceneBuilder
         b = Row(p, 0.5f, 0.04f);
         Button(b, "Shopping List", ui.ToggleShoppingList, 600);
         Button(b, "Chat with Bram", day.ChatWithMarketOwner, 600);
-        Button(b, "Back", router.GoToHub, 560);
+        Button(b, "Back", day.LeaveMarket, 560);
         var list = Shape(p, "ShoppingListPanel", new Vector2(0.5f, 0.48f), new Vector2(1840, 1700), new Color(1f, 0.98f, 0.92f), uiSprite);
         list.GetComponent<Image>().raycastTarget = true;
         ui.shoppingList = list.gameObject;
@@ -457,7 +463,8 @@ public static class TestSceneBuilder
         p = Panel(ScreenId.Boutique, "Moreau's Boutique", new Color(0.92f, 0.82f, 0.88f));
         var boutique = canvasGo.AddComponent<BoutiqueUI>();
         boutique.day = day;
-        boutique.statusText = Label(p, "Status", new Vector2(0.06f, 0.82f), new Vector2(0.94f, 0.92f), 56, TextAnchor.MiddleCenter);
+        boutique.statusText = Label(p, "Status", new Vector2(0.22f, 0.82f), new Vector2(0.96f, 0.92f), 56, TextAnchor.MiddleCenter);
+        OwnerPortrait(p, content.Customer(BoutiqueUI.OwnerId), boutique.Chat);
         boutique.preview = Keeper(p, new Vector2(0.5f, 0.64f), content);
         boutique.preview.transform.localScale = Vector3.one * 0.7f;
         var rails = ScrollList(p, 0.13f, 0.47f);
@@ -467,7 +474,7 @@ public static class TestSceneBuilder
         boutique.tileTemplate.name = "Cosmetic Template";
         b = Row(p, 0.5f, 0.04f);
         Button(b, "Chat with Celeste", boutique.Chat, 860);
-        Button(b, "Back", router.GoToHub, 860);
+        Button(b, "Back", boutique.Leave, 860);
 
         p = Panel(ScreenId.DaySummary, "End of Day", new Color(0.78f, 0.82f, 0.95f));
         ui.summaryText = Label(p, "Summary", new Vector2(0.08f, 0.32f), new Vector2(0.92f, 0.88f), 60, TextAnchor.MiddleCenter);
@@ -1009,6 +1016,16 @@ public static class TestSceneBuilder
     }
 
     /// A plain coloured shape (placeholder art), centred at a fraction of its parent.
+    /// The shop owner behind their counter, top left of their shop: tap them to chat.
+    static void OwnerPortrait(Transform parent, CustomerDef owner, UnityAction chat)
+    {
+        var face = owner != null ? owner.GetPortrait(Expression.Neutral) : null;
+        var rt = Shape(parent, "Owner", new Vector2(0.115f, 0.87f), new Vector2(330, 330), face != null ? Color.white : new Color(0.6f, 0.5f, 0.45f), face != null ? face : uiSprite);
+        rt.GetComponent<Image>().preserveAspect = true;
+        rt.GetComponent<Image>().raycastTarget = true;
+        UnityEventTools.AddPersistentListener(rt.gameObject.AddComponent<Button>().onClick, chat);
+    }
+
     static RectTransform Shape(Transform parent, string name, Vector2 anchor, Vector2 size, Color color, Sprite sprite)
     {
         var go = new GameObject(name, typeof(RectTransform), typeof(Image));

@@ -107,7 +107,7 @@ public class MarketPurchase
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 18;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted
+    public const int CurrentVersion = 19;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique)
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen

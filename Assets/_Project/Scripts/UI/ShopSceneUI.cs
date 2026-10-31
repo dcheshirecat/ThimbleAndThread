@@ -89,6 +89,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     void Update()
     {
         if (!OnShop || Save == null) return;
+        ShowShops();
         if (Ringing && !opening)   // the door rattles now and then until it's answered
         {
             float t = Time.unscaledTime % 1.6f;
@@ -155,8 +156,17 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
     public GameObject shopsMenu;
     public void ToggleShops() { shopsMenu.SetActive(!shopsMenu.activeSelf); shopsMenu.transform.SetAsLastSibling(); }
-    public void GoToMarket() { shopsMenu.SetActive(false); GameManager.Instance.ChangeScreen(ScreenId.Market); }
-    public void GoToBoutique() { shopsMenu.SetActive(false); GameManager.Instance.ChangeScreen(ScreenId.Boutique); }
+    public GameObject shopsButton, marketButton, boutiqueButton;   // only the shops that have opened show
+    public void GoToMarket() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.MarketOwnerId, ScreenId.Market); }
+    public void GoToBoutique() { shopsMenu.SetActive(false); day.EnterShop(BoutiqueUI.OwnerId, ScreenId.Boutique); }
+
+    void ShowShops()
+    {
+        if (shopsButton != null) shopsButton.SetActive(day.AnyShopOpen);
+        if (marketButton != null) marketButton.SetActive(day.ShopOpen(ScreenId.Market));
+        if (boutiqueButton != null) boutiqueButton.SetActive(day.ShopOpen(ScreenId.Boutique));
+        if (!day.AnyShopOpen && shopsMenu.activeSelf) shopsMenu.SetActive(false);
+    }
 
     // ---- Pages and swiping ----
 

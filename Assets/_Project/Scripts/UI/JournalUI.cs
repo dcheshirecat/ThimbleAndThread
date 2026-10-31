@@ -77,7 +77,7 @@ public class JournalUI : MonoBehaviour
     }
 
     // Links: close the book, then go.
-    public void GoToMarket() { overlay.SetActive(false); router.GoToMarket(); }
+    public void GoToMarket() { overlay.SetActive(false); day.EnterShop(ShopDay.MarketOwnerId, ScreenId.Market); }
     public void GoToTrade() { overlay.SetActive(false); router.GoToTrade(); }
     public void GoToBoutique() { overlay.SetActive(false); router.GoToBoutique(); }
     public void GoToSettings() { overlay.SetActive(false); router.GoToSettings(); }

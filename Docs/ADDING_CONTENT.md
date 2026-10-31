@@ -167,6 +167,10 @@ The game looks for knots by name (the character's **Ink Name**, set on the custo
   (`mara_visit_rain`, `mara_visit_list`...). A number straight after `_visit_` is the friendship level
   needed (`mara_visit_2`, `mara_visit_2_word`). Each visit picks one the player hasn't heard lately, so
   more greetings = less repetition.
+- Shop owners (Bram, Celeste) also greet you at their door and see you off: `bram_greet...` when you
+  walk in, `bram_bye...` when you leave without buying, `bram_thanks...` when you bought something.
+  Same rules as greetings (a number after the kind is the friendship level needed, e.g. `bram_greet_2_friend`).
+  Keep them short: the last line gets the buttons ("Have a look around", "Stop for a chat", "Goodbye!").
 - `mara_request_<anything>`: an indirect request. Start it with `# fits: scarf, sweater` (item ids that
   would do) and `# best: scarf` (the perfect one: 50% more friendship). The player offers a pattern
   from the display.

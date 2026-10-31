@@ -522,7 +522,13 @@ Test live (create, open, open again fails, own code refused) before merging.
   totalCommissions, questsClaimed, questsReady. Save version 18.
 - Sewing (mini-games part 2): pin the paper pattern (PinPatternStep), clip curves, box the tote's corners,
   ladder-stitch the plushie closed (Crafts/SewingPrepSteps.cs, CloseOpeningStep).
-- Still to do on request: shops unlocked over time, and their owners greeting you on entering/leaving.
+- DONE Shops open over time (flags shop:market on day 2, shop:boutique after 3 hand-overs or chapter 2; a Shop
+  stamp announces each; ShopDay.CheckShops). The Shops button and menu only show open shops. Entering
+  (ShopDay.EnterShop) the owner greets you (ink name_greet*), leaving (LeaveShop) says bye (name_bye*, or
+  name_thanks* after buying), each with "Stop for a chat" while not chatted today. Owner portrait top left of
+  their shop (tap = chat). The market hides supplies for crafts not yet learned (Progression.SupplyShown).
+  Save version 19 (older saves: both shops open).
+- Owner wants LOOM WEAVING as a craft at some point (add with needlepoint and quilting).
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.

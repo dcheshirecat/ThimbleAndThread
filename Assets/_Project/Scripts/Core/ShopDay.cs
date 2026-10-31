@@ -74,6 +74,7 @@ public class ShopDay : MonoBehaviour
         {
             questTimer = 1f;
             Progress.CheckQuests();
+            CheckShops();
         }
         if (Save == null || Save.night || CustomersWaiting == 0 || GM.Current == ScreenId.Dialogue || GM.Current == ScreenId.Title
             || GM.Current == ScreenId.SaveSelect || GM.Current == ScreenId.Customize || GM.Current == ScreenId.Tutorial || !Save.player.created)
@@ -1069,6 +1070,7 @@ public class ShopDay : MonoBehaviour
         if (LastMessage.StartsWith("Bought"))
         {
             GM.AddRelationshipPoints(MarketOwnerId, 2);   // a regular becomes a friend
+            boughtThisVisit = true;
             if (s.market == MarketSlot.Rare) Stamps.Earn(Save, "market:rare", "A rare find", s.displayName, StampTheme.Shop);
             if (s.kind == SupplyKind.Tool && s.assist > 0) Stamps.Earn(Save, "tool:better", "Better tools", s.displayName, StampTheme.Craft);
         }
@@ -1089,6 +1091,91 @@ public class ShopDay : MonoBehaviour
     /// A chat with a shop owner in their own shop (once a day): their greeting, or a friendship scene
     /// when one is due. Then back to their shop.
     public void ChatWithMarketOwner() => ChatWith(MarketOwnerId, ScreenId.Market);
+
+    // ---- Shops on the square (owner, 2026-10-31): they open over time, with no warning beforehand. The market
+    // opens on day 2, the boutique after three hand-overs (or chapter 2). Their owners greet you at the door
+    // and see you off (ink knots name_greet*, name_bye*, name_thanks* after buying something). ----
+
+    public const string MarketFlag = "shop:market", BoutiqueFlag = "shop:boutique";
+    public const int MarketOpensDay = 2, BoutiqueDeliveries = 3;
+    bool boughtThisVisit;
+
+    public bool ShopOpen(ScreenId shop) => Save != null && Save.flags.Contains(shop == ScreenId.Market ? MarketFlag : BoutiqueFlag);
+    public bool AnyShopOpen => ShopOpen(ScreenId.Market) || ShopOpen(ScreenId.Boutique);
+
+    public void CheckShops()
+    {
+        if (Save.day >= MarketOpensDay)
+            OpenShop(MarketFlag, "Bram's Supply Market", "Fabric, thread, yarn and tools, just across the square.");
+        if (Save.totalDelivered >= BoutiqueDeliveries || Save.chapter >= 2)
+            OpenShop(BoutiqueFlag, "Moreau's Boutique", "Clothes and hair, across the square. Celeste has opened her doors.");
+    }
+
+    void OpenShop(string flag, string name, string detail)
+    {
+        if (Save.flags.Contains(flag)) return;
+        Save.flags.Add(flag);
+        Stamps.Earn(Save, flag, name, detail, StampTheme.Shop);
+        Progress.AddNews($"{name} is open. Find it under Shops.");
+        GM.Persist();
+    }
+
+    public bool CanChat(string customerId) => !Save.flags.Contains($"chat:{customerId}:{Save.day}");
+
+    /// Walking into a shop: its owner says hello, then you browse (or stop for a chat first).
+    public void EnterShop(string ownerId, ScreenId shop)
+    {
+        if (Save == null || Save.night || !ShopOpen(shop)) return;
+        boughtThisVisit = false;
+        LastMessage = "";
+        Met(ownerId);
+        var who = CustomerFor(ownerId);
+        var options = new List<(string, System.Action)> { ("Have a look around", () => GM.ChangeScreen(shop)) };
+        if (CanChat(ownerId)) options.Add(("Stop for a chat", () => ChatWith(ownerId, shop)));
+        if (!SayKnot(who, OwnerKnot(who, "greet"), options)) GM.ChangeScreen(shop);
+    }
+
+    /// Leaving a shop: the owner sees you off (thanking you if you bought something), then back to your shop.
+    public void LeaveShop(string ownerId)
+    {
+        var who = CustomerFor(ownerId);
+        var options = new List<(string, System.Action)> { ("Goodbye!", () => GM.ChangeScreen(GM.HubScreen)) };
+        if (CanChat(ownerId)) options.Add(("Chat a while first", () => ChatWith(ownerId, GM.HubScreen)));
+        string knot = boughtThisVisit ? OwnerKnot(who, "thanks") : null;
+        if (!SayKnot(who, knot ?? OwnerKnot(who, "bye"), options)) GM.ChangeScreen(GM.HubScreen);
+        boughtThisVisit = false;
+    }
+
+    public void BoughtInShop() => boughtThisVisit = true;
+    public void LeaveMarket() => LeaveShop(MarketOwnerId);
+
+    /// One of a shop owner's lines of this kind (greet, bye, thanks) for the friendship level reached.
+    string OwnerKnot(CustomerDef who, string kind)
+    {
+        if (who == null || string.IsNullOrEmpty(who.inkName)) return null;
+        string prefix = $"{who.inkName}_{kind}";
+        int level = GM.GetRelationship(who.customerId).level;
+        return Fresh(Variants(prefix).FindAll(k => MinLevel(k, prefix) <= level));
+    }
+
+    /// Plays a short knot line by line, ending on the given answers instead of "Continue". False if there's no such knot.
+    bool SayKnot(CustomerDef who, string knot, List<(string, System.Action)> answers)
+    {
+        if (who == null || knot == null || !content.Ink.Has(knot)) return false;
+        var runner = new DialogueRunner(content.Ink, knot, c => Condition(who, c), c => Command(who, c));
+        var lines = new List<DialogueRunner.Line>();
+        for (var l = runner.Next(); l != null && l.choices == null && lines.Count < 20; l = runner.Next()) lines.Add(l);
+        if (lines.Count == 0) return false;
+        if (GM.Current != ScreenId.Dialogue) GM.ChangeScreen(ScreenId.Dialogue);
+        ShowLines(who, lines, 0, answers);
+        return true;
+    }
+
+    void ShowLines(CustomerDef who, List<DialogueRunner.Line> lines, int i, List<(string, System.Action)> answers)
+    {
+        if (i == lines.Count - 1) { Show(who, lines[i], null, answers); return; }
+        Show(who, lines[i], null, new List<(string, System.Action)> { ("Continue", () => ShowLines(who, lines, i + 1, answers)) });
+    }
 
     public void ChatWith(string customerId, ScreenId back)
     {

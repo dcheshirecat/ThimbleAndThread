@@ -30,6 +30,17 @@ public class Progression
 
     public bool CraftOpen(CraftType craft) => CraftSkill(craft) is SkillDef s ? Knows(s.skillId) : true;
 
+    /// Whether the market shows this supply: only once a craft that uses it is learned, so the shelves don't
+    /// give away what's still to come (owner, 2026-10-31). Yarn serves knitting and crochet; stuffing and
+    /// eyes serve sewing and crochet; hoops and tapestry needles serve cross stitch as well.
+    public bool SupplyShown(SupplyDef s) => s != null && s.kind switch
+    {
+        SupplyKind.Yarn => CraftOpen(CraftType.Knitting) || CraftOpen(CraftType.Crochet),
+        SupplyKind.Stuffing or SupplyKind.Eyes => CraftOpen(CraftType.Sewing) || CraftOpen(CraftType.Crochet),
+        SupplyKind.Tool when s.toolType == "hoop" || s.toolType == "tapestry_needle" => true,   // cross stitch uses these too
+        _ => CraftOpen(s.craft),
+    };
+
     /// What the player still has to learn to make an item: its craft, and any technique its steps need.
     public List<SkillDef> MissingFor(CraftItemDef item)
     {

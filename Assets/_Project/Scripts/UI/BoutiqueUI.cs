@@ -39,6 +39,7 @@ public class BoutiqueUI : MonoBehaviour
     }
 
     public void Chat() => day.ChatWith(OwnerId, ScreenId.Boutique);
+    public void Leave() => day.LeaveShop(OwnerId);
 
     public void Tap(string cosmeticId)
     {
@@ -49,6 +50,7 @@ public class BoutiqueUI : MonoBehaviour
             if (!GameManager.Instance.TrySpend(c.price)) { message = $"The {c.displayName.ToLower()} is {c.price} coins. Not today."; Show(); return; }
             P.owned.Add(c.cosmeticId);
             GameManager.Instance.AddRelationshipPoints(OwnerId, 3);   // a good customer is a friend
+            day.BoughtInShop();
             message = $"Bought the {c.displayName.ToLower()}!";
             Wear(c, true);
         }

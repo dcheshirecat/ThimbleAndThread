@@ -89,3 +89,42 @@ Celeste: I need someone on my arm who makes me look interesting.
     Celeste: Best customer. Best friend. Don't tell anyone; I have a reputation. # happy
     ~ friendship(10)
 -> END
+
+// ---- At the boutique door (owner, 2026-10-31): a hello when you walk in, a goodbye when you leave
+// (celeste_thanks* when you bought something). celeste_greet_2_... needs friendship level 2.
+
+=== celeste_greet ===
+Celeste: Come in. Touch anything you like, just not the silk. # thoughtful
+-> END
+
+=== celeste_greet_mirror ===
+Celeste: The mirror's by the window. The light there is honest. Unlike my last boyfriend. # happy
+-> END
+
+=== celeste_greet_2_friend ===
+Celeste: You again. Good. I've been saving something for you to try on. # happy
+-> END
+
+=== celeste_greet_4_close ===
+Celeste: There you are. I'd started rearranging the rails out of boredom. # happy
+-> END
+
+=== celeste_bye ===
+Celeste: Nothing today? The rails will survive. Barely. # thoughtful
+-> END
+
+=== celeste_bye_soon ===
+Celeste: Off you go. Stand up straight on the way out, people are watching. # happy
+-> END
+
+=== celeste_thanks ===
+Celeste: Excellent taste. Mine, mostly, but you chose it. # happy
+-> END
+
+=== celeste_thanks_wear ===
+Celeste: Wear it out of the shop. Let the square see. # happy
+-> END
+
+=== celeste_thanks_2_proud ===
+Celeste: You look wonderful. Don't make it weird. # happy
+-> END

@@ -91,6 +91,8 @@ public static class SaveSystem
         data.itemsMade ??= new System.Collections.Generic.List<CraftCount>();
         data.questsClaimed ??= new System.Collections.Generic.List<string>();
         data.questsReady ??= new System.Collections.Generic.List<string>();
+        if (data.version < 19)   // the shops on the square were open from the start
+            foreach (var f in new[] { ShopDay.MarketFlag, ShopDay.BoutiqueFlag }) if (!data.flags.Contains(f)) data.flags.Add(f);
         if (data.version < 18)   // commissions weren't counted; the story ones (and one of your own) can be
             data.totalCommissions = data.commissionsDone.Count + (data.stamps.Exists(s => s.id == "commission:own") ? 1 : 0);
         if (data.version < 16)   // everyone they'd made friends with or had an order from, they'd met

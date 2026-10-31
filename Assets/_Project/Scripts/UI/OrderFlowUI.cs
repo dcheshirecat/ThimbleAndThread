@@ -269,7 +269,7 @@ public class OrderFlowUI : MonoBehaviour
         marketStatus.text = $"Bram's market · friendship {bram.level}{(bram.romance ? " ♥" : "")} · {save.coins} coins.  " +
                             (restock == 1 ? "New stock tomorrow." : $"New stock in {restock} days.") + $"\n{day.LastMessage}";
 
-        var sale = day.shop.OnSale();
+        var sale = day.shop.OnSale().FindAll(day.Progress.SupplyShown);
         foreach (var (title, kinds) in Shelves)
         {
             var onShelf = sale.FindAll(s => System.Array.IndexOf(kinds, s.kind) >= 0);
