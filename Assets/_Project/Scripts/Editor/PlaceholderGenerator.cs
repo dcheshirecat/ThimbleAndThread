@@ -79,6 +79,27 @@ public static class PlaceholderGenerator
         AddStep(scarf, Step(StepKind.Press, "Block it"));
         AddStep(sweater, Step(StepKind.WeaveEnds, "Weave in the ends", tools: Tool("tapestry_needle", "Tapestry needle")));
         AddStep(sweater, Step(StepKind.Press, "Block it"));
+        // Knitted like a real sweater (owner, 2026-10-31): back, front with the pattern as colourwork, two
+        // sleeves, then sewn up. Replaces the old one-square recipe once (hand edits after that stay).
+        Garments(scarf, Garment.Scarf);
+        if (Garments(sweater, Garment.Sweater))
+        {
+            var tapestry = Tool("tapestry_needle", "Tapestry needle");
+            sweater.steps = new[]
+            {
+                Step(StepKind.ChooseYarn, "Choose the yarn"),
+                Piece(Step(StepKind.CastOn, "Cast on the back", tools: needles), "back"),
+                Piece(Step(StepKind.KnitRows, "Knit the back", pieces: 2, perSquare: true, tools: needles), "back"),
+                Piece(Step(StepKind.CastOn, "Cast on the front", tools: needles), "front"),
+                Piece(Step(StepKind.KnitRows, "Knit the front, with the pattern", pieces: 2, perSquare: true, tools: needles), "front"),
+                Piece(Step(StepKind.CastOn, "Cast on the sleeves", tools: needles), "sleeves"),
+                Piece(Step(StepKind.KnitRows, "Knit the sleeves", pieces: 1, perSquare: true, tools: needles), "sleeves"),
+                Step(StepKind.SewUp, "Sew it together", tools: tapestry),
+                Step(StepKind.WeaveEnds, "Weave in the ends", tools: tapestry),
+                Step(StepKind.Press, "Block it"),
+            };
+            EditorUtility.SetDirty(sweater);
+        }
         Recipe(tote,
             Step(StepKind.ChooseFabric, "Choose the fabric"),
             Step(StepKind.CutPieces, "Cut the panels", pieces: 2, tools: Tool("scissors", "Fabric scissors")),
@@ -400,6 +421,17 @@ public static class PlaceholderGenerator
         item.steps = steps;
         EditorUtility.SetDirty(item);
     }
+
+    /// Sets a knitted item's garment shape if it has none yet; true when it was just set.
+    static bool Garments(CraftItemDef item, Garment garment)
+    {
+        if (item == null || item.garment != Garment.Square) return false;
+        item.garment = garment;
+        EditorUtility.SetDirty(item);
+        return true;
+    }
+
+    static RecipeStep Piece(RecipeStep step, string piece) { step.piece = piece; return step; }
 
     /// Adds a step to the end of an item's recipe, unless it already has a step of that kind.
     static void AddStep(CraftItemDef item, RecipeStep step)

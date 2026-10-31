@@ -84,7 +84,7 @@ Embroidery Floss, Yarn, Notions, Tools).
    Kinds so far: Cross Stitch, Hem, Choose Fabric, Cut Pieces, Pin, Sew Seam, Turn Right Side Out,
    Stuff, Attach Eyes, Close Opening, Sew Sides, Hem Top, Attach Handles,
    Choose Yarn, Cast On, Knit Rows, Cast Off, Magic Ring, Crochet Rounds,
-   Hoop Fabric, Backstitch, Satin Fill, French Knots.
+   Hoop Fabric, Backstitch, Satin Fill, French Knots, Press, Weave Ends, Sew Up (a sweater's side seams).
 
 The player can stop between steps or partway through one; every step's work is saved. A step's
 tools and materials are checked when the player starts it, and its materials are used up then.
@@ -95,8 +95,15 @@ stitch patterns: the filled squares are the shape of the piece (the game smooths
 squares in the second colour ('2' in a book pattern's grid) mark where the eyes go. So the Pattern
 Studio designs plushies too. Bags (e.g. "Market Tote") work the same way: the filled squares are the
 panel, the top edge stays open and is hemmed, and the handle is sewn on just below it.
-**Knitting patterns** use the grid as texture: each square is one stitch, filled squares are purl
-stitches and empty ones knit (so "Wave Stripes" knits a wavy texture).
+**Knitting patterns** depend on the item's **Garment** (on the item asset):
+- **Scarf**: a long strip with ribbed ends. The pattern is texture: filled squares are purl stitches,
+  empty ones knit, repeated along the scarf (so "Wave Stripes" knits a wavy texture).
+- **Sweater**: knitted in pieces like a real one. Each Cast On / Knit Rows step has a **Piece**: `back`
+  (ribbed hem, plain body, neckline), `front` (the same, with the pattern knitted in as colourwork, each
+  filled square in its colour, and a deeper neckline) or `sleeves` (two, ribbed cuffs widening to the
+  shoulder). Then Sew Up joins them, then Weave Ends and Block.
+- **Square** (any other knitted item): the pattern's grid as texture, as above.
+Colourwork yarns aren't counted from the cupboard yet; only the main yarn is.
 **Embroidery patterns** (e.g. "Little Whale") use the grid like sewing ones: the filled squares are the
 shape that's backstitched round and satin-filled in the first colour, and squares in the second colour
 are French knots in that colour.

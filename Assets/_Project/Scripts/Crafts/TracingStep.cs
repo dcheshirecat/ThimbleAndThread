@@ -8,6 +8,8 @@ public abstract class TracingStep : PieceStep
 {
     /// The dashed line to follow, in 0..1 of the area.
     protected abstract List<Vector2> Guide();
+    /// Several separate lines to follow (e.g. a sweater's two side seams). Default: just Guide().
+    protected virtual List<List<Vector2>> Guides() => new List<List<Vector2>> { Guide() };
     protected virtual bool ClosedGuide => false;
     protected virtual Color ThreadColor => new Color(0.30f, 0.25f, 0.30f);
     protected virtual Color GuideColor => new Color(1f, 1f, 1f, 0.85f);
@@ -24,6 +26,7 @@ public abstract class TracingStep : PieceStep
     readonly List<int> strokeStarts = new List<int>();
     readonly List<LineRenderer[]> strokeLines = new List<LineRenderer[]>();   // shadow and thread for each stroke
     List<Vector2> samples;
+    readonly List<List<Vector2>> segments = new List<List<Vector2>>();
     bool[] covered;
 
     /// How much of the line has been followed (0..1).
@@ -32,9 +35,16 @@ public abstract class TracingStep : PieceStep
     protected override void Build()
     {
         DrawPiece();
-        samples = PieceShape.Resample(Guide(), ClosedGuide, Samples);
+        var guides = Guides();
+        samples = new List<Vector2>();
+        foreach (var g in guides)
+        {
+            var seg = PieceShape.Resample(g, ClosedGuide, Samples / guides.Count);
+            segments.Add(seg);
+            samples.AddRange(seg);
+            Dashes(seg, GuideColor, 0.008f, 1);
+        }
         covered = new bool[samples.Count];
-        Dashes(samples, GuideColor, 0.008f, 1);
         points.AddRange(State.points);
         strokeStarts.AddRange(State.strokeStarts);
         Redraw();
@@ -53,8 +63,15 @@ public abstract class TracingStep : PieceStep
     {
         if (points.Count == 0) return 0f;
         int onLine = 0;
-        foreach (var p in points) if (PieceShape.DistanceToLine(samples, p) <= Tolerance * 1.5f) onLine++;
+        foreach (var p in points) if (Distance(p) <= Tolerance * 1.5f) onLine++;
         return Coverage * onLine / points.Count;
+    }
+
+    float Distance(Vector2 p)
+    {
+        float best = float.MaxValue;
+        foreach (var seg in segments) best = Mathf.Min(best, PieceShape.DistanceToLine(seg, p));
+        return best;
     }
 
     /// Removes the last stroke.

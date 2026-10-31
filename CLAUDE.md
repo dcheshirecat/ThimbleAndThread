@@ -363,8 +363,13 @@ All eight feedback points have a first version (merged to main 2026-10-30).
    likes/dislikes are NEVER mentioned in dialogue; they're a complete surprise. The player finds out by
    adding that special touch to the order: the pickup reaction follows the preference (not chance) and
    SaveData.knownPrefs records it; the Journal's Friends page then lists Likes/Dislikes. Save version 12.
-18. NEXT: crafting follows the item (owner): a sweater pattern should be made like a real sweater with that
-   pattern on it (garment pieces: body, sleeves; colourwork from the grid), not a square every time.
+18. DONE (branch garments) Crafting follows the item (owner): Crafts/KnitLayout.cs (CraftItemDef.garment: Square,
+   Scarf, Sweater; RecipeStep.piece back/front/sleeves). Sweater = 10 steps: choose yarn, cast on + knit the
+   back (rib hem, neckline), cast on + knit the front (pattern as colourwork, scooped neck), cast on + knit
+   two sleeves (rib cuffs, edge increases), Sew Up (Crafts/SewUpStep.cs: both side seams; TracingStep now
+   takes several guide lines via Guides()), weave ends, block. Scarf = a long ribbed strip with the pattern's
+   texture repeated. Save version 13 restarts unfinished sweaters/scarves (yarn not taken again).
+   Not yet: colourwork yarns counted as materials.
 3. DONE (first version) The current hub menu becomes a side JOURNAL with tabs and a storybook (page-turn) animation.
 4. DONE (branch surprises-pickups) Surprise unlocks: Journal shows techniques only once learned ("N more things to
    learn out there..."), friends' teachings only after they happen, no "(how to learn)" hints in messages.

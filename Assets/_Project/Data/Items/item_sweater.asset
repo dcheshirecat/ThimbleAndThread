@@ -38,8 +38,9 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: 
   - kind: 14
-    label: Cast on
+    label: Cast on the back
     tools:
     - toolType: knitting_needles
       minSize: 0
@@ -52,8 +53,9 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: back
   - kind: 15
-    label: Knit the front and back
+    label: Knit the back
     tools:
     - toolType: knitting_needles
       minSize: 0
@@ -61,13 +63,14 @@ MonoBehaviour:
       exactSize: 0
       matchYarn: 1
     materials: []
-    fabricPieces: 5
+    fabricPieces: 2
     requiredSkill: 
     perPatternSquare: 1
     patternThread: 0
     threadAmount: 0
-  - kind: 16
-    label: Cast off
+    piece: back
+  - kind: 14
+    label: Cast on the front
     tools:
     - toolType: knitting_needles
       minSize: 0
@@ -80,6 +83,67 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: front
+  - kind: 15
+    label: Knit the front, with the pattern
+    tools:
+    - toolType: knitting_needles
+      minSize: 0
+      label: Knitting needles
+      exactSize: 0
+      matchYarn: 1
+    materials: []
+    fabricPieces: 2
+    requiredSkill: 
+    perPatternSquare: 1
+    patternThread: 0
+    threadAmount: 0
+    piece: front
+  - kind: 14
+    label: Cast on the sleeves
+    tools:
+    - toolType: knitting_needles
+      minSize: 0
+      label: Knitting needles
+      exactSize: 0
+      matchYarn: 1
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: sleeves
+  - kind: 15
+    label: Knit the sleeves
+    tools:
+    - toolType: knitting_needles
+      minSize: 0
+      label: Knitting needles
+      exactSize: 0
+      matchYarn: 1
+    materials: []
+    fabricPieces: 1
+    requiredSkill: 
+    perPatternSquare: 1
+    patternThread: 0
+    threadAmount: 0
+    piece: sleeves
+  - kind: 25
+    label: Sew it together
+    tools:
+    - toolType: tapestry_needle
+      minSize: 0
+      label: Tapestry needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 24
     label: Weave in the ends
     tools:
@@ -94,6 +158,7 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: 
   - kind: 23
     label: Block it
     tools: []
@@ -103,3 +168,5 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: 
+  garment: 2

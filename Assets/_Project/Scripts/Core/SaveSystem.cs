@@ -79,6 +79,16 @@ public static class SaveSystem
         data.player ??= new PlayerProfile();
         data.player.owned ??= new System.Collections.Generic.List<string>();
         data.knownPrefs ??= new System.Collections.Generic.List<string>();
+        // Version 12 knitted scarves and sweaters as one square: the new garment pieces don't fit that work,
+        // so unfinished ones start over (their yarn was already taken, so it isn't taken again).
+        if (data.version < 13)
+            foreach (var o in data.orders)
+                if (o != null && !o.finished && !o.patternOnly && (o.itemId == "sweater" || o.itemId == "scarf") && o.step > 0)
+                {
+                    o.steps.Clear();
+                    o.step = 0;
+                    for (int i = 0; i < 12; i++) o.steps.Add(new StepProgress { materialsUsed = true });
+                }
         // Version 10 had no pickup days: anything already finished can be collected right away.
         foreach (var o in data.orders) if (o.finished && o.pickupDay == 0) o.pickupDay = data.day;
         foreach (var o in data.orders) o.extras ??= new System.Collections.Generic.List<string>();

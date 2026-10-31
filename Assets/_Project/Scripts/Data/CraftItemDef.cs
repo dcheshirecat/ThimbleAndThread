@@ -17,6 +17,7 @@ public class CraftItemDef : ScriptableObject
 
     [Tooltip("How it's made, in order. Leave empty for a single cross stitch step.")]
     public RecipeStep[] steps = new RecipeStep[0];
+    public Garment garment;             // knitting: the shape it's knitted in (Square, Scarf, Sweater pieces)
 
     static readonly RecipeStep[] StitchOnly = { new RecipeStep { kind = StepKind.CrossStitch, label = "Stitch the pattern" } };
 

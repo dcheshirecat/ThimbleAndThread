@@ -22,6 +22,21 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
     bool pressing;
 
     protected StepProgress State => order.StepState(stepIndex);
+    protected RecipeStep Recipe => order.Steps[Mathf.Clamp(stepIndex, 0, order.Steps.Length - 1)];
+    KnitLayout knitLayout;
+    /// Knitting: where this step's stitches go (the garment piece it works on).
+    protected KnitLayout Knit => knitLayout ??= KnitLayout.For(order, Recipe.piece);
+    protected Color Yarn => Color.Lerp(area.fabricColor, Color.black, 0.25f);
+
+    /// Draws a finished knitted piece: the fabric behind each stitch, then the stitch in its yarn colour.
+    protected void DrawKnitted(KnitLayout k, int sorting)
+    {
+        for (int i = 0; i < k.Stitches; i++)
+        {
+            Rect(k.CellCenter(i), Vector2.one * k.cell * 1.02f, area.fabricColor, sorting);
+            Stitch(k.CellCenter(i), k.cell, k.Purl(i), k.ColorOf(i, Yarn), sorting + 1);
+        }
+    }
     protected PieceShape Shape => shape ??= PieceShape.For(order.target, ShapePadding);
     /// Space around the piece's shape; embroidery leaves more, for the hoop.
     protected virtual float ShapePadding => 0.1f;

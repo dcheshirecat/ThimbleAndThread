@@ -38,6 +38,7 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: 
   - kind: 14
     label: Cast on
     tools:
@@ -52,6 +53,7 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: 
   - kind: 15
     label: Knit the rows
     tools:
@@ -66,6 +68,7 @@ MonoBehaviour:
     perPatternSquare: 1
     patternThread: 0
     threadAmount: 0
+    piece: 
   - kind: 16
     label: Cast off
     tools:
@@ -80,6 +83,7 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: 
   - kind: 24
     label: Weave in the ends
     tools:
@@ -94,6 +98,7 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: 
   - kind: 23
     label: Block it
     tools: []
@@ -103,3 +108,5 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: 
+  garment: 1

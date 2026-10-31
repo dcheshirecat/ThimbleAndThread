@@ -2,29 +2,30 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// Knitting recipe step: cast on, putting the first row of loops on the needle. Tap once per stitch.
+/// For sleeves, both cuffs are cast on.
 public class CastOnStep : PieceStep
 {
-    KnitLayout knit;
+    List<int> first;
     readonly List<GameObject> loops = new List<GameObject>();
 
     int Count => State.points.Count;
 
     protected override void Build()
     {
-        knit = KnitLayout.For(order.target);
-        float y = knit.origin.y - knit.cell * 0.2f;
-        Line(new[] { new Vector2(knit.origin.x - 0.06f, y), new Vector2(knit.origin.x + knit.Size.x + 0.06f, y) }, new Color(0.75f, 0.65f, 0.5f), 0.015f, 1);   // the needle
-        for (int x = 0; x < knit.width; x++) Square(Loop(x), knit.cell * 0.25f, new Color(1, 1, 1, 0.25f), 1);
+        first = Knit.CastOnStitches();
+        float y = Loop(0).y;
+        Line(new[] { new Vector2(Knit.origin.x - 0.06f, y), new Vector2(Knit.origin.x + Knit.Size.x + 0.06f, y) }, new Color(0.75f, 0.65f, 0.5f), 0.015f, 1);   // the needle
+        for (int i = 0; i < first.Count; i++) Square(Loop(i), Knit.cell * 0.25f, new Color(1, 1, 1, 0.25f), 1);
         for (int i = 0; i < Count; i++) AddLoop(i);
     }
 
-    Vector2 Loop(int x) => new Vector2(knit.origin.x + (x + 0.5f) * knit.cell, knit.origin.y - knit.cell * 0.2f);
+    Vector2 Loop(int i) => Knit.CellCenter(first[i]) - new Vector2(0, Knit.cell * 0.7f);
 
-    void AddLoop(int x) => loops.Add(Stitch(Loop(x), knit.cell * 0.8f, true, Color.Lerp(area.fabricColor, Color.black, 0.1f), 2, 90f));
+    void AddLoop(int i) => loops.Add(Stitch(Loop(i), Knit.cell * 0.8f, true, Color.Lerp(area.fabricColor, Color.black, 0.1f), 2, 90f));
 
     protected override void OnPress(Vector2 p)
     {
-        if (Count >= knit.width) return;
+        if (Count >= first.Count) return;
         State.points.Add(Loop(Count));
         AddLoop(Count - 1);
     }
@@ -39,7 +40,7 @@ public class CastOnStep : PieceStep
 
     public override float SaveWork()
     {
-        State.progress = Count / (float)knit.width;
+        State.progress = Count / (float)first.Count;
         return State.progress;
     }
 }
