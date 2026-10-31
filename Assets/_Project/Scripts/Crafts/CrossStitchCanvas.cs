@@ -29,6 +29,7 @@ public class CrossStitchCanvas : MonoBehaviour
     public int currentColor = 0;       // thread colour: index into pattern.palette
     public List<StitchMark> restore;   // optional: work saved earlier, redrawn when the board starts
     public Pattern design;             // optional, PatternFill: a design to keep editing (palette and coloured cells)
+    public bool paintHalf;             // designing: squares painted now are half stitches (just the "/" leg)
     public bool erase;                 // PatternFill: painting clears squares instead
     public bool Ready { get; private set; }   // true once the grid is built and restored
 
@@ -61,7 +62,7 @@ public class CrossStitchCanvas : MonoBehaviour
 
         var start = restore ?? new List<StitchMark>();
         if (design != null)
-            foreach (var c in design.cells) start.Add(new StitchMark { x = c.x, y = c.y, mask = 3, color = c.colorIndex });
+            foreach (var c in design.cells) start.Add(new StitchMark { x = c.x, y = c.y, mask = c.halfStitch ? 1 : 3, color = c.colorIndex });
         Apply(start);
         Ready = true;
     }
@@ -71,7 +72,7 @@ public class CrossStitchCanvas : MonoBehaviour
     {
         var marks = new List<StitchMark>();
         if (mode == Mode.PatternFill)
-            foreach (var c in pattern.cells) marks.Add(new StitchMark { x = c.x, y = c.y, mask = 3, color = c.colorIndex });
+            foreach (var c in pattern.cells) marks.Add(new StitchMark { x = c.x, y = c.y, mask = c.halfStitch ? 1 : 3, color = c.colorIndex });
         else
             foreach (var kv in stitchProgress)
                 marks.Add(new StitchMark { x = kv.Key.x, y = kv.Key.y, mask = kv.Value, color = stitchColor[kv.Key], crossedWrong = CrossedWrong(kv.Key) });
@@ -105,7 +106,7 @@ public class CrossStitchCanvas : MonoBehaviour
             var cell = new Vector2Int(m.x, m.y);
             if (!cellViews.ContainsKey(cell)) continue;
             int color = Mathf.Clamp(m.color, 0, pattern.palette.Count - 1);
-            if (mode == Mode.PatternFill) { if (m.mask == 3) PaintCell(cell, color); continue; }
+            if (mode == Mode.PatternFill) { if (m.mask == 3 || m.mask == 1) PaintCell(cell, color, m.mask == 1); continue; }
             int first = m.crossedWrong ? 2 : 1, second = 3 - first;   // replay the legs in the order they were made
             if ((m.mask & first) != 0) AddStitch(cell, first, color);
             if ((m.mask & second) != 0) AddStitch(cell, second, color);
@@ -127,6 +128,16 @@ public class CrossStitchCanvas : MonoBehaviour
                 sr.sharedMaterial = material;
                 sr.color = GuideColor(x, y);
                 cellViews[new Vector2Int(x, y)] = sr;
+            }
+        // Half stitches on the chart: a printed "/" across the square.
+        if (mode == Mode.Stitch && target != null)
+            foreach (var t in target.cells)
+            {
+                if (!t.halfStitch) continue;
+                var mark = MakeLine(Color.Lerp(fabricColor, target.palette[t.colorIndex], 0.6f), cellSize * 0.08f);
+                mark.sortingOrder = 1;
+                mark.SetPosition(0, transform.TransformPoint(new Vector3((t.x + 0.15f) * cellSize, (t.y + 0.15f) * cellSize, 0)));
+                mark.SetPosition(1, transform.TransformPoint(new Vector3((t.x + 0.85f) * cellSize, (t.y + 0.85f) * cellSize, 0)));
             }
     }
 
@@ -163,7 +174,7 @@ public class CrossStitchCanvas : MonoBehaviour
         {
             // The chart printed faintly on the fabric: a light tint of the square's thread colour.
             if (t == null) return Color.clear;
-            var tint = Color.Lerp(fabricColor, target.palette[t.colorIndex], 0.35f);
+            var tint = Color.Lerp(fabricColor, target.palette[t.colorIndex], t.halfStitch ? 0.15f : 0.35f);
             tint.a = 1f;
             return tint;
         }
@@ -379,14 +390,16 @@ public class CrossStitchCanvas : MonoBehaviour
             cellViews[cell].color = GuideColor(cell.x, cell.y);
             return;
         }
-        PaintCell(cell, currentColor);
+        // A pattern-only order copies its chart's half stitches; the designer paints them when Half is on.
+        var chart = target?.cells.Find(c => c.x == cell.x && c.y == cell.y);
+        PaintCell(cell, currentColor, chart != null ? chart.halfStitch : paintHalf);
     }
 
-    void PaintCell(Vector2Int cell, int color)
+    void PaintCell(Vector2Int cell, int color, bool half = false)
     {
         pattern.cells.RemoveAll(c => c.x == cell.x && c.y == cell.y);
-        cellViews[cell].color = pattern.palette[color];
-        pattern.cells.Add(new StitchCell { x = cell.x, y = cell.y, colorIndex = color });
+        cellViews[cell].color = half ? Color.Lerp(pattern.palette[color], Color.white, 0.55f) : pattern.palette[color];   // half: paler
+        pattern.cells.Add(new StitchCell { x = cell.x, y = cell.y, colorIndex = color, halfStitch = half });
     }
 
     LineRenderer MakeLine(Color color, float w)
@@ -418,10 +431,18 @@ public class CrossStitchCanvas : MonoBehaviour
 
         float correct = 0;
         int extra = 0;
+        var halves = new HashSet<Vector2Int>();
+        foreach (var t in target.cells) if (t.halfStitch) halves.Add(new Vector2Int(t.x, t.y));
         foreach (var m in marks)
         {
+            var at = new Vector2Int(m.x, m.y);
+            if (halves.Contains(at))   // a half stitch: just the "/" leg; crossed into a full X it's a mistake
+            {
+                if (wanted[at] == m.color) correct += m.mask == 1 ? 1f : m.mask == 3 ? 0.25f : 0f;
+                continue;
+            }
             if (m.mask != 3) continue;
-            if (!wanted.TryGetValue(new Vector2Int(m.x, m.y), out int color)) extra++;
+            if (!wanted.TryGetValue(at, out int color)) extra++;
             else if (color == m.color) correct += m.crossedWrong ? 0.5f : 1f;   // crossed the wrong way: half
         }
         return correct / (wanted.Count + extra);

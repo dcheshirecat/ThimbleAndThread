@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d664e9494a15d3747aae761ccc2f60d0, type: 3}
+  m_Name: pattern_little_sailboat
+  m_EditorClassIdentifier: Assembly-CSharp::PatternDef
+  patternId: little_sailboat
+  displayName: Little Sailboat
+  item: {fileID: 11400000, guid: 624106ae6949e67438c1436949d015e1, type: 2}
+  price: 10
+  startsOnShelf: 1
+  threads:
+  - {fileID: 11400000, guid: f7f361f7b490f5647a90f7a8aa82daa5, type: 2}
+  - {fileID: 11400000, guid: afb5e79371a63194dac821d613cf75d6, type: 2}
+  palette:
+  - {r: 0.85, g: 0.25, b: 0.3, a: 1}
+  grid: '..........
+
+    ....1.....
+
+    ....1a....
+
+    ....11a...
+
+    ....111a..
+
+    ....1111a.
+
+    ....1.....
+
+    .22222222.
+
+    ..222222..
+
+    ..........'

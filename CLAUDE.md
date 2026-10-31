@@ -496,7 +496,21 @@ Test live (create, open, open again fails, own code refused) before merging.
 - Stamp pop-ups and the doorbell wait until the shopkeeper is made (StampPopup.Quiet, ShopDay.Update);
   "Your Makes" is hidden in the first customization. Visitors: first 8-15 s, then 30-75 s apart (not counting
   conversations); an unanswered bell rings again every 45 s.
-- NEXT (owner): flesh out the rest of the mini-games (sweater and cross stitch are the bar).
+- NEXT (owner, 2026-10-31): flesh out the rest of the mini-games, LONG AND RICH like the sweater (many steps,
+  several evenings an item), real techniques, mistakes that matter. Owner's order (branch minigames):
+  1. DONE Scarf: stripes (KnitLayout.Scarf: 4-row bands in the pattern's first colour); the player holds one yarn
+     (KnitRowsStep.held, the ball by the work) and swipes sideways to change yarn; knitting on in the wrong yarn
+     is a mistake (point.y code = wrongType + 2*(held+2); legacy 0/1). Same for the sweater's colourwork.
+     FringeStep (StepKind.Fringe, hook, last step). Cross stitch: half stitches (StitchCell.halfStitch; "/" only;
+     chart shows a printed "/"; PatternDef grid 'a'..'i' = half in colour 1..9; designer "Half" toggle; a full X
+     on a half cell is a mistake); book pattern Little Sailboat. Tablecloth = stitch, backstitch details, mitre
+     corners (MitreCornersStep, StepKind.MitreCorners), hem, press. Not done: quarter stitches, confetti.
+  2. Sewing: plushie and tote (pin the pattern with seam allowance, cut, clip curves, box the tote corners,
+     ladder-stitch closed by hand, press seams).
+  3. Embroidered hoop (hoop tension, transfer the design, satin stitch angle/spacing, stem/split stitch, knots).
+  4. Crochet plushie (written pattern "(sc, inc) x6", increases in the right places, colour change, separate
+     parts sewn on).
+  5. NEW crafts: needlepoint and quilting.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.

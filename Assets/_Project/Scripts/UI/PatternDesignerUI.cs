@@ -189,4 +189,14 @@ public class PatternDesignerUI : MonoBehaviour
     public void KeepDesigning() { if (namePopup != null) namePopup.SetActive(false); }
 
     public void Cancel() => day.CancelDesign();
+
+    public Text halfLabel;
+    /// Half stitches: just the "/" leg, for smooth diagonal edges.
+    public void ToggleHalf()
+    {
+        var b = host.Board;
+        if (b == null) return;
+        b.paintHalf = !b.paintHalf;
+        if (halfLabel != null) halfLabel.text = b.paintHalf ? "Half: on" : "Half: off";
+    }
 }

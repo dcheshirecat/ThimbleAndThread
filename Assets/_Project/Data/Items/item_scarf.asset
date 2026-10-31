@@ -109,4 +109,19 @@ MonoBehaviour:
     patternThread: 0
     threadAmount: 0
     piece: 
+  - kind: 26
+    label: Add the fringe
+    tools:
+    - toolType: crochet_hook
+      minSize: 0
+      label: Crochet hook
+      exactSize: 0
+      matchYarn: 1
+    materials: []
+    fabricPieces: 30
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   garment: 1

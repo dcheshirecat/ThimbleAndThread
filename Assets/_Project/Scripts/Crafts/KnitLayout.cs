@@ -8,7 +8,8 @@ public enum Garment { Square, Scarf, Sweater }
 /// Where a knitted piece's stitches sit in the step area, in the order they're knitted: rows from the
 /// bottom up, each row left to right, one sub-piece after another (e.g. two sleeves).
 /// - Square (old items): the pattern's grid; its filled squares are purls, which make the texture.
-/// - Scarf: a long strip with ribbed ends; the pattern's purls repeat along it.
+/// - Scarf: a long strip with ribbed ends; the pattern's purls repeat along it, and stripes of four rows in
+///   the pattern's (first) colour alternate with the main yarn.
 /// - Sweater, by piece ("back", "front", "sleeves"): ribbed hems and cuffs, a shaped neckline, tapered
 ///   sleeves; the front carries the pattern as colourwork (each filled square in its palette colour).
 public class KnitLayout
@@ -36,9 +37,12 @@ public class KnitLayout
     public Vector2 CellCenter(Vector2Int s) => origin + new Vector2((s.x + 0.5f) * cell, (s.y + 0.5f) * cell);
     public bool Purl(int i) => stitches[i].purl;
 
-    /// The stitch's yarn colour: the main yarn, or the pattern's colour for colourwork.
-    public Color ColorOf(int i, Color yarn) =>
-        stitches[i].color >= 0 && pattern != null && stitches[i].color < pattern.palette.Count ? pattern.palette[stitches[i].color] : yarn;
+    /// The stitch's yarn colour: the main yarn, or the pattern's colour for colourwork and stripes.
+    public Color ColorOf(int i, Color yarn) => PaletteColor(stitches[i].color, yarn);
+
+    /// A yarn by its index: -1 the main yarn, else that pattern colour.
+    public Color PaletteColor(int index, Color yarn) =>
+        index >= 0 && pattern != null && index < pattern.palette.Count ? pattern.palette[index] : yarn;
 
     /// The first row of every sub-piece: the stitches cast on.
     public List<int> CastOnStitches()
@@ -113,7 +117,8 @@ public class KnitLayout
             for (int x = 0; x < w; x++)
             {
                 bool rib = y < 2 || y >= h - 2;
-                Add(x, y, rib ? Rib(x) : PatternAt((x + offX) % pw, (y - 2) % ph), -1, 0, y);
+                bool stripe = !rib && pattern != null && pattern.palette.Count > 0 && ((y - 2) / 4) % 2 == 1;
+                Add(x, y, rib ? Rib(x) : PatternAt((x + offX) % pw, (y - 2) % ph), stripe ? 0 : -1, 0, y);
             }
     }
 

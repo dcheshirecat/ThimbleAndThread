@@ -102,6 +102,8 @@ stitch patterns: the filled squares are the shape of the piece (the game smooths
 squares in the second colour ('2' in a book pattern's grid) mark where the eyes go. So the Pattern
 Studio designs plushies too. Bags (e.g. "Market Tote") work the same way: the filled squares are the
 panel, the top edge stays open and is hemmed, and the handle is sewn on just below it.
+**Half stitches** in a book pattern's grid: a lowercase letter, 'a' for colour 1, 'b' for colour 2 and so on (only the "/" leg is
+stitched; good for diagonal edges).
 **Knitting patterns** depend on the item's **Garment** (on the item asset):
 - **Scarf**: a long strip with ribbed ends. The pattern is texture: filled squares are purl stitches,
   empty ones knit, repeated along the scarf (so "Wave Stripes" knits a wavy texture).

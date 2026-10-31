@@ -51,6 +51,8 @@ public class MinigameHost : MonoBehaviour
         StepKind.KnitRows => go.AddComponent<KnitRowsStep>(),
         StepKind.CastOff => go.AddComponent<CastOffStep>(),
         StepKind.SewUp => go.AddComponent<SewUpStep>(),
+        StepKind.Fringe => go.AddComponent<FringeStep>(),
+        StepKind.MitreCorners => go.AddComponent<MitreCornersStep>(),
         StepKind.MagicRing => go.AddComponent<MagicRingStep>(),
         StepKind.CrochetRounds => go.AddComponent<CrochetRoundsStep>(),
         StepKind.CutPieces => go.AddComponent<CutPiecesStep>(),

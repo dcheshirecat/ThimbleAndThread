@@ -38,9 +38,11 @@ public class PatternDef : ScriptableObject
             var line = rows[row].Trim();
             for (int x = 0; x < line.Length; x++)
             {
-                int index = line[x] - '1';
+                // '1'..'9': a full cross in that colour; 'a'..'i': a half stitch ("/") in colour 1..9.
+                bool half = line[x] >= 'a' && line[x] <= 'i';
+                int index = half ? line[x] - 'a' : line[x] - '1';
                 if (index >= 0 && index < p.palette.Count)
-                    p.cells.Add(new StitchCell { x = x, y = height - 1 - row, colorIndex = index });
+                    p.cells.Add(new StitchCell { x = x, y = height - 1 - row, colorIndex = index, halfStitch = half });
             }
         }
         return p;

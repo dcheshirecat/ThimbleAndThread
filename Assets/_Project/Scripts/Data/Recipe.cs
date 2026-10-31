@@ -6,7 +6,7 @@ using UnityEngine;
 // Append new values at the end: item assets store these as numbers.
 public enum StepKind { CrossStitch, Hem, ChooseFabric, CutPieces, Pin, SewSeam, TurnRightSideOut, Stuff, AttachEyes, CloseOpening, SewSides, HemTop, AttachHandles,
                        ChooseYarn, CastOn, KnitRows, CastOff, MagicRing, CrochetRounds,
-                       HoopFabric, Backstitch, SatinFill, FrenchKnots, Press, WeaveEnds, SewUp }
+                       HoopFabric, Backstitch, SatinFill, FrenchKnots, Press, WeaveEnds, SewUp, Fringe, MitreCorners }
 
 // One step of making an item, e.g. "Stitch the motif" then "Hem the edges".
 // Items list their steps in order in CraftItemDef.steps.

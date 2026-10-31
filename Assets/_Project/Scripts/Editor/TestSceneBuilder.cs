@@ -519,10 +519,12 @@ public static class TestSceneBuilder
         designer.priceLabel = RowLabel(b, 480);
         Button(b, "Price Up", designer.PriceUp, 520).GetComponentInChildren<Text>().text = "Price +";
         b = Row(p, 0.5f, 0.06f);
-        Button(b, "Undo", designer.Undo, 440);
-        Button(b, "Clear", designer.Clear, 440);
-        Button(b, "Done", designer.Save, 440);
-        Button(b, "Cancel", designer.Cancel, 440);
+        Button(b, "Undo", designer.Undo, 360);
+        Button(b, "Clear", designer.Clear, 360);
+        designer.halfLabel = Button(b, "Half", designer.ToggleHalf, 360).GetComponentInChildren<Text>();
+        designer.halfLabel.text = "Half: off";
+        Button(b, "Done", designer.Save, 360);
+        Button(b, "Cancel", designer.Cancel, 360);
 
         // The journal: a storybook overlay that slides in over any screen (JournalUI)
         var journal = canvasGo.AddComponent<JournalUI>();

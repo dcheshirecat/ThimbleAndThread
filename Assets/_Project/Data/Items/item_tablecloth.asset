@@ -38,6 +38,37 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: 
+  - kind: 20
+    label: Backstitch the details
+    tools:
+    - toolType: tapestry_needle
+      minSize: 0
+      label: Tapestry needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 6
+    piece: 
+  - kind: 27
+    label: Mitre the corners
+    tools:
+    - toolType: pins
+      minSize: 0
+      label: Pins
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 1
     label: Hem the edges
     tools: []
@@ -47,6 +78,7 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: 
   - kind: 23
     label: Press it
     tools: []
@@ -56,3 +88,5 @@ MonoBehaviour:
     perPatternSquare: 0
     patternThread: 0
     threadAmount: 0
+    piece: 
+  garment: 0

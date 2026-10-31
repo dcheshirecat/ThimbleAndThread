@@ -75,8 +75,12 @@ public static class PlaceholderGenerator
             Step(StepKind.Press, "Press it"));
         // Finishing touches for items that already had recipes (added once).
         AddStep(tablecloth, Step(StepKind.Press, "Press it"));
+        // Longer and richer (owner, 2026-10-31): backstitched details and mitred corners before the hem.
+        InsertBefore(tablecloth, StepKind.Hem, Step(StepKind.Backstitch, "Backstitch the details", thread: 0, threadAmount: 6, tools: Tool("tapestry_needle", "Tapestry needle")));
+        InsertBefore(tablecloth, StepKind.Hem, Step(StepKind.MitreCorners, "Mitre the corners", tools: Tool("pins", "Pins")));
         AddStep(scarf, Step(StepKind.WeaveEnds, "Weave in the ends", tools: Tool("tapestry_needle", "Tapestry needle")));
         AddStep(scarf, Step(StepKind.Press, "Block it"));
+        AddStep(scarf, Step(StepKind.Fringe, "Add the fringe", pieces: 30, tools: hook));   // knotted on last, as knitters do
         AddStep(sweater, Step(StepKind.WeaveEnds, "Weave in the ends", tools: Tool("tapestry_needle", "Tapestry needle")));
         AddStep(sweater, Step(StepKind.Press, "Block it"));
         // Knitted like a real sweater (owner, 2026-10-31): back, front with the pattern as colourwork, two
@@ -312,6 +316,9 @@ public static class PlaceholderGenerator
         // ---- The great-aunt's pattern book (starter shelf) ----
         BookPattern("seaside_heart", "Seaside Heart", sampler, 8, new[] { red },
             "........\n..1..1..\n.111111.\n.111111.\n..1111..\n...11...\n........\n........");
+        // Half stitches ('a' = colour 1 as a half stitch) give the sail its diagonal edge.
+        BookPattern("little_sailboat", "Little Sailboat", sampler, 10, new[] { red, navy },
+            "..........\n....1.....\n....1a....\n....11a...\n....111a..\n....1111a.\n....1.....\n.22222222.\n..222222..\n..........");
         BookPattern("anchor_border", "Anchor", tablecloth, 12, new[] { navy },
             "...1....\n..111...\n...1....\n...1....\n1..1..1.\n.1.1.1..\n..111...\n........");
         BookPattern("little_bunny", "Little Bunny", plushie, 10, new[] { pink, charcoal },
@@ -459,6 +466,17 @@ public static class PlaceholderGenerator
     }
 
     static RecipeStep Piece(RecipeStep step, string piece) { step.piece = piece; return step; }
+
+    /// Puts a step in front of the first step of another kind, unless the recipe already has one of its kind.
+    static void InsertBefore(CraftItemDef item, StepKind before, RecipeStep step)
+    {
+        if (System.Array.Exists(item.steps, s => s.kind == step.kind)) return;
+        var list = new List<RecipeStep>(item.steps);
+        int at = list.FindIndex(s => s.kind == before);
+        list.Insert(at < 0 ? list.Count : at, step);
+        item.steps = list.ToArray();
+        EditorUtility.SetDirty(item);
+    }
 
     /// Adds a step to the end of an item's recipe, unless it already has a step of that kind.
     static void AddStep(CraftItemDef item, RecipeStep step)
