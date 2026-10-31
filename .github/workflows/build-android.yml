@@ -73,6 +73,8 @@ jobs:
           # Unity runs in a Docker container capped by default at 95% of the runner's RAM, so it could
           # never reach the swap above and got killed (exit code 137). Allow RAM + most of the swap.
           dockerMemoryLimit: 18g
+          # Fewer worker threads: less memory at the peak (the builds were killed at ~4 min, exit code 137).
+          customParameters: -job-worker-count 2
       # Puts the findings on the run's Summary page (easy to read on a phone), pass or fail.
       - name: Memory log
         if: always()
