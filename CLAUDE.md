@@ -225,7 +225,8 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
   remind the owner before committing finished art or story text they may not want copied; commit author
   emails are visible to anyone. Unity 6.6 editor:
   D:\6000.6.0f1\Editor\Unity.exe (Unity Hub installs to D:\). Android Build Support is NOT installed
-  locally yet (only Windows standalone), so APKs come from GitHub Actions.
+  locally yet (2026-10-31: a Unity Hub install-modules attempt stalled on a Windows admin prompt; the owner
+  can install it from Unity Hub > Installs > 6000.6.0f1 > Add modules) (only Windows standalone), so APKs come from GitHub Actions.
 - App: product "Thimble & Thread", company "cheshirecat", id com.cheshirecat.thimbleandthread, portrait
   only. Saves: %USERPROFILE%/AppData/LocalLow/cheshirecat/Thimble & Thread/save_<slot>.json.
 - D:\temp-unity was the throwaway project used to create settings; no longer needed.
@@ -347,7 +348,23 @@ All eight feedback points have a first version (merged to main 2026-10-30).
    shopkeeper (the player character) and the shop door; swipe right = the pattern display (edit it there),
    swipe left = finished orders waiting for pickup. A doorbell rings when a customer comes; the scene
    cuts to the customer (in place of the shopkeeper) for the conversation.
-2. Character customization scene at the start; the player can WEAR things they made, seen in the shop.
+2. PARTLY DONE (branch people-and-places): Character customization scene at the start; the player can WEAR things they made, seen in the shop.
+   Done: UI/CustomizeUI.cs (ScreenId.Customize; new games and pre-v12 saves start here; Settings > Change
+   Your Look): name, pronouns (she/her, he/him, they/them; Core/PlayerProfile.cs PlayerText.Fill fills
+   {name} {they} {them} {their} {is} {niece}... in dialogue and the Journal), skin, hair style/colour, top/colour.
+   UI/ShopkeeperView.cs draws the player (placeholder shapes) in the shop, Customize and the boutique.
+   Still to do: wearing items the player MADE.
+16. DONE (owner, 2026-10-30) Shop owners you can befriend/romance (CustomerDef.shopOwner: never visit as
+   customers; ShopDay.ChatWith once a day in their shop, +3; buying adds friendship): Bram Okafor runs the
+   Supply Market (ShopDay.MarketOwnerId), Celeste Moreau runs Moreau's Boutique (UI/BoutiqueUI.cs,
+   ScreenId.Boutique, Data/Cosmetics CosmeticDef: hair styles, tops, accessories; Journal link by day).
+   Both romanceable (scene 3 choice). Romance options now: Isla, Rowan, Eli, Bram, Celeste.
+17. DONE Customer preferences (CustomerDef.preferences, each tied to a decorating supply). Owner, 2026-10-31:
+   likes/dislikes are NEVER mentioned in dialogue; they're a complete surprise. The player finds out by
+   adding that special touch to the order: the pickup reaction follows the preference (not chance) and
+   SaveData.knownPrefs records it; the Journal's Friends page then lists Likes/Dislikes. Save version 12.
+18. NEXT: crafting follows the item (owner): a sweater pattern should be made like a real sweater with that
+   pattern on it (garment pieces: body, sleeves; colourwork from the grid), not a square every time.
 3. DONE (first version) The current hub menu becomes a side JOURNAL with tabs and a storybook (page-turn) animation.
 4. DONE (branch surprises-pickups) Surprise unlocks: Journal shows techniques only once learned ("N more things to
    learn out there..."), friends' teachings only after they happen, no "(how to learn)" hints in messages.

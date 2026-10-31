@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: ContentLibrary
   m_EditorClassIdentifier: Assembly-CSharp::ContentLibrary
   customers:
+  - {fileID: 11400000, guid: 77322c297e31d134f918d4924ae1c0a5, type: 2}
+  - {fileID: 11400000, guid: 63c247368f957d64b8b19cdab97b1814, type: 2}
   - {fileID: 11400000, guid: 0ffc17e9bd35f9d42a0c7cfc784d2865, type: 2}
   - {fileID: 11400000, guid: 0929323ae57ef9d4b8b8d714fa2ab694, type: 2}
   - {fileID: 11400000, guid: 4c1b82f796272ea49bb2b6dfeae69964, type: 2}
@@ -37,6 +39,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 40bfd12d25f5e814aacd4e328d17e512, type: 2}
   - {fileID: 11400000, guid: 4dadd2efaeee3e244991d80d3a4680cc, type: 2}
   - {fileID: 11400000, guid: 1d6bd5e387fc02f45936fb7c2c5f46ba, type: 2}
+  - {fileID: 11400000, guid: be5b8042c7be974419b2e2cbfcfcca61, type: 2}
   - {fileID: 11400000, guid: bbaf99fe07f4ad84dac5c3283e2199ca, type: 2}
   - {fileID: 11400000, guid: 84fee954a1759404989835096476a0f8, type: 2}
   - {fileID: 11400000, guid: 8ebf62167d5721c459ebca697f3cbf04, type: 2}
@@ -136,7 +139,17 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 14553872de4ff4f4e8104db5084e1ea0, type: 2}
   - {fileID: 11400000, guid: 6577cd1c8109fcd40a5d29bf90ff0cae, type: 2}
   - {fileID: 11400000, guid: d98151631cb4fae4db942dd195c10d44, type: 2}
+  cosmetics:
+  - {fileID: 11400000, guid: e81e95e207953504fbd78162193f5352, type: 2}
+  - {fileID: 11400000, guid: 7388cc2d0ddf676408ddf29fbd171000, type: 2}
+  - {fileID: 11400000, guid: 863448d533ed7324fabf541b760045a5, type: 2}
+  - {fileID: 11400000, guid: fc91b300d46bdae4682560db5bfc44c7, type: 2}
+  - {fileID: 11400000, guid: b164c0ea68e98a64590aa229628879af, type: 2}
+  - {fileID: 11400000, guid: 85e9531b724797b4299ca2a8218663a1, type: 2}
+  - {fileID: 11400000, guid: d7ba26ac3943fcb47ae9a6200d9ea203, type: 2}
   dialogue:
+  - {fileID: 2811297602134710623, guid: d69a2839ed7b0544db1f7c95a1efba16, type: 3}
+  - {fileID: 2811297602134710623, guid: 5f9160daa7dfd4e4aa892c31c7dfc812, type: 3}
   - {fileID: 2811297602134710623, guid: ded37055d71dbb844a03b3324a31aaff, type: 3}
   - {fileID: 2811297602134710623, guid: 91d4b02dd09b31548b45c18cf92bc9bc, type: 3}
   - {fileID: 2811297602134710623, guid: 42bf576b13a32f24aa58089ef731edc8, type: 3}

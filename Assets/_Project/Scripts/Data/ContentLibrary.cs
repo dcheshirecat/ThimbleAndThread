@@ -14,6 +14,7 @@ public class ContentLibrary : ScriptableObject
     public SkillDef[] skills = new SkillDef[0];
     public ChapterDef[] chapters = new ChapterDef[0];
     public UpgradeDef[] upgrades = new UpgradeDef[0];
+    public CosmeticDef[] cosmetics = new CosmeticDef[0];
     public TextAsset[] dialogue = new TextAsset[0];   // the .ink files in Assets/_Project/Dialogue
 
     InkLite ink;

@@ -15,7 +15,7 @@ public static class PlaceholderGenerator
     [MenuItem("Tools/Thimble & Thread/Generate Placeholder Art And Data")]
     public static void Generate()
     {
-        string[] dirs = { "Art/Items", "Art/Supplies", "Art/Backgrounds", "Art/Characters/Customers", "Data/Items", "Data/Customers", "Data/Supplies", "Art/Upgrades" };
+        string[] dirs = { "Art/Items", "Art/Supplies", "Art/Backgrounds", "Art/Characters/Customers", "Data/Items", "Data/Customers", "Data/Supplies", "Art/Upgrades", "Art/Cosmetics", "Data/Cosmetics" };
         foreach (var d in dirs) Directory.CreateDirectory($"{Root}/{d}");
 
         MakeSprite($"{Root}/Art/Backgrounds/bg_shop_day.png", 2732, 2048, new Color(0.95f, 0.88f, 0.78f));
@@ -217,6 +217,38 @@ public static class PlaceholderGenerator
         Decorates(lace, 0.3f, tablecloth, sampler, tote, hoopArt);
         Decorates(content_Supply("buttons_wood"), 0.2f, sweater, sewnPlushie, plushie, tote);
         Decorates(content_Supply("ribbon_satin"), 0.2f, hoopArt, sewnPlushie, plushie, sampler);
+        var whiteButtons = Supply("buttons_white", "White Buttons", SupplyKind.Notion, CraftType.Sewing, 3, 1, new Color(0.96f, 0.96f, 0.94f), 8, "buttons", R);
+        Decorates(whiteButtons, 0.15f, sweater, sewnPlushie, plushie, tote);
+
+        // ---- The people who run the other shops (owner, 2026-10-30): friends, and romance options ----
+        var bram = Customer("bram", "Bram Okafor", "Runs the Supply Market (he/him). Knows every thread count by heart and laughs like a foghorn.",
+                 new Color(0.55f, 0.40f, 0.30f), new (CraftItemDef, int)[0]);
+        var celeste = Customer("celeste", "Celeste Moreau", "Owns Moreau's, the boutique on the square (she/her): hair, clothes, accessories. Blunt, stylish, secretly sentimental.",
+                 new Color(0.70f, 0.45f, 0.60f), new (CraftItemDef, int)[0]);
+        Character(bram, "bram", 1, true);
+        Character(celeste, "celeste", 1, true);
+        ShopOwner(bram); ShopOwner(celeste);
+
+        // ---- What people like and dislike: never said in dialogue; the player finds out by adding a special touch
+        //      to their order (the reaction notes it in the Journal). Each is about a decorating supply. ----
+        var wood = content_Supply("buttons_wood");
+        var ribbon = content_Supply("ribbon_satin");
+        Prefs(tobias, ("wooden_buttons", "wooden buttons", true, wood), ("white_buttons", "white buttons", false, whiteButtons), ("lace", "lace", false, lace));
+        Prefs(mara, ("ribbon", "satin ribbon", true, ribbon), ("lace", "lace trim", true, lace));
+        Prefs(juno, ("lace", "lace", false, lace), ("wooden_buttons", "wooden buttons", true, wood));
+        Prefs(isla, ("ribbon", "ribbon", false, ribbon), ("white_buttons", "plain white buttons", true, whiteButtons));
+        Prefs(rowan, ("lace", "lace trim", true, lace), ("white_buttons", "white buttons", false, whiteButtons));
+        Prefs(priya, ("ribbon", "ribbon", true, ribbon), ("wooden_buttons", "wooden buttons", true, wood));
+        Prefs(eli, ("wooden_buttons", "wooden buttons", true, wood), ("lace", "lace", false, lace));
+
+        // ---- The boutique's stock: hairstyles, tops and accessories for the shopkeeper ----
+        Cosmetic("hair_bun", "Top Knot", CosmeticSlot.Hair, 3, 25, new Color(0.40f, 0.26f, 0.18f));
+        Cosmetic("hair_curly", "Big Curls", CosmeticSlot.Hair, 4, 30, new Color(0.40f, 0.26f, 0.18f));
+        Cosmetic("top_cardigan", "Cosy Cardigan", CosmeticSlot.Top, 2, 35, new Color(0.60f, 0.45f, 0.70f));
+        Cosmetic("acc_glasses", "Round Glasses", CosmeticSlot.Accessory, 0, 20, new Color(0.20f, 0.18f, 0.20f));
+        Cosmetic("acc_hat", "Felt Hat", CosmeticSlot.Accessory, 1, 30, new Color(0.45f, 0.30f, 0.25f));
+        Cosmetic("acc_brooch", "Daisy Brooch", CosmeticSlot.Accessory, 2, 15, new Color(0.98f, 0.85f, 0.30f));
+        Cosmetic("acc_neckerchief", "Sailor Neckerchief", CosmeticSlot.Accessory, 3, 18, new Color(0.25f, 0.40f, 0.75f));
 
         // ---- Commissions: special requests, each needing a brand-new pattern ----
         Commission("juno_skate_scarf", juno, scarf, 0, null,
@@ -495,6 +527,35 @@ public static class PlaceholderGenerator
         s.decorateAmount = 1;
         s.decorateBonus = bonus;
         EditorUtility.SetDirty(s);
+    }
+
+    static void ShopOwner(CustomerDef c)
+    {
+        if (c == null || c.shopOwner) return;
+        c.shopOwner = true;
+        EditorUtility.SetDirty(c);
+    }
+
+    /// Sets a customer's likes and dislikes, if they have none yet (hand edits stay).
+    static void Prefs(CustomerDef c, params (string id, string text, bool likes, SupplyDef supply)[] prefs)
+    {
+        if (c == null || (c.preferences != null && c.preferences.Length > 0)) return;
+        c.preferences = new Preference[prefs.Length];
+        for (int i = 0; i < prefs.Length; i++)
+            c.preferences[i] = new Preference { id = prefs[i].id, text = prefs[i].text, likes = prefs[i].likes, supply = prefs[i].supply };
+        EditorUtility.SetDirty(c);
+    }
+
+    /// A boutique item with a placeholder swatch icon; never overwrites an existing one.
+    static void Cosmetic(string id, string name, CosmeticSlot slot, int style, int price, Color c)
+    {
+        string assetPath = $"{Root}/Data/Cosmetics/cosmetic_{id}.asset";
+        if (AssetDatabase.LoadAssetAtPath<CosmeticDef>(assetPath) != null) return;
+        System.IO.Directory.CreateDirectory($"{Root}/Data/Cosmetics");
+        var def = ScriptableObject.CreateInstance<CosmeticDef>();
+        def.cosmeticId = id; def.displayName = name; def.slot = slot; def.styleIndex = style; def.price = price; def.color = c;
+        def.icon = MakeSprite($"{Root}/Art/Cosmetics/cosmetic_{id}.png", 256, 256, c);
+        AssetDatabase.CreateAsset(def, assetPath);
     }
 
     static void Likes(CustomerDef c, float chance)

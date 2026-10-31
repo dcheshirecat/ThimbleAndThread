@@ -38,5 +38,15 @@ MonoBehaviour:
     minRelationshipLevel: 2
   firstChapter: 1
   likesSurprises: 0.9
+  preferences:
+  - id: ribbon
+    text: ribbon
+    likes: 1
+    supply: {fileID: 11400000, guid: 221c2a83e80f89e4fa59720acbb1d393, type: 2}
+  - id: wooden_buttons
+    text: wooden buttons
+    likes: 1
+    supply: {fileID: 11400000, guid: bbaf99fe07f4ad84dac5c3283e2199ca, type: 2}
+  shopOwner: 0
   romanceable: 0
   inkName: priya

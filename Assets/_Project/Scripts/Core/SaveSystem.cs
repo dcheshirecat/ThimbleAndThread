@@ -75,6 +75,10 @@ public static class SaveSystem
         data.sentCodes ??= new System.Collections.Generic.List<SentCode>();
         data.receivedCodes ??= new System.Collections.Generic.List<string>();
         data.recentLines ??= new System.Collections.Generic.List<string>();
+        // Version 11 had no player profile: they'll be asked to make their shopkeeper next time they play.
+        data.player ??= new PlayerProfile();
+        data.player.owned ??= new System.Collections.Generic.List<string>();
+        data.knownPrefs ??= new System.Collections.Generic.List<string>();
         // Version 10 had no pickup days: anything already finished can be collected right away.
         foreach (var o in data.orders) if (o.finished && o.pickupDay == 0) o.pickupDay = data.day;
         foreach (var o in data.orders) o.extras ??= new System.Collections.Generic.List<string>();

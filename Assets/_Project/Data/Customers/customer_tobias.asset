@@ -34,5 +34,19 @@ MonoBehaviour:
     minRelationshipLevel: 2
   firstChapter: 1
   likesSurprises: 0.35
+  preferences:
+  - id: wooden_buttons
+    text: wooden buttons
+    likes: 1
+    supply: {fileID: 11400000, guid: bbaf99fe07f4ad84dac5c3283e2199ca, type: 2}
+  - id: white_buttons
+    text: white buttons
+    likes: 0
+    supply: {fileID: 11400000, guid: be5b8042c7be974419b2e2cbfcfcca61, type: 2}
+  - id: lace
+    text: lace
+    likes: 0
+    supply: {fileID: 11400000, guid: 7fc872e5ff1c0ec428c10a548c45479f, type: 2}
+  shopOwner: 0
   romanceable: 0
   inkName: tobias

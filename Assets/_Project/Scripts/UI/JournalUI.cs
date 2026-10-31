@@ -21,6 +21,7 @@ public class JournalUI : MonoBehaviour
     public Button rowTemplate;           // an order row on the Orders page
     public Image[] tabs;                 // tab buttons, in Page order (the open one is highlighted)
     public GameObject marketLink;        // only by day
+    public GameObject boutiqueLink;      // only by day
 
     Page current = Page.Orders;
     bool animating;
@@ -54,6 +55,7 @@ public class JournalUI : MonoBehaviour
         overlay.SetActive(true);
         overlay.transform.SetAsLastSibling();
         if (marketLink != null) marketLink.SetActive(!Save.night);
+        if (boutiqueLink != null) boutiqueLink.SetActive(!Save.night);
         Show();
         StartCoroutine(Slide(true));
         AudioManager.Play(Sfx.Click);
@@ -74,6 +76,7 @@ public class JournalUI : MonoBehaviour
     // Links: close the book, then go.
     public void GoToMarket() { overlay.SetActive(false); router.GoToMarket(); }
     public void GoToTrade() { overlay.SetActive(false); router.GoToTrade(); }
+    public void GoToBoutique() { overlay.SetActive(false); router.GoToBoutique(); }
     public void GoToSettings() { overlay.SetActive(false); router.GoToSettings(); }
 
     IEnumerator Slide(bool opening)
@@ -121,7 +124,7 @@ public class JournalUI : MonoBehaviour
         foreach (var r in rows) Destroy(r);
         rows.Clear();
         rowTemplate.gameObject.SetActive(false);
-        pageText.text = current switch
+        pageText.text = PlayerText.Fill(current switch
         {
             Page.Orders => Orders(),
             Page.Story => Story(),
@@ -129,7 +132,7 @@ public class JournalUI : MonoBehaviour
             Page.Skills => Skills(),
             Page.Supplies => Supplies(),
             _ => News(),
-        };
+        });
     }
 
     string Orders()
@@ -178,6 +181,13 @@ public class JournalUI : MonoBehaviour
             var r = GameManager.Instance.GetRelationship(cust.customerId);
             sb.AppendLine($"<b>{cust.displayName}</b>  ·  friendship level {r.level} ({r.points} of {r.PointsForNextLevel()} to the next)");
             if (!string.IsNullOrEmpty(cust.bio)) sb.AppendLine(cust.bio);
+            // Likes and dislikes, only the ones found out (by adding that touch to their order).
+            var likes = new List<string>();
+            var dislikes = new List<string>();
+            foreach (var pref in cust.preferences ?? new Preference[0])
+                if (pref != null && Save.knownPrefs.Contains($"{cust.customerId}:{pref.id}")) (pref.likes ? likes : dislikes).Add(pref.text);
+            if (likes.Count > 0) sb.AppendLine("Likes: " + string.Join(", ", likes));
+            if (dislikes.Count > 0) sb.AppendLine("Dislikes: " + string.Join(", ", dislikes));
             if (r.romance) sb.AppendLine(Save.flags.Contains($"{cust.inkName}_together") ? "♥ Together." : "♥ You're seeing each other.");
             else if (cust.romanceable && r.level < 3) sb.AppendLine("You sense there could be more to this friendship...");
             foreach (var s in day.content.skills)   // only once it's happened: what they'll teach is a surprise

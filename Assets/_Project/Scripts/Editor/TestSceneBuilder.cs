@@ -192,9 +192,7 @@ public static class TestSceneBuilder
         }
         // Middle: the shopkeeper behind the counter, and the door (placeholder shapes)
         var mid = shopScene.pages[1];
-        var keeper = Shape(mid, "Shopkeeper_Body", new Vector2(0.36f, 0.5f), new Vector2(460, 600), new Color(0.45f, 0.55f, 0.75f), uiSprite);
-        Shape(keeper, "Shopkeeper_Head", new Vector2(0.5f, 1.25f), new Vector2(300, 300), new Color(0.96f, 0.82f, 0.70f), Knob());
-        Shape(keeper, "Shopkeeper_Hair", new Vector2(0.5f, 1.42f), new Vector2(320, 150), new Color(0.40f, 0.26f, 0.18f), Knob());
+        Keeper(mid, new Vector2(0.36f, 0.5f), content);
         var counter = Shape(mid, "Counter", new Vector2(0.4f, 0.38f), new Vector2(1500, 280), new Color(0.55f, 0.36f, 0.22f), uiSprite);
         Shape(counter, "CounterTop", new Vector2(0.5f, 1f), new Vector2(1560, 50), new Color(0.68f, 0.47f, 0.30f), uiSprite);
         var doorButton = Button(mid, "Door", shopScene.TapDoor, 360);
@@ -348,7 +346,9 @@ public static class TestSceneBuilder
         ui.shelfTitleTemplate = ShelfTitle(shelves);
         ui.shelfTemplate = Shelf(shelves);
         ui.marketTemplate = SupplyTile(ui.shelfTemplate);
-        Button(Column(p, 0.5f, 0.04f), "Back", router.GoToHub);
+        b = Row(p, 0.5f, 0.04f);
+        Button(b, "Chat with Bram", day.ChatWithMarketOwner, 860);
+        Button(b, "Back", router.GoToHub, 860);
 
         // Trade with friends (share codes)
         p = Panel(ScreenId.Trade, "Trade with Friends", new Color(0.78f, 0.88f, 0.95f));
@@ -387,9 +387,53 @@ public static class TestSceneBuilder
         Button(b, "Sound Up", settings.SoundUp, 300).GetComponentInChildren<Text>().text = "+";
         settings.musicLabel.color = settings.soundLabel.color = Ink;
         b = Column(p, 0.5f, 0.4f);
+        Button(b, "Change Your Look", router.GoToCustomize, 1100);
         Button(b, "How to Play", router.GoToTutorial, 1100);
         Button(b, "Save and Quit to Title", gm.QuitToTitle, 1100);
         Button(b, "Back", router.GoToHub, 1100);
+
+        // Customization: name, pronouns, look (CustomizeUI)
+        p = Panel(ScreenId.Customize, "Your Shopkeeper", new Color(0.93f, 0.85f, 0.80f));
+        var custom = canvasGo.AddComponent<CustomizeUI>();
+        custom.day = day;
+        custom.nameField = NameField(p, new Vector2(0.5f, 0.87f));
+        custom.nameField.name = "PlayerNameField";
+        custom.nameField.characterLimit = 20;
+        b = Row(p, 0.5f, 0.795f);
+        custom.pronounButtons = new Image[PlayerText.Sets.Length];
+        for (int i = 0; i < PlayerText.Sets.Length; i++)
+        {
+            var pb = Button(b, $"Pronouns {i}", null, 520);
+            pb.GetComponentInChildren<Text>().text = PlayerText.Sets[i].label;
+            UnityEventTools.AddIntPersistentListener(pb.onClick, custom.SetPronouns, i);
+            custom.pronounButtons[i] = pb.GetComponent<Image>();
+        }
+        custom.preview = Keeper(p, new Vector2(0.5f, 0.53f), content);
+        custom.preview.transform.localScale = Vector3.one * 0.85f;
+        b = Column(p, 0.5f, 0.25f);
+        custom.skinLabel = OptionRow(b, "Skin", custom.NextSkin);
+        custom.hairStyleLabel = OptionRow(b, "Hair Style", custom.NextHairStyle);
+        custom.hairColorLabel = OptionRow(b, "Hair Colour", custom.NextHairColor);
+        custom.topLabel = OptionRow(b, "Top", custom.NextTop);
+        custom.topColorLabel = OptionRow(b, "Top Colour", custom.NextTopColor);
+        custom.messageText = Label(p, "Message", new Vector2(0.06f, 0.075f), new Vector2(0.94f, 0.1f), 52, TextAnchor.MiddleCenter);
+        Button(Column(p, 0.5f, 0.01f), "Done", custom.Done, 800);
+
+        // Moreau's boutique: hair, tops, accessories (BoutiqueUI)
+        p = Panel(ScreenId.Boutique, "Moreau's Boutique", new Color(0.92f, 0.82f, 0.88f));
+        var boutique = canvasGo.AddComponent<BoutiqueUI>();
+        boutique.day = day;
+        boutique.statusText = Label(p, "Status", new Vector2(0.06f, 0.82f), new Vector2(0.94f, 0.92f), 56, TextAnchor.MiddleCenter);
+        boutique.preview = Keeper(p, new Vector2(0.5f, 0.64f), content);
+        boutique.preview.transform.localScale = Vector3.one * 0.7f;
+        var rails = ScrollList(p, 0.13f, 0.47f);
+        boutique.shelf = Shelf(rails);
+        boutique.shelf.name = "Rail";
+        boutique.tileTemplate = SupplyTile(boutique.shelf);
+        boutique.tileTemplate.name = "Cosmetic Template";
+        b = Row(p, 0.5f, 0.04f);
+        Button(b, "Chat with Celeste", boutique.Chat, 860);
+        Button(b, "Back", router.GoToHub, 860);
 
         p = Panel(ScreenId.DaySummary, "End of Day", new Color(0.78f, 0.82f, 0.95f));
         ui.summaryText = Label(p, "Summary", new Vector2(0.08f, 0.32f), new Vector2(0.92f, 0.88f), 60, TextAnchor.MiddleCenter);
@@ -495,6 +539,9 @@ public static class TestSceneBuilder
         var marketLink = Button(b, "Journal Market", journal.GoToMarket, 470);
         marketLink.GetComponentInChildren<Text>().text = "Supply Market";
         journal.marketLink = marketLink.gameObject;
+        var boutiqueLink = Button(b, "Journal Boutique", journal.GoToBoutique, 330);
+        boutiqueLink.GetComponentInChildren<Text>().text = "Boutique";
+        journal.boutiqueLink = boutiqueLink.gameObject;
         Button(b, "Journal Trade", journal.GoToTrade, 330).GetComponentInChildren<Text>().text = "Trade";
         Button(b, "Journal Settings", journal.GoToSettings, 380).GetComponentInChildren<Text>().text = "Settings";
         Button(b, "Journal Close", journal.Close, 330).GetComponentInChildren<Text>().text = "Close";
@@ -512,6 +559,40 @@ public static class TestSceneBuilder
     }
 
     // ---------- building blocks ----------
+
+    /// The player's shopkeeper (placeholder shapes, coloured by ShopkeeperView from the save).
+    static ShopkeeperView Keeper(Transform parent, Vector2 anchor, ContentLibrary content)
+    {
+        var body = Shape(parent, "Shopkeeper", anchor, new Vector2(460, 600), new Color(0.45f, 0.55f, 0.75f), uiSprite);
+        var view = body.gameObject.AddComponent<ShopkeeperView>();
+        view.content = content;
+        view.body = body.GetComponent<Image>();
+        view.hairBack = Shape(body, "HairBack", new Vector2(0.5f, 1.2f), new Vector2(360, 300), Color.black, Knob()).GetComponent<Image>();
+        view.apron = Shape(body, "Apron", new Vector2(0.5f, 0.55f), new Vector2(260, 420), Color.white, uiSprite).GetComponent<Image>();
+        view.head = Shape(body, "Head", new Vector2(0.5f, 1.25f), new Vector2(300, 300), new Color(0.96f, 0.82f, 0.70f), Knob()).GetComponent<Image>();
+        view.hair = Shape(body, "Hair", new Vector2(0.5f, 1.42f), new Vector2(320, 150), new Color(0.40f, 0.26f, 0.18f), Knob()).GetComponent<Image>();
+        view.accessory = Shape(body, "Accessory", new Vector2(0.5f, 1.27f), new Vector2(230, 50), Color.black, uiSprite).GetComponent<Image>();
+        foreach (var img in body.GetComponentsInChildren<Image>()) img.raycastTarget = false;
+        return view;
+    }
+
+    /// "Skin 2  [>]": a label and a button that steps to the next option.
+    static Text OptionRow(Transform column, string name, UnityAction next)
+    {
+        var row = new GameObject($"Option_{name.Replace(" ", "")}", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+        row.transform.SetParent(column, false);
+        var h = row.GetComponent<HorizontalLayoutGroup>();
+        h.spacing = 30; h.childAlignment = TextAnchor.MiddleCenter;
+        h.childControlWidth = h.childControlHeight = true;
+        h.childForceExpandWidth = h.childForceExpandHeight = false;
+        var label = RowLabel(row.transform, 900);
+        label.color = Ink;
+        label.GetComponent<LayoutElement>().preferredHeight = 130;
+        var nextButton = Button(row.transform, $"Next {name}", next, 300);
+        nextButton.GetComponentInChildren<Text>().text = ">";
+        nextButton.GetComponent<LayoutElement>().preferredHeight = 130;
+        return label;
+    }
 
     static RectTransform MakePanel(Transform parent, ScreenId id, string title, Color color, string bgSprite)
     {

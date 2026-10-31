@@ -36,5 +36,15 @@ MonoBehaviour:
     minRelationshipLevel: 1
   firstChapter: 4
   likesSurprises: 0.55
+  preferences:
+  - id: lace
+    text: lace trim
+    likes: 1
+    supply: {fileID: 11400000, guid: 7fc872e5ff1c0ec428c10a548c45479f, type: 2}
+  - id: white_buttons
+    text: white buttons
+    likes: 0
+    supply: {fileID: 11400000, guid: be5b8042c7be974419b2e2cbfcfcca61, type: 2}
+  shopOwner: 0
   romanceable: 1
   inkName: rowan

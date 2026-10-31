@@ -36,5 +36,15 @@ MonoBehaviour:
     minRelationshipLevel: 0
   firstChapter: 1
   likesSurprises: 0.8
+  preferences:
+  - id: ribbon
+    text: satin ribbon
+    likes: 1
+    supply: {fileID: 11400000, guid: 221c2a83e80f89e4fa59720acbb1d393, type: 2}
+  - id: lace
+    text: lace trim
+    likes: 1
+    supply: {fileID: 11400000, guid: 7fc872e5ff1c0ec428c10a548c45479f, type: 2}
+  shopOwner: 0
   romanceable: 0
   inkName: mara

@@ -5,7 +5,7 @@ public enum ScreenId
 {
     Title, Shop, Dialogue, Workbench, Minigame, Result,
     Market, PatternStudio, Journal, Settings, DaySummary,
-    SaveSelect, OrderBook, Workroom, PatternEdit, PatternDesigner, Tutorial, Trade, Gather   // new values go at the end so saved scene references keep their numbers
+    SaveSelect, OrderBook, Workroom, PatternEdit, PatternDesigner, Tutorial, Trade, Gather, Customize, Boutique   // new values go at the end so saved scene references keep their numbers
 }
 
 /// Central game state: current screen, save data, coins, relationships.
@@ -49,7 +49,7 @@ public class GameManager : MonoBehaviour
         Save = SaveSystem.NewGame();
         OnGameLoaded?.Invoke(true);
         Persist();
-        ChangeScreen(HubScreen);
+        ChangeScreen(ScreenId.Customize);   // a new game starts by making the shopkeeper
     }
 
     /// Loads the slot, or starts a new game there if it is empty.
@@ -63,7 +63,7 @@ public class GameManager : MonoBehaviour
         Save = data;
         OnGameLoaded?.Invoke(false);
         Persist();   // refreshes "last played"
-        ChangeScreen(HubScreen);
+        ChangeScreen(Save.player.created ? HubScreen : ScreenId.Customize);   // saves from before customization make theirs now
         return true;
     }
 

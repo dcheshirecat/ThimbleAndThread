@@ -156,6 +156,27 @@ The game looks for knots by name (the character's **Ink Name**, set on the custo
 - `mara_scene_1`, `_scene_2`...: a scene played once, when friendship reaches that level.
 - `chapter_1`, `chapter_2`...: story scenes, played when a chapter begins.
 
+**The player's name and pronouns.** The player picks a name and she/her, he/him or they/them when the
+game starts (and can change them in Settings > Change Your Look). Write these tokens in any line or
+choice and the game fills them in:
+
+| Token | she/her | he/him | they/them |
+|---|---|---|---|
+| `{name}` | the player's name | | |
+| `{they}` / `{They}` | she / She | he / He | they / They |
+| `{them}` / `{Them}` | her | him | them |
+| `{their}` / `{Their}` | her | his | their |
+| `{theirs}`, `{themself}` | hers, herself | his, himself | theirs, themself |
+| `{is}` / `{are}`, `{was}`/`{were}`, `{have}`, `{do}` | is, was, has, does | is, was, has, does | are, were, have, do |
+| `{s}` (verb ending: "{they} knit{s}") | s | s | (nothing) |
+| `{niece}` | niece | nephew | nibling |
+
+Example: `Isla: You're the new one. The great-{niece}.` Never write "she" or "he" for the player directly.
+
+**Likes and dislikes are never said in dialogue** (owner's choice): they're a surprise. The player
+finds out by adding a special touch (lace, buttons, ribbon...) to someone's order; their reaction is the
+clue, and the Journal's Friends page notes it from then on. They're set on the customer asset (below).
+
 ## New characters
 
 Make a customer as below, then set **Ink Name** (e.g. `isla`), **First Chapter** (when they start
@@ -200,7 +221,22 @@ the picture area, about 1700 x 1150). Pages without art show a simple animated p
 4. **Requestable**: the items they're interested in, each with the friendship level it unlocks at
    (0 = from the start). They only browse shelf patterns for these items.
 
+5. **Preferences** (optional): things they like or dislike, each with an **Id** (permanent), **Text** (as the
+   Journal shows it, e.g. "wooden buttons"), **Likes**, and the **Supply** it's about (a special touch,
+   one with "Decorates" set). Adding that supply to their order then always pleases or disappoints them.
+6. **Shop Owner**: tick it for people who run a shop the player visits (Bram at the market, Celeste at
+   the boutique). They never come in as customers; the player chats with them in their own shop (once a
+   day; their friendship scenes play there too). Buying from them also adds friendship.
+
 New customers start visiting the shop on the next day.
+
+## The boutique (hair, clothes, accessories)
+
+In `Data/Cosmetics/` (**Create > Craft > Cosmetic**): id (permanent), name, price, **Slot** (Hair, Top,
+Accessory), **Style Index** and a placeholder **Color**/**Icon**. Hair styles: 0 short, 1 bob, 2 long,
+3 top knot, 4 big curls (0-2 are free). Tops: 0 jumper, 1 apron, 2 cardigan (0-1 free). Accessories:
+0 glasses, 1 hat, 2 brooch, 3 neckerchief. The shopkeeper is drawn from simple shapes for now
+(UI/ShopkeeperView.cs); your layered drawings per option and colour will replace them.
 
 ## Patterns for the shelf (great-aunt's book)
 

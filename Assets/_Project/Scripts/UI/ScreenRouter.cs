@@ -45,6 +45,8 @@ public class ScreenRouter : MonoBehaviour
     public void GoToJournal() => GameManager.Instance.ChangeScreen(ScreenId.Journal);
     public void GoToSettings() => GameManager.Instance.ChangeScreen(ScreenId.Settings);
     public void GoToTutorial() => GameManager.Instance.ChangeScreen(ScreenId.Tutorial);
+    public void GoToBoutique() => GameManager.Instance.ChangeScreen(ScreenId.Boutique);
+    public void GoToCustomize() => GameManager.Instance.ChangeScreen(ScreenId.Customize);
     public void GoToTrade() => GameManager.Instance.ChangeScreen(ScreenId.Trade);
     public void GoToWorkbench() => GameManager.Instance.ChangeScreen(ScreenId.Workbench);
 }

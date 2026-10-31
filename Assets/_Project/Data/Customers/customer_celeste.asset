@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af2bf79f2df3bdf48932578e82012d62, type: 3}
+  m_Name: customer_celeste
+  m_EditorClassIdentifier: Assembly-CSharp::CustomerDef
+  customerId: celeste
+  displayName: Celeste Moreau
+  bio: 'Owns Moreau''s, the boutique on the square (she/her): hair, clothes, accessories. Blunt, stylish, secretly sentimental.'
+  fullBody: {fileID: 21300000, guid: 23df922085956da45a1e412e3b730e53, type: 3}
+  portraits:
+  - expression: 0
+    sprite: {fileID: 21300000, guid: 6dd84ef64354d5340a734ddec64b4235, type: 3}
+  - expression: 1
+    sprite: {fileID: 21300000, guid: 6a2dfd7664cc55c479713cac9f413a54, type: 3}
+  - expression: 2
+    sprite: {fileID: 21300000, guid: 664b7fa29c7999e4c924e510030c8b1f, type: 3}
+  - expression: 3
+    sprite: {fileID: 21300000, guid: e36e9ed38e618f64ca92870ae0dd97bb, type: 3}
+  - expression: 4
+    sprite: {fileID: 21300000, guid: 802c5d6d4d1b64c468e5e51067086268, type: 3}
+  requestable: []
+  firstChapter: 1
+  likesSurprises: 0.65
+  preferences: []
+  shopOwner: 1
+  romanceable: 1
+  inkName: celeste

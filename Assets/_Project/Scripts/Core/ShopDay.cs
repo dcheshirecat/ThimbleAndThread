@@ -110,7 +110,7 @@ public class ShopDay : MonoBehaviour
         var list = Save.visitorsToday;
         list.Clear();
         foreach (var c in content.customers)
-            if (c != null && c.firstChapter <= Save.chapter && (!Save.orders.Exists(o => o.customerId == c.customerId) || PickupFor(c) != null))
+            if (c != null && !c.shopOwner && c.firstChapter <= Save.chapter && (!Save.orders.Exists(o => o.customerId == c.customerId) || PickupFor(c) != null))
                 list.Add(c.customerId);
         // A sign out front: a few of them drop by a second time.
         int extra = Mathf.Min(Progress.UpgradeAmount(UpgradeEffect.ExtraVisitor), list.Count);
@@ -831,9 +831,35 @@ public class ShopDay : MonoBehaviour
             : s.kind == SupplyKind.Tool ? $"Bought {s.displayName}. Tools are yours to keep."
             : s.kind == SupplyKind.Book ? $"Bought {s.displayName}."
             : $"Bought {s.displayName}: +{s.perPack} {s.unit} (you have {shop.Stock(supplyId)}).";
+        if (LastMessage.StartsWith("Bought")) GM.AddRelationshipPoints(MarketOwnerId, 2);   // a regular becomes a friend
         foreach (var learned in Progress.CheckUnlocks()) LastMessage += $" You learned {learned.displayName}!";
         GM.Persist();
         GM.ChangeScreen(ScreenId.Market);   // refresh the list
+    }
+
+    /// Bram Okafor runs the Supply Market (owner, 2026-10-30): someone to befriend, or more.
+    public const string MarketOwnerId = "bram";
+
+    /// A chat with a shop owner in their own shop (once a day): their greeting, or a friendship scene
+    /// when one is due. Then back to their shop.
+    public void ChatWithMarketOwner() => ChatWith(MarketOwnerId, ScreenId.Market);
+
+    public void ChatWith(string customerId, ScreenId back)
+    {
+        var who = CustomerFor(customerId);
+        if (who == null) return;
+        string flag = $"chat:{customerId}:{Save.day}";
+        if (Save.flags.Contains(flag))
+        {
+            Say(who, Pick("Busy day! Come back tomorrow and I'll put the kettle on.", "I'd love to chat, but there's a queue. Tomorrow?"), ("Continue", () => GM.ChangeScreen(back)));
+            return;
+        }
+        Save.flags.Add(flag);
+        GM.AddRelationshipPoints(customerId, 3);
+        var knots = ScenesDue(who);
+        if (knots.Count == 0) { var hello = VisitKnot(who); if (hello != null) knots.Add(hello); }
+        GM.Persist();
+        Play(who, knots, () => GM.ChangeScreen(back));
     }
 
     /// Buys a shop upgrade (once each): more display space, a sign for more visitors, a better lamp.
@@ -1125,7 +1151,15 @@ public class ShopDay : MonoBehaviour
         {
             var s = content.Supply(id);
             if (s == null) continue;
-            bool liked = Random.value < (customer != null ? customer.likesSurprises : 0.65f);
+            // A preference about this very thing decides it; otherwise it's their taste for surprises. Preferences are
+            // never mentioned in dialogue (owner, 2026-10-31): this reaction is how the player finds out, and the Journal notes it.
+            var known = customer != null && customer.preferences != null ? System.Array.Find(customer.preferences, x => x.supply == s) : null;
+            bool liked = known != null ? known.likes : Random.value < (customer != null ? customer.likesSurprises : 0.65f);
+            if (known != null && !Save.knownPrefs.Contains($"{customer.customerId}:{known.id}"))
+            {
+                Save.knownPrefs.Add($"{customer.customerId}:{known.id}");
+                Progress.AddNews($"Noted in your journal: {customer.displayName} {(known.likes ? "likes" : "doesn't like")} {known.text}.");
+            }
             string what = s.displayName.ToLower();
             if (liked)
             {

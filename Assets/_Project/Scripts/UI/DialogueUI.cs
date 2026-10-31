@@ -18,7 +18,7 @@ public class DialogueUI : MonoBehaviour
     public void Show(string speaker, Sprite face, string text, List<(string label, Action pick)> choices, Texture preview = null)
     {
         nameText.text = speaker ?? "";
-        lineText.text = text ?? "";
+        lineText.text = PlayerText.Fill(text ?? "");   // {name}, {they}, {their}... -> the player's
         lineText.fontStyle = string.IsNullOrEmpty(speaker) ? FontStyle.Italic : FontStyle.Normal;   // narration in italics
         portrait.sprite = face;
         portrait.enabled = face != null;
@@ -33,7 +33,7 @@ public class DialogueUI : MonoBehaviour
             var b = Instantiate(choiceTemplate, choiceTemplate.transform.parent);
             b.gameObject.SetActive(true);
             b.name = $"Choice_{i}";
-            b.GetComponentInChildren<Text>().text = choices[i].label;
+            b.GetComponentInChildren<Text>().text = PlayerText.Fill(choices[i].label);
             var pick = choices[i].pick;
             b.onClick.AddListener(() => pick());
             buttons.Add(b.gameObject);

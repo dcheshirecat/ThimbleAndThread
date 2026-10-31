@@ -3,7 +3,7 @@
 // ask her out (~ romance(1)), and scenes 4 and 5 follow the romance if they did.
 
 === isla_visit ===
-Isla: You're the new one. The great-niece. # neutral
+Isla: You're the new one. The great-{niece}. # neutral
 Isla: I'm Isla. The lighthouse. Well, not the lighthouse. I keep it.
 -> END
 

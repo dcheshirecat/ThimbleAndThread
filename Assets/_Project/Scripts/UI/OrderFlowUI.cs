@@ -207,7 +207,8 @@ public class OrderFlowUI : MonoBehaviour
         shelfTemplate.gameObject.SetActive(false);
         marketTemplate.gameObject.SetActive(false);
         int restock = day.shop.DaysUntilRestock;
-        marketStatus.text = $"{save.coins} coins. Tap something to buy it.  " +
+        var bram = GameManager.Instance.GetRelationship(ShopDay.MarketOwnerId);
+        marketStatus.text = $"Bram's market · friendship {bram.level}{(bram.romance ? " ♥" : "")} · {save.coins} coins.  " +
                             (restock == 1 ? "New stock tomorrow." : $"New stock in {restock} days.") + $"\n{day.LastMessage}";
 
         var sale = day.shop.OnSale();

@@ -39,6 +39,7 @@ public class ContentLibraryRefresher : AssetPostprocessor
         lib.patterns = Find<PatternDef>();
         lib.commissions = Find<CommissionDef>();
         lib.skills = Find<SkillDef>();
+        lib.cosmetics = Find<CosmeticDef>();
         lib.chapters = Find<ChapterDef>();
         lib.upgrades = Find<UpgradeDef>();
         lib.dialogue = Find<TextAsset>(DialogueRoot);
