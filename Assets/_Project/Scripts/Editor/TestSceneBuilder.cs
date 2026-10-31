@@ -596,9 +596,11 @@ public static class TestSceneBuilder
         designer.makesLabel = Button(b, "Makes", designer.NextItem, 900).GetComponentInChildren<Text>();
         designer.sizeLabel = Button(b, "Size", designer.NextSize, 760).GetComponentInChildren<Text>();
         b = Row(p, 0.5f, 0.155f);
-        Button(b, "Price Down", designer.PriceDown, 520).GetComponentInChildren<Text>().text = "Price -";
-        designer.priceLabel = RowLabel(b, 480);
-        Button(b, "Price Up", designer.PriceUp, 520).GetComponentInChildren<Text>().text = "Price +";
+        Button(b, "Price Down", designer.PriceDown, 330).GetComponentInChildren<Text>().text = "Price -";
+        designer.priceLabel = RowLabel(b, 360);
+        Button(b, "Price Up", designer.PriceUp, 330).GetComponentInChildren<Text>().text = "Price +";
+        designer.clothLabel = Button(b, "Cloth", designer.NextCloth, 780).GetComponentInChildren<Text>();   // cross stitch: the cloth it's on
+        designer.clothLabel.fontSize = 46;
         b = Row(p, 0.5f, 0.06f);
         Button(b, "Undo", designer.Undo, 360);
         Button(b, "Clear", designer.Clear, 360);

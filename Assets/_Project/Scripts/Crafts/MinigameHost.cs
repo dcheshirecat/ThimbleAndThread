@@ -79,7 +79,7 @@ public class MinigameHost : MonoBehaviour
     };
 
     /// Pattern Studio: a paint grid for designing. Read the result from Board.pattern before Close().
-    public void OpenDesign(Pattern design, CraftItemDef item = null)
+    public void OpenDesign(Pattern design, CraftItemDef item = null, Color? cloth = null)
     {
         Close();
         var frame = CrossStitchCanvas.FrameFor(item);
@@ -89,6 +89,7 @@ public class MinigameHost : MonoBehaviour
         designBoard.mode = CrossStitchCanvas.Mode.PatternFill;
         designBoard.frame = frame;
         designBoard.design = design;
+        if (cloth.HasValue && frame == CrossStitchCanvas.DesignFrame.Squares) { designBoard.showCloth = true; designBoard.fabricColor = cloth.Value; }
     }
 
     public void SelectColour(int index)

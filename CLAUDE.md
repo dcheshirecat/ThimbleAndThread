@@ -750,3 +750,6 @@ DONE batch 2 (5, 8): CrossStitchCanvas.Holder (Hoop: round fabric + wooden ring 
 qsnap_frame; board shrinks to fit, SpanFor). Stitch picker: IStitchPicker (TracingStep hand stitches, CrossStitchStep),
 MinigameHost.TogglePicker, "Stitch Picker" button; CraftTool.Kind.SeamRipper. TracingStep.OnWork: strokes only on the
 work (hooped steps: inside the hoop); leaving the work ends the row.
+DONE batch 3 (4): Pattern.fabricId (designer "Cloth" button, cross stitch only, owned cross stitch fabrics; the board shows the
+cloth with its holes, CrossStitchCanvas.showCloth). Materials.FabricFor uses it (after a commission's required supply); shared
+in trade codes. Sewing designs are drawn on pattern paper (DesignFrame.Paper). Needlepoint will get canvas choices when added.

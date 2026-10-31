@@ -37,6 +37,7 @@ public class Trading
         public List<string> palette = new List<string>();   // hex colours
         public List<string> threads = new List<string>();   // supplyId per palette colour
         public string grid;
+        public string fabricId;   // the cloth it's designed on (older codes: none)
     }
 
     readonly ContentLibrary content;
@@ -91,7 +92,7 @@ public class Trading
         var shared = new SharedPattern
         {
             name = p.name, itemId = p.itemId, price = p.price, craft = (int)d.craft,
-            width = d.width, height = d.height, threads = new List<string>(d.threads), grid = Grid(d),
+            width = d.width, height = d.height, threads = new List<string>(d.threads), grid = Grid(d), fabricId = d.fabricId,
         };
         foreach (var c in d.palette) shared.palette.Add(ColorUtility.ToHtmlStringRGB(c));
         var packet = new Packet { id = NewId(), kind = "pattern", pattern = shared };
@@ -174,7 +175,7 @@ public class Trading
             if (!string.IsNullOrEmpty(t) && content.Supply(t) == null)
             { error = "This pattern uses threads from a newer version of the game. Update to open it."; return null; }
 
-        var design = new Pattern { id = Guid.NewGuid().ToString("N"), displayName = sp.name, craft = (CraftType)sp.craft, width = sp.width, height = sp.height };
+        var design = new Pattern { id = Guid.NewGuid().ToString("N"), displayName = sp.name, craft = (CraftType)sp.craft, width = sp.width, height = sp.height, fabricId = sp.fabricId };
         foreach (var hex in sp.palette)
             design.palette.Add(ColorUtility.TryParseHtmlString("#" + hex, out var c) ? c : Color.white);
         design.threads.AddRange(sp.threads);

@@ -34,6 +34,7 @@ public class CrossStitchCanvas : MonoBehaviour
     public DesignFrame frame;          // PatternFill: how the item is really made, shown on the board (owner, 2026-10-31)
     public Holder holder;              // Stitch: what holds the fabric taut while stitching (owner, 2026-10-31: the hoop shows)
     public bool picking;               // Stitch: the stitch picker is in hand; touching a square unpicks it
+    public bool showCloth;             // PatternFill: the chosen cloth under the grid, with its woven holes
 
     public enum Holder { None, Hoop, QSnap }
 
@@ -47,13 +48,14 @@ public class CrossStitchCanvas : MonoBehaviour
 
     /// What a design is made into, drawn on the designer's board: a round hoop of fabric (embroidery), rounds
     /// spiralling out from a ring (crochet), knitted stitches (knitting), or plain squares (cross stitch, sewing).
-    public enum DesignFrame { Squares, Hoop, Rounds, Knitted }
+    public enum DesignFrame { Squares, Hoop, Rounds, Knitted, Paper }
 
     public static DesignFrame FrameFor(CraftItemDef item) => item == null ? DesignFrame.Squares : item.craft switch
     {
         CraftType.Embroidery => DesignFrame.Hoop,
         CraftType.Crochet => DesignFrame.Rounds,
         CraftType.Knitting => DesignFrame.Knitted,
+        CraftType.Sewing => DesignFrame.Paper,
         _ => DesignFrame.Squares,
     };
 
@@ -151,7 +153,7 @@ public class CrossStitchCanvas : MonoBehaviour
 
     void BuildGrid()
     {
-        if (mode == Mode.Stitch) BuildFabric();
+        if (mode == Mode.Stitch || showCloth) BuildFabric();
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
             {
@@ -194,6 +196,22 @@ public class CrossStitchCanvas : MonoBehaviour
         else if (frame == DesignFrame.Rounds)   // the rounds, spiralling out from the magic ring
             for (float rr = cellSize * 1.5f; rr <= r + 0.01f; rr += cellSize * 1.5f)
                 Ring(centre, rr, cellSize * 0.06f, new Color(1, 1, 1, 0.3f), 6);
+        else if (frame == DesignFrame.Paper)   // sewing: drawing the piece on pattern paper, cut out with a seam allowance
+        {
+            var paper = new GameObject("paper").AddComponent<SpriteRenderer>();
+            paper.transform.SetParent(transform, false);
+            paper.transform.localPosition = centre;
+            paper.transform.localScale = new Vector3((width + 0.8f) * cellSize, (height + 0.8f) * cellSize, 1);
+            paper.sprite = cellSprite;
+            paper.sharedMaterial = material;
+            paper.color = new Color(0.90f, 0.84f, 0.70f);
+            paper.sortingOrder = -2;
+            for (int i = 0; i <= Mathf.Max(width, height); i += 2)   // the printed inch grid
+            {
+                if (i <= width) Rule(new Vector3(i * cellSize, 0, 0), new Vector3(i * cellSize, height * cellSize, 0));
+                if (i <= height) Rule(new Vector3(0, i * cellSize, 0), new Vector3(width * cellSize, i * cellSize, 0));
+            }
+        }
         else if (frame == DesignFrame.Knitted)   // each square is a knit stitch: a V
             for (int x = 0; x < width; x++)
                 for (int y = 0; y < height; y++)
@@ -204,6 +222,15 @@ public class CrossStitchCanvas : MonoBehaviour
                     v.SetPosition(1, transform.TransformPoint(new Vector3((x + 0.5f) * cellSize, (y + 0.15f) * cellSize, 0)));
                     v.SetPosition(2, transform.TransformPoint(new Vector3((x + 0.8f) * cellSize, (y + 0.85f) * cellSize, 0)));
                 }
+    }
+
+    /// A faint printed line on pattern paper.
+    void Rule(Vector3 a, Vector3 b)
+    {
+        var l = MakeLine(new Color(0.55f, 0.45f, 0.35f, 0.35f), cellSize * 0.04f);
+        l.sortingOrder = 6;
+        l.SetPosition(0, transform.TransformPoint(a));
+        l.SetPosition(1, transform.TransformPoint(b));
     }
 
     static Sprite disc;

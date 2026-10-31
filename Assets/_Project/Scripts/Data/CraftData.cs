@@ -23,6 +23,7 @@ public class Pattern
     public List<Color> palette = new List<Color>();
     public List<string> threads = new List<string>();   // supplyId of the thread for each palette colour
     public List<StitchCell> cells = new List<StitchCell>();
+    public string fabricId;   // the cloth it's designed on (owner, 2026-10-31); empty = whichever Aida you have
 }
 
 /// A piece made for the Sunday market stall, waiting to be sold.

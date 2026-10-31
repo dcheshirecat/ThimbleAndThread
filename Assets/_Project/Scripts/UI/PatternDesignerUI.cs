@@ -11,7 +11,7 @@ public class PatternDesignerUI : MonoBehaviour
 
     public InputField nameField;      // in the naming pop-up
     public GameObject namePopup;      // "Name your pattern", shown when the design is done
-    public Text makesLabel, sizeLabel, priceLabel;
+    public Text makesLabel, sizeLabel, priceLabel, clothLabel;
     public ThreadSwatches swatches;   // its onPick calls SelectColour
 
     static readonly int[] Sizes = { 8, 10, 12, 16 };
@@ -50,6 +50,7 @@ public class PatternDesignerUI : MonoBehaviour
         if (day.DesigningFor == null && !Allowed(itemIndex)) StepItem();   // only things you've learned to make
         price = p.price;
         threads = Materials.Threads(day.content);
+        cloth = p.design.fabricId;
         OpenBoard(ToCatalogue(p.design));
         open = true;
 
@@ -71,7 +72,7 @@ public class PatternDesignerUI : MonoBehaviour
     Pattern ToCatalogue(Pattern design)
     {
         Materials.EnsureThreads(design, day.content);
-        var p = new Pattern { id = design.id, displayName = design.displayName, craft = design.craft, width = design.width, height = design.height };
+        var p = new Pattern { id = design.id, displayName = design.displayName, craft = design.craft, width = design.width, height = design.height, fabricId = design.fabricId };
         foreach (var t in threads) { p.palette.Add(t.color); p.threads.Add(t.supplyId); }
         foreach (var c in design.cells)
         {
@@ -94,12 +95,50 @@ public class PatternDesignerUI : MonoBehaviour
     void OpenBoard(Pattern design)
     {
         opened = design;
-        host.OpenDesign(design, day.content.items[itemIndex]);   // shown the way the item is made (hoop, rounds, knitted)
+        design.fabricId = cloth;
+        var c = Cloth;
+        host.OpenDesign(design, day.content.items[itemIndex], c != null ? c.color : (Color?)null);   // shown the way the item is made (hoop, rounds, knitted)
+    }
+
+    // ---- The cloth (owner, 2026-10-31: design the fabric in the background too) ----
+
+    string cloth;   // supplyId of the cloth, or empty for the plain white Aida
+
+    /// Cloths a cross stitch design can go on: the ones you own (like floss, you buy before you design with it).
+    List<SupplyDef> Cloths()
+    {
+        var list = new List<SupplyDef>();
+        if (day.content.items[itemIndex].craft != CraftType.CrossStitch) return list;
+        foreach (var s in day.content.supplies)
+            if (s != null && s.kind == SupplyKind.Fabric && s.craft == CraftType.CrossStitch && day.shop.Stock(s.supplyId) > 0) list.Add(s);
+        return list;
+    }
+
+    SupplyDef Cloth
+    {
+        get
+        {
+            if (day.content.items[itemIndex].craft != CraftType.CrossStitch) return null;
+            var s = string.IsNullOrEmpty(cloth) ? null : day.content.Supply(cloth);
+            return s ?? day.content.Supply("aida_14ct");
+        }
+    }
+
+    public void NextCloth()
+    {
+        var list = Cloths();
+        if (list.Count == 0) return;
+        int i = list.FindIndex(s => s.supplyId == Cloth?.supplyId);
+        cloth = list[(i + 1) % list.Count].supplyId;
+        var d = Current();
+        OpenBoard(Copy(d, d.width, d.height));
+        ApplyTool();
+        Refresh();
     }
 
     static Pattern Copy(Pattern src, int width, int height)
     {
-        var p = new Pattern { id = src.id, displayName = src.displayName, craft = src.craft, width = width, height = height };
+        var p = new Pattern { id = src.id, displayName = src.displayName, craft = src.craft, width = width, height = height, fabricId = src.fabricId };
         p.palette.AddRange(src.palette);
         p.threads.AddRange(src.threads);
         foreach (var c in src.cells)
@@ -121,6 +160,12 @@ public class PatternDesignerUI : MonoBehaviour
         var d = Current();
         makesLabel.text = $"Makes: {item.itemName}";
         sizeLabel.text = $"Size: {d.width} x {d.height}";
+        if (clothLabel != null)
+        {
+            var c = Cloth;
+            clothLabel.transform.parent.gameObject.SetActive(c != null);   // only cross stitch has a choice of cloth so far
+            if (c != null) clothLabel.text = $"Cloth: {c.displayName}";
+        }
         priceLabel.text = $"{price} coins";
     }
 
@@ -196,7 +241,9 @@ public class PatternDesignerUI : MonoBehaviour
     {
         var d = Current();
         if (namePopup != null) namePopup.SetActive(false);
-        day.SaveDesign(Copy(d, d.width, d.height), nameField.text, day.content.items[itemIndex].itemId, price);
+        var saved = Copy(d, d.width, d.height);
+        saved.fabricId = Cloth != null ? Cloth.supplyId : "";
+        day.SaveDesign(saved, nameField.text, day.content.items[itemIndex].itemId, price);
     }
 
     public void KeepDesigning() { if (namePopup != null) namePopup.SetActive(false); }

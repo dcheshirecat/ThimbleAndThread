@@ -1140,7 +1140,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         var used = new List<int>();
         foreach (var c in d.cells) if (!used.Contains(c.colorIndex)) used.Add(c.colorIndex);
         used.Sort();
-        var p = new Pattern { id = d.id, displayName = d.displayName, craft = d.craft, width = d.width, height = d.height };
+        var p = new Pattern { id = d.id, displayName = d.displayName, craft = d.craft, width = d.width, height = d.height, fabricId = d.fabricId };
         foreach (var i in used)
         {
             p.palette.Add(d.palette[i]);
