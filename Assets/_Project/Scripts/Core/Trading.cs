@@ -24,6 +24,7 @@ public class Trading
         public int v = PacketVersion;
         public string id;                 // random, so each save can open a code once
         public string kind;               // "supplies" or "pattern"
+        public int price;                 // supplies for sale: coins the buyer pays (0 = a gift)
         public List<SupplyStock> supplies = new List<SupplyStock>();
         public SharedPattern pattern = new SharedPattern();
     }
@@ -62,7 +63,9 @@ public class Trading
     // ---- Making codes ----
 
     /// Takes the parcel out of the cupboard and returns its gift code (null if something isn't owned).
-    public string MakeSupplyGift(List<SupplyStock> parcel, out string error)
+    /// With a price it's a sale (owner, 2026-10-31: sell supplies to other players, not the shop): the buyer pays
+    /// when they open it, and the coins come back to you through a receipt on the trading service.
+    public string MakeSupplyGift(List<SupplyStock> parcel, out string error, int price = 0, string label = "Gift")
     {
         error = null;
         var items = new List<SupplyStock>();
@@ -75,12 +78,13 @@ public class Trading
         }
         if (items.Count == 0) { error = "The parcel is empty. Tap supplies to add them."; return null; }
 
-        var packet = new Packet { id = NewId(), kind = "supplies", supplies = items };
+        var packet = new Packet { id = NewId(), kind = "supplies", supplies = items, price = Mathf.Max(0, price) };
         string code = Encode(packet);
         var needs = items.ConvertAll(x => new MaterialNeed { supplyId = x.supplyId, amount = x.amount });
         shop.Use(needs);
-        Remember(packet.id, code, $"Gift: {Describe(items)}");
-        progress.AddNews($"You made a gift of {Describe(items)}.");
+        Remember(packet.id, code, price > 0 ? $"For sale ({price} coins): {Describe(items)}" : $"{label}: {Describe(items)}");
+        if (price > 0) Save.sentCodes[0].price = price;
+        else progress.AddNews($"You made a gift of {Describe(items)}.");
         GameManager.Instance.Persist();
         return code;
     }
@@ -102,6 +106,44 @@ public class Trading
         return code;
     }
 
+    /// Puts a parcel back in the cupboard and forgets its code (a sale or surprise that couldn't go online).
+    public void TakeBack(string code)
+    {
+        var packet = Decode(code, out _);
+        if (packet == null) return;
+        foreach (var x in packet.supplies) shop.Add(x.supplyId, x.amount);
+        Save.sentCodes.RemoveAll(x => x.code == code);
+        GameManager.Instance.Persist();
+    }
+
+    /// Where the buyer's payment for a sale is left on the trading service: the sale's code turned half-way round
+    /// the alphabet and reversed (always a different code).
+    public static string ReceiptCode(string shortCode)
+    {
+        const string a = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        var chars = new char[shortCode.Length];
+        for (int i = 0; i < shortCode.Length; i++) chars[shortCode.Length - 1 - i] = a[(a.IndexOf(shortCode[i]) + a.Length / 2) % a.Length];
+        return new string(chars);
+    }
+
+    /// The receipt a buyer leaves for a sale (null for a gift or a pattern).
+    public string ReceiptFor(string code)
+    {
+        var packet = Decode(code, out _);
+        return packet != null && packet.price > 0 ? $"PAID.{packet.id}.{packet.price}" : null;
+    }
+
+    /// A sale's payment, picked up from its receipt: the coins go to you.
+    public void CollectSale(SentCode sale)
+    {
+        if (sale.paid) return;
+        sale.paid = true;
+        GameManager.Instance.AddCoins(sale.price);
+        sale.summary = sale.summary.Replace("For sale", "Sold");
+        progress.AddNews($"Someone bought your supplies: +{sale.price} coins.");
+        GameManager.Instance.Persist();
+    }
+
     void Remember(string id, string code, string summary)
     {
         Save.sentCodes.Insert(0, new SentCode { id = id, code = code, day = Save.day, summary = summary });
@@ -119,6 +161,7 @@ public class Trading
         if (packet == null) return error;
         if (Save.receivedCodes.Contains(packet.id)) return "You've already opened this one.";
         if (Save.sentCodes.Exists(x => x.id == packet.id)) return "That's one of your own codes. Send it to a friend!";
+        if (packet.price > 0 && Save.coins < packet.price) return $"These supplies cost {packet.price} coins, and you have {Save.coins}.";
         return null;
     }
 
@@ -136,6 +179,7 @@ public class Trading
         if (Save.receivedCodes.Contains(packet.id)) { error = "You've already opened this one."; return null; }
         if (Save.sentCodes.Exists(x => x.id == packet.id)) { error = "That's one of your own codes. Send it to a friend!"; return null; }
 
+        if (packet.price > 0 && !GameManager.Instance.TrySpend(packet.price)) { error = $"These supplies cost {packet.price} coins."; return null; }
         string got;
         if (packet.kind == "supplies") got = ReceiveSupplies(packet, out error);
         else if (packet.kind == "pattern") got = ReceivePattern(packet.pattern, out error);
@@ -143,7 +187,8 @@ public class Trading
         if (got == null) return null;
 
         Save.receivedCodes.Add(packet.id);
-        progress.AddNews($"A friend sent you {got}.");
+        if (packet.price > 0) got += $" for {packet.price} coins";
+        progress.AddNews(packet.price > 0 ? $"You bought {got}." : $"A friend sent you {got}.");
         GameManager.Instance.Persist();
         return got;
     }

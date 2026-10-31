@@ -124,7 +124,7 @@ public class MarketPurchase
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 22;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique). 20: the day clock (clock, nextArrival). 21: the Sunday market stall (stall). 22: special orders on their way (deliveries)
+    public const int CurrentVersion = 23;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique). 20: the day clock (clock, nextArrival). 21: the Sunday market stall (stall). 22: special orders on their way (deliveries). 23: sales to other players (SentCode.price/paid), surpriseOwed
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
@@ -135,6 +135,7 @@ public class SaveData
     public int nextArrival;                   // when the next visitor reaches the door, in minutes (0 = not on their way yet)
     public List<StallItem> stall = new List<StallItem>();   // pieces made for the Sunday market stall
     public List<Delivery> deliveries = new List<Delivery>();   // special orders on their way
+    public int surpriseOwed;                                    // Surprise Trades sent that haven't brought one back yet
     public List<SupplyStock> stock = new List<SupplyStock>();   // the supply cupboard
     public int marketSeed;                    // picks this save's rotating market stock (0 = not set yet)
     public List<string> ownedSupplies = new List<string>();     // version 3 and older; converted into stock on load
@@ -209,4 +210,6 @@ public class SentCode
     public int day;
     public string summary;      // e.g. "Gift: 8 skeins of Pink Floss"
     public string shortCode;    // the six-character online code for it, if one was made (TradeServer)
+    public int price;           // a sale: what the buyer pays (0 = a gift)
+    public bool paid;           // a sale: the buyer's payment has been collected
 }

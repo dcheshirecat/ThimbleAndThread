@@ -64,10 +64,58 @@ public static class TradeServer
         done(null, "Couldn't find a free code just now. Try again in a moment.");
     }
 
+    // ---- Surprise Trade (owner, 2026-10-31: like Pokemon's): a pool of slots anyone can drop a parcel into
+    //      and take one out of. The slots are ordinary codes, so the database rules stay the same. ----
+
+    public const int SurpriseSlots = 32;
+    public static string SurpriseSlot(int i) => "SURPR" + Alphabet[i % Alphabet.Length];
+
+    /// Puts a long code under one exact code. done(error): null = stored, "taken" = that code's in use.
+    public static IEnumerator PutAt(string code, string longCode, Action<string> done)
+    {
+        if (!Ready) { done("Online trading isn't set up yet."); yield break; }
+        string body = "{\"packet\":\"" + longCode + "\",\"made\":{\".sv\":\"timestamp\"}}";
+        using var req = UnityWebRequest.Put(Url(code), body);
+        req.SetRequestHeader("Content-Type", "application/json");
+        req.timeout = Timeout;
+        yield return req.SendWebRequest();
+        if (req.result == UnityWebRequest.Result.Success) done(null);
+        else if (req.responseCode == 401 || req.responseCode == 403) done("taken");
+        else done(Offline(req));
+    }
+
+    /// Reads a code without taking it. done(longCode or null if empty, etag, error).
+    public static IEnumerator Peek(string code, Action<string, string, string> done)
+    {
+        if (!Ready) { done(null, null, "Online trading isn't set up yet."); yield break; }
+        using var get = UnityWebRequest.Get(Url(code));
+        get.SetRequestHeader("X-Firebase-ETag", "true");
+        get.timeout = Timeout;
+        yield return get.SendWebRequest();
+        if (get.result != UnityWebRequest.Result.Success) { done(null, null, Offline(get)); yield break; }
+        string json = get.downloadHandler.text;
+        string packet = string.IsNullOrEmpty(json) || json == "null" ? null : JsonUtility.FromJson<Stored>(json)?.packet;
+        done(packet, get.GetResponseHeader("ETag"), null);
+    }
+
+    /// Takes a code off the server if it's still the copy read (etag). done(error): null = taken by you.
+    public static IEnumerator Take(string code, string etag, Action<string> done)
+    {
+        using var del = UnityWebRequest.Delete(Url(code));
+        if (!string.IsNullOrEmpty(etag)) del.SetRequestHeader("if-match", etag);
+        del.timeout = Timeout;
+        yield return del.SendWebRequest();
+        if (del.responseCode == 412) done("Someone else just took that one.");
+        else if (del.result != UnityWebRequest.Result.Success) done(Offline(del));
+        else done(null);
+    }
+
     /// Fetches a short code's long code and removes it from the server, so it opens only once.
     /// check(longCode) can refuse it first (e.g. your own code), and then it stays on the server.
-    /// done(longCode, error).
-    public static IEnumerator Claim(string shortCode, Func<string, string> check, Action<string, string> done)
+    /// receiptFor(longCode): for a sale, the payment note left at receiptCode before it's taken (the seller collects
+    /// it); if a receipt is already there, the sale's gone. done(longCode, error).
+    public static IEnumerator Claim(string shortCode, Func<string, string> check, Action<string, string> done,
+                                    Func<string, string> receiptFor = null, string receiptCode = null)
     {
         if (!Ready) { done(null, "Online codes aren't set up yet."); yield break; }
         string etag, longCode;
@@ -85,6 +133,14 @@ public static class TradeServer
         if (string.IsNullOrEmpty(longCode)) { done(null, "That code doesn't look right."); yield break; }
         string refused = check?.Invoke(longCode);
         if (refused != null) { done(null, refused); yield break; }
+        string receipt = receiptFor?.Invoke(longCode);
+        if (receipt != null && receiptCode != null)
+        {
+            string err = null;
+            yield return PutAt(receiptCode, receipt, e => err = e);
+            if (err == "taken") { done(null, "Someone else has just bought that."); yield break; }
+            if (err != null) { done(null, err); yield break; }
+        }
         using (var del = UnityWebRequest.Delete(Url(shortCode)))
         {
             if (!string.IsNullOrEmpty(etag)) del.SetRequestHeader("if-match", etag);

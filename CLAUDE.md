@@ -758,3 +758,10 @@ gone, note 11) lists every supply for learned crafts (not NotSold; owned tools/b
 lists forSale patterns not owned/not on the shelf. Rarity: Always 1 day / level 1, Rotating 2 days / level 2, Rare 4 days /
 level 4 (ShopDay.DeliveryDays, OrderLevel). SaveData.deliveries (Delivery kind/id/amount/arrives) arrive in GoToBed
 (ReceiveDeliveries; named in the good-morning message, announced on weekends). Reserved() kept for trading.
+DONE batch 5 (11; save version 23; live-tested against the Firebase trades path, no rule changes): Trade tabs Give / Sell /
+Surprise / Patterns / Open / My Codes. Sell: parcel + price (Packet.price, SentCode.price/paid); online only; the buyer pays on
+opening and TradeServer.Claim first writes a receipt at Trading.ReceiptCode(code) (chars rotated 16 and reversed); the seller's
+TradeUI.CollectSales picks receipts up on opening Trade. A failed upload puts the supplies back (Trading.TakeBack).
+Surprise Trade: 32 pool slots "SURPR"+char (TradeServer.SurpriseSlot): take a random parcel that isn't yours, then drop yours in
+an empty slot; if the pool was empty you're owed one (SaveData.surpriseOwed, "Check the Post"). Supplies only (no user patterns
+in the anonymous pool, so nothing to moderate).
