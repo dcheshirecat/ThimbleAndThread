@@ -653,6 +653,9 @@ DONE batch 6 (item 18, mini-games deeper): PressStep is real ironing: a care lab
 felt/fleece/minky cool, wool/merino/alpaca/mohair warm, else hot), a 3-setting heat dial under the work; too cool = 3 passes
 (two settings too cool never finishes), too hot = scorches as you go, holding still on warm/hot = a scorch; scorches are
 IMistakes, Undo dabs the last off. Points: presses (x,y), scorch (x-2,y), heat (-10-h,-10); old saves count at the right heat.
+Knitting: dropped stitches. A stitch made much faster than the rhythm (gap < 0.35 x rhythm, less with good needles) drops:
+a ladder in the fabric (point code + KnitRowsStep.Dropped 2000). Tap the ladder to pick it up with the hook (comes back at
+evenness 0.6+); left in, it's a mistake. Pauses never drop stitches; old saves have none.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
