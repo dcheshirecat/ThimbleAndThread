@@ -463,8 +463,15 @@ cross stitch game is very fun, even if a bit simple."
 - Old started sweaters keep their old one-square recipe (Order.legacyKnit, set by the v13 upgrade) instead of
   restarting. Saves already opened with the v13-v15 builds had already restarted; nothing to recover.
 - Pattern naming is a pop-up when the design is Done (PatternDesignerUI.namePopup; also renames when editing).
-- Save version 16. Trade codes: owner is setting up Firebase Realtime Database (rules given in chat); waiting
-  for the database URL.
+- Save version 16.
+Trade codes (branch trade-online, NOT merged yet): Core/TradeServer.cs uploads the long code to the owner's
+Firebase Realtime Database at trades/CODE (6 chars from ABCDEFGHJKLMNPQRSTUVWXYZ23456789) and claims it with a
+GET (X-Firebase-ETag) then a conditional DELETE (if-match), so a code opens once. TradeServer.DatabaseUrl is
+empty until the owner sends the address (it isn't a secret; the repo is public, so the rules are the guard).
+Long codes still work offline. SentCode.shortCode shows under My Codes. Rules the owner pasted:
+  trades/$code: .read if $code matches /^[A-HJ-NP-Z2-9]{6}$/; .write if it matches and (new: no data yet and
+  packet is a string under 60000 chars) or (delete: data exists and newData doesn't).
+Test live (create, open, open again fails, own code refused) before merging.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.

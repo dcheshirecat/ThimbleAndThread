@@ -176,4 +176,5 @@ public class SentCode
     public string code;
     public int day;
     public string summary;      // e.g. "Gift: 8 skeins of Pink Floss"
+    public string shortCode;    // the six-character online code for it, if one was made (TradeServer)
 }

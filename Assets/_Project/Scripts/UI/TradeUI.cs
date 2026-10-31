@@ -84,13 +84,14 @@ public class TradeUI : MonoBehaviour
                     if (!p.designed) continue;
                     var item = day.ItemFor(p.itemId);
                     var pattern = p;
-                    AddRow($"{p.name}  ·  {(item != null ? item.itemName : p.itemId)}", () => ShowCode(Trade.SharePattern(pattern), "Code made and copied. Send it to a friend!"));
+                    AddRow($"{p.name}  ·  {(item != null ? item.itemName : p.itemId)}", () => Share(Trade.SharePattern(pattern), "Code made and copied. Send it to a friend!"));
                 }
                 if (rows.Count == 0) info += "\nYou haven't designed any patterns yet. Design one in the Pattern Studio at night.";
                 SetActions("Copy Code", null);
                 break;
             case Tab.Open:
-                info = "Paste a code a friend sent you, then open it.";
+                info = TradeServer.Ready ? "Type or paste the six-letter code a friend sent you (or a long code), then open it."
+                                         : "Paste a code a friend sent you, then open it.";
                 SetActions("Paste", "Open It");
                 break;
             default:
@@ -98,7 +99,9 @@ public class TradeUI : MonoBehaviour
                 foreach (var c in Save.sentCodes)
                 {
                     var code = c.code;
-                    AddRow($"Day {c.day}: {c.summary}", () => ShowCode(code, "Copied."));
+                    var shortCode = c.shortCode;
+                    AddRow($"Day {c.day}: {c.summary}" + (string.IsNullOrEmpty(shortCode) ? "" : $"  ·  {shortCode}"),
+                           () => ShowCode(string.IsNullOrEmpty(shortCode) ? code : shortCode, "Copied."));
                 }
                 if (rows.Count == 0) info += "\nNone yet.";
                 SetActions("Copy Code", null);
@@ -165,7 +168,7 @@ public class TradeUI : MonoBehaviour
                 string code = Trade.MakeSupplyGift(parcel, out string error);
                 if (code == null) { message = error; Show(); return; }
                 parcel.Clear();
-                ShowCode(code, "Gift code made and copied. Send it to a friend! (It's also kept under My Codes.)");
+                Share(code, "Gift code made and copied. Send it to a friend! (It's also kept under My Codes.)");
                 break;
             case Tab.Open:
                 codeField.text = GUIUtility.systemCopyBuffer;
@@ -179,6 +182,33 @@ public class TradeUI : MonoBehaviour
         }
     }
 
+    bool busy;
+
+    void Open(string code)
+    {
+        string got = Trade.Redeem(code, out string error);
+        message = got != null ? $"You received {got}!" : error;
+        if (got != null) codeField.text = "";
+        Show();
+    }
+
+    /// Shows a new code: the six-character one when the online service answers, else the long one.
+    void Share(string longCode, string msg)
+    {
+        if (longCode == null) return;
+        if (!TradeServer.Ready || busy) { ShowCode(longCode, msg); return; }
+        busy = true;
+        message = "Making your code...";
+        Show();
+        StartCoroutine(TradeServer.Upload(longCode, (shortCode, err) =>
+        {
+            busy = false;
+            if (shortCode == null) { ShowCode(longCode, $"{err} Here's the long code instead; it works just the same."); return; }
+            Trade.SetShortCode(longCode, shortCode);
+            ShowCode(shortCode, $"Your code is {shortCode}. It's copied: send it to a friend! It works once.");
+        }));
+    }
+
     public void ActionB()
     {
         switch (tab)
@@ -189,10 +219,22 @@ public class TradeUI : MonoBehaviour
                 Show();
                 break;
             case Tab.Open:
-                string got = Trade.Redeem(codeField.text, out string error);
-                message = got != null ? $"You received {got}!" : error;
-                if (got != null) codeField.text = "";
-                Show();
+                var shortCode = TradeServer.Clean(codeField.text);
+                if (shortCode != null && TradeServer.Ready)
+                {
+                    if (busy) return;
+                    busy = true;
+                    message = "Opening it...";
+                    Show();
+                    StartCoroutine(TradeServer.Claim(shortCode, Trade.CheckRedeem, (longCode, err) =>
+                    {
+                        busy = false;
+                        if (longCode == null) { message = err; Show(); return; }
+                        Open(longCode);
+                    }));
+                    return;
+                }
+                Open(codeField.text);
                 break;
         }
     }

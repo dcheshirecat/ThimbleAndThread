@@ -110,6 +110,24 @@ public class Trading
     // ---- Opening codes ----
 
     /// Opens a friend's code. Returns what was received, or null with a reason in error.
+    /// Why a code can't be opened here (bad, already opened, your own), or null if it can. Checked before an
+    /// online code is taken off the server.
+    public string CheckRedeem(string code)
+    {
+        var packet = Decode(code, out string error);
+        if (packet == null) return error;
+        if (Save.receivedCodes.Contains(packet.id)) return "You've already opened this one.";
+        if (Save.sentCodes.Exists(x => x.id == packet.id)) return "That's one of your own codes. Send it to a friend!";
+        return null;
+    }
+
+    /// Records the six-character code made for one of this save's long codes.
+    public void SetShortCode(string code, string shortCode)
+    {
+        var sent = Save.sentCodes.Find(x => x.code == code);
+        if (sent != null) { sent.shortCode = shortCode; GameManager.Instance.Persist(); }
+    }
+
     public string Redeem(string code, out string error)
     {
         var packet = Decode(code, out error);
