@@ -327,6 +327,7 @@ public class Progression
         CraftType.Sewing => "Sewing",
         CraftType.Crochet => "Crochet",
         CraftType.Needlepoint => "Needlepoint",
+        CraftType.Quilting => "Quilting",
         _ => c.ToString(),
     };
 }

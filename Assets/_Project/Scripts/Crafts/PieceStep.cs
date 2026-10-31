@@ -149,6 +149,18 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
 
     protected const float HoopRadius = 0.46f;
 
+    /// Quilting: the pattern's squares as patches of fabric (empty squares are cream patches).
+    protected void DrawPatchwork(Pattern p)
+    {
+        if (p == null) return;
+        for (int x = 0; x < p.width; x++)
+            for (int y = 0; y < p.height; y++)
+            {
+                var at = Quilt.PatchCenter(p, x, y, out float size);
+                Rect(at, Vector2.one * size * 0.97f, Quilt.PatchColor(p, x, y), 0);
+            }
+    }
+
     /// A finished crocheted part (CrochetWork piece): the ball with its rounds showing as rings.
     protected void DrawBall(string piece)
     {

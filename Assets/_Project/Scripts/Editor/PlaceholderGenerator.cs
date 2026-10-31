@@ -499,6 +499,35 @@ public static class PlaceholderGenerator
         Wants(hal, cushion, 1);
         Wants(gwen, cushion, 2);
         Makes(ada, np);
+        // ---- Quilting (owner, 2026-10-31: new crafts): patchwork, opened with sewing in chapter 5 (the Community Quilt), or
+        // taught by Owen (friendship 3; the church has a quilting bee). ----
+        var qu = CraftType.Quilting;
+        Supply("quilting_cotton", "Quilting Cotton", SupplyKind.Fabric, qu, 6, 1, new Color(0.88f, 0.80f, 0.70f), 1, "fat quarters", A);
+        Supply("wadding", "Cotton Wadding", SupplyKind.Notion, qu, 10, 1, new Color(0.98f, 0.97f, 0.93f), 1, "pieces", A);
+        Supply("rotary_cutter", "Rotary Cutter and Ruler", SupplyKind.Tool, qu, 14, 1, new Color(0.40f, 0.60f, 0.85f), 1, "set", A, 0, "rotary_cutter");
+        Supply("safety_pins", "Quilter's Safety Pins", SupplyKind.Tool, qu, 4, 1, new Color(0.85f, 0.75f, 0.35f), 1, "box", A, 0, "safety_pins");
+        Supply("quilting_needle", "Quilting Needles", SupplyKind.Tool, qu, 3, 1, new Color(0.78f, 0.78f, 0.84f), 1, "pack", A, 0, "quilting_needle");
+        var quilt = Item("quilt", "Patchwork Quilt", qu, 90, 18, new Color(0.55f, 0.65f, 0.85f));
+        Recipe(quilt,
+            Step(StepKind.CutPatches, "Cut the patches", materials: Need("quilting_cotton", 3), tools: Tool("rotary_cutter", "Rotary cutter")),
+            Step(StepKind.SewRows, "Piece the patches together", tools: Tool("quilting_needle", "Quilting needle")),
+            new RecipeStep
+            {
+                kind = StepKind.QuiltSandwich, label = "Make the quilt sandwich",
+                tools = new[] { Tool("safety_pins", "Safety pins") },
+                materials = new[] { Need("wadding", 1), Need("quilting_cotton", 2) },
+            },
+            Step(StepKind.QuiltIt, "Quilt it", tools: Tool("quilting_needle", "Quilting needle")),
+            Step(StepKind.Hem, "Bind the edges", materials: Need("quilting_cotton", 1), tools: Tool("quilting_needle", "Quilting needle")));
+        Skill("craft_quilting", "Quilting", "Patchwork: cut, piece, layer and quilt, one square at a time.", true, qu, chapter: 5, friend: owen, friendLevel: 3);
+        Wants(mara, quilt, 1);
+        Wants(tobias, quilt, 2);
+        Wants(owen, quilt, 0);
+        Wants(isla, quilt, 1);
+        // A quilt pattern: each square is a patch ('.' = cream).
+        BookPattern("harbour_squares", "Harbour Squares", quilt, 18, new[] { navy, red },
+            "1.1.1.1.\n.2.2.2.2\n1.1.1.1.\n.2.2.2.2\n1.1.1.1.\n.2.2.2.2\n1.1.1.1.\n.2.2.2.2");
+
         // A needlepoint chart: '1'.. the design in tent stitch; the rest is filled in with the background colour.
         BookPattern("rose_cushion", "Tea Rose Cushion", cushion, 14, new[] { red, charcoal },
             "..........\n...111....\n..11111...\n..11211...\n..11111...\n...111....\n....2.....\n...222....\n....2.....\n..........");

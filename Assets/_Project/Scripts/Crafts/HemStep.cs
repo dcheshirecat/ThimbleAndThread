@@ -8,6 +8,14 @@ public class HemStep : TracingStep
 
     protected override bool ClosedGuide => true;
 
+    /// A quilt's binding goes round the patchwork itself.
+    protected override void DrawPiece()
+    {
+        if (order.item == null || order.item.craft != CraftType.Quilting) { base.DrawPiece(); return; }
+        Square(Vector2.one * 0.5f, 0.86f, Color.Lerp(area.fabricColor, Color.black, 0.15f), -1);   // the backing
+        DrawPatchwork(order.target);
+    }
+
     protected override List<Vector2> Guide() => new List<Vector2>
     {
         new Vector2(Inset, Inset), new Vector2(1 - Inset, Inset),

@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c7901b20ad305e48a66e74441e500f0, type: 3}
+  m_Name: item_quilt
+  m_EditorClassIdentifier: Assembly-CSharp::CraftItemDef
+  itemId: quilt
+  itemName: Patchwork Quilt
+  craft: 6
+  icon: {fileID: 21300000, guid: a058c1576673f434daaf1ca1ce9490c9, type: 3}
+  requiredPattern:
+    id: 
+    displayName: 
+    craft: 0
+    width: 0
+    height: 0
+    palette: []
+    threads: []
+    cells: []
+    fabricId: 
+  basePrice: 90
+  patternPrice: 18
+  requiredSupplyIds: []
+  steps:
+  - kind: 39
+    label: Cut the patches
+    tools:
+    - toolType: rotary_cutter
+      minSize: 0
+      label: Rotary cutter
+      exactSize: 0
+      matchYarn: 0
+    materials:
+    - supplyId: quilting_cotton
+      amount: 3
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 40
+    label: Piece the patches together
+    tools:
+    - toolType: quilting_needle
+      minSize: 0
+      label: Quilting needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 41
+    label: Make the quilt sandwich
+    tools:
+    - toolType: safety_pins
+      minSize: 0
+      label: Safety pins
+      exactSize: 0
+      matchYarn: 0
+    materials:
+    - supplyId: wadding
+      amount: 1
+    - supplyId: quilting_cotton
+      amount: 2
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 42
+    label: Quilt it
+    tools:
+    - toolType: quilting_needle
+      minSize: 0
+      label: Quilting needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 1
+    label: Bind the edges
+    tools:
+    - toolType: quilting_needle
+      minSize: 0
+      label: Quilting needle
+      exactSize: 0
+      matchYarn: 0
+    materials:
+    - supplyId: quilting_cotton
+      amount: 1
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  garment: 0

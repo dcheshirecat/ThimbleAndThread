@@ -1638,6 +1638,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             var needs = NeedsForStep(Selected, index);
             if (kind == StepKind.CrossStitch) Selected.fabricId = Materials.FabricFor(Selected.target, content, shop, Selected.requiredSupplyId)?.supplyId;
             if (kind == StepKind.MountCanvas) Selected.fabricId = "mono_canvas";
+            if (kind == StepKind.CutPatches) Selected.fabricId = "quilting_cotton";
             shop.Use(needs);
             if (kind == StepKind.CrossStitch) Selected.materialsUsed = true;
             else Selected.StepState(index).materialsUsed = true;

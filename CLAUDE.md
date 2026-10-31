@@ -789,4 +789,10 @@ MountCanvasStep.cs: tap 16 tack marks round the stretcher bars), TentStitch (Cro
 per square, a long diagonal drag stitches the whole row; Holder.Frame = wooden bars with brass tacks; TentScore), BackgroundFill
 (CrossStitchStep.BackgroundOf: every empty square in floss_white; Order.backgroundWork), Press (block it), Hem ("Whip-stitch the
 backing on": velvet backing + cushion pad). Book pattern Tea Rose Cushion. Dot, Owen, Hal, Gwen ask for cushions.
-Still to do from 16: quilting, loom weaving, more characters.
+DONE batch 10 (16, quilting): CraftType.Quilting. Learned in chapter 5 (with sewing; the Community Quilt) or from Owen (friendship
+3: the church quilting bee). Supplies (craft Quilting): quilting_cotton (fat quarters), wadding, rotary_cutter, safety_pins,
+quilting_needle. Item "quilt" (Patchwork Quilt): CutPatches (straight cuts), SewRows (hand-piece the row seams), QuiltSandwich
+(safety pins at 9 marks), QuiltIt (diagonal running-stitch lines), Hem "Bind the edges" (HemStep draws the patchwork for quilts).
+Crafts/QuiltSteps.cs; PieceStep.DrawPatchwork (pattern squares = patches, empty = cream). Book pattern Harbour Squares.
+Mara, Tobias, Owen and Isla ask for quilts.
+Still to do from 16: loom weaving, more characters.
