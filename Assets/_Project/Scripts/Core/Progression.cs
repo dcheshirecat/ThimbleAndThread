@@ -83,6 +83,21 @@ public class Progression
             if (p != null && p.item != null && !Save.patterns.Exists(x => x.id == p.patternId))
                 Save.patterns.Add(new OwnedPattern { id = p.patternId, name = p.displayName, itemId = p.item.itemId, price = p.price });
         AddNews(s.isCraft ? $"New craft: {s.displayName}! (from {how})" : $"Learned {s.displayName}, from {how}.");
+        Stamps.Earn(Save, $"skill:{s.skillId}", s.isCraft ? $"New craft: {s.displayName}" : $"Learned {s.displayName}",
+                    $"From {how}.", s.isCraft ? StampTheme.Craft : StampTheme.Skill);
+    }
+
+    /// Older saves get stamps for what they'd already done, quietly (no pop-ups).
+    public void CatchUpStamps()
+    {
+        foreach (var s in content.skills)
+            if (s != null && Knows(s.skillId))
+                Stamps.Earn(Save, $"skill:{s.skillId}", s.isCraft ? $"New craft: {s.displayName}" : $"Learned {s.displayName}", "Before you kept a stamp book.", s.isCraft ? StampTheme.Craft : StampTheme.Skill, true);
+        for (int n = 2; n <= Save.chapter; n++)
+            if (content.Chapter(n) is ChapterDef c) Stamps.Earn(Save, $"chapter:{n}", $"Chapter {n}", c.title, StampTheme.Story, true);
+        foreach (var r in Save.relationships)
+            for (int l = 1; l <= r.level; l++)
+                if (content.Customer(r.customerId) is CustomerDef who) Stamps.Earn(Save, $"friend:{r.customerId}:{l}", who.displayName, $"Friendship level {l}", StampTheme.Friendship, true);
     }
 
     /// Older saves (from before skills existed) keep everything they could already do.
@@ -108,6 +123,7 @@ public class Progression
         if (Level(craft) == before) return null;
         string msg = $"{CraftName(craft)} level {Level(craft)}!";
         AddNews(msg);
+        Stamps.Earn(Save, $"level:{craft}:{Level(craft)}", $"{CraftName(craft)} level {Level(craft)}", "Practice makes perfect.", StampTheme.Craft);
         return msg;
     }
 
@@ -143,6 +159,7 @@ public class Progression
         if (current == null || next == null || !GoalsMet(current)) return null;
         Save.chapter = next.number;
         AddNews($"Chapter {next.number}: {next.title}");
+        Stamps.Earn(Save, $"chapter:{next.number}", $"Chapter {next.number}", next.title, StampTheme.Story);
         CheckUnlocks();
         return next;
     }

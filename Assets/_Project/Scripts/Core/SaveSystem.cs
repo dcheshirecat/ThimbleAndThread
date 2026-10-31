@@ -81,6 +81,7 @@ public static class SaveSystem
         data.player.made ??= new System.Collections.Generic.List<MadeItem>();
         data.player.wornMade ??= "";
         data.knownPrefs ??= new System.Collections.Generic.List<string>();
+        data.stamps ??= new System.Collections.Generic.List<Stamp>();
         // Version 12 knitted scarves and sweaters as one square: the new garment pieces don't fit that work,
         // so unfinished ones start over (their yarn was already taken, so it isn't taken again).
         if (data.version < 13)

@@ -4,7 +4,9 @@ using UnityEngine.UI;
 /// The Settings screen: music and sound volumes (for every save slot), the tutorial, and quitting to the title.
 public class SettingsUI : MonoBehaviour
 {
-    public Text musicLabel, soundLabel;
+    public Text musicLabel, soundLabel, hapticsLabel;
+
+    public void ToggleHaptics() { Haptics.Enabled = !Haptics.Enabled; if (Haptics.Enabled) Haptics.Buzz(); Show(); }
 
     void OnEnable()
     {
@@ -38,6 +40,7 @@ public class SettingsUI : MonoBehaviour
     {
         musicLabel.text = $"Music {Percent(AudioManager.MusicVolume)}";
         soundLabel.text = $"Sounds {Percent(AudioManager.SoundVolume)}";
+        if (hapticsLabel != null) hapticsLabel.text = Haptics.Enabled ? "Vibration: On" : "Vibration: Off";
     }
 
     static string Percent(float v) => v <= 0 ? "off" : $"{Mathf.RoundToInt(v * 100)}%";

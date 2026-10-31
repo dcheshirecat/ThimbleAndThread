@@ -8,8 +8,9 @@ public class OrderFlowUI : MonoBehaviour
     public ShopDay day;
 
     [Header("Shop")] public Text shopStatus; public Text greetLabel;   // optional: the old menu hub (the shop scene has its own)
-    [Header("Workroom")] public Text workroomStatus;
-    [Header("Order book")] public Button orderTemplate; public Text orderBookEmpty;
+    [Header("Workroom")] public Text workroomStatus; public Button patternStudioButton;
+    [Header("Order book")] public Button orderTemplate; public Text orderBookEmpty, orderBookMessage;
+    [Header("Shopping list")] public GameObject shoppingList; public Text shoppingListText;
     [Header("Workbench")] public Text workbenchText; public Text startLabel; public GameObject startButton, handOverButton;
     [Header("Minigame")] public Text minigameHint; public ThreadSwatches minigameThreads;
     [Header("Result")] public Text resultText; public Image resultPortrait;
@@ -50,6 +51,12 @@ public class OrderFlowUI : MonoBehaviour
                           $"On display: {day.Shelf.Count} of {save.displaySpots} patterns\n" +
                           $"Ready to hand over: {ready}\nIn progress: {toDo}\n\n{day.LastMessage}";
         if (greetLabel != null) greetLabel.text = day.CustomersWaiting > 0 ? $"Greet Customer ({day.CustomersWaiting})" : "No one waiting";
+        if (patternStudioButton != null)   // greyed out until it's learned (and announced), not a broken-looking button
+        {
+            bool open = day.Progress.Knows(ShopDay.PatternDesignSkill);
+            patternStudioButton.interactable = open;
+            patternStudioButton.GetComponentInChildren<Text>().color = open ? new Color(0.2f, 0.15f, 0.2f) : new Color(0.2f, 0.15f, 0.2f, 0.35f);
+        }
         workroomStatus.text = $"Night of day {save.day}    {save.coins} coins\n" +
                               $"Orders to work on: {toDo}\nSet aside for tomorrow: {ready}\n\n{day.LastMessage}";
         summaryText.text = "The shop is closed for the night.\n\n" +
@@ -74,7 +81,9 @@ public class OrderFlowUI : MonoBehaviour
             (order.patternOnly ? "Pattern only: fill in the squares to design it." : RecipeText(order)) +
             (order.finished ? $"\nFinished ({Mathf.RoundToInt(order.accuracy * 100)}% accuracy)." : $"\nProgress: {progress}%") +
             MaterialsText(order) +
-            (night ? "" : order.finished ? $"\n\nWrapped and waiting. {who} will come by for it; you never quite know when." : "\n\nYou can work on this tonight, in the workroom.");
+            (night ? "" : order.finished ? $"\n\nWrapped and waiting. {who} will come by for it; you never quite know when."
+                : day.ShortOf(order).Count > 0 ? "\n\nBefore you can work on it, get what's missing at the Supply Market."
+                : "\n\nYou have everything for it: work on it tonight, in the workroom.");
         if (!string.IsNullOrEmpty(day.LastMessage) && screen == ScreenId.Workbench) workbenchText.text += $"\n\n{day.LastMessage}";
         bool started = order.work.Count > 0 || order.step > 0;
         startLabel.text = order.needsDesign ? "Design the Pattern"
@@ -105,8 +114,7 @@ public class OrderFlowUI : MonoBehaviour
         resultText.text = $"{order.item.itemName} for {who}\n\n" +
                           $"Accuracy: {Mathf.RoundToInt(day.LastAccuracy * 100)}%\n" +
                           $"Stars: {day.LastStars} / 3\n" +
-                          $"{who} will pay {day.LastPrice} coins\n" +
-                          $"Friendship: +{day.LastPoints}\n\n" +
+                          "\n" +   // what they'll pay stays a surprise until the hand-over
                           (string.IsNullOrEmpty(day.LastLearned) ? "" : $"{day.LastLearned}\n\n") +
                           "Set it aside: they'll come by for it one of these days.";
         var extras = day.ExtrasFor(order);
@@ -147,12 +155,52 @@ public class OrderFlowUI : MonoBehaviour
         SetPreview(patternPreview, day.DesignFor(p));
     }
 
+    /// The Supply Market's shopping list: what each order is missing (owner, 2026-10-31).
+    public void ToggleShoppingList()
+    {
+        if (shoppingList == null) return;
+        bool show = !shoppingList.activeSelf;
+        shoppingList.SetActive(show);
+        if (!show) return;
+        shoppingList.transform.SetAsLastSibling();
+        var text = new System.Text.StringBuilder("<b>Shopping list</b>\n\n");
+        int count = 0;
+        foreach (var order in day.Orders)
+        {
+            var missing = day.ShortOf(order);
+            if (missing.Count == 0) continue;
+            count++;
+            text.AppendLine($"<b>{order.item.itemName} for {day.NameFor(order.customerId)}</b>");
+            foreach (var m in missing) text.AppendLine($"  {m}");
+            text.AppendLine();
+        }
+        if (count == 0) text.Append("Nothing missing: you have everything for every order in the book.");
+        else text.Append("Things on the list are marked \"On your list\" on the shelves. Some may not be in stock right now.");
+        shoppingListText.text = text.ToString();
+    }
+
+    /// Whether a supply would help with something an order is missing.
+    bool OnShoppingList(SupplyDef s)
+    {
+        foreach (var order in day.Orders)
+        {
+            if (order.patternOnly || order.finished || order.needsDesign || order.item == null) continue;
+            foreach (var n in day.shop.Missing(day.NeedsFor(order))) if (n.supplyId == s.supplyId) return true;
+            foreach (var t in day.shop.MissingTools(day.ToolsFor(order))) if (ShopDay.Fits(t, s)) return true;
+            if (day.MaterialToChoose(order) && ChooseMaterialStep.Options(order, day.content, day.shop).Count == 0
+                && System.Array.Exists(order.Steps, st => (st.kind == StepKind.ChooseYarn && s.kind == SupplyKind.Yarn) || (st.kind == StepKind.ChooseFabric && s.kind == SupplyKind.Fabric && s.craft == order.item.craft)))
+                return true;
+        }
+        return false;
+    }
+
     void BuildOrderList()
     {
         foreach (var row in orderRows) Destroy(row);
         orderRows.Clear();
         orderTemplate.gameObject.SetActive(false);
         orderBookEmpty.gameObject.SetActive(day.Orders.Count == 0);
+        if (orderBookMessage != null) orderBookMessage.text = day.LastMessage;
 
         foreach (var order in day.Orders)
         {
@@ -160,9 +208,13 @@ public class OrderFlowUI : MonoBehaviour
             string kind = order.patternOnly ? " (pattern)" : !string.IsNullOrEmpty(order.commissionId) ? " (commission)" : "";
             string state = order.finished ? "Ready to hand over" : $"{Mathf.RoundToInt(order.Progress() * 100)}%";
             string id = order.id;
-            orderRows.Add(AddRow(orderTemplate, $"Order_{id}",
-                $"{order.item.itemName}{kind} for {day.NameFor(order.customerId)}  ·  {state}",
-                () => day.SelectOrder(id)));
+            var missing = day.ShortOf(order);
+            var row = AddRow(orderTemplate, $"Order_{id}",
+                $"{order.item.itemName}{kind} for {day.NameFor(order.customerId)}  ·  {state}" +
+                (missing.Count > 0 ? $"\n<size=44>Missing: {string.Join(", ", missing)}</size>" : ""),
+                () => day.SelectOrder(id));
+            if (missing.Count > 0) row.GetComponent<Image>().color = new Color(0.85f, 0.85f, 0.85f);   // greyed: not yet
+            orderRows.Add(row);
         }
     }
 
@@ -283,6 +335,7 @@ public class OrderFlowUI : MonoBehaviour
             : s.kind == SupplyKind.Tool
             ? $"{s.price} coins  ·  {(day.shop.Owns(id) ? "Owned" : stock)}"
             : $"{s.price} coins for {s.perPack} {s.unit}\n{stock}  ·  you have {day.shop.Stock(id)}";
+        if (OnShoppingList(s)) tile.transform.Find("Info").GetComponent<Text>().text += "\n<b>On your list</b>";
     }
 
     /// A commission's request, and whether its pattern still needs designing.

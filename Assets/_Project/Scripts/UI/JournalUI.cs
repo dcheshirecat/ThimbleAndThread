@@ -10,7 +10,7 @@ using UnityEngine.UI;
 /// bottom go to the Supply Market (by day), Trade and Settings. Turning a page flips it over at the spine.
 public class JournalUI : MonoBehaviour
 {
-    public enum Page { Orders, Story, Friends, Skills, Supplies, News }
+    public enum Page { Orders, Story, Friends, Skills, Supplies, News, Stamps }
 
     public ShopDay day;
     public ScreenRouter router;
@@ -22,6 +22,8 @@ public class JournalUI : MonoBehaviour
     public Image[] tabs;                 // tab buttons, in Page order (the open one is highlighted)
     public GameObject marketLink;        // only by day
     public GameObject boutiqueLink;      // only by day
+    public RectTransform stampGrid;      // the Stamps page: one stamp per achievement
+    public GameObject stampTemplate;     // children Ring (Image), Word, Title, Detail (Text)
 
     Page current = Page.Orders;
     bool animating;
@@ -124,6 +126,7 @@ public class JournalUI : MonoBehaviour
         foreach (var r in rows) Destroy(r);
         rows.Clear();
         rowTemplate.gameObject.SetActive(false);
+        if (stampGrid != null) stampGrid.gameObject.SetActive(current == Page.Stamps);
         pageText.text = PlayerText.Fill(current switch
         {
             Page.Orders => Orders(),
@@ -131,6 +134,7 @@ public class JournalUI : MonoBehaviour
             Page.Friends => Friends(),
             Page.Skills => Skills(),
             Page.Supplies => Supplies(),
+            Page.Stamps => StampsPage(),
             _ => News(),
         });
     }
@@ -143,6 +147,7 @@ public class JournalUI : MonoBehaviour
             var customer = day.CustomerFor(order.customerId);
             string kind = order.patternOnly ? " (pattern)" : !string.IsNullOrEmpty(order.commissionId) ? " (commission)" : "";
             string state = order.finished ? "ready for pickup" : $"{Mathf.RoundToInt(order.Progress() * 100)}% done";
+            if (!order.finished && day.ShortOf(order).Count > 0) state += ", missing supplies";
             string id = order.id;
             var row = Instantiate(rowTemplate, rowTemplate.transform.parent);
             row.gameObject.SetActive(true);
@@ -151,7 +156,7 @@ public class JournalUI : MonoBehaviour
             row.onClick.AddListener(() => { overlay.SetActive(false); day.SelectOrder(id); });
             rows.Add(row.gameObject);
         }
-        return Save.night ? "<b>Orders</b>\nTap one to work on it." : "<b>Orders</b>\nYou can work on these tonight. Tap one for details.";
+        return Save.night ? "<b>Orders</b>\nTap one to work on it (once you have everything for it)." : "<b>Orders</b>\nTap one for details.";
     }
 
     string Story()
@@ -242,6 +247,26 @@ public class JournalUI : MonoBehaviour
         }
         sb.AppendLine($"Coins: {Save.coins}");
         return sb.ToString();
+    }
+
+    string StampsPage()
+    {
+        if (stampTemplate == null) return "";
+        stampTemplate.SetActive(false);
+        for (int i = Save.stamps.Count - 1; i >= 0; i--)   // newest first
+        {
+            var s = Save.stamps[i];
+            var go = Instantiate(stampTemplate, stampGrid);
+            go.SetActive(true);
+            go.name = $"Stamp_{s.id}";
+            go.transform.Find("Ring").GetComponent<Image>().color = Stamps.ColorOf(s.theme);
+            go.transform.Find("Ring/Word").GetComponent<Text>().text = Stamps.Word(s.theme);
+            go.transform.Find("Title").GetComponent<Text>().text = s.title;
+            go.transform.Find("Detail").GetComponent<Text>().text = $"{s.detail}\nDay {s.day}";
+            rows.Add(go);
+        }
+        return Save.stamps.Count == 0 ? "<b>Stamps</b>\n\nNo stamps yet. They come as you learn, make friends and grow the shop."
+                                      : $"<b>Stamps</b>  ({Save.stamps.Count})";
     }
 
     string News() => Save.journalNews.Count == 0 ? "Nothing new yet." : string.Join("\n", Save.journalNews);

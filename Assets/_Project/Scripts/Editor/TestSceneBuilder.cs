@@ -241,7 +241,19 @@ public static class TestSceneBuilder
         var ctr = (RectTransform)shopScene.coinText.transform;
         Stretch(ctr);
         ctr.offsetMin = new Vector2(150, 0);
+        var shops = Button(p, "Shops", shopScene.ToggleShops, 380);
+        Place(shops, new Vector2(0.8f, 0.865f), new Vector2(560, 120));
+        shops.GetComponentInChildren<Text>().fontSize = 56;
+        var shopsMenu = Shape(p, "Shops Menu", new Vector2(0.72f, 0.72f), new Vector2(900, 560), new Color(1, 0.97f, 0.9f), uiSprite);
+        shopsMenu.GetComponent<Image>().raycastTarget = true;
+        var sm = Column(shopsMenu, 0.5f, 0.5f);
+        Button(sm, "Menu Market", shopScene.GoToMarket, 800).GetComponentInChildren<Text>().text = "Supply Market";
+        Button(sm, "Menu Boutique", shopScene.GoToBoutique, 800).GetComponentInChildren<Text>().text = "Moreau's Boutique";
+        Button(sm, "Menu Close", shopScene.ToggleShops, 800).GetComponentInChildren<Text>().text = "Close";
+        shopsMenu.gameObject.SetActive(false);
+        shopScene.shopsMenu = shopsMenu.gameObject;
         shopScene.pageLabel = Label(p, "PageName", new Vector2(0.2f, 0.85f), new Vector2(0.8f, 0.9f), 56, TextAnchor.MiddleCenter);
+        shopScene.pageLabel.raycastTarget = false;   // the Shops button sits beside it
         var b = Row(p, 0.5f, 0.05f);
         Button(b, "Pickups Arrow", shopScene.Left, 420).GetComponentInChildren<Text>().text = "< Pickups";
         Button(b, "Journal", shopScene.OpenJournal, 600);
@@ -264,13 +276,18 @@ public static class TestSceneBuilder
         ui.workroomStatus.color = Color.white;
         b = Column(p, 0.5f, 0.35f);
         Button(b, "Order Book", router.GoToOrderBook, 1100);
-        Button(b, "Pattern Studio", router.GoToPatternStudio, 1100);
+        ui.patternStudioButton = Button(b, "Pattern Studio", router.GoToPatternStudio, 1100);
+        var psColors = ui.patternStudioButton.colors;
+        psColors.disabledColor = new Color(0.55f, 0.55f, 0.6f, 0.6f);
+        ui.patternStudioButton.colors = psColors;
         var workroomJournal = Button(b, "Journal", null, 1100);   // wired to the journal overlay below
         Button(b, "Go to Bed", day.GoToBed, 1100);
 
         // Order book
         p = Panel(ScreenId.OrderBook, "Order Book", new Color(0.96f, 0.92f, 0.84f));
-        ui.orderTemplate = Button(ScrollList(p, 0.14f, 0.88f), "Order Template", null, 1840);
+        ui.orderTemplate = Button(ScrollList(p, 0.14f, 0.83f), "Order Template", null, 1840);
+        TallRow(ui.orderTemplate, 250, 56);
+        ui.orderBookMessage = Label(p, "Message", new Vector2(0.06f, 0.835f), new Vector2(0.94f, 0.92f), 50, TextAnchor.MiddleCenter);
         ui.orderBookEmpty = Label(p, "Empty", new Vector2(0.1f, 0.5f), new Vector2(0.9f, 0.7f), 64, TextAnchor.MiddleCenter);
         ui.orderBookEmpty.text = "No orders yet. Customers visit the shop during the day.";
         Button(Column(p, 0.5f, 0.06f), "Back", router.GoToHub);
@@ -347,8 +364,21 @@ public static class TestSceneBuilder
         ui.shelfTemplate = Shelf(shelves);
         ui.marketTemplate = SupplyTile(ui.shelfTemplate);
         b = Row(p, 0.5f, 0.04f);
-        Button(b, "Chat with Bram", day.ChatWithMarketOwner, 860);
-        Button(b, "Back", router.GoToHub, 860);
+        Button(b, "Shopping List", ui.ToggleShoppingList, 600);
+        Button(b, "Chat with Bram", day.ChatWithMarketOwner, 600);
+        Button(b, "Back", router.GoToHub, 560);
+        var list = Shape(p, "ShoppingListPanel", new Vector2(0.5f, 0.48f), new Vector2(1840, 1700), new Color(1f, 0.98f, 0.92f), uiSprite);
+        list.GetComponent<Image>().raycastTarget = true;
+        ui.shoppingList = list.gameObject;
+        var listScroll = ScrollList(list, 0.12f, 0.97f);
+        ui.shoppingListText = MakeText(listScroll, "ListText", "", 52);
+        ui.shoppingListText.alignment = TextAnchor.UpperLeft;
+        ui.shoppingListText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        ui.shoppingListText.verticalOverflow = VerticalWrapMode.Overflow;
+        ui.shoppingListText.color = Ink;
+        ui.shoppingListText.gameObject.AddComponent<LayoutElement>().preferredWidth = 1700;
+        Button(Column(list, 0.5f, 0.02f), "Close List", ui.ToggleShoppingList, 600).GetComponentInChildren<Text>().text = "Close";
+        list.gameObject.SetActive(false);
 
         // Trade with friends (share codes)
         p = Panel(ScreenId.Trade, "Trade with Friends", new Color(0.78f, 0.88f, 0.95f));
@@ -386,6 +416,8 @@ public static class TestSceneBuilder
         settings.soundLabel = RowLabel(b, 700);
         Button(b, "Sound Up", settings.SoundUp, 300).GetComponentInChildren<Text>().text = "+";
         settings.musicLabel.color = settings.soundLabel.color = Ink;
+        var vib = Button(Column(p, 0.5f, 0.585f), "Vibration", settings.ToggleHaptics, 1000);
+        settings.hapticsLabel = vib.GetComponentInChildren<Text>();
         b = Column(p, 0.5f, 0.4f);
         Button(b, "Change Your Look", router.GoToCustomize, 1100);
         Button(b, "How to Play", router.GoToTutorial, 1100);
@@ -512,13 +544,13 @@ public static class TestSceneBuilder
         spine.offsetMin = spine.offsetMax = Vector2.zero;
         Label(paper, "BookTitle", new Vector2(0.05f, 0.93f), new Vector2(0.95f, 0.985f), 84, TextAnchor.MiddleCenter).text = "Journal";
         var jTabs = Row(paper, 0.5f, 0.895f);
-        var jTabNames = new[] { "Orders", "Story", "Friends", "Skills", "Supplies", "News" };
+        var jTabNames = new[] { "Orders", "Story", "Friends", "Skills", "Supplies", "News", "Stamps" };
         journal.tabs = new Image[jTabNames.Length];
         for (int i = 0; i < jTabNames.Length; i++)
         {
-            var tab = Button(jTabs, "Tab " + jTabNames[i], null, 270);
+            var tab = Button(jTabs, "Tab " + jTabNames[i], null, 236);
             tab.GetComponentInChildren<Text>().text = jTabNames[i];
-            tab.GetComponentInChildren<Text>().fontSize = 44;
+            tab.GetComponentInChildren<Text>().fontSize = 40;
             UnityEventTools.AddIntPersistentListener(tab.onClick, journal.ShowPage, i);
             journal.tabs[i] = tab.GetComponent<Image>();
         }
@@ -538,13 +570,36 @@ public static class TestSceneBuilder
         journal.pageText.gameObject.AddComponent<LayoutElement>().preferredWidth = 1650;
         journal.rowTemplate = Button(journalList, "Journal Row Template", null, 1650);
         journal.rowTemplate.GetComponentInChildren<Text>().fontSize = 50;
+        var gridGo = new GameObject("StampGrid", typeof(RectTransform), typeof(GridLayoutGroup), typeof(LayoutElement));
+        gridGo.transform.SetParent(journalList, false);
+        var grid = gridGo.GetComponent<GridLayoutGroup>();
+        grid.cellSize = new Vector2(380, 470);
+        grid.spacing = new Vector2(30, 30);
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = 4;
+        grid.childAlignment = TextAnchor.UpperCenter;
+        gridGo.GetComponent<LayoutElement>().preferredWidth = 1650;
+        var gridFit = gridGo.AddComponent<ContentSizeFitter>();
+        gridFit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        journal.stampGrid = (RectTransform)gridGo.transform;
+        var stampT = new GameObject("Stamp Template", typeof(RectTransform));
+        stampT.transform.SetParent(gridGo.transform, false);
+        var ringOuter = Shape(stampT.transform, "Ring", new Vector2(0.5f, 0.72f), new Vector2(250, 250), Color.gray, Knob());
+        Shape(ringOuter, "Inner", new Vector2(0.5f, 0.5f), new Vector2(200, 200), new Color(1, 1, 1, 0.25f), Knob());
+        var word = MakeText(ringOuter, "Word", "", 46);
+        Stretch((RectTransform)word.transform);
+        word.color = Color.white;
+        word.fontStyle = FontStyle.Bold;
+        var st = Label(stampT.transform, "Title", new Vector2(0f, 0.26f), new Vector2(1f, 0.44f), 40, TextAnchor.MiddleCenter);
+        st.fontStyle = FontStyle.Bold;
+        st.color = Ink;
+        var sd = Label(stampT.transform, "Detail", new Vector2(0f, 0f), new Vector2(1f, 0.26f), 32, TextAnchor.UpperCenter);
+        sd.color = Ink;
+        journal.stampTemplate = stampT;
+        stampT.SetActive(false);
+        gridGo.SetActive(false);
         b = Row(paper, 0.5f, 0.05f);
-        var marketLink = Button(b, "Journal Market", journal.GoToMarket, 470);
-        marketLink.GetComponentInChildren<Text>().text = "Supply Market";
-        journal.marketLink = marketLink.gameObject;
-        var boutiqueLink = Button(b, "Journal Boutique", journal.GoToBoutique, 330);
-        boutiqueLink.GetComponentInChildren<Text>().text = "Boutique";
-        journal.boutiqueLink = boutiqueLink.gameObject;
+        // The stores open from the Shops menu by the coins (owner, 2026-10-31), not from the journal.
         Button(b, "Journal Trade", journal.GoToTrade, 330).GetComponentInChildren<Text>().text = "Trade";
         Button(b, "Journal Settings", journal.GoToSettings, 380).GetComponentInChildren<Text>().text = "Settings";
         Button(b, "Journal Close", journal.Close, 330).GetComponentInChildren<Text>().text = "Close";
@@ -552,6 +607,30 @@ public static class TestSceneBuilder
         overlay.SetActive(false);
         shopScene.journal = journal;
         UnityEventTools.AddPersistentListener(workroomJournal.onClick, journal.Open);
+
+        // Stamp pop-up (achievements) and notices like the doorbell (StampPopup)
+        var popup = canvasGo.AddComponent<StampPopup>();
+        var popPanel = new GameObject("StampPopup", typeof(RectTransform), typeof(Image), typeof(Button));
+        var popRt = (RectTransform)popPanel.transform;
+        popRt.SetParent(canvasGo.transform, false);
+        Stretch(popRt);
+        popPanel.GetComponent<Image>().color = new Color(0, 0, 0, 0.25f);
+        UnityEventTools.AddPersistentListener(popPanel.GetComponent<Button>().onClick, popup.Dismiss);   // tap anywhere
+        var popCard = Shape(popRt, "Card", new Vector2(0.5f, 0.62f), new Vector2(1500, 560), new Color(1f, 0.97f, 0.9f), uiSprite);
+        popup.panel = popPanel;
+        popup.card = popCard;
+        popup.stamp = Shape(popCard, "Stamp", new Vector2(0.18f, 0.5f), new Vector2(300, 300), Color.gray, Knob()).GetComponent<Image>();
+        Shape(popup.stamp.transform, "Inner", new Vector2(0.5f, 0.5f), new Vector2(240, 240), new Color(1, 1, 1, 0.25f), Knob());
+        popup.stampWord = MakeText(popup.stamp.transform, "Word", "", 52);
+        Stretch((RectTransform)popup.stampWord.transform);
+        popup.stampWord.color = Color.white;
+        popup.stampWord.fontStyle = FontStyle.Bold;
+        popup.titleText = Label(popCard, "Title", new Vector2(0.36f, 0.5f), new Vector2(0.96f, 0.92f), 64, TextAnchor.MiddleLeft);
+        popup.titleText.fontStyle = FontStyle.Bold;
+        popup.titleText.color = Ink;
+        popup.detailText = Label(popCard, "Detail", new Vector2(0.36f, 0.08f), new Vector2(0.96f, 0.5f), 48, TextAnchor.UpperLeft);
+        popup.detailText.color = Ink;
+        popPanel.SetActive(false);
 
         router.screens = entries.ToArray();
 

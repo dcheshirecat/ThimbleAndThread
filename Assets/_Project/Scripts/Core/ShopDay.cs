@@ -44,13 +44,52 @@ public class ShopDay : MonoBehaviour
     {
         GM.OnGameLoaded += OnGameLoaded;
         GM.OnScreenChanged += OnScreenChanged;
+        GM.OnRelationshipLevelUp += FriendshipLevelUp;
     }
+
+    void FriendshipLevelUp(string customerId, int level)
+    {
+        var who = CustomerFor(customerId);
+        if (who != null) Stamps.Earn(Save, $"friend:{customerId}:{level}", who.displayName, $"Friendship level {level}", StampTheme.Friendship);
+    }
+
+    // ---- The doorbell: rings on any screen, with a buzz, until someone opens the door ----
+
+    const float BellRepeat = 30f;        // rings again now and then while no one answers
+    float bellTimer = -1f;
+    public bool BellRinging { get; private set; }
+    public event System.Action OnBell;
+
+    void Update()
+    {
+        if (Save == null || Save.night || CustomersWaiting == 0 || GM.Current == ScreenId.Dialogue || GM.Current == ScreenId.Title || GM.Current == ScreenId.SaveSelect)
+        {
+            if (Save == null || Save.night || CustomersWaiting == 0) { BellRinging = false; bellTimer = -1f; }
+            return;
+        }
+        if (bellTimer < 0) bellTimer = BellRinging ? BellRepeat : Random.Range(1.5f, 3.5f);   // someone's on their way...
+        bellTimer -= Time.unscaledDeltaTime;
+        if (bellTimer <= 0) { bellTimer = -1f; RingBell(); }
+    }
+
+    void RingBell()
+    {
+        BellRinging = true;
+        AudioManager.Play(Sfx.Bell);
+        Haptics.Buzz();
+        if (GM.Current != ScreenId.Shop) Stamps.Notice("Ding-dong! Someone's at the shop door.");
+        OnBell?.Invoke();
+    }
+
+    /// The door's been opened: the bell stops until the next visitor arrives.
+    public void AnswerDoor() { BellRinging = false; bellTimer = -1f; }
 
     void OnDestroy()
     {
         if (GM == null) return;
         GM.OnGameLoaded -= OnGameLoaded;
         GM.OnScreenChanged -= OnScreenChanged;
+        GM.OnRelationshipLevelUp -= FriendshipLevelUp;
     }
 
     void OnGameLoaded(bool isNewGame)
@@ -82,6 +121,7 @@ public class ShopDay : MonoBehaviour
         // What the player has learned: everything for saves from before skills, else whatever their
         // chapter, levels, books and friends have taught them (chapter 1 opens cross stitch).
         if (Save.learnEverything) Progress.LearnEverything();
+        Progress.CatchUpStamps();
         Progress.CheckUnlocks();
 
         // A new game opens with patterns for things the player can already make on display first.
@@ -182,8 +222,16 @@ public class ShopDay : MonoBehaviour
             var pickup = PickupFor(customer);
             if (pickup != null)
             {
-                Selected = pickup;
-                HandOver();
+                // They ask for it; the player decides (owner, 2026-10-31: not automatic).
+                var order = pickup;
+                Say(customer, Pick($"I've come for my {order.item.itemName.ToLower()}! Is it ready?", $"Hello again! I'm here for the {order.item.itemName.ToLower()}."),
+                    ($"Hand over the {order.item.itemName.ToLower()}", () => { Selected = order; HandOver(); }),
+                    ("Not quite yet", () =>
+                    {
+                        order.pickupDay = Save.day + 1;   // they'll try again another day
+                        GM.Persist();
+                        Say(customer, Pick("No rush at all. I'll pop back another day.", "Oh, of course. Another day, then!"), ("Continue", () => GM.ChangeScreen(ScreenId.Shop)));
+                    }));
                 return;
             }
             // A friendship scene first, if one is waiting, then their hello, then what they're after.
@@ -195,7 +243,7 @@ public class ShopDay : MonoBehaviour
         }
         Visitor = null;
         GM.Persist();
-        LastMessage = "No one else is waiting today. Close the shop whenever you're ready.";
+        LastMessage = "";   // no hint that the day's visitors are done (owner, 2026-10-31): the player decides when to close
         GM.ChangeScreen(ScreenId.Shop);
     }
 
@@ -307,6 +355,9 @@ public class ShopDay : MonoBehaviour
             Save.coinsToday += SaleOffer.price;
             Save.patternsSoldToday++;
             Save.totalPatternsSold++;
+            foreach (int n in new[] { 1, 10, 25, 50 })
+                if (Save.totalPatternsSold == n)
+                    Stamps.Earn(Save, $"patterns_sold:{n}", n == 1 ? "First pattern sold" : $"{n} patterns sold", "Someone's making your pattern tonight.", StampTheme.Shop);
             SaleOffer.sold++;
             next = Progress.AdvanceChapter();
             LastMessage = $"Sold the {SaleOffer.name} pattern to {Visitor.displayName}: +{SaleOffer.price} coins.";
@@ -371,6 +422,13 @@ public class ShopDay : MonoBehaviour
     /// A line said by a customer (outside Ink): their face, the text, and answer buttons.
     void Say(CustomerDef who, string text, params (string, System.Action)[] answers) => Say(who, text, null, answers);
 
+    /// A line of narration (no speaker) while someone is in the shop.
+    void Narrate(CustomerDef who, string text, params (string, System.Action)[] answers)
+    {
+        if (GM.Current != ScreenId.Dialogue) GM.ChangeScreen(ScreenId.Dialogue);
+        Show(who, new DialogueRunner.Line { speaker = null, text = text, tags = new List<string>() }, null, new List<(string, System.Action)>(answers));
+    }
+
     void Say(CustomerDef who, string text, Pattern preview, params (string, System.Action)[] answers)
     {
         if (GM.Current != ScreenId.Dialogue) GM.ChangeScreen(ScreenId.Dialogue);
@@ -433,7 +491,11 @@ public class ShopDay : MonoBehaviour
                 if (rel != null && who.romanceable)
                 {
                     rel.romance = arg != "0";
-                    if (rel.romance) Progress.AddNews($"You and {who.displayName} are seeing each other.");
+                    if (rel.romance)
+                    {
+                        Progress.AddNews($"You and {who.displayName} are seeing each other.");
+                        Stamps.Earn(Save, $"romance:{who.customerId}", $"You and {who.displayName}", "Something more than friendship.", StampTheme.Romance);
+                    }
                 }
                 break;
             case "flag": if (!Save.flags.Contains(arg)) Save.flags.Add(arg); break;
@@ -769,6 +831,7 @@ public class ShopDay : MonoBehaviour
         p.design = Compact(design);
         if (design.cells.Count == 0) p.onShelf = false;
         if (!Save.patterns.Contains(p)) Save.patterns.Add(p);
+        if (design.cells.Count > 0) Stamps.Earn(Save, "design:first", "Your first design", $"\"{p.name}\"", StampTheme.Craft);
         GM.Persist();
         LastMessage = $"Saved \"{p.name}\" to your pattern book.";
         GM.ChangeScreen(ScreenId.PatternEdit);
@@ -853,7 +916,12 @@ public class ShopDay : MonoBehaviour
             : s.kind == SupplyKind.Tool ? $"Bought {s.displayName}. Tools are yours to keep."
             : s.kind == SupplyKind.Book ? $"Bought {s.displayName}."
             : $"Bought {s.displayName}: +{s.perPack} {s.unit} (you have {shop.Stock(supplyId)}).";
-        if (LastMessage.StartsWith("Bought")) GM.AddRelationshipPoints(MarketOwnerId, 2);   // a regular becomes a friend
+        if (LastMessage.StartsWith("Bought"))
+        {
+            GM.AddRelationshipPoints(MarketOwnerId, 2);   // a regular becomes a friend
+            if (s.market == MarketSlot.Rare) Stamps.Earn(Save, "market:rare", "A rare find", s.displayName, StampTheme.Shop);
+            if (s.kind == SupplyKind.Tool && s.assist > 0) Stamps.Earn(Save, "tool:better", "Better tools", s.displayName, StampTheme.Craft);
+        }
         foreach (var learned in Progress.CheckUnlocks()) LastMessage += $" You learned {learned.displayName}!";
         GM.Persist();
         GM.ChangeScreen(ScreenId.Market);   // refresh the list
@@ -891,6 +959,7 @@ public class ShopDay : MonoBehaviour
         if (u == null || Save.night || Progress.Owns(u) || u.chapter > Save.chapter) return;
         if (!GM.TrySpend(u.price)) { LastMessage = $"Not enough coins for the {u.displayName} ({u.price} coins)."; GM.ChangeScreen(ScreenId.Market); return; }
         Save.upgrades.Add(u.upgradeId);
+        Stamps.Earn(Save, $"upgrade:{u.upgradeId}", u.displayName, "The shop grows a little.", StampTheme.Shop);
         if (u.effect == UpgradeEffect.DisplaySpot) Save.displaySpots += u.amount;
         Progress.AddNews($"The shop has a new {u.displayName}.");
         LastMessage = $"The {u.displayName} is in! {u.description}";
@@ -900,10 +969,39 @@ public class ShopDay : MonoBehaviour
 
     // ---- Order book and workbench ----
 
+    /// What an unfinished order still needs that the player doesn't have: supplies, tools, a fabric or yarn to
+    /// choose. Empty when everything's in the cupboard (or there's nothing to make yet, e.g. a design first).
+    public List<string> ShortOf(Order o)
+    {
+        var list = new List<string>();
+        if (o == null || o.patternOnly || o.finished || o.needsDesign || o.item == null) return list;
+        if (MaterialToChoose(o) && ChooseMaterialStep.Options(o, content, shop).Count == 0) list.Add(ChooseMaterialStep.Wanted(o, content));
+        foreach (var n in shop.Missing(NeedsFor(o)))
+        {
+            var s = content.Supply(n.supplyId);
+            list.Add($"{(s != null ? s.displayName : n.supplyId)} ({n.amount - shop.Stock(n.supplyId)} more {(s != null ? s.unit : "")})".Replace(" )", ")"));
+        }
+        foreach (var t in shop.MissingTools(ToolsFor(o))) list.Add(t.label);
+        return list;
+    }
+
+    /// Whether a missing tool need would be met by this supply (for the market's shopping list).
+    public static bool Fits(ToolNeed need, SupplyDef s) =>
+        s != null && s.kind == SupplyKind.Tool && s.toolType == need.toolType && (need.exactSize ? s.size == need.minSize : s.size >= need.minSize);
+
     public void SelectOrder(string orderId)
     {
         Selected = Save.orders.Find(o => o.id == orderId);
         LastMessage = "";
+        // At night, an order only opens once everything for it is in the cupboard (owner, 2026-10-31).
+        var missing = ShortOf(Selected);
+        if (Save.night && Selected != null && missing.Count > 0)
+        {
+            LastMessage = $"You can't start on the {Selected.item.itemName.ToLower()} yet. Missing: {string.Join(", ", missing)}. The Supply Market's shopping list has it all.";
+            Selected = null;
+            GM.ChangeScreen(ScreenId.OrderBook);
+            return;
+        }
         if (Selected != null) GM.ChangeScreen(ScreenId.Workbench);
     }
 
@@ -1170,6 +1268,7 @@ public class ShopDay : MonoBehaviour
                 motif = Selected.target.palette.Count > 0 ? Selected.target.palette[0] : Color.white,
             };
             Save.player.made.Add(made);
+            Stamps.Earn(Save, "made:first", "Made for me", $"Your {made.name}.", StampTheme.Craft);
             Save.player.wornMade = made.id;   // put it straight on
             Save.orders.Remove(Selected);
             GM.Persist();
@@ -1244,6 +1343,10 @@ public class ShopDay : MonoBehaviour
         Save.orders.Remove(Selected);
         Save.deliveredToday++;
         Save.totalDelivered++;
+        foreach (int n in new[] { 1, 5, 10, 25, 50, 100 })
+            if (Save.totalDelivered == n)
+                Stamps.Earn(Save, $"delivered:{n}", n == 1 ? "First order delivered" : $"{n} orders delivered", n == 1 ? "Your first happy customer." : "The town keeps coming back.", StampTheme.Shop);
+        if (commission != null) Stamps.Earn(Save, $"commission:{commission.commissionId}", "Commission complete", $"\"{Selected.target.displayName}\" for {name}.", StampTheme.Story);
         Save.coinsToday += price;
         var taught = Progress.CheckUnlocks();   // a closer friend may teach something
         var chapter = Progress.AdvanceChapter();
@@ -1251,8 +1354,8 @@ public class ShopDay : MonoBehaviour
 
         int after = GM.GetRelationship(Selected.customerId).level;
         LastMessage = after > level
-            ? $"{name} loves it and is now a closer friend! (level {after})"
-            : $"Handed over to {name}: +{price} coins, +{points} friendship.";
+            ? $"{name} paid you {price} coins, and is now a closer friend! (level {after})"
+            : $"{name} paid you {price} coins. (+{points} friendship)";
         if (commission != null)
             LastMessage += $" The \"{Selected.target.displayName}\" pattern is in your book: put it on the shelf in the Pattern Studio.";
         foreach (var s in taught) LastMessage += s.friend != null ? $" {s.friend.displayName} taught you {s.displayName}!" : $" You learned {s.displayName}!";
@@ -1268,9 +1371,12 @@ public class ShopDay : MonoBehaviour
             if (reaction != null) knots.Add(reaction);
             knots.AddRange(ScenesDue(customer));
         }
+        // What they paid is only known now, after they've seen it and reacted (owner, 2026-10-31).
+        string paid = LastMessage;
+        System.Action payment = () => Narrate(customer, paid, ("Continue", () => GM.ChangeScreen(ScreenId.Shop)));
         if (surprises.Count > 0 && customer != null)
-            Play(customer, knots, () => Say(customer, string.Join("\n", surprises), ("Continue", () => GM.ChangeScreen(ScreenId.Shop))));
-        else Play(customer, knots, () => GM.ChangeScreen(ScreenId.Shop));
+            Play(customer, knots, () => Say(customer, string.Join("\n", surprises), ("Continue", payment)));
+        else Play(customer, knots, payment);
     }
 
     static string Pick(params string[] lines) => lines[Random.Range(0, lines.Length)];

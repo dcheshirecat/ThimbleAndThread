@@ -46,7 +46,8 @@ public abstract class TracingStep : PieceStep, IMistakes
             var seg = PieceShape.Resample(g, ClosedGuide, Samples / guides.Count);
             segments.Add(seg);
             samples.AddRange(seg);
-            Dashes(seg, GuideColor, 0.008f, 1);
+            Line(seg, new Color(0, 0, 0, 0.28f), 0.014f, 1);   // a soft shadow, so the line shows on any fabric
+            Dashes(seg, GuideColor, 0.009f, 2);
         }
         covered = new bool[samples.Count];
         points.AddRange(State.points);
@@ -109,9 +110,107 @@ public abstract class TracingStep : PieceStep, IMistakes
 
     protected override void OnPress(Vector2 p)
     {
+        ShowLoupe(p);
         StartStroke();
         if (HandNeedle) { Tool(CraftTool.Kind.Needle).MoveTo(World(p), true); lastPoke = p; }
         AddPoint(p);
+    }
+
+    protected override void OnRelease(Vector2 p) => HideLoupe();
+
+    // ---- The loupe: a magnifier above the finger, so the line and the thread under it stay visible
+    //      (owner, 2026-10-31: backstitching was hard to see) ----
+
+    /// Whether to show the magnifier while tracing (not on the machine, which guides itself).
+    protected virtual bool UseLoupe => true;
+    const float LoupeRadius = 0.13f, LoupeZoom = 2.4f;
+    const int LoupeLayer = 30;           // the loupe itself, so its camera doesn't see it
+    Camera loupeCam;
+    GameObject loupe;
+    RenderTexture loupeTexture;
+
+    void ShowLoupe(Vector2 p)
+    {
+        if (!UseLoupe) return;
+        if (loupe == null) MakeLoupe();
+        // Above the finger; beside it near the top of the work.
+        var at = p + new Vector2(0, 0.25f);
+        if (at.y + LoupeRadius > 1.08f) at = p + new Vector2(p.x > 0.5f ? -0.27f : 0.27f, 0.05f);
+        var look = World(p);
+        loupeCam.transform.position = new Vector3(look.x, look.y, area.cam.transform.position.z);
+        var spot = World(at);
+        loupe.transform.position = new Vector3(spot.x, spot.y, 0);
+        loupe.SetActive(true);
+        loupeCam.enabled = true;
+    }
+
+    void HideLoupe()
+    {
+        if (loupe == null) return;
+        loupe.SetActive(false);
+        loupeCam.enabled = false;
+    }
+
+    void MakeLoupe()
+    {
+        loupeTexture = new RenderTexture(512, 512, 16);
+        var camGo = new GameObject("LoupeCamera");
+        camGo.transform.SetParent(transform, false);
+        loupeCam = camGo.AddComponent<Camera>();
+        loupeCam.orthographic = true;
+        loupeCam.orthographicSize = LoupeRadius * Side / LoupeZoom;
+        loupeCam.clearFlags = CameraClearFlags.SolidColor;
+        loupeCam.backgroundColor = area.cam.backgroundColor;
+        loupeCam.cullingMask = area.cam.cullingMask & ~(1 << LoupeLayer);
+        loupeCam.targetTexture = loupeTexture;
+        loupeCam.enabled = false;
+
+        loupe = new GameObject("Loupe");
+        loupe.transform.SetParent(transform, false);
+        loupe.layer = LoupeLayer;
+        // A round lens showing the camera's picture...
+        float r = LoupeRadius * Side;
+        const int n = 48;
+        var verts = new Vector3[n + 1];
+        var uvs = new Vector2[n + 1];
+        var tris = new int[n * 3];
+        verts[0] = Vector3.zero; uvs[0] = new Vector2(0.5f, 0.5f);
+        for (int i = 0; i < n; i++)
+        {
+            float a = i * Mathf.PI * 2 / n;
+            verts[i + 1] = new Vector3(Mathf.Cos(a), Mathf.Sin(a)) * r;
+            uvs[i + 1] = new Vector2(0.5f + Mathf.Cos(a) * 0.5f, 0.5f + Mathf.Sin(a) * 0.5f);
+            tris[i * 3] = 0; tris[i * 3 + 1] = (i + 1) % n + 1; tris[i * 3 + 2] = i + 1;
+        }
+        var mesh = new Mesh { vertices = verts, uv = uvs, triangles = tris };
+        loupe.AddComponent<MeshFilter>().mesh = mesh;
+        var mr = loupe.AddComponent<MeshRenderer>();
+        mr.sharedMaterial = new Material(area.material) { mainTexture = loupeTexture, color = Color.white };
+        mr.sortingOrder = 60;
+        // ...in a rim, with a small mark where the finger is.
+        LoupeRing(r, r * 0.06f, new Color(0.35f, 0.3f, 0.35f), 61);
+        LoupeRing(r * 0.06f, r * 0.02f, new Color(0.9f, 0.2f, 0.25f, 0.8f), 62);
+        loupe.SetActive(false);
+    }
+
+    void LoupeRing(float radius, float width, Color color, int sorting)
+    {
+        var go = new GameObject("Rim") { layer = LoupeLayer };
+        go.transform.SetParent(loupe.transform, false);
+        var l = go.AddComponent<LineRenderer>();
+        l.sharedMaterial = area.material;
+        l.useWorldSpace = false;
+        l.loop = true;
+        l.startColor = l.endColor = color;
+        l.startWidth = l.endWidth = width;
+        l.sortingOrder = sorting;
+        l.positionCount = 40;
+        for (int i = 0; i < 40; i++) l.SetPosition(i, new Vector3(Mathf.Cos(i * Mathf.PI / 20), Mathf.Sin(i * Mathf.PI / 20)) * radius);
+    }
+
+    void OnDestroy()
+    {
+        if (loupeTexture != null) loupeTexture.Release();
     }
 
     /// The line resampled into evenly spaced checkpoints, in order along it.
@@ -127,6 +226,7 @@ public abstract class TracingStep : PieceStep, IMistakes
 
     protected override void OnDrag(Vector2 p)
     {
+        ShowLoupe(p);
         if (points.Count > 0 && (points[points.Count - 1] - p).sqrMagnitude < 0.005f * 0.005f) return;
         AddPoint(p);
     }

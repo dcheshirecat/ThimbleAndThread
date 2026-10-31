@@ -8,7 +8,7 @@ public class BackstitchStep : TracingStep
     protected override float ShapePadding => 0.25f;
     protected override bool ClosedGuide => true;
     protected override Color ThreadColor => Color.Lerp(Floss(0), Color.black, 0.3f);
-    protected override Color GuideColor => new Color(0.55f, 0.6f, 0.75f, 0.9f);   // the printed line
+    protected override Color GuideColor => new Color(0.20f, 0.35f, 0.85f, 1f);   // the printed line (water-soluble pen blue, easy to see)
 
     protected override void DrawPiece()
     {

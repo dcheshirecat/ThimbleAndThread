@@ -72,10 +72,13 @@ public static class Materials
         int side = Mathf.Max(p.width, p.height);
         return new List<ToolNeed>
         {
-            new ToolNeed { toolType = "hoop", minSize = side, label = $"Embroidery hoop that fits {side} x {side}" },
+            new ToolNeed { toolType = "hoop", minSize = side, label = $"A {HoopInches(side)}-inch embroidery hoop or bigger (the design is {p.width} x {p.height} stitches)" },
             new ToolNeed { toolType = "tapestry_needle", minSize = 0, label = "Tapestry needle" },
         };
     }
+
+    /// The smallest hoop that holds a design this many stitches across: 4" up to 10, 6" up to 12, 8" up to 16.
+    public static int HoopInches(int stitches) => stitches <= 10 ? 4 : stitches <= 12 ? 6 : stitches <= 16 ? 8 : 10;
 
     /// Yarn weights by number, as on yarn labels.
     public static string WeightName(int weight) => weight switch

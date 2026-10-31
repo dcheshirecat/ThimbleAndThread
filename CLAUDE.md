@@ -421,6 +421,36 @@ now; final art = separate drawings per option and colour (owner draws each), not
     wider rhythm window; hoops -> fabric stays taut (fewer wobble mistakes). Sold in the Supply Market's
     Tools shelf (premium tiers can be Rare). Steps show which tool helped. Ties in with item 12 (mistakes).
 
+## Owner feedback round 3, 2026-10-31 (branch round3)
+Owner: "a game for adults: cozy, but complex enough to be stimulating. The sweater is a great start and the
+cross stitch game is very fun, even if a bit simple."
+1. DONE Don't show what a customer will pay, or the coins/points, until after the hand-over interaction (Result
+   screen shows quality only; ShopDay.Narrate after the reaction: "Mara paid you 50 coins. (+30 friendship)").
+2. Workroom: can't open an order unless every supply for it is owned; the order list says what's missing
+   (not "You can work on this tonight" when supplies are missing). DONE: ShopDay.ShortOf(order) (strings);
+   SelectOrder refuses at night; order rows greyed with "Missing: ..."; Journal and Workbench say so.
+3. Pattern Studio greyed out (not a broken-looking button) until unlocked; it must not open before the unlock
+   is announced. DONE: OrderFlowUI.patternStudioButton not interactable until pattern_design is known;
+   learning it pops up a stamp.
+4. DONE Don't tell the player that all customers have come and to close the shop.
+5. DONE Stores (Supply Market, boutique, ...) from a "Shops" menu under the coin counter (ShopSceneUI.shopsMenu), not the journal.
+6. Six-character trade codes via an online service (needs the owner's account; ask which service).
+7. DONE The doorbell rings on any screen, plus haptics (a Settings toggle), so you notice with the sound off.
+   ShopDay.Update owns the bell (BellRinging, OnBell, AnswerDoor; repeats every 30 s); Core/Haptics.cs
+   (PlayerPrefs "haptics", Handheld.Vibrate on phones); off the shop screen a notice pops up.
+8. DONE Backstitch: hard to see what you're doing under your finger. TracingStep loupe (a magnifier above the
+   finger: second camera -> RenderTexture on a round mesh on layer 30), shadowed guide lines, a stronger
+   backstitch blue. Not on the machine (UseLoupe false).
+9. DONE Supply Market shopping list: everything missing, and for which orders (OrderFlowUI.ToggleShoppingList;
+   tiles that would help say "On your list").
+10. DONE Hoop labels: say stitches and inches (Materials.HoopInches).
+11. DONE Every achievement is announced (a pop-up) and logged in the Journal as themed stamps. Core/Stamps.cs
+    (StampTheme Craft/Skill/Friendship/Romance/Story/Shop; SaveData.stamps, version 15), UI/StampPopup.cs,
+    Journal "Stamps" tab. Stamps: skills, craft levels, chapters, friendship levels, romance, orders delivered
+    (1/5/10/25/50/100), patterns sold, commissions, upgrades, first design, first rare find, better tools, made
+    for me. Older saves get theirs quietly (Progression.CatchUpStamps).
+12. DONE Pickups ask first ("Hand over the ..." / "Not quite yet": they come back the next day).
+
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
 2. DONE (on main): item recipes. CraftItemDef.steps (RecipeStep: StepKind, label,

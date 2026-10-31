@@ -24,11 +24,10 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
     public const int MiddlePage = 1;
     public int Page { get; private set; } = MiddlePage;
-    public bool Ringing { get; private set; }
+    public bool Ringing => day.BellRinging;
 
     float offset;                        // current horizontal shift, in page widths (animated)
     float dragStart;
-    float bellTimer = -1;
     bool opening;
     readonly List<GameObject> rows = new List<GameObject>();
 
@@ -40,6 +39,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         if (GameManager.Instance == null) return;
         GameManager.Instance.OnScreenChanged += OnScreenChanged;
         GameManager.Instance.OnCoinsChanged += OnCoins;
+        day.OnBell += Ring;
         // This sits on the shop panel, which the router switches on while the screen change is being
         // announced, too late to hear it: so set up here.
         if (GameManager.Instance.Current == ScreenId.Shop) OnScreenChanged(ScreenId.Shop);
@@ -50,6 +50,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         if (GameManager.Instance == null) return;
         GameManager.Instance.OnScreenChanged -= OnScreenChanged;
         GameManager.Instance.OnCoinsChanged -= OnCoins;
+        day.OnBell -= Ring;
     }
 
     void OnCoins(int coins) => ShowCoins();
@@ -57,9 +58,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     void OnScreenChanged(ScreenId id)
     {
         if (id != ScreenId.Shop || Save == null) return;
-        Ringing = false;
         opening = false;
-        bellTimer = Random.Range(1.5f, 3.5f);   // someone's on their way...
         if (closeConfirm != null) closeConfirm.SetActive(false);
         door.localRotation = Quaternion.identity;
         door.localScale = Vector3.one;
@@ -73,8 +72,8 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         BuildPickups();
         BuildDisplay();
         bool someoneComing = day.CustomersWaiting > 0;
-        bubble.SetActive(Ringing || !someoneComing);
-        bubbleText.text = Ringing ? "Ding-dong! Someone's at the door." : someoneComing ? "" : "It's gone quiet. Flip the sign to close up when you're ready.";
+        bubble.SetActive(Ringing);
+        bubbleText.text = Ringing ? "Ding-dong! Someone's at the door." : "";
         statusText.text = $"Day {Save.day}" + (day.Progress.Chapter is ChapterDef ch ? $"  ·  Chapter {ch.number}: {ch.title}" : "") +
                           (string.IsNullOrEmpty(day.LastMessage) ? "" : $"\n{day.LastMessage}");
         ShowPage(Page, instant: true);
@@ -90,11 +89,6 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     void Update()
     {
         if (!OnShop || Save == null) return;
-        if (!Ringing && bellTimer > 0 && day.CustomersWaiting > 0 && !journal.IsOpen)
-        {
-            bellTimer -= Time.unscaledDeltaTime;
-            if (bellTimer <= 0) Ring();
-        }
         if (Ringing && !opening)   // the door rattles now and then until it's answered
         {
             float t = Time.unscaledTime % 1.6f;
@@ -112,9 +106,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     /// The bell rings: someone is at the door.
     public void Ring()
     {
-        if (day.CustomersWaiting == 0) return;
-        Ringing = true;
-        AudioManager.Play(Sfx.Bell);
+        if (!OnShop || day.CustomersWaiting == 0) return;   // ShopDay rang it (sound and buzz): show it here
         if (Page != MiddlePage) ShowPage(MiddlePage);
         Refresh();
     }
@@ -126,7 +118,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         if (!Ringing)
         {
             bubble.SetActive(true);
-            bubbleText.text = day.CustomersWaiting > 0 ? "No one yet... they'll ring when they arrive." : "It's gone quiet. Flip the sign to close up when you're ready.";
+            bubbleText.text = "No one at the door just now.";
             return;
         }
         StartCoroutine(OpenDoor());
@@ -135,7 +127,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     IEnumerator OpenDoor()
     {
         opening = true;
-        Ringing = false;
+        day.AnswerDoor();
         for (float t = 0; t < 1; t += Time.unscaledDeltaTime / 0.35f)   // the door swings open (squashes toward its hinge)
         {
             door.localRotation = Quaternion.identity;
@@ -158,6 +150,13 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     }
 
     public void OpenJournal() => journal.Open();
+
+    // ---- The shops menu (by the coins): the market, the boutique ----
+
+    public GameObject shopsMenu;
+    public void ToggleShops() { shopsMenu.SetActive(!shopsMenu.activeSelf); shopsMenu.transform.SetAsLastSibling(); }
+    public void GoToMarket() { shopsMenu.SetActive(false); GameManager.Instance.ChangeScreen(ScreenId.Market); }
+    public void GoToBoutique() { shopsMenu.SetActive(false); GameManager.Instance.ChangeScreen(ScreenId.Boutique); }
 
     // ---- Pages and swiping ----
 
