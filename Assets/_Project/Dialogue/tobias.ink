@@ -121,3 +121,18 @@ Tobias: Fair work. Honest work. Can't ask more than that. # neutral
 === tobias_handover_poor_gruff ===
 Tobias: Hm. You'll get there. Took me ten years to tie a decent knot. # neutral
 -> END
+
+// ---- Reactions when you suggest a pattern on display: _yes (they want you to make it), _buy (they make
+// that craft themselves), _no. Add variants like name_suggest_no_rain. ----
+
+=== tobias_suggest_yes ===
+Tobias: Hm. Aye. That's the kind of thing Elsa would have had on the table. # thoughtful
+-> END
+
+=== tobias_suggest_no ===
+Tobias: Pretty. Not for an old fisherman, though. What would I do with it? # neutral
+-> END
+
+=== tobias_suggest_no_fuss ===
+Tobias: No. Too much fuss for me. You keep it for someone who'll love it. # neutral
+-> END

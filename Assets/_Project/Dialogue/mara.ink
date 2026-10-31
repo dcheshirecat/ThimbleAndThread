@@ -119,3 +119,18 @@ Mara: That'll do beautifully. Honestly, anything that isn't covered in sick is a
 === mara_handover_poor_kind ===
 Mara: Oh! It's... very handmade. That's the point, isn't it? # thoughtful
 -> END
+
+// ---- Reactions when you suggest a pattern on display: _yes (they want you to make it), _buy (they make
+// that craft themselves), _no. Add variants like name_suggest_no_rain. ----
+
+=== mara_suggest_yes ===
+Mara: Oh, she'd love that. I'd love that. Could you, really? # happy
+-> END
+
+=== mara_suggest_buy ===
+Mara: I've been practising, you know! I'd love to try that one myself. Slowly. With a lot of swearing. # happy
+-> END
+
+=== mara_suggest_no ===
+Mara: It's gorgeous. It's just not... baby-proof. Nothing is, right now. # thoughtful
+-> END

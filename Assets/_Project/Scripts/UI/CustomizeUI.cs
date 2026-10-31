@@ -90,6 +90,7 @@ public class CustomizeUI : MonoBehaviour
         topColorLabel.text = $"Colour {P.topColor + 1}";
         if (madeLabel != null)
         {
+            madeLabel.transform.parent.gameObject.SetActive(P.created);
             var made = P.made.Find(m => m.id == P.wornMade);
             madeLabel.text = P.made.Count == 0 ? "Made by you: nothing yet" : made != null ? $"Wearing: {made.name}" : "Made by you: not wearing";
         }

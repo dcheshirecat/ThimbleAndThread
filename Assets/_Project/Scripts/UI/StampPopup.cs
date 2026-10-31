@@ -19,12 +19,24 @@ public class StampPopup : MonoBehaviour
     {
         Stamps.OnEarned += Earned;
         Stamps.OnNotice += Notice;
+        if (GameManager.Instance != null) GameManager.Instance.OnScreenChanged += ScreenChanged;
+    }
+
+    void ScreenChanged(ScreenId id) => Next();   // held ones show once the player's in the game
+
+    /// Not over the title, save slots, the tutorial or making the shopkeeper: they wait until after.
+    static bool Quiet()
+    {
+        var gm = GameManager.Instance;
+        if (gm == null || gm.Save == null || !gm.Save.player.created) return true;
+        return gm.Current == ScreenId.Title || gm.Current == ScreenId.SaveSelect || gm.Current == ScreenId.Customize || gm.Current == ScreenId.Tutorial;
     }
 
     void OnDisable()
     {
         Stamps.OnEarned -= Earned;
         Stamps.OnNotice -= Notice;
+        if (GameManager.Instance != null) GameManager.Instance.OnScreenChanged -= ScreenChanged;
     }
 
     void Earned(Stamp s) { queue.Enqueue((s, null)); Next(); }
@@ -40,7 +52,7 @@ public class StampPopup : MonoBehaviour
 
     void Next()
     {
-        if (showing || queue.Count == 0 || !isActiveAndEnabled) return;
+        if (showing || queue.Count == 0 || !isActiveAndEnabled || Quiet()) return;
         var (s, notice) = queue.Dequeue();
         showing = true;
         panel.SetActive(true);

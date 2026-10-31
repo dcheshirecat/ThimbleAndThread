@@ -42,6 +42,7 @@ public class CustomerDef : ScriptableObject
     public int firstChapter = 1;           // starts visiting the shop in this story chapter
     [Range(0f, 1f)] public float likesSurprises = 0.65f;
     public Preference[] preferences = new Preference[0];
+    public CraftType[] makes = new CraftType[0];   // crafts they do themselves: they'd buy those patterns to make
     public bool shopOwner;                 // runs a shop the player visits (market, boutique): never comes in as a customer   // chance they're pleased by a special touch they didn't ask for
     public bool romanceable;               // adult characters only: friendship can grow into romance
     public string inkName;                 // the name of this character's knots in the dialogue (e.g. "mara")

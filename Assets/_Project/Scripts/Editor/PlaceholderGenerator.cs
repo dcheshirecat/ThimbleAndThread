@@ -275,6 +275,12 @@ public static class PlaceholderGenerator
         //      to their order (the reaction notes it in the Journal). Each is about a decorating supply. ----
         var wood = content_Supply("buttons_wood");
         var ribbon = content_Supply("ribbon_satin");
+        // Crafts people do themselves (they buy those patterns rather than ordering the piece).
+        Makes(isla, CraftType.Knitting);
+        Makes(rowan, CraftType.Crochet, CraftType.Knitting);
+        Makes(priya, CraftType.CrossStitch, CraftType.Embroidery);
+        Makes(mara, CraftType.Knitting);
+        Makes(juno, CraftType.Embroidery, CraftType.Sewing);
         Prefs(tobias, ("wooden_buttons", "wooden buttons", true, wood), ("white_buttons", "white buttons", false, whiteButtons), ("lace", "lace", false, lace));
         Prefs(mara, ("ribbon", "satin ribbon", true, ribbon), ("lace", "lace trim", true, lace));
         Prefs(juno, ("lace", "lace", false, lace), ("wooden_buttons", "wooden buttons", true, wood));
@@ -588,6 +594,13 @@ public static class PlaceholderGenerator
         if (s == null || s.assist > 0f) return;
         s.assist = assist;
         EditorUtility.SetDirty(s);
+    }
+
+    static void Makes(CustomerDef c, params CraftType[] crafts)
+    {
+        if (c == null || (c.makes != null && c.makes.Length > 0)) return;
+        c.makes = crafts;
+        EditorUtility.SetDirty(c);
     }
 
     static void ShopOwner(CustomerDef c)

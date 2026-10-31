@@ -132,3 +132,14 @@ Eli: I wrote a song, actually. Not about anyone. It's about the harbour. Mostly.
     Eli: Thanks for being here. For all of it. # happy
     ~ friendship(10)
 -> END
+
+// ---- Reactions when you suggest a pattern on display: _yes (they want you to make it), _buy (they make
+// that craft themselves), _no. Add variants like name_suggest_no_rain. ----
+
+=== eli_suggest_yes ===
+Eli: That would look so good in the café. Could you? # happy
+-> END
+
+=== eli_suggest_no ===
+Eli: It's beautiful. I'd get coffee on it within the hour, though. I know myself. # thoughtful
+-> END

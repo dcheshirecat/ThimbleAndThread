@@ -111,3 +111,18 @@ Juno: Cool. Yeah. It's cool. I'll wear it ironically. And then also normally. # 
 === juno_handover_poor_honest ===
 Juno: It's... a choice? Respect the choice. # thoughtful
 -> END
+
+// ---- Reactions when you suggest a pattern on display: _yes (they want you to make it), _buy (they make
+// that craft themselves), _no. Add variants like name_suggest_no_rain. ----
+
+=== juno_suggest_yes ===
+Juno: Okay, that's actually cool. I'd wear that. Unironically. # happy
+-> END
+
+=== juno_suggest_buy ===
+Juno: Wait, I could make that. Can I make that? I'm making that. # surprised
+-> END
+
+=== juno_suggest_no ===
+Juno: It's nice. It's very... nice. That's the problem. # neutral
+-> END

@@ -57,19 +57,28 @@ public class ShopDay : MonoBehaviour
 
     // ---- The doorbell: rings on any screen, with a buzz, until someone opens the door ----
 
-    const float BellRepeat = 30f;        // rings again now and then while no one answers
+    // Visitors come now and then, not one after another (owner, 2026-10-31: time to do other things between).
+    const float BellRepeat = 45f;                          // rings again while no one answers
+    const float FirstVisitorMin = 8f, FirstVisitorMax = 15f;    // the day's first visitor
+    const float NextVisitorMin = 30f, NextVisitorMax = 75f;     // seconds (on any screen but a conversation) until the next
+    bool firstVisitor = true;
     float bellTimer = -1f;
     public bool BellRinging { get; private set; }
     public event System.Action OnBell;
 
     void Update()
     {
-        if (Save == null || Save.night || CustomersWaiting == 0 || GM.Current == ScreenId.Dialogue || GM.Current == ScreenId.Title || GM.Current == ScreenId.SaveSelect)
+        if (Save == null || Save.night || CustomersWaiting == 0 || GM.Current == ScreenId.Dialogue || GM.Current == ScreenId.Title
+            || GM.Current == ScreenId.SaveSelect || GM.Current == ScreenId.Customize || GM.Current == ScreenId.Tutorial || !Save.player.created)
         {
             if (Save == null || Save.night || CustomersWaiting == 0) { BellRinging = false; bellTimer = -1f; }
             return;
         }
-        if (bellTimer < 0) bellTimer = BellRinging ? BellRepeat : Random.Range(1.5f, 3.5f);   // someone's on their way...
+        if (bellTimer < 0)   // someone's on their way...
+        {
+            bellTimer = BellRinging ? BellRepeat : firstVisitor ? Random.Range(FirstVisitorMin, FirstVisitorMax) : Random.Range(NextVisitorMin, NextVisitorMax);
+            firstVisitor = false;
+        }
         bellTimer -= Time.unscaledDeltaTime;
         if (bellTimer <= 0) { bellTimer = -1f; RingBell(); }
     }
@@ -107,7 +116,7 @@ public class ShopDay : MonoBehaviour
         foreach (var def in content.patterns)
             if (def != null && def.startsOnShelf && def.item != null && !Save.patterns.Exists(p => p.id == def.patternId))
                 Save.patterns.Add(new OwnedPattern { id = def.patternId, name = def.displayName, itemId = def.item.itemId, price = def.price,
-                                                     onShelf = Shelf.Count < Save.displaySpots });
+                                                     onShelf = false });
 
         // Saves store item ids; look the definitions back up. Drop orders for items that no longer exist.
         Save.orders.RemoveAll(o =>
@@ -132,8 +141,10 @@ public class ShopDay : MonoBehaviour
             foreach (var p in Save.patterns) p.onShelf = false;
             var book = new List<OwnedPattern>(Save.patterns);
             book.Sort((a, b) => Progress.CanMake(ItemFor(b.itemId)).CompareTo(Progress.CanMake(ItemFor(a.itemId))));
-            foreach (var p in book) if (Shelf.Count < Save.displaySpots) p.onShelf = true;
+            foreach (var p in book) if (Shelf.Count < Save.displaySpots && Progress.CanMake(ItemFor(p.itemId))) p.onShelf = true;
         }
+        // Patterns for things the player can't make yet don't stay on display (they can't be sold).
+        foreach (var p in Save.patterns) if (p.onShelf && !Progress.CanMake(ItemFor(p.itemId))) p.onShelf = false;
         foreach (var o in Save.orders) Materials.EnsureThreads(o.target, content);
         foreach (var p in Save.patterns) if (p.designed) Materials.EnsureThreads(p.design, content);
 
@@ -149,6 +160,8 @@ public class ShopDay : MonoBehaviour
     /// order they've decided to collect today (the player only finds out when the bell rings).
     void InviteVisitors()
     {
+        firstVisitor = true;
+        bellTimer = -1f;
         var list = Save.visitorsToday;
         list.Clear();
         foreach (var c in content.customers)
@@ -277,7 +290,7 @@ public class ShopDay : MonoBehaviour
                                                  "Ooh. Let me think about it. Not today, but ask me again sometime?",
                                                  "You'd do that? I'm flattered. Maybe another time."),
                                          ("Continue", () => Leave($"{c.displayName} wasn't after a commission today.")));
-        if (Random.value > Mathf.Clamp01(0.5f + 0.12f * (level - CommissionOfferLevel))) { notNow(); return; }
+        if (Random.value > CommissionAcceptChance(level)) { notNow(); return; }
         var story = CommissionFor(c);
         if (story != null)
         {
@@ -301,6 +314,10 @@ public class ShopDay : MonoBehaviour
             ("Take the Commission", AcceptOffer), ("Not Today", DeclineOffer));
     }
 
+    /// How likely a friend is to say yes to a commission: 30% at level 2, 10% more each level, at most 75%
+    /// (owner, 2026-10-31: never automatic, but likelier with closer friends).
+    public static float CommissionAcceptChance(int level) => Mathf.Clamp(0.3f + 0.1f * (level - CommissionOfferLevel), 0.3f, 0.75f);
+
     /// Commissions the player offered (not story ones) have ids starting with this.
     public const string OwnCommissionPrefix = "own:";
 
@@ -312,31 +329,43 @@ public class ShopDay : MonoBehaviour
         {
             var pattern = p;
             var item = ItemFor(p.itemId);
+            if (!Progress.CanMake(item)) continue;
             options.Add(($"{p.name} ({item.itemName})", () => Suggested(c, pattern)));
         }
         options.Add(("Never mind", () => TheirIdea(c)));
         Narrate(c, "Which pattern do you show them?", options.ToArray());
     }
 
+    /// How they take a suggestion follows who they are (owner, 2026-10-31: not random): something they'd want,
+    /// they ask you to make; a craft they do themselves, they buy the pattern for; anything else, they turn down
+    /// in their own words (ink knots name_suggest_yes / _buy / _no, with variants).
     void Suggested(CustomerDef c, OwnedPattern p)
     {
         var item = ItemFor(p.itemId);
         bool wanted = OrderGenerator.Wants(c, GM.GetRelationship(c.customerId).level).Exists(i => i.itemId == p.itemId);
-        if (wanted && Progress.CanMake(item) && Random.value < 0.8f)
+        bool makesIt = item != null && c.makes != null && System.Array.IndexOf(c.makes, item.craft) >= 0;
+        if (wanted && !makesIt)
         {
             Offer = OrderGenerator.FromPattern(c, item, DesignFor(p), Save.day);
             Offer.fromPatternId = p.id;
-            Say(c, Pick("Oh, that's lovely! Would you make me one?", $"Now that I see it... yes. Could you make me a {item.itemName.ToLower()} like that?"),
-                Offer.target, ("Take the Order", AcceptOffer), ("Not Today", DeclineOffer));
+            Reaction(c, "yes", () => Say(c, $"Could you make me a {item.itemName.ToLower()} like that?", Offer.target, ("Take the Order", AcceptOffer), ("Not Today", DeclineOffer)));
         }
-        else if (Random.value < (wanted ? 0.7f : 0.35f))
+        else if (makesIt)
         {
             SaleOffer = p;
-            Say(c, $"I'd love that pattern, actually. Could I buy it and make it myself?",
-                DesignFor(p), ($"Sell It ({p.price} coins)", AcceptOffer), ("Not Today", DeclineOffer));
+            Reaction(c, "buy", () => Say(c, $"Could I buy the {p.name} pattern? I'd like to make it myself.", DesignFor(p), ($"Sell It ({p.price} coins)", AcceptOffer), ("Not Today", DeclineOffer)));
         }
-        else Say(c, Pick("It's lovely, but it's not really for me.", "Hm. Not quite my thing, I'm afraid."),
-                 ("Continue", () => Leave($"{c.displayName} wasn't taken with the {p.name}.")));
+        else Reaction(c, "no", () => Leave($"{c.displayName} wasn't taken with the {p.name}."),
+                      "It's lovely, but it's not really for me.");
+    }
+
+    /// Plays their own line for a reaction if they have one (a variant not heard lately), then carries on.
+    void Reaction(CustomerDef c, string kind, System.Action then, string fallback = null)
+    {
+        var knot = string.IsNullOrEmpty(c.inkName) ? null : Fresh(Variants($"{c.inkName}_suggest_{kind}"));
+        if (knot != null) { Play(c, new List<string> { knot }, then); return; }
+        if (fallback != null) { Say(c, fallback, ("Continue", then)); return; }
+        then();
     }
 
     /// What the customer came in for (a story commission, a request, or a browse of the display).
@@ -366,7 +395,7 @@ public class ShopDay : MonoBehaviour
     void Browse(CustomerDef c)
     {
         var wants = OrderGenerator.Wants(c, GM.GetRelationship(c.customerId).level);
-        var matches = Shelf.FindAll(p => wants.Exists(i => i.itemId == p.itemId));
+        var matches = Shelf.FindAll(p => wants.Exists(i => i.itemId == p.itemId) && Progress.CanMake(ItemFor(p.itemId)));
         if (matches.Count == 0)
         {
             string hoped = wants.Count > 0 ? $" I was hoping for something like a {wants[Random.Range(0, wants.Count)].itemName.ToLower()}." : "";
@@ -375,9 +404,9 @@ public class ShopDay : MonoBehaviour
             return;
         }
         var pick = matches[Random.Range(0, matches.Count)];
-        if (!Progress.CanMake(ItemFor(pick.itemId)) || Random.value < 0.35f)
+        if (c.makes != null && System.Array.IndexOf(c.makes, ItemFor(pick.itemId).craft) >= 0)
         {
-            SaleOffer = pick;   // buys the pattern to make it themselves
+            SaleOffer = pick;   // they make this kind of thing themselves: they buy the pattern
             Say(c, $"Oh, I love your {pick.name} pattern! May I buy it? I'd like to make it myself.",
                 DesignFor(pick), ($"Sell It ({pick.price} coins)", AcceptOffer), ("Not Today", DeclineOffer));
         }
@@ -401,6 +430,7 @@ public class ShopDay : MonoBehaviour
         foreach (var p in Shelf)
         {
             var item = ItemFor(p.itemId);
+            if (!Progress.CanMake(item)) continue;
             var pattern = p;
             options.Add(($"Offer {p.name} ({item.itemName})", () => OfferPattern(c, pattern, best.Contains(pattern.itemId) ? 2 : fits.Contains(pattern.itemId) ? 1 : 0, fits)));
         }
@@ -419,13 +449,6 @@ public class ShopDay : MonoBehaviour
             string hint = fits.Count > 0 && ItemFor(fits[0]) is CraftItemDef i ? $" (They were thinking of something like a {i.itemName.ToLower()}.)" : "";
             Say(c, "Hmm. It's lovely, but it's not really what I had in mind. Maybe another time.",
                 ("Continue", () => Leave($"{c.displayName} didn't take the {p.name}.{hint}")));
-            return;
-        }
-        if (!Progress.CanMake(ItemFor(p.itemId)))   // you can't make it yet: they'll make it themselves
-        {
-            SaleOffer = p;
-            Say(c, "Oh, that's just right! Could I buy the pattern? I'll have a go at making it myself.",
-                DesignFor(p), ($"Sell It ({p.price} coins)", AcceptOffer), ("Not Today", DeclineOffer));
             return;
         }
         Offer = OrderGenerator.FromPattern(c, ItemFor(p.itemId), DesignFor(p), Save.day);
@@ -875,11 +898,28 @@ public class ShopDay : MonoBehaviour
         GM.ChangeScreen(ScreenId.PatternEdit);
     }
 
+    /// The shop's display page: puts a pattern from the book on display, if there's room and it can be made.
+    public bool PutOnDisplay(string patternId)
+    {
+        var p = Save.patterns.Find(x => x.id == patternId);
+        if (p == null || p.onShelf || Shelf.Count >= Save.displaySpots || !Progress.CanMake(ItemFor(p.itemId))) return false;
+        p.onShelf = true;
+        GM.Persist();
+        return true;
+    }
+
     public void ToggleShelf()
     {
         if (!SelectedPattern.onShelf && SelectedPattern.designed && SelectedPattern.design.cells.Count == 0)
         {
             LastMessage = "Draw something first: an empty pattern can't go on the shelf.";
+            GM.ChangeScreen(ScreenId.PatternEdit);
+            return;
+        }
+        var shelfItem = ItemFor(SelectedPattern.itemId);
+        if (!SelectedPattern.onShelf && !Progress.CanMake(shelfItem))   // owner, 2026-10-31: never sell what you can't make
+        {
+            LastMessage = $"You can't make a {(shelfItem != null ? shelfItem.itemName.ToLower() : "piece like this")} yet, so its pattern can't go on display.";
             GM.ChangeScreen(ScreenId.PatternEdit);
             return;
         }

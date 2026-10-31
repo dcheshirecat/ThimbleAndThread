@@ -66,6 +66,11 @@ public class OrderFlowUI : MonoBehaviour
 
         if (screen == ScreenId.OrderBook) BuildOrderList();
         if (screen == ScreenId.Market) { day.Met(ShopDay.MarketOwnerId); BuildMarketList(save); }
+        if (screen == ScreenId.PatternStudio && !day.Progress.Knows(ShopDay.PatternDesignSkill))
+        {
+            GameManager.Instance.ChangeScreen(GameManager.Instance.HubScreen);   // not unlocked yet (e.g. "Back to Studio")
+            return;
+        }
         if (screen == ScreenId.PatternStudio) BuildPatternList();
         if (screen == ScreenId.PatternEdit && day.SelectedPattern != null) ShowPattern(day.SelectedPattern);
 

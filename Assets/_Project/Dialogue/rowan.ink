@@ -144,3 +144,18 @@ Rowan: Neat work. Bit safe. But neat. # neutral
 === rowan_handover_poor_tease ===
 Rowan: Oh, this is going on my "inspiration" wall. Under "what not to do". I'm kidding! Mostly. # happy
 -> END
+
+// ---- Reactions when you suggest a pattern on display: _yes (they want you to make it), _buy (they make
+// that craft themselves), _no. Add variants like name_suggest_no_rain. ----
+
+=== rowan_suggest_yes ===
+Rowan: I hate how much I want that. Fine. Make me one. # happy
+-> END
+
+=== rowan_suggest_buy ===
+Rowan: Ooh, I'll make that myself. Professional curiosity. Don't tell my customers I bought a pattern from you. # happy
+-> END
+
+=== rowan_suggest_no ===
+Rowan: It's good. It's just not me. I'll know it when I see it. # thoughtful
+-> END

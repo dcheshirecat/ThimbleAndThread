@@ -47,6 +47,7 @@ MonoBehaviour:
     text: wooden buttons
     likes: 1
     supply: {fileID: 11400000, guid: bbaf99fe07f4ad84dac5c3283e2199ca, type: 2}
+  makes: 0000000002000000i
   shopOwner: 0
   romanceable: 0
   inkName: priya

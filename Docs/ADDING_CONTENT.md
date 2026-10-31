@@ -172,6 +172,9 @@ The game looks for knots by name (the character's **Ink Name**, set on the custo
   Add variants the same way (`mara_handover_good_hug`); one not heard lately is picked.
 - Requests are picked the same way, so a character with several `mara_request_...` knots varies too.
 - `mara_scene_1`, `_scene_2`...: a scene played once, when friendship reaches that level.
+- `mara_suggest_yes`, `_buy`, `_no` (plus variants like `mara_suggest_no_rain`): how they react when you
+  suggest a pattern on display. Which one plays follows the character, not chance: _yes for things they'd
+  want (their Requestable items), _buy for crafts they do themselves (**Makes** on the customer asset), else _no.
 - `chapter_1`, `chapter_2`...: story scenes, played when a chapter begins.
 
 **The player's name and pronouns.** The player picks a name and she/her, he/him or they/them when the

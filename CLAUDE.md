@@ -484,6 +484,20 @@ Test live (create, open, open again fails, own code refused) before merging.
 - Cross stitch fabric comes in pieces (one holds up to 16 x 16 stitches, Materials.FabricPieces), one per project;
   new games start with 2. Save version 17 converts squares (400 a piece, rounded up); old trade codes too.
 
+## Owner feedback round 6, 2026-10-31 (DONE)
+- Never sell what you can't make: such patterns can't go on display (ToggleShelf / ShopDay.PutOnDisplay refuse;
+  load takes them down); customers only browse, get offered or are suggested makeable ones.
+- Pattern Studio locked until Pattern Design (cross stitch level 2): the shop display's empty spot opens a
+  pattern-book chooser on the display page (ShopSceneUI.BuildChooser), and OrderFlowUI sends PatternStudio back
+  to the hub while locked.
+- Suggestion reactions follow the character (CustomerDef.makes: crafts they do themselves): wanted -> order,
+  their craft -> buy the pattern, else decline; ink knots name_suggest_yes/_buy/_no (+variants). Browsing too.
+- Commission offers stay chance-based: ShopDay.CommissionAcceptChance = 30% at level 2, +10% a level, max 75%.
+- Stamp pop-ups and the doorbell wait until the shopkeeper is made (StampPopup.Quiet, ShopDay.Update);
+  "Your Makes" is hidden in the first customization. Visitors: first 8-15 s, then 30-75 s apart (not counting
+  conversations); an unanswered bell rings again every 45 s.
+- NEXT (owner): flesh out the rest of the mini-games (sweater and cross stitch are the bar).
+
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.
 2. DONE (on main): item recipes. CraftItemDef.steps (RecipeStep: StepKind, label,

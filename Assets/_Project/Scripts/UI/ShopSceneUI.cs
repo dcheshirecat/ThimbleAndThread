@@ -228,8 +228,34 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
     // ---- Right page: the pattern display ----
 
+    bool choosing;   // the display page is showing the pattern book, to fill an empty spot
+
+    /// The pattern book, to put one on display (not the Pattern Studio, which is unlocked later).
+    void BuildChooser()
+    {
+        displayInfo.text = "Choose a pattern from your book to put on display. Only things you can make can be sold.";
+        foreach (var p in Save.patterns)
+        {
+            if (p.onShelf || (p.designed && p.design.cells.Count == 0)) continue;
+            var item = day.ItemFor(p.itemId);
+            bool canMake = day.Progress.CanMake(item);
+            string id = p.id;
+            var row = Row(displayTemplate, $"Choose_{id}", $"{p.name}\n{(item != null ? item.itemName : p.itemId)} · {p.price} coins" + (canMake ? "" : " · you can't make this yet"),
+                          () => { if (day.PutOnDisplay(id)) choosing = false; Refresh(); });
+            row.GetComponent<Button>().interactable = canMake;
+            var preview = row.GetComponentInChildren<RawImage>(true);
+            if (preview != null) { preview.texture = PatternPreview.Make(day.DesignFor(p)); preview.gameObject.SetActive(true); }
+            rows.Add(row);
+        }
+        var back = Row(displayTemplate, "Choose_Back", "Back to the display", () => { choosing = false; Refresh(); });
+        var backPreview = back.GetComponentInChildren<RawImage>(true);
+        if (backPreview != null) backPreview.gameObject.SetActive(false);
+        rows.Add(back);
+    }
+
     void BuildDisplay()
     {
+        if (choosing) { BuildChooser(); return; }
         var shelf = day.Shelf;
         displayInfo.text = $"{shelf.Count} of {Save.displaySpots} spots filled. Tap a pattern to change its price or take it down; " +
                            "tap an empty spot to choose one from your book.";
@@ -247,7 +273,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
             }
             else
             {
-                var row = Row(displayTemplate, $"Display_{i}", "Empty spot\nTap to choose a pattern", () => GameManager.Instance.ChangeScreen(ScreenId.PatternStudio));
+                var row = Row(displayTemplate, $"Display_{i}", "Empty spot\nTap to choose a pattern", () => { choosing = true; Refresh(); });
                 var preview = row.GetComponentInChildren<RawImage>(true);
                 if (preview != null) preview.gameObject.SetActive(false);
                 rows.Add(row);

@@ -151,3 +151,18 @@ Isla: Good. Solid. Like a decent rope. # neutral
 === isla_handover_poor_dry ===
 Isla: I've seen worse. I've made worse. Frequently. # thoughtful
 -> END
+
+// ---- Reactions when you suggest a pattern on display: _yes (they want you to make it), _buy (they make
+// that craft themselves), _no. Add variants like name_suggest_no_rain. ----
+
+=== isla_suggest_yes ===
+Isla: That'd stand up to the wind. Yes. Make me one. # neutral
+-> END
+
+=== isla_suggest_buy ===
+Isla: I'll take the pattern. I'm going to beat this knitting thing if it takes me ten more winters. # thoughtful
+-> END
+
+=== isla_suggest_no ===
+Isla: Too delicate for the tower. It'd be in the sea by Tuesday. # neutral
+-> END

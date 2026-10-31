@@ -105,3 +105,18 @@ Priya: Stitching. At Knot & Needle. Don't be cross! Rowan was very persuasive.
     Priya: You'd do that? I'll bring biscuits. Every week. That's a promise. # happy
     ~ friendship(15)
 -> END
+
+// ---- Reactions when you suggest a pattern on display: _yes (they want you to make it), _buy (they make
+// that craft themselves), _no. Add variants like name_suggest_no_rain. ----
+
+=== priya_suggest_yes ===
+Priya: Oh, the children would go wild for that. Yes please! # happy
+-> END
+
+=== priya_suggest_buy ===
+Priya: I could do that one at my evening class! Could I have the pattern? # happy
+-> END
+
+=== priya_suggest_no ===
+Priya: It's lovely, but it wouldn't survive twenty-eight six-year-olds. # thoughtful
+-> END
