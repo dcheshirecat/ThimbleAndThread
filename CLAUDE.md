@@ -795,4 +795,9 @@ quilting_needle. Item "quilt" (Patchwork Quilt): CutPatches (straight cuts), Sew
 (safety pins at 9 marks), QuiltIt (diagonal running-stitch lines), Hem "Bind the edges" (HemStep draws the patchwork for quilts).
 Crafts/QuiltSteps.cs; PieceStep.DrawPatchwork (pattern squares = patches, empty = cream). Book pattern Harbour Squares.
 Mara, Tobias, Owen and Isla ask for quilts.
-Still to do from 16: loom weaving, more characters.
+DONE batch 11 (16, weaving): CraftType.Weaving. Learned from Kit (friendship 3) or the book "Weaving on a Frame Loom" (rare).
+Supplies: frame_loom (tool "loom"), warp_cotton, weaving_yarn, dowel. Item "wall_hanging" (Woven Wall Hanging): WarpLoom (trace the
+zigzag round the pegs), WeaveRows (Crafts/WeavingSteps.cs: per row tap the shed stick if needed, swipe across = shuttle, swipe down =
+beat; same shed twice = float, unbeaten = gap; points x shed, y beaten), HangWeaving (knots on the dowel). Row colour = the colour
+filling most of that chart row (Loom.RowColor; chart rows count from the bottom). Book pattern Sunset Bands. Kit, Isla, Juno, Rowan want them.
+Still to do from 16: more characters.

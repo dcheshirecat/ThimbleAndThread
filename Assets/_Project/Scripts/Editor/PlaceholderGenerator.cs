@@ -528,6 +528,29 @@ public static class PlaceholderGenerator
         BookPattern("harbour_squares", "Harbour Squares", quilt, 18, new[] { navy, red },
             "1.1.1.1.\n.2.2.2.2\n1.1.1.1.\n.2.2.2.2\n1.1.1.1.\n.2.2.2.2\n1.1.1.1.\n.2.2.2.2");
 
+        // ---- Loom weaving (owner, 2026-10-31: new crafts): a wall hanging on a frame loom. Taught by Kit (friendship 3), or
+        // from a book. ----
+        var wv = CraftType.Weaving;
+        Supply("frame_loom", "Frame Loom", SupplyKind.Tool, wv, 22, 1, new Color(0.72f, 0.55f, 0.36f), 1, "loom", A, 0, "loom");
+        Supply("warp_cotton", "Cotton Warp Thread", SupplyKind.Notion, wv, 4, 1, new Color(0.95f, 0.93f, 0.88f), 1, "cones", A);
+        Supply("weaving_yarn", "Weaving Yarn Bundle", SupplyKind.Notion, wv, 8, 1, new Color(0.80f, 0.55f, 0.50f), 1, "bundles", A);
+        Supply("dowel", "Wooden Dowel", SupplyKind.Notion, wv, 3, 1, new Color(0.65f, 0.50f, 0.32f), 1, "dowels", A);
+        var weaveBook = Supply("book_weaving", "Weaving on a Frame Loom", SupplyKind.Book, cs, 30, 1, new Color(0.45f, 0.55f, 0.40f), 1, "book", R);
+        var hanging = Item("wall_hanging", "Woven Wall Hanging", wv, 50, 14, new Color(0.80f, 0.55f, 0.50f));
+        Recipe(hanging,
+            Step(StepKind.WarpLoom, "Warp the loom", materials: Need("warp_cotton", 1), tools: Tool("loom", "Frame loom")),
+            Step(StepKind.WeaveRows, "Weave the rows", materials: Need("weaving_yarn", 1), tools: Tool("loom", "Frame loom")),
+            Step(StepKind.HangWeaving, "Tie it onto a dowel", materials: Need("dowel", 1)));
+        Skill("craft_weaving", "Weaving", "Over, under, over: rows of yarn on a frame loom, for wall hangings.", true, wv, book: weaveBook, friend: kit, friendLevel: 3);
+        Wants(kit, hanging, 0);
+        Wants(isla, hanging, 2);
+        Wants(juno, hanging, 1);
+        Wants(rowan, hanging, 1);
+        Makes(kit, CraftType.Embroidery, wv);
+        // A weaving chart: each row is woven in the colour that fills most of it.
+        BookPattern("sunset_bands", "Sunset Bands", hanging, 12, new[] { red, navy },
+            "11111111\n11111111\n........\n22222222\n22222222\n........\n11111111\n22222222");
+
         // A needlepoint chart: '1'.. the design in tent stitch; the rest is filled in with the background colour.
         BookPattern("rose_cushion", "Tea Rose Cushion", cushion, 14, new[] { red, charcoal },
             "..........\n...111....\n..11111...\n..11211...\n..11111...\n...111....\n....2.....\n...222....\n....2.....\n..........");

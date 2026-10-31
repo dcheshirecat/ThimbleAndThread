@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45c28a39eda5e48428a2af6696dc98e3, type: 3}
+  m_Name: skill_craft_weaving
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDef
+  skillId: craft_weaving
+  displayName: Weaving
+  description: 'Over, under, over: rows of yarn on a frame loom, for wall hangings.'
+  isCraft: 1
+  craft: 7
+  chapter: 0
+  levelCraft: 0
+  craftLevel: 0
+  book: {fileID: 11400000, guid: 615bd310d56688843bf5ac8b70ff137b, type: 2}
+  friend: {fileID: 11400000, guid: 31dab56e0f50a4042a914c389503089c, type: 2}
+  friendLevel: 3
+  grantsPatterns: []

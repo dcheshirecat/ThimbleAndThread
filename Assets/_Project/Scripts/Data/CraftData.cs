@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum CraftType { CrossStitch, Knitting, Embroidery, Sewing, Crochet, Needlepoint, Quilting }   // append only: saves and assets store numbers
+public enum CraftType { CrossStitch, Knitting, Embroidery, Sewing, Crochet, Needlepoint, Quilting, Weaving }   // append only: saves and assets store numbers
 
 // A pattern is just data: what a customer buys on its own.
 [Serializable]

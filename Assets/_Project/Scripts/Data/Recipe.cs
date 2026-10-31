@@ -8,7 +8,7 @@ public enum StepKind { CrossStitch, Hem, ChooseFabric, CutPieces, Pin, SewSeam, 
                        ChooseYarn, CastOn, KnitRows, CastOff, MagicRing, CrochetRounds,
                        HoopFabric, Backstitch, SatinFill, FrenchKnots, Press, WeaveEnds, SewUp, Fringe, MitreCorners, PinPattern, ClipCurves, BoxCorners,
                        TransferDesign, TightenHoop, StemStitch, FinishBack, SewParts, MountCanvas, TentStitch, BackgroundFill,
-                       CutPatches, SewRows, QuiltSandwich, QuiltIt }
+                       CutPatches, SewRows, QuiltSandwich, QuiltIt, WarpLoom, WeaveRows, HangWeaving }
 
 // One step of making an item, e.g. "Stitch the motif" then "Hem the edges".
 // Items list their steps in order in CraftItemDef.steps.
