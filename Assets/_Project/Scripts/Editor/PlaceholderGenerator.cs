@@ -111,6 +111,27 @@ public static class PlaceholderGenerator
             Step(StepKind.HemTop, "Hem the top", tools: Tool("sewing_machine", "Sewing machine")),
             Step(StepKind.AttachHandles, "Attach the handle", materials: Need("webbing", 1), tools: Tool("sewing_needle", "Hand sewing needle")));
         AddStep(tote, Step(StepKind.Press, "Press it"));
+        // Amigurumi the way it's really made (owner, 2026-10-31): a written pattern per part, eyes in before
+        // stuffing, the head closed with decreases, a striped body, two ears, then sewn together.
+        if (!System.Array.Exists(plushie.steps, st => st.piece == "head_close"))
+        {
+            var hook5 = Tool("crochet_hook", "Crochet hook", matchYarn: true);
+            var tapestry = Tool("tapestry_needle", "Tapestry needle");
+            plushie.steps = new[]
+            {
+                Step(StepKind.ChooseYarn, "Choose the yarn"),
+                Step(StepKind.MagicRing, "Make a magic ring", tools: hook5),
+                Piece(Step(StepKind.CrochetRounds, "Crochet the head", pieces: 80, tools: hook5), "head"),
+                Step(StepKind.AttachEyes, "Fit the safety eyes", materials: Need("safety_eyes_black", 1)),
+                Piece(Step(StepKind.Stuff, "Stuff the head", materials: Need("stuffing", 1)), "head"),
+                Piece(Step(StepKind.CrochetRounds, "Close the head", pieces: 20, tools: hook5), "head_close"),
+                Piece(Step(StepKind.CrochetRounds, "Crochet the body", pieces: 70, tools: hook5), "body"),
+                Piece(Step(StepKind.Stuff, "Stuff the body", materials: Need("stuffing", 1)), "body"),
+                Piece(Step(StepKind.CrochetRounds, "Crochet two ears", pieces: 30, tools: hook5), "ears"),
+                Step(StepKind.SewParts, "Sew the parts together", tools: tapestry),
+            };
+            EditorUtility.SetDirty(plushie);
+        }
         // The embroidered hoop the way an embroiderer does it (owner, 2026-10-31): transfer, hoop, tighten,
         // outline, satin at a slant, stem-stitched waves, knots, gather the back.
         InsertBefore(hoopArt, StepKind.HoopFabric, Step(StepKind.TransferDesign, "Trace the design onto the fabric", tools: Tool("marking_pen", "Fabric marking pen")));

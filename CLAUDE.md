@@ -534,6 +534,13 @@ Test live (create, open, open again fails, own code refused) before merging.
   slant (printed guide lines; strokes off the slant are mistakes), Stem-stitch the waves (TracingStep.Twisted),
   French knots, Gather the back (FinishBack). Orders keep up with longer recipes: Order.recipe + KeepUpWithRecipe
   (on load) moves saved progress to the matching steps; new steps before the current one count as done.
+- DONE Crocheted plushie (mini-games part 4): Crafts/CrochetPattern.cs (CrochetWork: written amigurumi pattern per
+  RecipeStep.piece "head", "head_close", "body" (stripe round in palette colour 0), "ears" (two parts); Follow()
+  replays the saved moves). CrochetRoundsStep: tap + flick = sc; tap the same stitch again + flick = inc; tap the
+  next two + flick = dec; sideways flick changes yarn. Moves off the pattern are mistakes and wrong counts carry
+  into the next round. Point code = 1 + op + 4*(yarn+1) (0 = old saves). PieceStep.LiveHint shows the round under
+  the hint (OrderFlowUI.Update). CrochetEyesStep / CrochetStuffStep (MinigameHost picks them for crochet items),
+  SewPartsStep. Recipe: yarn, ring, head, eyes, stuff, close the head, body, stuff, ears, sew together.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.

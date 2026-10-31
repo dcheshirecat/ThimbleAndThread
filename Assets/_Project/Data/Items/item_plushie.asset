@@ -34,7 +34,11 @@ MonoBehaviour:
     tools: []
     materials: []
     fabricPieces: 0
+    requiredSkill: 
     perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 17
     label: Make a magic ring
     tools:
@@ -45,9 +49,13 @@ MonoBehaviour:
       matchYarn: 1
     materials: []
     fabricPieces: 0
+    requiredSkill: 
     perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 18
-    label: Crochet the rounds
+    label: Crochet the head
     tools:
     - toolType: crochet_hook
       minSize: 0
@@ -55,26 +63,95 @@ MonoBehaviour:
       exactSize: 0
       matchYarn: 1
     materials: []
-    fabricPieces: 150
+    fabricPieces: 80
+    requiredSkill: 
     perPatternSquare: 0
-  - kind: 7
-    label: Stuff it
-    tools: []
-    materials:
-    - supplyId: stuffing
-      amount: 1
-    fabricPieces: 0
-    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: head
   - kind: 8
-    label: Attach the eyes
+    label: Fit the safety eyes
     tools: []
     materials:
     - supplyId: safety_eyes_black
       amount: 1
     fabricPieces: 0
+    requiredSkill: 
     perPatternSquare: 0
-  - kind: 9
-    label: Close it up
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 7
+    label: Stuff the head
+    tools: []
+    materials:
+    - supplyId: stuffing
+      amount: 1
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: head
+  - kind: 18
+    label: Close the head
+    tools:
+    - toolType: crochet_hook
+      minSize: 0
+      label: Crochet hook
+      exactSize: 0
+      matchYarn: 1
+    materials: []
+    fabricPieces: 20
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: head_close
+  - kind: 18
+    label: Crochet the body
+    tools:
+    - toolType: crochet_hook
+      minSize: 0
+      label: Crochet hook
+      exactSize: 0
+      matchYarn: 1
+    materials: []
+    fabricPieces: 70
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: body
+  - kind: 7
+    label: Stuff the body
+    tools: []
+    materials:
+    - supplyId: stuffing
+      amount: 1
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: body
+  - kind: 18
+    label: Crochet two ears
+    tools:
+    - toolType: crochet_hook
+      minSize: 0
+      label: Crochet hook
+      exactSize: 0
+      matchYarn: 1
+    materials: []
+    fabricPieces: 30
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: ears
+  - kind: 35
+    label: Sew the parts together
     tools:
     - toolType: tapestry_needle
       minSize: 0
@@ -83,4 +160,9 @@ MonoBehaviour:
       matchYarn: 0
     materials: []
     fabricPieces: 0
+    requiredSkill: 
     perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  garment: 0

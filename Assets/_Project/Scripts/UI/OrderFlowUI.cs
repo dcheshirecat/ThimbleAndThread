@@ -105,6 +105,7 @@ public class OrderFlowUI : MonoBehaviour
             : StepHint(step.kind);
         if (order.Steps.Length > 1) minigameHint.text = $"{step.label}. {minigameHint.text}";
         if (screen == ScreenId.Minigame && !string.IsNullOrEmpty(day.LastMessage)) minigameHint.text += $"\n{day.LastMessage}";
+        baseHint = minigameHint.text; liveHint = null;
         if (stitching && order.item.craft != CraftType.CrossStitch && order.Steps.Length == 1)
             minigameHint.text += $" (The {CraftName(order.item.craft)} minigame is coming soon; cross stitch stands in.)";
         minigameThreads.gameObject.SetActive(stitching);
@@ -369,6 +370,18 @@ public class OrderFlowUI : MonoBehaviour
         return text;
     }
 
+    string baseHint, liveHint;
+
+    /// Keeps the step's live line (e.g. the crochet pattern's round) under the hint while working.
+    void Update()
+    {
+        if (GameManager.Instance == null || GameManager.Instance.Current != ScreenId.Minigame || baseHint == null) return;
+        string live = day.minigame.Step is PieceStep p ? p.LiveHint : null;
+        if (live == liveHint) return;
+        liveHint = live;
+        minigameHint.text = live == null ? baseHint : baseHint + "\n" + live;
+    }
+
     static string StepHint(StepKind kind) => kind switch
     {
         StepKind.Hem => "Drag along the dashed line to sew the hem all the way round. Lift your finger and carry on wherever you like.",
@@ -392,6 +405,7 @@ public class OrderFlowUI : MonoBehaviour
         StepKind.ChooseYarn => "Tap the yarn to make it from. Only yarns you have enough of are shown.",
         StepKind.CastOn => "Tap once for each stitch to cast it onto the needle.",
         StepKind.KnitRows => "Swipe down for a knit stitch, up for a purl (the bar marks). When the marker changes colour, swipe sideways to pick up that yarn. Keep a steady rhythm. Undo unpicks a stitch.",
+        StepKind.SewParts => "Sew the parts together with the yarn tail: whipstitch along each dashed seam, the head onto the body, then the ears.",
         StepKind.TransferDesign => "The pattern is taped under the fabric against the window. Trace its lines with the washable pen.",
         StepKind.TightenHoop => "Tug the fabric outwards wherever it ripples (drag away from the middle), all round the hoop, until it's drum-tight.",
         StepKind.StemStitch => "Stem stitch along the waves: small, even stitches, each one overlapping the last like a twisted rope.",
@@ -404,7 +418,7 @@ public class OrderFlowUI : MonoBehaviour
         StepKind.SewUp => "Lay the pieces together and sew up both side seams, from the cuff to the hem.",
         StepKind.CastOff => "Drag along the top edge to cast off, so it can't unravel.",
         StepKind.MagicRing => "Wrap the yarn round: drag along the dashed circle to make a magic ring.",
-        StepKind.CrochetRounds => "Tap the bright spot to hook a loop, then flick anywhere to pull it through. Round and round!",
+        StepKind.CrochetRounds => "Follow the written pattern. Single crochet: tap the bright stitch, flick to pull through. Increase: then tap that same stitch again and flick. Decrease: tap the next two stitches, then flick. Flick sideways to change yarn.",
         _ => "",
     };
 

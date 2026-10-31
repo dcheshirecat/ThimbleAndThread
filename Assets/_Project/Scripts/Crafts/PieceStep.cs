@@ -68,6 +68,8 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
     public abstract float SaveWork();
     public virtual void Undo() { }
     public virtual string FinishBlocker => null;
+    /// A line that changes as the player works (e.g. the crochet pattern's current round), shown with the hint.
+    public virtual string LiveHint => null;
 
     protected virtual void OnPress(Vector2 p) { }
     protected virtual void OnDrag(Vector2 p) { }
@@ -146,6 +148,19 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
     }
 
     protected const float HoopRadius = 0.46f;
+
+    /// A finished crocheted part (CrochetWork piece): the ball with its rounds showing as rings.
+    protected void DrawBall(string piece)
+    {
+        var w = CrochetWork.For(piece);
+        var all = new List<Vector2>();
+        for (int i = 0; i < w.TotalOps; i++) all.Add(new Vector2(1, 0));
+        w.Follow(all);
+        for (int part = 0; part < w.centres.Count; part++) Piece(w.Outline(part), Yarn, 0);
+        for (int r = 0; r < w.rounds.Count; r++)
+            Line(Circle(w.Centre(r), w.Radius(r), 40).Closed(), Color.Lerp(Yarn, Color.black, 0.18f), 0.006f, 1);
+        foreach (var c in w.centres) Dot(c, 0.05f * w.scale, Color.Lerp(Yarn, Color.black, 0.25f), 1);
+    }
 
     /// The colour of the pattern's thread number i (the last one if there are fewer).
     protected Color Floss(int i)

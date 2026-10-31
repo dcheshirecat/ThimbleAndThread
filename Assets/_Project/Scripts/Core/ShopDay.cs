@@ -1290,6 +1290,20 @@ public class ShopDay : MonoBehaviour
                 else needs.Add(new MaterialNeed { supplyId = yarn.supplyId, amount = kv.Value });
             }
         }
+        // A crocheted stripe: its rounds are worked in a yarn of that colour.
+        if (step.kind == StepKind.CrochetRounds && o.target != null && !string.IsNullOrEmpty(o.fabricId))
+        {
+            var main = content.Supply(o.fabricId);
+            foreach (var r in CrochetWork.For(step.piece).rounds)
+            {
+                if (r.color < 0 || r.color >= o.target.palette.Count) continue;
+                var yarn = Materials.ColourworkYarn(o.target.palette[r.color], main, content, shop);
+                if (yarn == null) continue;
+                var same = needs.Find(x => x.supplyId == yarn.supplyId);
+                if (same != null) same.amount += r.Stitches;
+                else needs.Add(new MaterialNeed { supplyId = yarn.supplyId, amount = r.Stitches });
+            }
+        }
         return needs;
     }
 

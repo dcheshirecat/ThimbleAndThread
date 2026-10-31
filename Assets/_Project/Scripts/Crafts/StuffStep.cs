@@ -11,23 +11,31 @@ public class StuffStep : PieceStep
     readonly List<Vector2> spots = new List<Vector2>();   // checkpoints inside the piece
     readonly List<GameObject> puffs = new List<GameObject>();
 
-    protected override void Build()
+    /// Where stuffing can go: the piece's shape (a crocheted part's ball in CrochetStuffStep).
+    protected virtual List<Vector2> Region => Shape.Outline;
+
+    protected virtual void DrawBase()
     {
         Piece(Shape.Outline, area.fabricColor, 0);
         Line(Shape.Seam, Color.Lerp(area.fabricColor, Color.black, 0.35f), 0.006f, 1);
-        PieceShape.Bounds(Shape.Outline, out var min, out var max);
+    }
+
+    protected override void Build()
+    {
+        DrawBase();
+        PieceShape.Bounds(Region, out var min, out var max);
         for (int x = 0; x < 10; x++)
             for (int y = 0; y < 10; y++)
             {
                 var p = new Vector2(Mathf.Lerp(min.x, max.x, (x + 0.5f) / 10f), Mathf.Lerp(min.y, max.y, (y + 0.5f) / 10f));
-                if (PieceShape.Inside(Shape.Outline, p)) spots.Add(p);
+                if (PieceShape.Inside(Region, p)) spots.Add(p);
             }
         foreach (var p in State.points) Puff(p);
     }
 
     protected override void OnPress(Vector2 p)
     {
-        if (!PieceShape.Inside(Shape.Outline, p)) return;
+        if (!PieceShape.Inside(Region, p)) return;
         State.points.Add(p);
         Puff(p);
     }

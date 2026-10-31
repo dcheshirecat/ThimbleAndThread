@@ -7,7 +7,7 @@ using UnityEngine;
 public enum StepKind { CrossStitch, Hem, ChooseFabric, CutPieces, Pin, SewSeam, TurnRightSideOut, Stuff, AttachEyes, CloseOpening, SewSides, HemTop, AttachHandles,
                        ChooseYarn, CastOn, KnitRows, CastOff, MagicRing, CrochetRounds,
                        HoopFabric, Backstitch, SatinFill, FrenchKnots, Press, WeaveEnds, SewUp, Fringe, MitreCorners, PinPattern, ClipCurves, BoxCorners,
-                       TransferDesign, TightenHoop, StemStitch, FinishBack }
+                       TransferDesign, TightenHoop, StemStitch, FinishBack, SewParts }
 
 // One step of making an item, e.g. "Stitch the motif" then "Hem the edges".
 // Items list their steps in order in CraftItemDef.steps.
@@ -25,7 +25,7 @@ public class RecipeStep
     public bool perPatternSquare;           // fabricPieces is per square of the pattern (e.g. 2 stitches of yarn per square)
     public int patternThread;               // embroidery: which of the pattern's thread colours this step uses (0 = first)
     public int threadAmount;                // ...and how much of that floss (in squares, like cross stitch)
-    public string piece;                    // knitting: which piece of the garment ("back", "front", "sleeves"; see KnitLayout)
+    public string piece;                    // knitting: which piece of the garment ("back", "front", "sleeves"; see KnitLayout); crochet: "head", "head_close", "body", "ears" (CrochetWork)
 
     /// Whether the step's score counts towards the piece's quality (choosing a material isn't judged).
     public bool Judged => kind != StepKind.ChooseFabric && kind != StepKind.ChooseYarn;

@@ -32,7 +32,9 @@ public class MinigameHost : MonoBehaviour
         area.assist = assist;
         stepObject = new GameObject($"Step_{order.CurrentStep.kind}");
         stepObject.transform.SetParent(transform, false);
-        step = Create(order.CurrentStep.kind, stepObject);
+        step = order.item != null && order.item.craft == CraftType.Crochet && order.CurrentStep.kind == StepKind.Stuff ? stepObject.AddComponent<CrochetStuffStep>()
+             : order.item != null && order.item.craft == CraftType.Crochet && order.CurrentStep.kind == StepKind.AttachEyes ? stepObject.AddComponent<CrochetEyesStep>()
+             : Create(order.CurrentStep.kind, stepObject);
         step.Begin(order, Mathf.Clamp(order.step, 0, order.Steps.Length - 1), area);
     }
 
@@ -60,6 +62,7 @@ public class MinigameHost : MonoBehaviour
         StepKind.TightenHoop => go.AddComponent<TightenHoopStep>(),
         StepKind.StemStitch => go.AddComponent<StemStitchStep>(),
         StepKind.FinishBack => go.AddComponent<FinishBackStep>(),
+        StepKind.SewParts => go.AddComponent<SewPartsStep>(),
         StepKind.MagicRing => go.AddComponent<MagicRingStep>(),
         StepKind.CrochetRounds => go.AddComponent<CrochetRoundsStep>(),
         StepKind.CutPieces => go.AddComponent<CutPiecesStep>(),
