@@ -6,7 +6,7 @@ using UnityEngine;
 /// slides across. Placeholder line drawings until the owner's art exists.
 public class CraftTool : MonoBehaviour
 {
-    public enum Kind { Needle, Hook, KnittingNeedles }
+    public enum Kind { Needle, Hook, KnittingNeedles, SeamRipper }
 
     const float ActionTime = 0.2f;
 
@@ -48,6 +48,13 @@ public class CraftTool : MonoBehaviour
                 Stroke(body, steel, 0.06f, new Vector2(0.02f, 0.1f), new Vector2(0.12f, 0.6f));
                 Stroke(body, lilac, 0.13f, new Vector2(0.12f, 0.6f), new Vector2(0.24f, 1.15f));   // the soft grip
                 Stroke(body, steel, 0.05f, new Vector2(0.02f, 0.1f), new Vector2(-0.03f, 0.02f), new Vector2(-0.08f, 0.07f));   // the hook
+                break;
+            case Kind.SeamRipper:   // a stitch picker: a forked steel tip on a coloured handle
+                body = Part("SeamRipper");
+                Stroke(body, steel, 0.04f, new Vector2(0, 0.02f), new Vector2(0.08f, 0.45f));
+                Stroke(body, steel, 0.03f, new Vector2(0, 0.02f), new Vector2(-0.06f, 0.1f));    // the long prong
+                Stroke(body, new Color(0.95f, 0.35f, 0.40f), 0.03f, new Vector2(0.015f, 0.08f), new Vector2(0.06f, 0.08f));   // the little red ball
+                Stroke(body, new Color(0.95f, 0.55f, 0.60f), 0.14f, new Vector2(0.08f, 0.45f), new Vector2(0.2f, 1.1f));   // the handle
                 break;
             default:
                 var wood = new Color(0.80f, 0.64f, 0.42f);

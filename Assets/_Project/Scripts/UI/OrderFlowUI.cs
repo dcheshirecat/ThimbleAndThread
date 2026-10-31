@@ -13,6 +13,7 @@ public class OrderFlowUI : MonoBehaviour
     [Header("Shopping list")] public GameObject shoppingList; public Text shoppingListText;
     [Header("Workbench")] public Text workbenchText; public Text startLabel; public GameObject startButton, handOverButton;
     [Header("Minigame")] public Text minigameHint; public ThreadSwatches minigameThreads;
+    public Button pickerButton;   // the stitch picker, on steps whose stitches can be unpicked
     [Header("Result")] public Text resultText; public Image resultPortrait;
     public Button[] extraButtons;        // special touches that suit the piece (lace, buttons...), toggled on and off
     [Header("Day summary")] public Text summaryText;
@@ -439,6 +440,14 @@ public class OrderFlowUI : MonoBehaviour
     {
         ShowFinishWarning();
         if (GameManager.Instance == null || GameManager.Instance.Current != ScreenId.Minigame || baseHint == null) return;
+        if (pickerButton != null)
+        {
+            bool can = day.minigame.CanPick;
+            if (pickerButton.gameObject.activeSelf != can) pickerButton.gameObject.SetActive(can);
+            var label = pickerButton.GetComponentInChildren<Text>();
+            string text = day.minigame.Picking ? "Back to the Needle" : "Stitch Picker";
+            if (label.text != text) label.text = text;
+        }
         string live = day.minigame.Step is PieceStep p ? p.LiveHint : null;
         if (live == liveHint) return;
         liveHint = live;

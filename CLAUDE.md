@@ -726,3 +726,27 @@ evenness 0.6+); left in, it's a mistake. Pauses never drop stitches; old saves h
     Pattern Studio swatches 12 a row.
 11. Next: Settings screen; touch input wrapper;
    sewing machine speed control; more complex crafting (half stitches, cables, colour changes).
+
+## Owner feedback round 8, 2026-10-31 (branch minigames)
+1. Change Your Look out of Settings: a personal area top left (portrait next to the XP bar) opens character AND shop customization.
+2. The Shops menu closes when tapping outside it.  3. Tapping the journal itself must not close it.
+4. Designing cross stitch / needlepoint / embroidery: also choose the cloth; each design process should mimic the craft.
+5. The hoop shows during the actual stitching (cross stitch, embroidery, needlepoint).
+6. An XP bar and a visible level.  7. A store for shop furniture and decorations.
+8. Backstitch only on the work (not anywhere on screen), plus a stitch picker (seam ripper, like an eraser).
+9. Never tell the player what a customer wanted instead; log likes only when said/shown explicitly (ordered it,
+   bought it, said so), nothing more.  10. No Settings in the journal.
+11. Selling supplies moves out of the shop: trade with players: a "Surprise Trade" (like Pokemon) and 6-digit codes.
+12. Order anything from the shops (right level + skills); delivery takes time, rarer = longer.
+13. Keep improving Saturdays and Sundays.  14. More to do in the shop between customers (pace is slow).
+15. Everything moves down a bit except the settings gear; portrait + XP bar in the top-left corner.
+16. New crafts (needlepoint, quilting, loom weaving) and characters.
+DONE batch 1 (1 part, 2, 3, 6, 9, 10, 15): TopBar personal area (Button_Personal: portrait = mini ShopkeeperView in a
+round Mask, "Name · Level N", XP bar). Player level from all craft XP (Progression.TotalXp/PlayerLevel/LevelProgress;
+level L starts at 30*L*(L-1); stamp per level). Opens Customize; Customize Done -> hub. UI/ClickBlocker.cs stops clicks
+bubbling up to "tap outside" buttons (journal Book, Shops Menu inside a full-screen "Shops Layer" button). Likes:
+ShopDay.NoteLike adds knownPrefs "cid:like:your X pattern" (Journal lists them under Likes); "hoping for" lines removed.
+DONE batch 2 (5, 8): CrossStitchCanvas.Holder (Hoop: round fabric + wooden ring + screw; QSnap frame if the player owns
+qsnap_frame; board shrinks to fit, SpanFor). Stitch picker: IStitchPicker (TracingStep hand stitches, CrossStitchStep),
+MinigameHost.TogglePicker, "Stitch Picker" button; CraftTool.Kind.SeamRipper. TracingStep.OnWork: strokes only on the
+work (hooped steps: inside the hoop); leaving the work ends the row.

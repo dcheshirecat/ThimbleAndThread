@@ -100,6 +100,7 @@ public class TightenHoopStep : PlacementStep
 /// so the line looks like a twisted rope. Follow the line steadily.
 public class StemStitchStep : TracingStep
 {
+    protected override bool OnWork(Vector2 p) => InHoop(p);
     protected override float ShapePadding => 0.25f;
     protected override float StitchLength => 0.018f;
     protected override bool Twisted => true;

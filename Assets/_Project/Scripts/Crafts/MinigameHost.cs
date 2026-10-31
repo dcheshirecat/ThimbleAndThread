@@ -101,6 +101,11 @@ public class MinigameHost : MonoBehaviour
 
     public void Undo() => step?.Undo();
 
+    /// The stitch picker (seam ripper) in hand, or the needle back.
+    public void TogglePicker() { if (step is IStitchPicker p && p.CanPick) p.Picking = !p.Picking; }
+    public bool CanPick => step is IStitchPicker p && p.CanPick;
+    public bool Picking => step is IStitchPicker p && p.Picking;
+
     /// Copies the work into the order (for saving). Returns the step's quality so far (0..1).
     public float SaveWork() => step != null ? step.SaveWork() : 0f;
 

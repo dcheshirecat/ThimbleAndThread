@@ -4,8 +4,48 @@ using UnityEngine;
 /// A step where the player drags along a dashed line: hemming, cutting along a pattern line,
 /// sewing a seam, closing an opening. Subclasses give the line and draw the piece; this class
 /// records the strokes (saved in the order) and scores how much of the line was followed and how closely.
-public abstract class TracingStep : PieceStep, IMistakes
+public abstract class TracingStep : PieceStep, IMistakes, IStitchPicker
 {
+    /// Whether a point is on the work (stitching only happens there, owner 2026-10-31: not anywhere on the screen).
+    /// Default: the square the step draws in; hooped steps use the hoop's circle.
+    protected virtual bool OnWork(Vector2 p) => p.x >= 0 && p.x <= 1 && p.y >= 0 && p.y <= 1;
+    protected bool InHoop(Vector2 p) => (p - Vector2.one * 0.5f).magnitude <= HoopRadius;
+    bool inStroke;
+
+    // ---- The stitch picker: hand stitches can be unpicked with a seam ripper ----
+    public bool CanPick => HandNeedle;
+    public bool Picking { get => picking; set { picking = value && CanPick; if (picking) Tool(CraftTool.Kind.Needle).Hide(); else if (ripper != null) ripper.Hide(); } }
+    bool picking;
+    CraftTool ripper;
+    CraftTool Ripper => ripper ??= CraftTool.Make(transform, CraftTool.Kind.SeamRipper, Side * 0.16f, area.material, 41);
+    const float PickRadius = 0.022f;
+
+    /// Takes out the stitches under the ripper; a row of stitches cut in the middle becomes two.
+    void Unpick(Vector2 p)
+    {
+        Ripper.MoveTo(World(p));
+        var kept = new List<Vector2>();
+        var starts = new List<int>();
+        bool changed = false;
+        for (int s = 0; s < strokeStarts.Count; s++)
+        {
+            int from = strokeStarts[s], to = s + 1 < strokeStarts.Count ? strokeStarts[s + 1] : points.Count;
+            bool open = false;
+            for (int i = from; i < to; i++)
+            {
+                if ((points[i] - p).sqrMagnitude <= PickRadius * PickRadius) { changed = true; open = false; continue; }
+                if (!open) { starts.Add(kept.Count); open = true; }
+                kept.Add(points[i]);
+            }
+        }
+        if (!changed) return;
+        points.Clear(); points.AddRange(kept);
+        strokeStarts.Clear(); strokeStarts.AddRange(starts);
+        Redraw();
+        Ripper.Poke();
+        AudioManager.Play(Sfx.Click);
+    }
+
     /// The dashed line to follow, in 0..1 of the area.
     protected abstract List<Vector2> Guide();
     /// Several separate lines to follow (e.g. a sweater's two side seams). Default: just Guide().
@@ -112,6 +152,10 @@ public abstract class TracingStep : PieceStep, IMistakes
 
     protected override void OnPress(Vector2 p)
     {
+        inStroke = false;
+        if (!OnWork(p)) return;
+        if (picking) { Unpick(p); return; }
+        inStroke = true;
         ShowLoupe(p);
         StartStroke();
         if (HandNeedle) { Tool(CraftTool.Kind.Needle).MoveTo(World(p), true); lastPoke = p; }
@@ -228,6 +272,16 @@ public abstract class TracingStep : PieceStep, IMistakes
 
     protected override void OnDrag(Vector2 p)
     {
+        if (picking) { if (OnWork(p)) Unpick(p); return; }
+        if (!OnWork(p)) { inStroke = false; HideLoupe(); return; }   // off the work: the thread stops there
+        if (!inStroke)   // back on the work: a new row of stitches
+        {
+            inStroke = true;
+            StartStroke();
+            if (HandNeedle) { Tool(CraftTool.Kind.Needle).MoveTo(World(p), true); lastPoke = p; }
+            AddPoint(p);
+            return;
+        }
         ShowLoupe(p);
         if (points.Count > 0 && (points[points.Count - 1] - p).sqrMagnitude < 0.005f * 0.005f) return;
         AddPoint(p);

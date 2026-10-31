@@ -23,4 +23,5 @@ public class BackstitchStep : TracingStep
     }
 
     protected override List<Vector2> Guide() => Shape.Outline;
+    protected override bool OnWork(Vector2 p) => InHoop(p);
 }

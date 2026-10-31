@@ -2,7 +2,7 @@ using UnityEngine;
 
 /// Recipe step: stitch (or, for a pattern-only order, fill in) the order's pattern on the cross stitch board.
 /// The stitches are saved in Order.work.
-public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes
+public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPicker
 {
     Order order;
 
@@ -12,7 +12,11 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes
     {
         order = forOrder;
         var target = order.target;
-        Board = MakeBoard(transform, area, target.width, target.height);
+        // Stitched in a hoop, or in the Q-Snap frame once you have one (owner, 2026-10-31: the hoop shows while stitching).
+        var holder = order.patternOnly ? CrossStitchCanvas.Holder.None
+                   : area.shop != null && area.shop.Owns("qsnap_frame") ? CrossStitchCanvas.Holder.QSnap : CrossStitchCanvas.Holder.Hoop;
+        Board = MakeBoard(transform, area, target.width, target.height, holder);
+        Board.holder = holder;
         Board.mode = order.patternOnly ? CrossStitchCanvas.Mode.PatternFill : CrossStitchCanvas.Mode.Stitch;
         Board.target = target;
         Board.restore = order.work;
@@ -32,6 +36,9 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes
     }
 
     public string FinishBlocker => null;
+
+    public bool CanPick => order != null && !order.patternOnly;
+    public bool Picking { get => Board != null && Board.picking; set { if (Board != null) Board.SetPicking(value); } }
 
     /// Stitches in the wrong colour or outside the pattern, and crosses that go against the rest of the piece.
     public string MistakesLeft
@@ -56,9 +63,9 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes
     }
 
     /// A board fitted into the area, as big as it can be while its squares stay square.
-    public static CrossStitchCanvas MakeBoard(Transform parent, StepArea area, int width, int height)
+    public static CrossStitchCanvas MakeBoard(Transform parent, StepArea area, int width, int height, CrossStitchCanvas.Holder holder = CrossStitchCanvas.Holder.None)
     {
-        float cell = area.size / Mathf.Max(width, height);
+        float cell = area.size / CrossStitchCanvas.SpanFor(holder, width, height);
         var go = new GameObject("CrossStitchBoard");
         go.transform.SetParent(parent, false);
         go.transform.position = (Vector3)(area.center - new Vector2(width * cell, height * cell) / 2f);

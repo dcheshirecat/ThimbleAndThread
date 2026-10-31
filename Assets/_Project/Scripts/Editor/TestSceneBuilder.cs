@@ -356,6 +356,8 @@ public static class TestSceneBuilder
         Button(b, "Undo", minigame.Undo, 520);
         Button(b, "Done for Now", day.DoneForNow, 600);
         Button(b, "Finish", day.FinishCrafting, 520);
+        ui.pickerButton = Button(p, "Stitch Picker", minigame.TogglePicker, 700);   // a seam ripper: unpick stitches one by one
+        Place(ui.pickerButton, new Vector2(0.5f, 0.115f), new Vector2(760, 120));
         // Finish's pop-up: mistakes left in (fix them, or finish anyway), or why the step can't finish yet
         var finishPanel = Shape(p, "FinishPanel", new Vector2(0.5f, 0.55f), new Vector2(1700, 900), new Color(1f, 0.97f, 0.9f), uiSprite);
         finishPanel.GetComponent<Image>().raycastTarget = true;   // the board underneath can't be touched meanwhile

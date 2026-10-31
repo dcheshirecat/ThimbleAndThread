@@ -32,6 +32,18 @@ public class CrossStitchCanvas : MonoBehaviour
     public bool paintHalf;             // designing: squares painted now are half stitches (just the "/" leg)
     public bool erase;                 // PatternFill: painting clears squares instead
     public DesignFrame frame;          // PatternFill: how the item is really made, shown on the board (owner, 2026-10-31)
+    public Holder holder;              // Stitch: what holds the fabric taut while stitching (owner, 2026-10-31: the hoop shows)
+    public bool picking;               // Stitch: the stitch picker is in hand; touching a square unpicks it
+
+    public enum Holder { None, Hoop, QSnap }
+
+    /// How many squares wide the board must be drawn so the holder fits round it in the same space.
+    public static float SpanFor(Holder h, int width, int height) => h switch
+    {
+        Holder.Hoop => Mathf.Sqrt(width * width + height * height) + 2.2f,   // the square sits inside the round hoop
+        Holder.QSnap => Mathf.Max(width, height) + 1.8f,
+        _ => Mathf.Max(width, height),
+    };
 
     /// What a design is made into, drawn on the designer's board: a round hoop of fabric (embroidery), rounds
     /// spiralling out from a ring (crochet), knitted stitches (knitting), or plain squares (cross stitch, sewing).
@@ -194,6 +206,51 @@ public class CrossStitchCanvas : MonoBehaviour
                 }
     }
 
+    static Sprite disc;
+    /// A soft-edged white circle, 1 unit across, for the hooped round of fabric.
+    static Sprite Disc()
+    {
+        if (disc != null) return disc;
+        const int n = 256;
+        var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+        var px = new Color32[n * n];
+        for (int y = 0; y < n; y++)
+            for (int x = 0; x < n; x++)
+            {
+                float d = new Vector2(x + 0.5f - n / 2f, y + 0.5f - n / 2f).magnitude / (n / 2f);
+                px[y * n + x] = new Color(1, 1, 1, Mathf.Clamp01((1f - d) * n / 2f));
+            }
+        tex.SetPixels32(px);
+        tex.Apply();
+        return disc = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), n);
+    }
+
+    CraftTool ripper;
+    CraftTool Ripper => ripper ??= CraftTool.Make(transform, CraftTool.Kind.SeamRipper, cellSize * 2.4f, material, 41);
+    Vector2Int lastPicked = new Vector2Int(-1, -1);
+
+    /// Stitch picker: takes the stitches out of one square.
+    void Unpick(Vector2Int cell)
+    {
+        Ripper.MoveTo(transform.TransformPoint(new Vector3((cell.x + 0.5f) * cellSize, (cell.y + 0.5f) * cellSize, 0)));
+        if (cell == lastPicked || !stitchProgress.ContainsKey(cell)) return;
+        lastPicked = cell;
+        var keep = Marks();
+        keep.RemoveAll(m => m.x == cell.x && m.y == cell.y);
+        Clear();
+        Apply(keep);
+        Ripper.Poke();
+        AudioManager.Play(Sfx.Click);
+    }
+
+    /// Puts the stitch picker in hand (or the needle back).
+    public void SetPicking(bool on)
+    {
+        picking = on && mode == Mode.Stitch;
+        if (picking) { if (needle != null) needle.Hide(); }
+        else if (ripper != null) ripper.Hide();
+    }
+
     void Ring(Vector3 centre, float radius, float w, Color color, int sorting)
     {
         var ring = MakeLine(color, w);
@@ -212,9 +269,40 @@ public class CrossStitchCanvas : MonoBehaviour
     {
         var fabric = new GameObject("fabric").AddComponent<SpriteRenderer>();
         fabric.transform.SetParent(transform, false);
-        fabric.transform.localPosition = new Vector3(width * cellSize / 2f, height * cellSize / 2f, 0);
+        var centre = new Vector3(width * cellSize / 2f, height * cellSize / 2f, 0);
+        fabric.transform.localPosition = centre;
         fabric.transform.localScale = new Vector3((width + 0.6f) * cellSize, (height + 0.6f) * cellSize, 1);
         fabric.sprite = cellSprite;
+        if (holder == Holder.Hoop)   // a round of fabric held in a wooden hoop, its screw at the top
+        {
+            float r = Mathf.Sqrt(width * width + height * height) / 2f * cellSize + cellSize * 0.25f;
+            fabric.sprite = Disc();
+            fabric.transform.localScale = Vector3.one * r * 2f;
+            Ring(centre, r + cellSize * 0.2f, cellSize * 0.45f, new Color(0.72f, 0.52f, 0.32f), 6);
+            Ring(centre, r + cellSize * 0.2f, cellSize * 0.12f, new Color(0.86f, 0.68f, 0.45f), 7);
+            var screw = MakeLine(new Color(0.55f, 0.55f, 0.58f), cellSize * 0.5f);
+            screw.sortingOrder = 6;
+            screw.SetPosition(0, transform.TransformPoint(centre + Vector3.up * (r + cellSize * 0.3f)));
+            screw.SetPosition(1, transform.TransformPoint(centre + Vector3.up * (r + cellSize * 1.0f)));
+        }
+        else if (holder == Holder.QSnap)   // a square frame of plastic tubes with clamps over the fabric
+        {
+            float half = Mathf.Max(width, height) / 2f * cellSize + cellSize * 0.5f;
+            fabric.transform.localScale = Vector3.one * half * 2f;
+            for (int side = 0; side < 4; side++)
+            {
+                var dir = side switch { 0 => Vector3.up, 1 => Vector3.right, 2 => Vector3.down, _ => Vector3.left };
+                var along = new Vector3(-dir.y, dir.x, 0);
+                var bar = MakeLine(new Color(0.88f, 0.88f, 0.92f), cellSize * 0.5f);
+                bar.sortingOrder = 6;
+                bar.SetPosition(0, transform.TransformPoint(centre + dir * half - along * (half + cellSize * 0.25f)));
+                bar.SetPosition(1, transform.TransformPoint(centre + dir * half + along * (half + cellSize * 0.25f)));
+                var clamp = MakeLine(new Color(0.75f, 0.78f, 0.86f), cellSize * 0.62f);
+                clamp.sortingOrder = 7;
+                clamp.SetPosition(0, transform.TransformPoint(centre + dir * half - along * half * 0.5f));
+                clamp.SetPosition(1, transform.TransformPoint(centre + dir * half + along * half * 0.5f));
+            }
+        }
         fabric.sharedMaterial = material;
         fabric.color = fabricColor;
         fabric.sortingOrder = -2;
@@ -313,6 +401,7 @@ public class CrossStitchCanvas : MonoBehaviour
     {
         strokeStart = Marks();
         if (mode == Mode.PatternFill) { Paint(CellAt(local)); return; }
+        if (picking) { lastPicked = new Vector2Int(-1, -1); Unpick(CellAt(local)); return; }
         dragStartCorner = NearestCorner(local);
         Needle.MoveTo(CornerPos(dragStartCorner.Value), true);
         Needle.Poke();
@@ -324,6 +413,7 @@ public class CrossStitchCanvas : MonoBehaviour
     void OnDrag(Vector3 local)
     {
         if (mode == Mode.PatternFill) { if (OnBoard(local)) Paint(CellAt(local)); return; }
+        if (picking) { if (OnBoard(local)) Unpick(CellAt(local)); return; }
         if (previewLine != null)
             previewLine.SetPosition(1, transform.TransformPoint(local));
         if (mode == Mode.Stitch && needle != null) needle.MoveTo(transform.TransformPoint(local));

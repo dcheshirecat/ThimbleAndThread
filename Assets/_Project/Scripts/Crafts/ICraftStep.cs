@@ -35,6 +35,14 @@ public struct StepArea
     public float assist;           // 0..1: how much the best tool for this step helps (SupplyDef.assist)
 }
 
+/// A step whose stitches can be unpicked one by one with a seam ripper (owner, 2026-10-31: a stitch picker, like an
+/// eraser). The minigame's "Stitch Picker" button switches it on and off.
+public interface IStitchPicker
+{
+    bool CanPick { get; }
+    bool Picking { get; set; }
+}
+
 /// A step that can say what mistakes are still in the work (owner, 2026-10-30: mistakes can happen anywhere,
 /// can be undone, and if left in they lower the result). Finish warns about them once before going on.
 public interface IMistakes
