@@ -224,7 +224,7 @@ public class Progression
         {
             if (!QuestShown(q) || !QuestDone(q) || Save.questsReady.Contains(q.questId)) continue;
             Save.questsReady.Add(q.questId);
-            Stamps.Notice($"Goal reached: {q.title}!\n<size=40>Claim your reward in the Journal.</size>");
+            Stamps.Announce($"Goal reached: {q.title}!\n<size=40>Claim your reward in the Journal.</size>");
             n++;
         }
         return n;

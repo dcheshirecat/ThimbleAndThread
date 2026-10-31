@@ -25,7 +25,7 @@ public class DialogueUI : MonoBehaviour
         patternPreview.texture = preview;
         patternPreview.gameObject.SetActive(preview != null);
 
-        foreach (var b in buttons) Destroy(b);
+        foreach (var b in buttons) { b.SetActive(false); Destroy(b); }   // gone from the layout now, not at the frame's end
         buttons.Clear();
         choiceTemplate.gameObject.SetActive(false);
         for (int i = 0; i < choices.Count; i++)

@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 /// The pop-up for a new stamp (an achievement), and for short notices like the doorbell ringing while
 /// the player is on another screen. One at a time, in order; tap to dismiss, or it goes by itself.
+/// Stamps and goals wait for a calm moment (a hub or shop screen, not mid-conversation or mid-craft);
+/// the doorbell shows straight away.
 public class StampPopup : MonoBehaviour
 {
     public GameObject panel;
@@ -12,7 +14,7 @@ public class StampPopup : MonoBehaviour
     public Image stamp;              // the round stamp in its theme colour
     public Text stampWord, titleText, detailText;
 
-    readonly Queue<(Stamp stamp, string notice)> queue = new Queue<(Stamp, string)>();
+    readonly List<(Stamp stamp, string notice, bool calm)> queue = new List<(Stamp, string, bool)>();
     bool showing;
 
     void OnEnable()
@@ -23,6 +25,17 @@ public class StampPopup : MonoBehaviour
     }
 
     void ScreenChanged(ScreenId id) => Next();   // held ones show once the player's in the game
+
+    /// Screens where nothing is going on: a stamp or a goal can show there.
+    static bool Calm()
+    {
+        var gm = GameManager.Instance;
+        if (gm == null || gm.Save == null) return false;
+        return gm.Current is ScreenId.Shop or ScreenId.Workroom or ScreenId.OrderBook or ScreenId.Workbench or ScreenId.Result
+            or ScreenId.DaySummary or ScreenId.Market or ScreenId.Boutique or ScreenId.PatternStudio;
+    }
+
+    void Update() { if (!showing && queue.Count > 0) Next(); }   // a calm moment can come without a screen change
 
     /// Not over the title, save slots, the tutorial or making the shopkeeper: they wait until after.
     static bool Quiet()
@@ -39,8 +52,8 @@ public class StampPopup : MonoBehaviour
         if (GameManager.Instance != null) GameManager.Instance.OnScreenChanged -= ScreenChanged;
     }
 
-    void Earned(Stamp s) { queue.Enqueue((s, null)); Next(); }
-    void Notice(string text) { queue.Enqueue((null, text)); Next(); }
+    void Earned(Stamp s) { queue.Add((s, null, true)); Next(); }
+    void Notice(string text, bool calm) { queue.Add((null, text, calm)); Next(); }
 
     public void Dismiss()
     {
@@ -53,7 +66,10 @@ public class StampPopup : MonoBehaviour
     void Next()
     {
         if (showing || queue.Count == 0 || !isActiveAndEnabled || Quiet()) return;
-        var (s, notice) = queue.Dequeue();
+        int i = Calm() ? 0 : queue.FindIndex(q => !q.calm);   // the first one that may show now
+        if (i < 0) return;
+        var (s, notice, _) = queue[i];
+        queue.RemoveAt(i);
         showing = true;
         panel.SetActive(true);
         panel.transform.SetAsLastSibling();

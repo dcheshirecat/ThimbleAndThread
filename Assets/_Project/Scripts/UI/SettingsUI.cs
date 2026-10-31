@@ -20,7 +20,9 @@ public class SettingsUI : MonoBehaviour
 
     void OnScreenChanged(ScreenId id)
     {
-        if (id == ScreenId.Settings) Show();
+        if (id != ScreenId.Settings) return;
+        if (GameManager.Instance.Save != null) GameManager.Instance.Persist();   // paused and saved
+        Show();
     }
 
     public void MusicUp() => Change(true, 1);

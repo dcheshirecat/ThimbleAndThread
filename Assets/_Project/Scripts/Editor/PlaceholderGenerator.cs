@@ -21,6 +21,7 @@ public static class PlaceholderGenerator
         MakeSprite($"{Root}/Art/Backgrounds/bg_shop_day.png", 2732, 2048, new Color(0.95f, 0.88f, 0.78f));
         MakeSprite($"{Root}/Art/Backgrounds/bg_workbench.png", 2732, 2048, new Color(0.80f, 0.66f, 0.50f));
         MakeSprite($"{Root}/Art/Backgrounds/bg_workroom_night.png", 2732, 2048, new Color(0.22f, 0.24f, 0.40f));
+        Symbols();
 
         // ---- Items ----
         var sweater   = Item("sweater",   "Sweater",   CraftType.Knitting,    60, 15, new Color(0.85f, 0.35f, 0.35f));
@@ -452,6 +453,71 @@ public static class PlaceholderGenerator
         def.threads = threads; def.grid = grid; def.startsOnShelf = true;
         AssetDatabase.CreateAsset(def, assetPath);
         return def;
+    }
+
+    /// Placeholder icons for the top bar: a symbol per weekday (Monday a moon, Tuesday a flame (triangle), Wednesday a
+    /// drop, Thursday a star, Friday a heart, Saturday a ring, Sunday a sun) and the settings gear. White on
+    /// clear, 256 x 256: the badge behind them gives the colour.
+    static void Symbols()
+    {
+        Directory.CreateDirectory($"{Root}/Art/UI/Weekdays");
+        System.Func<float, float, bool>[] shapes =
+        {
+            (x, y) => x * x + y * y < 0.16f && (x - 0.17f) * (x - 0.17f) + (y - 0.1f) * (y - 0.1f) > 0.11f,                // moon
+            (x, y) => y > -0.36f && Mathf.Abs(x) < 0.38f * (0.4f - y) / 0.76f,                                                // flame (a triangle)
+            (x, y) => (y < 0 && x * x + y * y < 0.09f) || (y >= 0 && Mathf.Abs(x) < 0.3f * (1 - y / 0.42f)),               // drop
+            (x, y) => Star(x, y),
+            (x, y) => Heart(x * 2.6f, y * 2.6f + 0.15f),
+            (x, y) => { float r = Mathf.Sqrt(x * x + y * y); return r > 0.24f && r < 0.4f; },                              // ring
+            (x, y) => { float r = Mathf.Sqrt(x * x + y * y), a = Mathf.Atan2(y, x); return r < 0.22f || (r < 0.42f && r > 0.27f && Mathf.Cos(a * 8) > 0.55f); }, // sun
+        };
+        for (int i = 0; i < 7; i++) MakeIcon($"{Root}/Art/UI/Weekdays/{Week.SymbolFile(i)}", shapes[i]);
+        MakeIcon($"{Root}/Art/UI/icon_gear.png", (x, y) =>
+        {
+            float r = Mathf.Sqrt(x * x + y * y), a = Mathf.Atan2(y, x);
+            return r > 0.11f && (r < 0.3f || (r < 0.42f && Mathf.Cos(a * 8) > 0.3f));
+        });
+    }
+
+    static bool Star(float x, float y)
+    {
+        float r = Mathf.Sqrt(x * x + y * y), a = Mathf.Atan2(y, x) - Mathf.PI / 2;
+        float t = Mathf.Abs(Mathf.Repeat(a, Mathf.PI * 2 / 5) - Mathf.PI / 5) / (Mathf.PI / 5);   // 1 at a point, 0 between
+        return r < Mathf.Lerp(0.18f, 0.44f, t * t);
+    }
+
+    static bool Heart(float x, float y)
+    {
+        float a = x * x + y * y - 1;
+        return a * a * a - x * x * y * y * y <= 0;
+    }
+
+    /// A white shape on a clear square (inside(x, y) with x and y from -0.5 to 0.5), softened at the edge.
+    static void MakeIcon(string path, System.Func<float, float, bool> inside)
+    {
+        if (File.Exists(path)) return;
+        const int size = 256, ss = 3;
+        var pixels = new Color32[size * size];
+        for (int py = 0; py < size; py++)
+            for (int px = 0; px < size; px++)
+            {
+                int hits = 0;
+                for (int sy = 0; sy < ss; sy++)
+                    for (int sx = 0; sx < ss; sx++)
+                        if (inside((px + (sx + 0.5f) / ss) / size - 0.5f, (py + (sy + 0.5f) / ss) / size - 0.5f)) hits++;
+                pixels[py * size + px] = new Color32(255, 255, 255, (byte)(255 * hits / (ss * ss)));
+            }
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.SetPixels32(pixels);
+        File.WriteAllBytes(path, tex.EncodeToPNG());
+        Object.DestroyImmediate(tex);
+        AssetDatabase.ImportAsset(path);
+        var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+        imp.textureType = TextureImporterType.Sprite;
+        imp.spriteImportMode = SpriteImportMode.Single;
+        imp.alphaIsTransparency = true;
+        imp.mipmapEnabled = false;
+        imp.SaveAndReimport();
     }
 
     // ---------- helpers ----------

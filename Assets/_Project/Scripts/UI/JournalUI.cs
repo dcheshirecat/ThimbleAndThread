@@ -156,6 +156,7 @@ public class JournalUI : MonoBehaviour
             row.gameObject.SetActive(true);
             row.name = $"JournalOrder_{id}";
             row.GetComponentInChildren<Text>().text = $"{(order.item != null ? order.item.itemName : order.itemId)}{kind} for {day.NameFor(order.customerId)}  ·  {state}";
+            WithFace(row, customer != null && Save.met.Contains(customer.customerId) ? customer.GetPortrait(Expression.Neutral) : null);
             row.onClick.AddListener(() => { overlay.SetActive(false); day.SelectOrder(id); });
             rows.Add(row.gameObject);
         }
@@ -214,6 +215,16 @@ public class JournalUI : MonoBehaviour
         return shown == 0 ? "<b>Friends</b>\n\nYou haven't met anyone yet. Customers ring the bell during the day." : "<b>Friends</b>";
     }
 
+    /// A row about a person: their round portrait at the left, the text beside it.
+    static void WithFace(Button row, Sprite face)
+    {
+        var portrait = row.transform.Find("Portrait");
+        if (portrait == null || face == null) return;
+        portrait.gameObject.SetActive(true);
+        portrait.Find("Face").GetComponent<Image>().sprite = face;
+        ((RectTransform)row.transform.Find("Label")).offsetMin = new Vector2(170, 0);
+    }
+
     void FriendCard(string name, CustomerRelationship r, Sprite face, string body)
     {
         if (friendTemplate == null) return;
@@ -223,9 +234,10 @@ public class JournalUI : MonoBehaviour
         var portrait = card.transform.Find("Portrait");
         if (portrait != null)
         {
-            var img = portrait.GetComponent<Image>();
+            portrait.GetComponent<Image>().color = face != null ? new Color(0.85f, 0.78f, 0.68f) : new Color(0.55f, 0.5f, 0.48f);   // blank until you've met
+            var img = portrait.Find("Face").GetComponent<Image>();
             img.sprite = face;
-            img.color = face != null ? Color.white : new Color(0.55f, 0.5f, 0.48f);   // a blank frame until you've met
+            img.enabled = face != null;
             portrait.Find("Unknown").gameObject.SetActive(face == null);
         }
         if (r == null)   // not met yet

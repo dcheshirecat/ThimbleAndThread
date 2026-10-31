@@ -77,7 +77,8 @@ public class ShopDay : MonoBehaviour
             CheckShops();
         }
         if (Save == null || Save.night || CustomersWaiting == 0 || GM.Current == ScreenId.Dialogue || GM.Current == ScreenId.Title
-            || GM.Current == ScreenId.SaveSelect || GM.Current == ScreenId.Customize || GM.Current == ScreenId.Tutorial || !Save.player.created)
+            || GM.Current == ScreenId.SaveSelect || GM.Current == ScreenId.Customize || GM.Current == ScreenId.Tutorial
+            || GM.Current == ScreenId.Settings || !Save.player.created)   // Settings pauses the day
         {
             if (Save == null || Save.night || CustomersWaiting == 0) { BellRinging = false; bellTimer = -1f; }
             return;
@@ -897,7 +898,8 @@ public class ShopDay : MonoBehaviour
 
     /// Who an order is for, as the player reads it ("you" for things made for yourself).
     public string NameFor(string customerId) =>
-        customerId == PlayerProfile.SelfId ? "you" : CustomerFor(customerId) is CustomerDef c ? c.displayName : customerId;
+        customerId == PlayerProfile.SelfId ? "you" : !Save.met.Contains(customerId) ? "???"   // no names before they've said them
+        : CustomerFor(customerId) is CustomerDef c ? c.displayName : customerId;
 
     /// Pattern Studio: puts an order for yourself in the book, to wear once it's made (sweaters, scarves).
     public void MakeForMyself()
@@ -1121,9 +1123,9 @@ public class ShopDay : MonoBehaviour
     public void CheckShops()
     {
         if (Save.day >= MarketOpensDay)
-            OpenShop(MarketFlag, "Bram's Supply Market", "Fabric, thread, yarn and tools, just across the square.");
+            OpenShop(MarketFlag, "The Supply Market", "Fabric, thread, yarn and tools, just across the square.");   // no names before they introduce themselves
         if (Save.totalDelivered >= BoutiqueDeliveries || Save.chapter >= 2)
-            OpenShop(BoutiqueFlag, "Moreau's Boutique", "Clothes and hair, across the square. Celeste has opened her doors.");
+            OpenShop(BoutiqueFlag, "The Boutique", "Clothes, hair and accessories: a new boutique across the square has opened its doors.");
     }
 
     void OpenShop(string flag, string name, string detail)
@@ -1470,6 +1472,7 @@ public class ShopDay : MonoBehaviour
     /// Stop for now: the work is kept in the order and saved.
     public void DoneForNow()
     {
+        FinishWarning = null;
         minigame.SaveWork();
         minigame.Close();
         GM.Persist();
@@ -1477,26 +1480,42 @@ public class ShopDay : MonoBehaviour
         GM.ChangeScreen(ScreenId.OrderBook);
     }
 
+    string keepMistakes;   // "orderId:step" the player chose to finish with its mistakes left in
+
+    /// Set when Finish has something to say before it can go on (mistakes left in, or the step isn't
+    /// done); the minigame screen shows it as a pop-up. FinishCanGoOn: "Finish anyway" is offered.
+    public string FinishWarning { get; private set; }
+    public bool FinishCanGoOn { get; private set; }
+
+    public void FixMistakes() => FinishWarning = null;
+
+    /// Finish with the mistakes left in (they lower the quality).
+    public void FinishAnyway()
+    {
+        if (Selected == null) return;
+        keepMistakes = $"{Selected.id}:{Selected.step}";
+        FinishWarning = null;
+        FinishCrafting();
+    }
+
     /// Finishes the step being worked on. If more steps follow, it's back to the Workbench with the
     /// next one ready (the player can stop between steps). After the last step, shows how the piece
     /// turned out and what the customer will pay: the quality is the average over all steps.
-    string warnedMistakes;   // "orderId:step" already warned about its mistakes (the second Finish goes on)
-
     public void FinishCrafting()
     {
-        // Mistakes left in: say so once; Undo fixes them, Finish again keeps them (and the lower quality).
-        if (minigame.Step is IMistakes m && m.MistakesLeft is string left && warnedMistakes != $"{Selected.id}:{Selected.step}")
+        FinishWarning = null;
+        // Mistakes left in: ask first (a pop-up); Undo fixes them, "Finish anyway" keeps them (and the lower quality).
+        if (minigame.Step is IMistakes m && m.MistakesLeft is string left && keepMistakes != $"{Selected.id}:{Selected.step}")
         {
-            warnedMistakes = $"{Selected.id}:{Selected.step}";
-            LastMessage = $"Still in there: {left}. Undo to fix it, or tap Finish again to leave it in.";
-            GM.ChangeScreen(ScreenId.Minigame);
+            FinishWarning = $"Still in there: {left}.\n\nUndo can unpick them, or finish with them left in (the piece will be worth a little less).";
+            FinishCanGoOn = true;
             return;
         }
         var blocker = minigame.Step?.FinishBlocker;
         if (blocker != null)
         {
-            LastMessage = blocker;
-            GM.ChangeScreen(ScreenId.Minigame);   // shows the message with the step's hint
+            FinishWarning = blocker;
+            FinishCanGoOn = false;
             return;
         }
         var state = Selected.StepState(Selected.step);

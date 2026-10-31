@@ -57,8 +57,7 @@ public class OrderFlowUI : MonoBehaviour
             patternStudioButton.interactable = open;
             patternStudioButton.GetComponentInChildren<Text>().color = open ? new Color(0.2f, 0.15f, 0.2f) : new Color(0.2f, 0.15f, 0.2f, 0.35f);
         }
-        workroomStatus.text = $"Night of day {save.day}    {save.coins} coins\n" +
-                              $"Orders to work on: {toDo}\nSet aside for tomorrow: {ready}\n\n{day.LastMessage}";
+        workroomStatus.text = $"Orders to work on: {toDo}\nSet aside for tomorrow: {ready}\n\n{day.LastMessage}";
         summaryText.text = "The shop is closed for the night.\n\n" +
                            $"Patterns sold: {save.patternsSoldToday}\nOrders handed over: {save.deliveredToday}\n" +
                            $"Coins earned today: {save.coinsToday}\nTotal coins: {save.coins}\n\n" +
@@ -372,9 +371,25 @@ public class OrderFlowUI : MonoBehaviour
 
     string baseHint, liveHint;
 
+    [Header("Finish pop-up")] public GameObject finishPanel; public Text finishText, fixLabel; public GameObject finishAnywayButton;
+
+    /// Finish's question (mistakes left in) or reason (the step isn't done yet), as a pop-up over the work.
+    void ShowFinishWarning()
+    {
+        if (finishPanel == null) return;
+        string w = GameManager.Instance != null && GameManager.Instance.Current == ScreenId.Minigame ? day.FinishWarning : null;
+        if (finishPanel.activeSelf != (w != null)) finishPanel.SetActive(w != null);
+        if (w == null || finishText.text == w) return;
+        finishText.text = w;
+        finishAnywayButton.SetActive(day.FinishCanGoOn);
+        fixLabel.text = day.FinishCanGoOn ? "Fix It" : "OK";
+        finishPanel.transform.SetAsLastSibling();
+    }
+
     /// Keeps the step's live line (e.g. the crochet pattern's round) under the hint while working.
     void Update()
     {
+        ShowFinishWarning();
         if (GameManager.Instance == null || GameManager.Instance.Current != ScreenId.Minigame || baseHint == null) return;
         string live = day.minigame.Step is PieceStep p ? p.LiveHint : null;
         if (live == liveHint) return;

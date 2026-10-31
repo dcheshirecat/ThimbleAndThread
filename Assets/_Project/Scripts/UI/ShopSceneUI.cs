@@ -74,8 +74,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         bool someoneComing = day.CustomersWaiting > 0;
         bubble.SetActive(Ringing);
         bubbleText.text = Ringing ? "Ding-dong! Someone's at the door." : "";
-        statusText.text = $"Day {Save.day}" + (day.Progress.Chapter is ChapterDef ch ? $"  ·  Chapter {ch.number}: {ch.title}" : "") +
-                          (string.IsNullOrEmpty(day.LastMessage) ? "" : $"\n{day.LastMessage}");
+        statusText.text = day.LastMessage ?? "";   // the day and chapter are in the top bar
         ShowPage(Page, instant: true);
     }
 
@@ -162,7 +161,15 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
     void ShowShops()
     {
-        if (shopsButton != null) shopsButton.SetActive(day.AnyShopOpen);
+        if (shopsButton != null)   // there from the start, greyed out until a shop opens
+        {
+            var button = shopsButton.GetComponent<Button>();
+            if (button.interactable != day.AnyShopOpen)
+            {
+                button.interactable = day.AnyShopOpen;
+                button.GetComponentInChildren<Text>().color = day.AnyShopOpen ? new Color(0.2f, 0.15f, 0.2f) : new Color(0.2f, 0.15f, 0.2f, 0.35f);
+            }
+        }
         if (marketButton != null) marketButton.SetActive(day.ShopOpen(ScreenId.Market));
         if (boutiqueButton != null) boutiqueButton.SetActive(day.ShopOpen(ScreenId.Boutique));
         if (!day.AnyShopOpen && shopsMenu.activeSelf) shopsMenu.SetActive(false);

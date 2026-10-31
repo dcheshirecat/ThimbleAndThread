@@ -234,7 +234,9 @@ public class DialogueRunner
             var i = knot.code[pc++];
             switch (i.op)
             {
-                case InkLite.Op.Say: return new Line { speaker = i.speaker, text = i.text, tags = i.tags };
+                case InkLite.Op.Say:
+                    if (string.IsNullOrWhiteSpace(i.text)) break;   // a blank line would need an extra Continue
+                    return new Line { speaker = i.speaker, text = i.text, tags = i.tags };
                 case InkLite.Op.Call: command?.Invoke(i.call); break;
                 case InkLite.Op.Jump: pc = i.target; break;
                 case InkLite.Op.End: Finished = true; break;

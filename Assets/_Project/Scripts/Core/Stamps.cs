@@ -22,12 +22,16 @@ public static class Stamps
     public static event Action<Stamp> OnEarned;
 
     /// A short message to show in the same pop-up (e.g. the doorbell while on another screen).
-    public static event Action<string> OnNotice;
+    /// The bool is true when it may wait for a calm moment (a goal reached), false to show it now.
+    public static event Action<string, bool> OnNotice;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     static void ResetStatics() { OnEarned = null; OnNotice = null; }
 
-    public static void Notice(string text) => OnNotice?.Invoke(text);
+    public static void Notice(string text) => OnNotice?.Invoke(text, false);
+
+    /// Like Notice, but held until the player isn't talking or crafting (goals reached, rewards).
+    public static void Announce(string text) => OnNotice?.Invoke(text, true);
 
     /// Stamps it if it's new. quiet: no pop-up and no news (catching up an older save).
     public static bool Earn(SaveData save, string id, string title, string detail, StampTheme theme, bool quiet = false)

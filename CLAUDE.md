@@ -588,6 +588,19 @@ Not yet merged: d0327d9 (crochet plushie) and a030d25 (introductions) are on min
 24. Pattern Studio: can't design for an item whose craft isn't learned. Designing should reflect how that pattern is
    really made (not just a square grid for everything).
 Also planned: needlepoint, quilting, loom weaving (new crafts; ask the owner how they unlock in the story).
+DONE batch 1 (items 1, 2, 3, 5, 9, 13, 15, 17, 23):
+- Stamps and goals ("Goal reached", Stamps.Announce) wait for a calm screen (StampPopup.Calm: hubs, market, boutique,
+  order book, workbench, result, summary); the doorbell (Stamps.Notice) still shows anywhere.
+- Journal tabs: two rows of four inside the page.
+- UI/TopBar.cs on the Shop and Workroom: weekday badge (Core/Week.cs: day 1 = Monday; colour + symbol
+  Art/UI/Weekdays/weekday_<n>_<name>.png, white placeholders), "Day N" + chapter, coins, settings gear (Art/UI/icon_gear.png).
+  Settings pauses visitors and saves on opening.
+- Shops button always there, greyed until a shop opens. Shop openings and the menu don't name Bram/Celeste
+  ("The Supply Market", "The Boutique"); ShopDay.NameFor gives ??? for anyone not met.
+- Journal: round portraits LEFT of names (friend cards, order rows: JournalUI.WithFace).
+- Finish double press: the mistakes warning was appended to a long hint and overflowed off the readable area, so the first
+  Finish looked like it did nothing. Now a pop-up (ShopDay.FinishWarning/FinishCanGoOn; "Fix It" / "Finish Anyway"; blockers
+  show "OK"). Also: blank ink lines are skipped (no empty Continue), old dialogue buttons leave the layout at once.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.

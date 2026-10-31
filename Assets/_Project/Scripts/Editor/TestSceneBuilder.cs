@@ -234,15 +234,13 @@ public static class TestSceneBuilder
         sign.GetComponentInChildren<Text>().text = "OPEN";
         sign.GetComponentInChildren<Text>().fontStyle = FontStyle.Bold;
         sign.GetComponent<Image>().color = new Color(0.55f, 0.80f, 0.55f);
-        Place(sign, new Vector2(0.17f, 0.935f), new Vector2(560, 170));
-        var coins = Shape(p, "Coins", new Vector2(0.8f, 0.935f), new Vector2(560, 170), new Color(1, 1, 1, 0.85f), uiSprite);
-        Shape(coins, "CoinIcon", new Vector2(0.18f, 0.5f), new Vector2(110, 110), new Color(0.98f, 0.80f, 0.25f), Knob());
-        shopScene.coinText = MakeText(coins, "CoinText", "0", 72);
-        var ctr = (RectTransform)shopScene.coinText.transform;
-        Stretch(ctr);
-        ctr.offsetMin = new Vector2(150, 0);
+        Place(sign, new Vector2(0.115f, 0.955f), new Vector2(380, 150));
+        shopScene.coinText = TopBar(p, day, 0.355f, Ink).coinText;
         var shops = Button(p, "Shops", shopScene.ToggleShops, 380);
-        Place(shops, new Vector2(0.8f, 0.865f), new Vector2(560, 120));
+        Place(shops, new Vector2(0.82f, 0.902f), new Vector2(420, 110));
+        var shopsColors = shops.colors;
+        shopsColors.disabledColor = new Color(0.6f, 0.6f, 0.6f, 0.55f);   // greyed out until a shop opens
+        shops.colors = shopsColors;
         shops.GetComponentInChildren<Text>().fontSize = 56;
         shopScene.shopsButton = shops.gameObject;
         var shopsMenu = Shape(p, "Shops Menu", new Vector2(0.72f, 0.72f), new Vector2(900, 560), new Color(1, 0.97f, 0.9f), uiSprite);
@@ -252,12 +250,12 @@ public static class TestSceneBuilder
         menuMarket.GetComponentInChildren<Text>().text = "Supply Market";
         shopScene.marketButton = menuMarket.gameObject;
         var menuBoutique = Button(sm, "Menu Boutique", shopScene.GoToBoutique, 800);
-        menuBoutique.GetComponentInChildren<Text>().text = "Moreau's Boutique";
+        menuBoutique.GetComponentInChildren<Text>().text = "The Boutique";
         shopScene.boutiqueButton = menuBoutique.gameObject;
         Button(sm, "Menu Close", shopScene.ToggleShops, 800).GetComponentInChildren<Text>().text = "Close";
         shopsMenu.gameObject.SetActive(false);
         shopScene.shopsMenu = shopsMenu.gameObject;
-        shopScene.pageLabel = Label(p, "PageName", new Vector2(0.2f, 0.85f), new Vector2(0.8f, 0.9f), 56, TextAnchor.MiddleCenter);
+        shopScene.pageLabel = Label(p, "PageName", new Vector2(0.2f, 0.825f), new Vector2(0.8f, 0.865f), 56, TextAnchor.MiddleCenter);
         shopScene.pageLabel.raycastTarget = false;   // the Shops button sits beside it
         var b = Row(p, 0.5f, 0.05f);
         Button(b, "Pickups Arrow", shopScene.Left, 420).GetComponentInChildren<Text>().text = "< Pickups";
@@ -277,7 +275,9 @@ public static class TestSceneBuilder
         // Workroom (night)
         p = Panel(ScreenId.Workroom, "Workroom", new Color(0.22f, 0.24f, 0.40f), "Art/Backgrounds/bg_workroom_night.png");
         p.Find("Title").GetComponent<Text>().color = Color.white;
-        ui.workroomStatus = Label(p, "Status", new Vector2(0.08f, 0.62f), new Vector2(0.92f, 0.88f), 68, TextAnchor.MiddleLeft);
+        ((RectTransform)p.Find("Title")).anchoredPosition = new Vector2(0, -640);   // below the top bar
+        TopBar(p, day, 0.2f, Color.white);
+        ui.workroomStatus = Label(p, "Status", new Vector2(0.08f, 0.58f), new Vector2(0.92f, 0.82f), 68, TextAnchor.MiddleLeft);
         ui.workroomStatus.color = Color.white;
         b = Column(p, 0.5f, 0.35f);
         Button(b, "Order Book", router.GoToOrderBook, 1100);
@@ -345,6 +345,15 @@ public static class TestSceneBuilder
         Button(b, "Undo", minigame.Undo, 520);
         Button(b, "Done for Now", day.DoneForNow, 600);
         Button(b, "Finish", day.FinishCrafting, 520);
+        // Finish's pop-up: mistakes left in (fix them, or finish anyway), or why the step can't finish yet
+        var finishPanel = Shape(p, "FinishPanel", new Vector2(0.5f, 0.55f), new Vector2(1700, 900), new Color(1f, 0.97f, 0.9f), uiSprite);
+        finishPanel.GetComponent<Image>().raycastTarget = true;   // the board underneath can't be touched meanwhile
+        ui.finishText = Label(finishPanel, "Text", new Vector2(0.06f, 0.3f), new Vector2(0.94f, 0.94f), 56, TextAnchor.MiddleCenter);
+        b = Row(finishPanel, 0.5f, 0.15f);
+        ui.fixLabel = Button(b, "Fix It", day.FixMistakes, 700).GetComponentInChildren<Text>();
+        ui.finishAnywayButton = Button(b, "Finish Anyway", day.FinishAnyway, 700).gameObject;
+        ui.finishPanel = finishPanel.gameObject;
+        finishPanel.gameObject.SetActive(false);
 
         // Result
         p = Panel(ScreenId.Result, "Result", new Color(0.97f, 0.88f, 0.65f));
@@ -413,6 +422,8 @@ public static class TestSceneBuilder
 
         p = Panel(ScreenId.Settings, "Settings", new Color(0.78f, 0.78f, 0.82f));
         var settings = canvasGo.AddComponent<SettingsUI>();
+        Label(p, "Paused", new Vector2(0.08f, 0.8f), new Vector2(0.92f, 0.86f), 52, TextAnchor.MiddleCenter).text =
+            "Paused: the shop waits while you're here. Your game is saved.";
         b = Row(p, 0.5f, 0.74f);
         Button(b, "Music Down", settings.MusicDown, 300).GetComponentInChildren<Text>().text = "-";
         settings.musicLabel = RowLabel(b, 700);
@@ -561,21 +572,22 @@ public static class TestSceneBuilder
         spine.anchorMin = new Vector2(0, 0); spine.anchorMax = new Vector2(0.03f, 1);
         spine.offsetMin = spine.offsetMax = Vector2.zero;
         Label(paper, "BookTitle", new Vector2(0.05f, 0.93f), new Vector2(0.95f, 0.985f), 84, TextAnchor.MiddleCenter).text = "Journal";
-        var jTabs = Row(paper, 0.5f, 0.895f);
+        var jTabRows = new[] { Row(paper, 0.5f, 0.9f), Row(paper, 0.5f, 0.853f) };   // two rows of four, inside the page
         var jTabNames = new[] { "Orders", "Story", "Friends", "Skills", "Supplies", "News", "Stamps", "Goals" };
         journal.tabs = new Image[jTabNames.Length];
         for (int i = 0; i < jTabNames.Length; i++)
         {
-            var tab = Button(jTabs, "Tab " + jTabNames[i], null, 208);
+            var tab = Button(jTabRows[i / 4], "Tab " + jTabNames[i], null, 390);
+            tab.GetComponent<LayoutElement>().preferredHeight = 110;
             tab.GetComponentInChildren<Text>().text = jTabNames[i];
-            tab.GetComponentInChildren<Text>().fontSize = 36;
+            tab.GetComponentInChildren<Text>().fontSize = 46;
             UnityEventTools.AddIntPersistentListener(tab.onClick, journal.ShowPage, i);
             journal.tabs[i] = tab.GetComponent<Image>();
         }
         var jPageGo = new GameObject("Page", typeof(RectTransform), typeof(Image));
         var jPage = (RectTransform)jPageGo.transform;
         jPage.SetParent(paper, false);
-        jPage.anchorMin = new Vector2(0.02f, 0.1f); jPage.anchorMax = new Vector2(0.98f, 0.86f);
+        jPage.anchorMin = new Vector2(0.02f, 0.1f); jPage.anchorMax = new Vector2(0.98f, 0.82f);
         jPage.offsetMin = jPage.offsetMax = Vector2.zero;
         jPage.pivot = new Vector2(0, 0.5f);   // turns over at the spine
         jPageGo.GetComponent<Image>().color = new Color(1f, 0.985f, 0.94f);
@@ -588,23 +600,32 @@ public static class TestSceneBuilder
         journal.pageText.gameObject.AddComponent<LayoutElement>().preferredWidth = 1650;
         journal.rowTemplate = Button(journalList, "Journal Row Template", null, 1650);
         journal.rowTemplate.GetComponentInChildren<Text>().fontSize = 50;
+        var rowFace = Shape(journal.rowTemplate.transform, "Portrait", new Vector2(0, 0.5f), new Vector2(120, 120), new Color(0.85f, 0.78f, 0.68f), Knob());
+        rowFace.pivot = new Vector2(0, 0.5f);
+        rowFace.anchoredPosition = new Vector2(24, 0);
+        rowFace.gameObject.AddComponent<Mask>().showMaskGraphic = true;
+        Shape(rowFace, "Face", new Vector2(0.5f, 0.5f), new Vector2(112, 112), Color.white, null).GetComponent<Image>().preserveAspect = true;
+        rowFace.gameObject.SetActive(false);   // shown on rows about a person (JournalUI.WithFace)
         // A friend's card: name, a meter towards the next level, what you know about them
         var friendCard = new GameObject("Friend Template", typeof(RectTransform), typeof(Image), typeof(VerticalLayoutGroup), typeof(LayoutElement));
         friendCard.transform.SetParent(journalList, false);
         friendCard.GetComponent<Image>().color = new Color(0.97f, 0.93f, 0.85f);
         var fv = friendCard.GetComponent<VerticalLayoutGroup>();
-        fv.padding = new RectOffset(30, 270, 24, 24);   // room on the right for their portrait
+        fv.padding = new RectOffset(270, 30, 24, 24);   // room on the left for their portrait
         fv.spacing = 14;
         fv.childControlWidth = fv.childControlHeight = true;
         fv.childForceExpandWidth = true; fv.childForceExpandHeight = false;
         friendCard.GetComponent<LayoutElement>().preferredWidth = 1650;
-        friendCard.GetComponent<LayoutElement>().minHeight = 280;
-        var fFace = Shape(friendCard.transform, "Portrait", new Vector2(1, 1), new Vector2(220, 220), Color.white, null);
-        fFace.pivot = new Vector2(1, 1);
-        fFace.anchoredPosition = new Vector2(-30, -26);
-        fFace.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+        friendCard.GetComponent<LayoutElement>().minHeight = 260;
+        // A round portrait left of the name: a circle that masks the face inside it
+        var fFrame = Shape(friendCard.transform, "Portrait", new Vector2(0, 1), new Vector2(210, 210), new Color(0.85f, 0.78f, 0.68f), Knob());
+        fFrame.pivot = new Vector2(0, 1);
+        fFrame.anchoredPosition = new Vector2(30, -24);
+        fFrame.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+        fFrame.gameObject.AddComponent<Mask>().showMaskGraphic = true;
+        var fFace = Shape(fFrame, "Face", new Vector2(0.5f, 0.5f), new Vector2(196, 196), Color.white, null);
         fFace.GetComponent<Image>().preserveAspect = true;
-        var fUnknown = MakeText(fFace, "Unknown", "?", 140);
+        var fUnknown = MakeText(fFrame, "Unknown", "?", 130);
         Stretch((RectTransform)fUnknown.transform);
         fUnknown.color = new Color(0.97f, 0.93f, 0.85f);
         var fName = MakeText(friendCard.transform, "Name", "", 52);
@@ -1048,6 +1069,38 @@ public static class TestSceneBuilder
         img.color = color;
         img.raycastTarget = false;
         return rt;
+    }
+
+    /// The top bar (UI/TopBar.cs) along a hub screen: the weekday badge (centred at x = weekdayX), coins, the
+    /// settings gear at the top right, and the day and chapter beneath.
+    static TopBar TopBar(Transform panel, ShopDay day, float weekdayX, Color textColor)
+    {
+        var bar = panel.gameObject.AddComponent<TopBar>();
+        bar.day = day;
+        const float y = 0.955f;
+        var week = Shape(panel, "Weekday", new Vector2(weekdayX, y), new Vector2(470, 150), new Color(1, 1, 1, 0.85f), uiSprite);
+        var badge = Shape(week, "Badge", new Vector2(0.16f, 0.5f), new Vector2(130, 130), Color.white, Knob());
+        bar.weekdayBadge = badge.GetComponent<Image>();
+        bar.weekdaySymbol = Shape(badge, "Symbol", new Vector2(0.5f, 0.5f), new Vector2(92, 92), Color.white, null).GetComponent<Image>();
+        bar.weekdayName = MakeText(week, "Name", "", 54);
+        Stretch((RectTransform)bar.weekdayName.transform);
+        ((RectTransform)bar.weekdayName.transform).offsetMin = new Vector2(140, 0);
+        bar.symbols = new Sprite[7];
+        for (int i = 0; i < 7; i++) bar.symbols[i] = AssetDatabase.LoadAssetAtPath<Sprite>($"{Root}/Art/UI/Weekdays/{Week.SymbolFile(i)}");
+        var coins = Shape(panel, "Coins", new Vector2(0.665f, y), new Vector2(420, 150), new Color(1, 1, 1, 0.85f), uiSprite);
+        Shape(coins, "CoinIcon", new Vector2(0.18f, 0.5f), new Vector2(105, 105), new Color(0.98f, 0.80f, 0.25f), Knob());
+        bar.coinText = MakeText(coins, "CoinText", "0", 70);
+        Stretch((RectTransform)bar.coinText.transform);
+        ((RectTransform)bar.coinText.transform).offsetMin = new Vector2(140, 0);
+        var gear = Button(panel, "Settings Gear", bar.OpenSettings, 150);
+        Place(gear, new Vector2(0.915f, y), new Vector2(150, 150));
+        gear.GetComponentInChildren<Text>().text = "";
+        var gearIcon = Shape(gear.transform, "Gear", new Vector2(0.5f, 0.5f), new Vector2(118, 118), Ink, AssetDatabase.LoadAssetAtPath<Sprite>($"{Root}/Art/UI/icon_gear.png"));
+        if (gearIcon.GetComponent<Image>().sprite == null) Object.DestroyImmediate(gearIcon.gameObject);
+        if (gearIcon == null) gear.GetComponentInChildren<Text>().text = "Set";
+        bar.dayText = Label(panel, "DayChapter", new Vector2(0.04f, 0.87f), new Vector2(0.7f, 0.93f), 58, TextAnchor.MiddleLeft);
+        bar.dayText.color = textColor;
+        return bar;
     }
 
     static Sprite Knob() => AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd");
