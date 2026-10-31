@@ -31,6 +31,30 @@ public class CrossStitchCanvas : MonoBehaviour
     public Pattern design;             // optional, PatternFill: a design to keep editing (palette and coloured cells)
     public bool paintHalf;             // designing: squares painted now are half stitches (just the "/" leg)
     public bool erase;                 // PatternFill: painting clears squares instead
+    public DesignFrame frame;          // PatternFill: how the item is really made, shown on the board (owner, 2026-10-31)
+
+    /// What a design is made into, drawn on the designer's board: a round hoop of fabric (embroidery), rounds
+    /// spiralling out from a ring (crochet), knitted stitches (knitting), or plain squares (cross stitch, sewing).
+    public enum DesignFrame { Squares, Hoop, Rounds, Knitted }
+
+    public static DesignFrame FrameFor(CraftItemDef item) => item == null ? DesignFrame.Squares : item.craft switch
+    {
+        CraftType.Embroidery => DesignFrame.Hoop,
+        CraftType.Crochet => DesignFrame.Rounds,
+        CraftType.Knitting => DesignFrame.Knitted,
+        _ => DesignFrame.Squares,
+    };
+
+    bool Round => mode == Mode.PatternFill && (frame == DesignFrame.Hoop || frame == DesignFrame.Rounds);
+
+    /// Whether a square can hold a stitch: in a hoop or a crocheted piece, only those inside the circle.
+    public bool Inside(int x, int y)
+    {
+        if (!Round) return true;
+        float r = Mathf.Min(width, height) / 2f;
+        float dx = x + 0.5f - width / 2f, dy = y + 0.5f - height / 2f;
+        return dx * dx + dy * dy <= r * r;
+    }
     public bool Ready { get; private set; }   // true once the grid is built and restored
 
     // Which cells are fully / half stitched by the player, and in which thread colour
@@ -106,7 +130,7 @@ public class CrossStitchCanvas : MonoBehaviour
             var cell = new Vector2Int(m.x, m.y);
             if (!cellViews.ContainsKey(cell)) continue;
             int color = Mathf.Clamp(m.color, 0, pattern.palette.Count - 1);
-            if (mode == Mode.PatternFill) { if (m.mask == 3 || m.mask == 1) PaintCell(cell, color, m.mask == 1); continue; }
+            if (mode == Mode.PatternFill) { if ((m.mask == 3 || m.mask == 1) && Inside(cell.x, cell.y)) PaintCell(cell, color, m.mask == 1); continue; }
             int first = m.crossedWrong ? 2 : 1, second = 3 - first;   // replay the legs in the order they were made
             if ((m.mask & first) != 0) AddStitch(cell, first, color);
             if ((m.mask & second) != 0) AddStitch(cell, second, color);
@@ -129,6 +153,7 @@ public class CrossStitchCanvas : MonoBehaviour
                 sr.color = GuideColor(x, y);
                 cellViews[new Vector2Int(x, y)] = sr;
             }
+        if (mode == Mode.PatternFill) BuildFrame();
         // Half stitches on the chart: a printed "/" across the square.
         if (mode == Mode.Stitch && target != null)
             foreach (var t in target.cells)
@@ -139,6 +164,47 @@ public class CrossStitchCanvas : MonoBehaviour
                 mark.SetPosition(0, transform.TransformPoint(new Vector3((t.x + 0.15f) * cellSize, (t.y + 0.15f) * cellSize, 0)));
                 mark.SetPosition(1, transform.TransformPoint(new Vector3((t.x + 0.85f) * cellSize, (t.y + 0.85f) * cellSize, 0)));
             }
+    }
+
+    /// Designing: shows what the design becomes (see DesignFrame).
+    void BuildFrame()
+    {
+        var centre = new Vector3(width * cellSize / 2f, height * cellSize / 2f, 0);
+        float r = Mathf.Min(width, height) / 2f * cellSize;
+        if (frame == DesignFrame.Hoop)   // the wooden hoop round the fabric, with its screw at the top
+        {
+            Ring(centre, r + cellSize * 0.3f, cellSize * 0.45f, new Color(0.72f, 0.52f, 0.32f), 6);
+            Ring(centre, r + cellSize * 0.3f, cellSize * 0.12f, new Color(0.86f, 0.68f, 0.45f), 7);
+            var screw = MakeLine(new Color(0.55f, 0.55f, 0.58f), cellSize * 0.5f);
+            screw.SetPosition(0, transform.TransformPoint(centre + Vector3.up * (r + cellSize * 0.4f)));
+            screw.SetPosition(1, transform.TransformPoint(centre + Vector3.up * (r + cellSize * 1.1f)));
+        }
+        else if (frame == DesignFrame.Rounds)   // the rounds, spiralling out from the magic ring
+            for (float rr = cellSize * 1.5f; rr <= r + 0.01f; rr += cellSize * 1.5f)
+                Ring(centre, rr, cellSize * 0.06f, new Color(1, 1, 1, 0.3f), 6);
+        else if (frame == DesignFrame.Knitted)   // each square is a knit stitch: a V
+            for (int x = 0; x < width; x++)
+                for (int y = 0; y < height; y++)
+                {
+                    var v = MakeLine(new Color(1, 1, 1, 0.35f), cellSize * 0.07f);
+                    v.positionCount = 3;
+                    v.SetPosition(0, transform.TransformPoint(new Vector3((x + 0.2f) * cellSize, (y + 0.85f) * cellSize, 0)));
+                    v.SetPosition(1, transform.TransformPoint(new Vector3((x + 0.5f) * cellSize, (y + 0.15f) * cellSize, 0)));
+                    v.SetPosition(2, transform.TransformPoint(new Vector3((x + 0.8f) * cellSize, (y + 0.85f) * cellSize, 0)));
+                }
+    }
+
+    void Ring(Vector3 centre, float radius, float w, Color color, int sorting)
+    {
+        var ring = MakeLine(color, w);
+        ring.positionCount = 64;
+        ring.loop = true;
+        ring.sortingOrder = sorting;
+        for (int i = 0; i < 64; i++)
+        {
+            float a = i * Mathf.PI * 2f / 64;
+            ring.SetPosition(i, transform.TransformPoint(centre + new Vector3(Mathf.Cos(a), Mathf.Sin(a), 0) * radius));
+        }
     }
 
     /// Stitch mode: a piece of Aida under the grid, with the little woven holes the needle goes through.
@@ -178,6 +244,7 @@ public class CrossStitchCanvas : MonoBehaviour
             tint.a = 1f;
             return tint;
         }
+        if (!Inside(x, y)) return Color.clear;   // outside the hoop or the piece
         if (t == null) return new Color(1, 1, 1, 0.15f);
         var c = target.palette[t.colorIndex];
         c.a = 0.4f;
@@ -313,21 +380,30 @@ public class CrossStitchCanvas : MonoBehaviour
         return string.Join(";", parts);
     }
 
-    // Real cross stitch: every X is made the same way, the "/" leg underneath and the "\" leg crossing over
-    // it, so the whole piece looks even. Starting with "\" puts "/" on top: a mistake (it counts for half),
-    // which Undo can unpick. The first leg made in each square is remembered here.
+    // Real cross stitch: either leg may go on top, as long as every X in the piece crosses the SAME way, so
+    // it looks even (owner, 2026-10-31; was "/ under, \ over" only). Crosses that go against the rest are
+    // mistakes; the more of them, the fewer points. The first leg made in each square is remembered here.
     readonly Dictionary<Vector2Int, int> firstLeg = new Dictionary<Vector2Int, int>();
 
-    /// True when this square's X was crossed the wrong way ("\" under, "/" on top).
+    /// True when this square's X was made "\" first, so "/" lies on top (StitchMark.crossedWrong; the name is
+    /// from when only one way was right).
     public bool CrossedWrong(Vector2Int cell) =>
         stitchProgress.TryGetValue(cell, out int done) && done == 3 && firstLeg.TryGetValue(cell, out int first) && first == 2;
 
-    /// Squares finished with the cross the wrong way round.
+    /// Finished crosses that lie the other way from most of the piece.
     public int WrongCrosses()
     {
-        int n = 0;
-        foreach (var kv in stitchProgress) if (CrossedWrong(kv.Key)) n++;
-        return n;
+        int flipped = 0, full = 0;
+        foreach (var kv in stitchProgress) if (kv.Value == 3) { full++; if (CrossedWrong(kv.Key)) flipped++; }
+        return Mathf.Min(flipped, full - flipped);
+    }
+
+    /// Which way most crosses lie: true when most have "/" on top. Ties keep the classic "\" on top.
+    public static bool MostFlipped(List<StitchMark> marks)
+    {
+        int flipped = 0, full = 0;
+        foreach (var m in marks) if (m.mask == 3) { full++; if (m.crossedWrong) flipped++; }
+        return flipped * 2 > full;
     }
 
     void AddStitch(Vector2Int cell, int bit, int color)
@@ -384,6 +460,7 @@ public class CrossStitchCanvas : MonoBehaviour
 
     void Paint(Vector2Int cell)
     {
+        if (!Inside(cell.x, cell.y)) return;
         if (erase)
         {
             pattern.cells.RemoveAll(c => c.x == cell.x && c.y == cell.y);
@@ -431,6 +508,7 @@ public class CrossStitchCanvas : MonoBehaviour
 
         float correct = 0;
         int extra = 0;
+        bool flipped = MostFlipped(marks);   // the piece's own way of crossing
         var halves = new HashSet<Vector2Int>();
         foreach (var t in target.cells) if (t.halfStitch) halves.Add(new Vector2Int(t.x, t.y));
         foreach (var m in marks)
@@ -443,7 +521,7 @@ public class CrossStitchCanvas : MonoBehaviour
             }
             if (m.mask != 3) continue;
             if (!wanted.TryGetValue(at, out int color)) extra++;
-            else if (color == m.color) correct += m.crossedWrong ? 0.5f : 1f;   // crossed the wrong way: half
+            else if (color == m.color) correct += m.crossedWrong != flipped ? 0.6f : 1f;   // against the rest: it shows
         }
         return correct / (wanted.Count + extra);
     }

@@ -81,7 +81,7 @@ public class TradeUI : MonoBehaviour
                 info = "Tap one of your own designs to make a code for a copy of it. You keep yours.";
                 foreach (var p in Save.patterns)
                 {
-                    if (!p.designed) continue;
+                    if (!p.designed || !day.PatternShown(p)) continue;
                     var item = day.ItemFor(p.itemId);
                     var pattern = p;
                     AddRow($"{p.name}  ·  {(item != null ? item.itemName : p.itemId)}", () => Share(Trade.SharePattern(pattern), "Code made and copied. Send it to a friend!"));

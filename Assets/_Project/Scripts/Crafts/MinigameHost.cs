@@ -79,11 +79,15 @@ public class MinigameHost : MonoBehaviour
     };
 
     /// Pattern Studio: a paint grid for designing. Read the result from Board.pattern before Close().
-    public void OpenDesign(Pattern design)
+    public void OpenDesign(Pattern design, CraftItemDef item = null)
     {
         Close();
-        designBoard = CrossStitchStep.MakeBoard(transform, Area(Color.white), design.width, design.height);
+        var frame = CrossStitchCanvas.FrameFor(item);
+        var area = Area(Color.white);
+        if (frame == CrossStitchCanvas.DesignFrame.Hoop) area.size *= 0.84f;   // room for the hoop's ring and screw
+        designBoard = CrossStitchStep.MakeBoard(transform, area, design.width, design.height);
         designBoard.mode = CrossStitchCanvas.Mode.PatternFill;
+        designBoard.frame = frame;
         designBoard.design = design;
     }
 

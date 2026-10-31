@@ -84,6 +84,12 @@ whole UI to it in one go.
 - **Buttons** (~512 x 192): one PNG per state, `ui_button_normal.png`, `ui_button_pressed.png`,
   `ui_button_disabled.png`.
 - **Icons** (coins, stars, hearts...): 128 x 128, `ui_icon_coin.png`.
+- **Weekday symbols** (top bar, 256 x 256, transparent background), already in the game as white
+  placeholders you can paint over: `Art/UI/Weekdays/weekday_1_monday.png` ... `weekday_7_sunday.png`
+  (moon, flame, drop, star, heart, ring, sun for now; draw any symbol you like). Draw them WHITE: the
+  game tints the round badge behind each one with that day's colour. If you'd rather draw them in full
+  colour, tell Claude and the tint gets switched off.
+- **Settings gear:** `Art/UI/icon_gear.png` (256 x 256, transparent, white; it's shown in dark ink).
 - **Fonts:** send the `.ttf`/`.otf` file, and check its licence allows use in a game you sell.
 - **App icon:** 1024 x 1024, no transparency, important shapes away from the corners (Android crops
   icons into circles and rounded squares).

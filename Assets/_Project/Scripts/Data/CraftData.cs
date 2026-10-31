@@ -59,7 +59,7 @@ public class StitchMark
 {
     public int x, y, mask;
     public int color;
-    public bool crossedWrong;   // the "\" leg went under and "/" on top: the cross lies the wrong way (a mistake)
+    public bool crossedWrong;   // the "\" leg went under and "/" on top (fine if the whole piece crosses that way)
 }
 
 // A pattern the player owns. Book patterns point at a PatternDef (patternId); patterns the player

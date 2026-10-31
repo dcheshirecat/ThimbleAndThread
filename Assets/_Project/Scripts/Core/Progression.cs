@@ -97,6 +97,20 @@ public class Progression
         AddNews(s.isCraft ? $"New craft: {s.displayName}! (from {how})" : $"Learned {s.displayName}, from {how}.");
         Stamps.Earn(Save, $"skill:{s.skillId}", s.isCraft ? $"New craft: {s.displayName}" : $"Learned {s.displayName}",
                     $"From {how}.", s.isCraft ? StampTheme.Craft : StampTheme.Skill);
+        Explain(s);
+    }
+
+    /// A short explainer for what's just been learned (the first craft is covered by How to Play).
+    void Explain(SkillDef s)
+    {
+        if (s.isCraft && s.craft != CraftType.CrossStitch)
+            Explainers.Explain(Save, $"skill:{s.skillId}", false,
+                $"New craft: {s.displayName}\nCustomers can now ask for {s.displayName.ToLower()} pieces, its patterns appear in your book, " +
+                $"and the Supply Market stocks what it needs. Each piece is made step by step at night, the way it's really done.");
+        else if (s.skillId == ShopDay.PatternDesignSkill)
+            Explainers.Explain(Save, "skill:pattern_design", false,
+                "The Pattern Studio is open\nAt night, in the workroom, design your own patterns square by square. " +
+                "Put them on display to sell, or make them for customers. Customers who know you well may ask for something special.");
     }
 
     /// Older saves get stamps for what they'd already done, quietly (no pop-ups).

@@ -379,9 +379,10 @@ public static class TestSceneBuilder
         ui.shelfTemplate = Shelf(shelves);
         ui.marketTemplate = SupplyTile(ui.shelfTemplate);
         b = Row(p, 0.5f, 0.04f);
-        Button(b, "Shopping List", ui.ToggleShoppingList, 600);
-        Button(b, "Chat with Bram", day.ChatWithMarketOwner, 600);
-        Button(b, "Back", day.LeaveMarket, 560);
+        Button(b, "Shopping List", ui.ToggleShoppingList, 500);
+        ui.sellLabel = Button(b, "Sell Supplies", ui.ToggleSelling, 500).GetComponentInChildren<Text>();
+        Button(b, "Chat with Bram", day.ChatWithMarketOwner, 400).GetComponentInChildren<Text>().text = "Chat";
+        Button(b, "Back", day.LeaveMarket, 360);
         var list = Shape(p, "ShoppingListPanel", new Vector2(0.5f, 0.48f), new Vector2(1840, 1700), new Color(1f, 0.98f, 0.92f), uiSprite);
         list.GetComponent<Image>().raycastTarget = true;
         ui.shoppingList = list.gameObject;
@@ -483,6 +484,14 @@ public static class TestSceneBuilder
         boutique.shelf.name = "Rail";
         boutique.tileTemplate = SupplyTile(boutique.shelf);
         boutique.tileTemplate.name = "Cosmetic Template";
+        // Trying something on: the mirror shows it; buy it or put it back
+        var tryRow = Shape(p, "TryOn", new Vector2(0.5f, 0.505f), new Vector2(1840, 300), new Color(1f, 0.95f, 0.98f), uiSprite);
+        boutique.tryText = Label(tryRow, "Text", new Vector2(0.04f, 0.58f), new Vector2(0.96f, 0.95f), 50, TextAnchor.MiddleCenter);
+        b = Row(tryRow, 0.5f, 0.3f);
+        Button(b, "Buy It", boutique.BuyTried, 640).GetComponent<LayoutElement>().preferredHeight = 130;
+        Button(b, "Put It Back", boutique.PutBack, 640).GetComponent<LayoutElement>().preferredHeight = 130;
+        boutique.tryPanel = tryRow.gameObject;
+        tryRow.gameObject.SetActive(false);
         b = Row(p, 0.5f, 0.04f);
         Button(b, "Chat with Celeste", boutique.Chat, 860);
         Button(b, "Back", boutique.Leave, 860);
@@ -705,6 +714,24 @@ public static class TestSceneBuilder
         popup.detailText = Label(popCard, "Detail", new Vector2(0.36f, 0.08f), new Vector2(0.96f, 0.5f), 48, TextAnchor.UpperLeft);
         popup.detailText.color = Ink;
         popPanel.SetActive(false);
+
+        // Explainers: a card for things seen the first time (a step, a shop, a craft), read before going on
+        var explainer = canvasGo.AddComponent<ExplainerUI>();
+        var exPanel = new GameObject("ExplainerPanel", typeof(RectTransform), typeof(Image));
+        var exRt = (RectTransform)exPanel.transform;
+        exRt.SetParent(canvasGo.transform, false);
+        Stretch(exRt);
+        exPanel.GetComponent<Image>().color = new Color(0, 0, 0, 0.45f);   // blocks the work underneath
+        var exCard = Shape(exRt, "Card", new Vector2(0.5f, 0.55f), new Vector2(1760, 1100), new Color(1f, 0.97f, 0.9f), uiSprite);
+        explainer.titleText = Label(exCard, "Title", new Vector2(0.06f, 0.8f), new Vector2(0.94f, 0.94f), 66, TextAnchor.MiddleCenter);
+        explainer.titleText.fontStyle = FontStyle.Bold;
+        explainer.bodyText = Label(exCard, "Body", new Vector2(0.07f, 0.24f), new Vector2(0.93f, 0.78f), 52, TextAnchor.UpperLeft);
+        explainer.pageLabel = Label(exCard, "PageNumber", new Vector2(0.06f, 0.05f), new Vector2(0.3f, 0.18f), 44, TextAnchor.MiddleLeft);
+        var exNext = Button(exCard, "Explainer Next", explainer.Continue, 560);
+        Place(exNext, new Vector2(0.72f, 0.11f), new Vector2(560, 150));
+        explainer.nextLabel = exNext.GetComponentInChildren<Text>();
+        explainer.panel = exPanel;
+        exPanel.SetActive(false);
 
         router.screens = entries.ToArray();
 

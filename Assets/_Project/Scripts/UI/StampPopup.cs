@@ -37,8 +37,8 @@ public class StampPopup : MonoBehaviour
         Next();   // held ones show once the player is somewhere calm
     }
 
-    /// Screens where nothing is going on: a stamp or a goal can show there.
-    static bool Calm()
+    /// Screens where nothing is going on: a stamp, a goal or an explainer can show there.
+    public static bool Calm()
     {
         var gm = GameManager.Instance;
         if (gm == null || gm.Save == null) return false;
@@ -76,7 +76,7 @@ public class StampPopup : MonoBehaviour
 
     void Next()
     {
-        if (showing || queue.Count == 0 || !isActiveAndEnabled || Quiet()) return;
+        if (showing || queue.Count == 0 || !isActiveAndEnabled || Quiet() || ExplainerUI.Open) return;
         int i = Calm() ? 0 : queue.FindIndex(q => !q.calm);   // the first one that may show now
         if (i < 0) return;
         current = queue[i];

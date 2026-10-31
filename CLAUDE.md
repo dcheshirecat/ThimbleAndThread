@@ -609,6 +609,21 @@ Owner, 2026-10-31 (after batch 1):
 - DONE Colourwork made clear: KnitRowsStep.LiveHint names the yarn in hand and the next stitch's yarn ("swipe sideways to
   pick it up"); the mistake reads "knitted in the wrong colour" with how to fix it. A stamp showing when the player goes
   into crafting/dialogue is put away and shown later.
+DONE batch 2 (items 11, 12, 14, 19, 21, 22, 24, 8 and the GENERAL explainers):
+- 11: Browse's "hoping for" only names makeable items; ShopDay.PatternShown hides book patterns of crafts not learned
+  (display chooser, Pattern Studio list, trade).
+- 24 + 8: the designer only offers makeable items (PatternDesignerUI.StepItem) and shows how the item is made:
+  CrossStitchCanvas.DesignFrame (Hoop: round area inside a wooden hoop, smaller board; Rounds: crochet rings, round area;
+  Knitted: a V per square; Squares otherwise). Squares outside the circle can't be painted (Inside).
+- 22: either leg on top; crosses against the piece's majority (MostFlipped) are mistakes and score 0.6 instead of 1.
+- Explainers (Core/Explainers.cs, UI/ExplainerUI.cs; flags "explained:<key>"): the first time each step kind opens
+  (cross stitch: 3 pages), each new craft (not cross stitch), Pattern Studio, market and boutique opening. Unlock ones
+  wait for a calm screen; stamps wait behind an open card (ExplainerUI.Open).
+- 12 + 14: Boutique try-on (tap = mirror shows it; Buy It / Put It Back) and a rail that changes every 4 days
+  (BoutiqueUI.OnRail: owned + StockPerPeriod 4 unowned, seeded by marketSeed).
+- 19: Market "Sell Supplies": ShopDay.SaleOf/SellSupply, half price, one pack at a time, never what open orders still
+  need (Reserved) or a tool an order relies on; books and NotSold tools can't be sold.
+- 21: tapping a displayed pattern shows actions under it: put away, swap for one from the book, price up/down, edit.
 
 ## Next tasks (in this order)
 1. DONE (on main): Materials, rotating Supply Market with shelves, tools that gate work.

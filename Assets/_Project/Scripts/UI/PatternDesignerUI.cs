@@ -47,6 +47,7 @@ public class PatternDesignerUI : MonoBehaviour
         nameField.text = p.name;
         if (namePopup != null) namePopup.SetActive(false);
         itemIndex = Mathf.Max(0, System.Array.FindIndex(day.content.items, i => i != null && i.itemId == p.itemId));
+        if (day.DesigningFor == null && !Allowed(itemIndex)) StepItem();   // only things you've learned to make
         price = p.price;
         threads = Materials.Threads(day.content);
         OpenBoard(ToCatalogue(p.design));
@@ -93,7 +94,7 @@ public class PatternDesignerUI : MonoBehaviour
     void OpenBoard(Pattern design)
     {
         opened = design;
-        host.OpenDesign(design);
+        host.OpenDesign(design, day.content.items[itemIndex]);   // shown the way the item is made (hoop, rounds, knitted)
     }
 
     static Pattern Copy(Pattern src, int width, int height)
@@ -137,8 +138,20 @@ public class PatternDesignerUI : MonoBehaviour
     public void NextItem()
     {
         if (day.DesigningFor != null) return;   // a commission decides what it makes
-        itemIndex = (itemIndex + 1) % day.content.items.Length;
+        var before = CrossStitchCanvas.FrameFor(day.content.items[itemIndex]);
+        StepItem();
+        if (CrossStitchCanvas.FrameFor(day.content.items[itemIndex]) != before) { OpenBoard(Copy(Current(), Current().width, Current().height)); ApplyTool(); }
         Refresh();
+    }
+
+    bool Allowed(int i) => day.content.items[i] != null && day.Progress.CanMake(day.content.items[i]);
+
+    /// On to the next item the player can make (a craft not learned yet can't be designed for).
+    void StepItem()
+    {
+        int n = day.content.items.Length;
+        for (int k = 1; k <= n; k++)
+            if (Allowed((itemIndex + k) % n)) { itemIndex = (itemIndex + k) % n; return; }
     }
 
     /// Steps through 8, 10, 12 and 16 squares; shrinking crops squares that fall outside.

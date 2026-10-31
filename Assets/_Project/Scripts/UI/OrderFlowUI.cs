@@ -64,6 +64,7 @@ public class OrderFlowUI : MonoBehaviour
                            $"<b>Looking ahead</b>\n{day.LookingAhead()}";
 
         if (screen == ScreenId.OrderBook) BuildOrderList();
+        if (screen != ScreenId.Market && selling) { selling = false; if (sellLabel != null) sellLabel.text = "Sell Supplies"; }   // back to buying next time
         if (screen == ScreenId.Market) { day.Met(ShopDay.MarketOwnerId); BuildMarketList(save); }
         if (screen == ScreenId.PatternStudio && !day.Progress.Knows(ShopDay.PatternDesignSkill))
         {
@@ -100,11 +101,12 @@ public class OrderFlowUI : MonoBehaviour
         var step = order.CurrentStep;
         bool stitching = step.kind == StepKind.CrossStitch;
         minigameHint.text = order.patternOnly ? "Tap or drag over the faint squares to fill them in."
-            : stitching ? "Stitch / first (bottom left to top right), then cross over it with \\ to finish the X. Every X should cross the same way: the other way round is a mistake (Undo unpicks it). Match each square's thread colour."
+            : stitching ? "Drag corner to corner for one leg of the X, then along the other diagonal to cross it. Either leg can go on top, but keep every X crossing the same way (Undo unpicks one). Half stitches are just the / leg. Match each square's thread colour."
             : StepHint(step.kind);
         if (order.Steps.Length > 1) minigameHint.text = $"{step.label}. {minigameHint.text}";
         if (screen == ScreenId.Minigame && !string.IsNullOrEmpty(day.LastMessage)) minigameHint.text += $"\n{day.LastMessage}";
         baseHint = minigameHint.text; liveHint = null;
+        if (screen == ScreenId.Minigame && !order.patternOnly) ExplainStep(step);
         if (stitching && order.item.craft != CraftType.CrossStitch && order.Steps.Length == 1)
             minigameHint.text += $" (The {CraftName(order.item.craft)} minigame is coming soon; cross stitch stands in.)";
         minigameThreads.gameObject.SetActive(stitching);
@@ -231,6 +233,7 @@ public class OrderFlowUI : MonoBehaviour
 
         foreach (var p in day.Patterns)
         {
+            if (!day.PatternShown(p)) continue;   // a craft not learned yet
             var item = day.ItemFor(p.itemId);
             string id = p.id;
             patternRows.Add(AddRow(patternTemplate, $"Pattern_{id}",
@@ -269,6 +272,7 @@ public class OrderFlowUI : MonoBehaviour
         marketStatus.text = $"Bram's market · friendship {bram.level}{(bram.romance ? " ♥" : "")} · {save.coins} coins.  " +
                             (restock == 1 ? "New stock tomorrow." : $"New stock in {restock} days.") + $"\n{day.LastMessage}";
 
+        if (selling) { BuildSellList(save); return; }
         var sale = day.shop.OnSale().FindAll(day.Progress.SupplyShown);
         foreach (var (title, kinds) in Shelves)
         {
@@ -284,6 +288,49 @@ public class OrderFlowUI : MonoBehaviour
         {
             var shelf = NewShelf("For the Shop");
             foreach (var u in upgrades) AddUpgradeTile(shelf, u);
+        }
+    }
+
+    // ---- Selling: your cupboard, to sell what your orders don't need ----
+
+    bool selling;
+    [Header("Market selling")] public Text sellLabel;
+
+    public void ToggleSelling()
+    {
+        selling = !selling;
+        if (sellLabel != null) sellLabel.text = selling ? "Back to Buying" : "Sell Supplies";
+        day.ClearMessage();
+        GameManager.Instance.ChangeScreen(ScreenId.Market);
+    }
+
+    void BuildSellList(SaveData save)
+    {
+        marketStatus.text = "Selling to Bram: he pays half price for what your orders don't need. Tap to sell a pack's worth." +
+                            (string.IsNullOrEmpty(day.LastMessage) ? "" : $"\n{day.LastMessage}");
+        foreach (var (title, kinds) in Shelves)
+        {
+            var mine = save.stock.FindAll(st => st.amount > 0 && day.content.Supply(st.supplyId) is SupplyDef s && System.Array.IndexOf(kinds, s.kind) >= 0);
+            if (mine.Count == 0) continue;
+            var shelf = NewShelf(title);
+            foreach (var st in mine)
+            {
+                var s = day.content.Supply(st.supplyId);
+                var (amount, coins) = day.SaleOf(s);
+                string id = s.supplyId;
+                var tile = Instantiate(marketTemplate, shelf);
+                tile.gameObject.SetActive(true);
+                tile.name = $"Sell_{id}";
+                tile.onClick.AddListener(() => day.SellSupply(id));
+                tile.GetComponent<Image>().color = amount > 0 ? TileColor : SoldOutTileColor;
+                var icon = tile.transform.Find("Icon").GetComponent<Image>();
+                icon.sprite = s.icon;
+                icon.color = s.icon != null ? Color.white : s.color;
+                tile.transform.Find("Name").GetComponent<Text>().text = s.displayName;
+                tile.transform.Find("Info").GetComponent<Text>().text = s.kind == SupplyKind.Tool ? (amount > 0 ? $"Sell: {coins} coins" : s.market == MarketSlot.NotSold ? "Not for sale" : "Needed for an order")
+                    : $"You have {st.amount} {s.unit}\n" + (amount > 0 ? $"Sell {amount}: {coins} coins" : "Your orders need it");
+                marketRows.Add(tile.gameObject);
+            }
         }
     }
 
@@ -395,6 +442,20 @@ public class OrderFlowUI : MonoBehaviour
         if (live == liveHint) return;
         liveHint = live;
         minigameHint.text = live == null ? baseHint : baseHint + "\n" + live;
+    }
+
+    /// The first time a kind of step is opened, a short explainer (the first cross stitch gets a few pages).
+    static void ExplainStep(RecipeStep step)
+    {
+        var save = GameManager.Instance.Save;
+        if (step.kind == StepKind.CrossStitch)
+            Explainers.Explain(save, "step:CrossStitch", true,
+                "Your first cross stitch\nThe faint squares are the chart, printed on the fabric. Each square gets one X, in the thread colour it shows. Pick the thread from the colours under the work.",
+                "Making an X\nDrag from one corner of a square to the opposite corner: that's the first leg. Then drag along the other diagonal to cross over it. " +
+                "Either leg can go on top, but keep every X crossing the same way: an uneven piece is worth less.",
+                "Half stitches and mistakes\nA square with a printed / is a half stitch: just that one leg. Undo unpicks the last thing you did. " +
+                "Tap Finish when the chart is covered, or Done for Now to stop and come back to it later.");
+        else Explainers.Explain(save, $"step:{step.kind}", true, $"{step.label}\n{StepHint(step.kind)}");
     }
 
     static string StepHint(StepKind kind) => kind switch

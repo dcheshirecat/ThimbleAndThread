@@ -246,35 +246,68 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     // ---- Right page: the pattern display ----
 
     bool choosing;   // the display page is showing the pattern book, to fill an empty spot
+    string selected; // a displayed pattern tapped: its actions show under it
+    string swapping; // choosing from the book to replace this displayed pattern
 
     /// The pattern book, to put one on display (not the Pattern Studio, which is unlocked later).
     void BuildChooser()
     {
-        displayInfo.text = "Choose a pattern from your book to put on display. Only things you can make can be sold.";
+        displayInfo.text = swapping != null ? "Choose the pattern to put up in its place. The other one goes back in your book."
+                                            : "Choose a pattern from your book to put on display. Only things you can make can be sold.";
         foreach (var p in Save.patterns)
         {
-            if (p.onShelf || (p.designed && p.design.cells.Count == 0)) continue;
+            if (p.onShelf || (p.designed && p.design.cells.Count == 0) || !day.PatternShown(p)) continue;
             var item = day.ItemFor(p.itemId);
             bool canMake = day.Progress.CanMake(item);
             string id = p.id;
             var row = Row(displayTemplate, $"Choose_{id}", $"{p.name}\n{(item != null ? item.itemName : p.itemId)} · {p.price} coins" + (canMake ? "" : " · you can't make this yet"),
-                          () => { if (day.PutOnDisplay(id)) choosing = false; Refresh(); });
+                          () => ChooseFromBook(id));
             row.GetComponent<Button>().interactable = canMake;
             var preview = row.GetComponentInChildren<RawImage>(true);
             if (preview != null) { preview.texture = PatternPreview.Make(day.DesignFor(p)); preview.gameObject.SetActive(true); }
             rows.Add(row);
         }
-        var back = Row(displayTemplate, "Choose_Back", "Back to the display", () => { choosing = false; Refresh(); });
+        var back = Row(displayTemplate, "Choose_Back", "Back to the display", () => { choosing = false; swapping = null; Refresh(); });
         var backPreview = back.GetComponentInChildren<RawImage>(true);
         if (backPreview != null) backPreview.gameObject.SetActive(false);
         rows.Add(back);
+    }
+
+    /// A pattern picked from the book: onto an empty spot, or in place of the one being swapped (which goes back in the book).
+    void ChooseFromBook(string id)
+    {
+        if (swapping != null) day.TakeDown(swapping);
+        if (day.PutOnDisplay(id)) { choosing = false; swapping = null; selected = null; }
+        Refresh();
+    }
+
+    /// Under a tapped display pattern: what can be done with it, right here.
+    void Actions(OwnedPattern p)
+    {
+        string id = p.id;
+        AddAction("Action_PutAway", "Put it away in the book", () => { day.TakeDown(id); selected = null; Refresh(); });
+        AddAction("Action_Swap", "Swap it for another from the book", () => { swapping = id; choosing = true; Refresh(); });
+        AddAction("Action_PriceUp", $"Price up (now {p.price} coins)", () => { day.NudgePrice(id, 1); Refresh(); });
+        AddAction("Action_PriceDown", "Price down", () => { day.NudgePrice(id, -1); Refresh(); });
+        if (day.Progress.Knows(ShopDay.PatternDesignSkill) && p.designed)
+            AddAction("Action_Edit", "Open it in the Pattern Studio", () => { selected = null; day.SelectPattern(id); });
+        AddAction("Action_Done", "Done", () => { selected = null; Refresh(); });
+    }
+
+    void AddAction(string name, string label, UnityEngine.Events.UnityAction onClick)
+    {
+        var row = Row(displayTemplate, name, label, onClick);
+        row.GetComponent<Image>().color = new Color(0.93f, 0.88f, 0.98f);
+        var preview = row.GetComponentInChildren<RawImage>(true);
+        if (preview != null) preview.gameObject.SetActive(false);
+        rows.Add(row);
     }
 
     void BuildDisplay()
     {
         if (choosing) { BuildChooser(); return; }
         var shelf = day.Shelf;
-        displayInfo.text = $"{shelf.Count} of {Save.displaySpots} spots filled. Tap a pattern to change its price or take it down; " +
+        displayInfo.text = $"{shelf.Count} of {Save.displaySpots} spots filled. Tap a pattern to put it away, swap it or change its price; " +
                            "tap an empty spot to choose one from your book.";
         for (int i = 0; i < Save.displaySpots; i++)
         {
@@ -283,10 +316,11 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
                 var p = shelf[i];
                 var item = day.ItemFor(p.itemId);
                 string id = p.id;
-                var row = Row(displayTemplate, $"Display_{i}", $"{p.name}\n{(item != null ? item.itemName : p.itemId)} · {p.price} coins · sold {p.sold}, ordered {p.ordered}", () => day.SelectPattern(id));
+                var row = Row(displayTemplate, $"Display_{i}", $"{p.name}\n{(item != null ? item.itemName : p.itemId)} · {p.price} coins · sold {p.sold}, ordered {p.ordered}", () => { selected = selected == id ? null : id; Refresh(); });
                 var preview = row.GetComponentInChildren<RawImage>(true);
                 if (preview != null) { preview.texture = PatternPreview.Make(day.DesignFor(p)); preview.gameObject.SetActive(true); }
                 rows.Add(row);
+                if (selected == id) Actions(p);
             }
             else
             {

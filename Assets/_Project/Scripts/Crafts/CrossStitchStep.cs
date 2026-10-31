@@ -33,7 +33,7 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes
 
     public string FinishBlocker => null;
 
-    /// Stitches in the wrong colour or outside the pattern, and crosses made the wrong way round.
+    /// Stitches in the wrong colour or outside the pattern, and crosses that go against the rest of the piece.
     public string MistakesLeft
     {
         get
@@ -50,7 +50,7 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes
             var parts = new System.Collections.Generic.List<string>();
             if (wrong > 0) parts.Add(wrong == 1 ? "1 stitch in the wrong place or colour" : $"{wrong} stitches in the wrong place or colour");
             if (overHalf > 0) parts.Add(overHalf == 1 ? "1 half stitch done wrong (it's just the / leg)" : $"{overHalf} half stitches done wrong (they're just the / leg)");
-            if (crossed > 0) parts.Add(crossed == 1 ? "1 cross the wrong way round" : $"{crossed} crosses the wrong way round");
+            if (crossed > 0) parts.Add(crossed == 1 ? "1 cross lying the other way from the rest" : $"{crossed} crosses lying the other way from the rest");
             return parts.Count == 0 ? null : string.Join(" and ", parts);
         }
     }

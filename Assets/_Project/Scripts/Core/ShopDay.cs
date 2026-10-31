@@ -409,7 +409,7 @@ public class ShopDay : MonoBehaviour
     /// piece the player can make.
     void Browse(CustomerDef c)
     {
-        var wants = OrderGenerator.Wants(c, GM.GetRelationship(c.customerId).level);
+        var wants = OrderGenerator.Wants(c, GM.GetRelationship(c.customerId).level).FindAll(i => Progress.CanMake(i));   // never hope for what you can't make
         var matches = Shelf.FindAll(p => wants.Exists(i => i.itemId == p.itemId) && Progress.CanMake(ItemFor(p.itemId)));
         if (matches.Count == 0)
         {
@@ -885,6 +885,24 @@ public class ShopDay : MonoBehaviour
         if (SelectedPattern != null) GM.ChangeScreen(ScreenId.PatternEdit);
     }
 
+    /// From the display itself (owner, 2026-10-31): take a pattern down into the book.
+    public void TakeDown(string patternId)
+    {
+        var p = Save.patterns.Find(x => x.id == patternId);
+        if (p == null || !p.onShelf) return;
+        p.onShelf = false;
+        GM.Persist();
+    }
+
+    /// From the display: nudge a pattern's price.
+    public void NudgePrice(string patternId, int delta)
+    {
+        var p = Save.patterns.Find(x => x.id == patternId);
+        if (p == null) return;
+        p.price = Mathf.Clamp(p.price + delta, 1, 999);
+        GM.Persist();
+    }
+
     public void PriceUp() => SetPrice(SelectedPattern.price + 1);
     public void PriceDown() => SetPrice(SelectedPattern.price - 1);
 
@@ -920,6 +938,9 @@ public class ShopDay : MonoBehaviour
     }
 
     /// The shop's display page: puts a pattern from the book on display, if there's room and it can be made.
+    /// Patterns for crafts not learned yet stay hidden in the book until the craft is (owner, 2026-10-31).
+    public bool PatternShown(OwnedPattern p) => ItemFor(p.itemId) is not CraftItemDef item || Progress.CraftOpen(item.craft);
+
     public bool PutOnDisplay(string patternId)
     {
         var p = Save.patterns.Find(x => x.id == patternId);
@@ -1074,6 +1095,52 @@ public class ShopDay : MonoBehaviour
 
     // ---- Supply Market (day) ----
 
+    // ---- Selling supplies back (owner, 2026-10-31): what the open orders don't need, for half price ----
+
+    /// How much of a supply the open orders will still use (that much stays in the cupboard).
+    public int Reserved(string supplyId)
+    {
+        int n = 0;
+        foreach (var o in Save.orders)
+            if (!o.finished) foreach (var m in NeedsFor(o)) if (m.supplyId == supplyId) n += m.amount;
+        return n;
+    }
+
+    /// What one sale of this supply would be: an amount (a pack, or what's spare if less) and its coins.
+    /// 0 when it can't be sold (not needed is fine; reserved for an order, a book, or a tool an order needs is not).
+    public (int amount, int coins) SaleOf(SupplyDef s)
+    {
+        if (s == null || s.kind == SupplyKind.Book || s.market == MarketSlot.NotSold) return (0, 0);
+        int spare = shop.Stock(s.supplyId) - Reserved(s.supplyId);
+        if (s.kind == SupplyKind.Tool)
+        {
+            bool needed = Save.orders.Exists(o => !o.finished && ToolsFor(o).Exists(t => t.toolType == s.toolType && shop.BestFor(t) == s));
+            return needed || spare <= 0 ? (0, 0) : (1, Mathf.Max(1, s.price / 2));
+        }
+        int amount = Mathf.Min(spare, Mathf.Max(1, s.perPack));
+        if (amount <= 0) return (0, 0);
+        return (amount, Mathf.Max(1, Mathf.RoundToInt(s.price * 0.5f * amount / Mathf.Max(1, s.perPack))));
+    }
+
+    public void SellSupply(string supplyId)
+    {
+        var s = content.Supply(supplyId);
+        var (amount, coins) = SaleOf(s);
+        if (s == null || Save.night) return;
+        if (amount <= 0)
+            LastMessage = Reserved(supplyId) > 0 ? $"Your orders still need the {s.displayName.ToLower()}." : $"Bram doesn't buy {s.displayName.ToLower()}.";
+        else
+        {
+            shop.Add(supplyId, -amount);
+            GM.AddCoins(coins);
+            AudioManager.Play(Sfx.Coin);
+            LastMessage = s.kind == SupplyKind.Tool ? $"Sold your {s.displayName} for {coins} coins."
+                        : $"Sold {amount} {s.unit} of {s.displayName} for {coins} coins (you have {shop.Stock(supplyId)} left).";
+            GM.Persist();
+        }
+        GM.ChangeScreen(ScreenId.Market);   // refresh the list
+    }
+
     public void BuyPack(string supplyId)
     {
         var s = content.Supply(supplyId);
@@ -1133,6 +1200,10 @@ public class ShopDay : MonoBehaviour
         if (Save.flags.Contains(flag)) return;
         Save.flags.Add(flag);
         Stamps.Earn(Save, flag, name, detail, StampTheme.Shop);
+        Explainers.Explain(Save, flag, false, flag == MarketFlag
+            ? $"{name} is open\nBy day, tap Shops at the top right to cross the square. Buy fabric, floss, yarn and tools there: " +
+              "some things are always in stock, others change every few days, and now and then something rare turns up."
+            : $"{name} is open\nBy day, tap Shops at the top right. Clothes, hairstyles and accessories for your shopkeeper: try a look, then buy it.");
         Progress.AddNews($"{name} is open. Find it under Shops.");
         GM.Persist();
     }
@@ -1165,6 +1236,7 @@ public class ShopDay : MonoBehaviour
     }
 
     public void BoughtInShop() => boughtThisVisit = true;
+    public void ClearMessage() => LastMessage = "";
     public void LeaveMarket() => LeaveShop(MarketOwnerId);
 
     /// One of a shop owner's lines of this kind (greet, bye, thanks) for the friendship level reached.
