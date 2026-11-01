@@ -19,8 +19,9 @@ MonoBehaviour:
   craft: 0
   chapter: 0
   levelCraft: 0
-  craftLevel: 2
-  book: {fileID: 11400000, guid: 1d6bd5e387fc02f45936fb7c2c5f46ba, type: 2}
+  craftLevel: 0
+  book: {fileID: 0}
   friend: {fileID: 0}
   friendLevel: 0
+  playerLevel: 5
   grantsPatterns: []

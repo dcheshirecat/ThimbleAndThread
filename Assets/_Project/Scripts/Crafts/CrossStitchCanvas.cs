@@ -33,6 +33,7 @@ public class CrossStitchCanvas : MonoBehaviour
     public List<StitchMark> restore;   // optional: work saved earlier, redrawn when the board starts
     public Pattern design;             // optional, PatternFill: a design to keep editing (palette and coloured cells)
     public bool paintHalf;             // designing: squares painted now are half stitches (just the top leg)
+    public bool recolour;              // designing a new colourway: a tap swaps every square of that colour for the current one
     public bool paintQuarter;          // designing: squares painted now are three-quarter stitches (tap near the corner to cut away)
     public List<Vector2Int> restoreCarried;   // optional: squares reached by a long carry, saved earlier
     public bool erase;                 // PatternFill: painting clears squares instead
@@ -502,6 +503,7 @@ public class CrossStitchCanvas : MonoBehaviour
     void OnPress(Vector3 local)
     {
         strokeStart = Marks();
+        if (mode == Mode.PatternFill && recolour) { Recolour(CellAt(local)); return; }
         if (mode == Mode.PatternFill) { Paint(CellAt(local), local); return; }
         if (picking) { lastPicked = new Vector2Int(-1, -1); Unpick(CellAt(local)); return; }
         dragStartCorner = NearestCorner(local);
@@ -514,7 +516,7 @@ public class CrossStitchCanvas : MonoBehaviour
 
     void OnDrag(Vector3 local)
     {
-        if (mode == Mode.PatternFill) { if (OnBoard(local)) Paint(CellAt(local), local); return; }
+        if (mode == Mode.PatternFill) { if (OnBoard(local) && !recolour) Paint(CellAt(local), local); return; }
         if (picking) { if (OnBoard(local)) Unpick(CellAt(local)); return; }
         if (previewLine != null)
             previewLine.SetPosition(1, transform.TransformPoint(local));
@@ -713,6 +715,16 @@ public class CrossStitchCanvas : MonoBehaviour
         pattern.cells.RemoveAll(c => c.x == cell.x && c.y == cell.y);
         pattern.cells.Add(new StitchCell { x = cell.x, y = cell.y, colorIndex = color });
         // TODO: play satisfying "pop" sound, award tiny progress to the commission
+    }
+
+    /// New colourway: every square in the tapped square's colour takes the current colour (the shape stays the same).
+    void Recolour(Vector2Int cell)
+    {
+        var at = pattern.cells.Find(c => c.x == cell.x && c.y == cell.y);
+        if (at == null || at.colorIndex == currentColor) return;
+        int from = at.colorIndex;
+        foreach (var c in new List<StitchCell>(pattern.cells))
+            if (c.colorIndex == from) PaintCell(new Vector2Int(c.x, c.y), currentColor, c.halfStitch, c.quarter);
     }
 
     void Paint(Vector2Int cell, Vector3 local)

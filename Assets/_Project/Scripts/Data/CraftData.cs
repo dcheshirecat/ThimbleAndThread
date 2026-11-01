@@ -98,6 +98,7 @@ public class OwnedPattern
     public bool designed;           // true = made in the Pattern Studio, grid stored in "design"
     public int sold;                // copies of the pattern sold off the shelf
     public int ordered;             // orders taken for the finished item
+    public int made;                // pieces made from it (new colourways open at MadeForColourway)
     public Pattern design = new Pattern();
 }
 
@@ -130,7 +131,7 @@ public class MarketPurchase
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 26;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique). 20: the day clock (clock, nextArrival). 21: the Sunday market stall (stall). 22: special orders on their way (deliveries). 23: sales to other players (SentCode.price/paid), surpriseOwed. 24: furniture (decor, decorPlaced). 25: the notices bell (noticesSeen). 26: scarf stripes in every colour (Order.knitStyle)
+    public const int CurrentVersion = 27;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique). 20: the day clock (clock, nextArrival). 21: the Sunday market stall (stall). 22: special orders on their way (deliveries). 23: sales to other players (SentCode.price/paid), surpriseOwed. 24: furniture (decor, decorPlaced). 25: the notices bell (noticesSeen). 26: scarf stripes in every colour (Order.knitStyle). 27: craft mastery by orders handed over (craftOrders), bonusXp, pattern stamps (OwnedPattern.made)
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
@@ -165,7 +166,9 @@ public class SaveData
     public int totalDelivered;                                       // orders handed over, ever
     public int totalPatternsSold;                                    // patterns sold, ever
     public int totalCommissions;                                     // commissions handed over, ever
-    public List<CraftCount> itemsMade = new List<CraftCount>();      // things finished, per craft
+    public List<CraftCount> itemsMade = new List<CraftCount>();
+    public List<CraftCount> craftOrders = new List<CraftCount>();    // orders handed over, per craft: mastery levels (Progression.Level)
+    public int bonusXp;                                               // experience not tied to a craft (e.g. good days at the stall)      // things finished, per craft
     public List<string> questsClaimed = new List<string>();          // QuestDef ids whose reward was claimed
     public List<string> questsReady = new List<string>();            // reached and announced, not claimed yet
     public List<string> journalNews = new List<string>();            // recent things learned or unlocked, newest first

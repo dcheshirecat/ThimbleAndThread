@@ -228,13 +228,35 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         foreach (var c in content.customers)
             if (c != null && !c.shopOwner && c.firstChapter <= Save.chapter && (!Save.orders.Exists(o => o.customerId == c.customerId) || PickupFor(c) != null))
                 list.Add(c.customerId);
-        // A sign out front: a few of them drop by a second time.
-        int extra = Mathf.Min(Progress.UpgradeAmount(UpgradeEffect.ExtraVisitor), list.Count);
-        for (int i = 0; i < extra; i++) list.Add(list[i]);
+        // How many come grows with the shop (owner, 2026-11-01): anyone collecting today always comes; the rest are a
+        // random few, and once there are more visits than people, some drop by twice.
+        Shuffle(list);
+        list.Sort((a, b) => (PickupFor(content.Customer(b)) != null).CompareTo(PickupFor(content.Customer(a)) != null));
+        int visits = DailyVisits;
+        int pickups = list.FindAll(id => PickupFor(content.Customer(id)) != null).Count;
+        if (list.Count > Mathf.Max(visits, pickups)) list.RemoveRange(Mathf.Max(visits, pickups), list.Count - Mathf.Max(visits, pickups));
+        int people = list.Count;
+        for (int i = 0; list.Count < visits && i < people; i++) list.Add(list[i]);
+        Shuffle(list);
+    }
+
+    static void Shuffle(List<string> list)
+    {
         for (int i = list.Count - 1; i > 0; i--)
         {
             int j = Random.Range(0, i + 1);
             (list[i], list[j]) = (list[j], list[i]);
+        }
+    }
+
+    /// Visits in a day: 3, one more for every level after the first and for every friend at level 2 or more, and
+    /// the sign out front's extra.
+    public int DailyVisits
+    {
+        get
+        {
+            int friends = Save.relationships.FindAll(r => r.level >= 2).Count;
+            return 3 + (Progress.PlayerLevel - 1) + friends + Progress.UpgradeAmount(UpgradeEffect.ExtraVisitor);
         }
     }
 
@@ -366,7 +388,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
                 ("Take the Commission", AcceptOffer), ("Not Today", DeclineOffer));
             return;
         }
-        var wants = OrderGenerator.Wants(c, level).FindAll(i => Progress.CanMake(i));
+        var wants = OrderGenerator.Wants(c, level).FindAll(i => Progress.CanDesign(i));   // only what you're good enough to design
         if (wants.Count == 0) { notNow(); return; }
         var item = wants[Random.Range(0, wants.Count)];
         Offer = new Order
@@ -843,7 +865,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         int level = GM.GetRelationship(customer.customerId).level;
         foreach (var c in content.commissions)
             if (c != null && c.customer == customer && c.item != null && c.minRelationshipLevel <= level
-                && Progress.Knows(PatternDesignSkill) && Progress.CanMake(c.item)
+                && Progress.CanDesign(c.item)
                 && !Save.commissionsDone.Contains(c.commissionId) && !Save.orders.Exists(o => o.commissionId == c.commissionId))
                 return c;
         return null;
@@ -888,7 +910,22 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         Save.night = true;
         Save.visitorsToday.Clear();   // anyone still waiting comes back another day
         GM.Persist();
+        TomorrowNote();
         GM.ChangeScreen(ScreenId.DaySummary);
+    }
+
+    /// The evening before a Saturday or a Sunday: what tomorrow brings, so you can get ready (owner, 2026-11-01).
+    void TomorrowNote()
+    {
+        int tomorrow = Save.day + 1;
+        if (Week.IsSaturday(tomorrow))
+            Stamps.Announce("Tomorrow is Saturday\n<size=40>The shop stays closed. Spend the day with a friend, go to the craft circle " +
+                            "or the jumble sale, or stay in and craft. Tonight's a good night to finish something.</size>");
+        else if (Week.IsSunday(tomorrow))
+            Stamps.Announce(StallOpen || CanHaveStall
+                ? $"Tomorrow is Sunday: market day\n<size=40>Your stall on the square, 10 till 4. Ready to sell: {Save.stall.Count} " +
+                  $"piece{(Save.stall.Count == 1 ? "" : "s")}. Tonight you can still craft something for it (Craft for the Stall).</size>"
+                : "Tomorrow is Sunday\n<size=40>A day of rest: the shop stays closed.</size>");
     }
 
     /// For the end-of-day summary: what's coming, so there's something to look forward to. Never how the story
@@ -1054,7 +1091,14 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             GM.ChangeScreen(ScreenId.PatternStudio);
             return;
         }
-        var item = System.Array.Find(content.items, i => i != null && i.craft == CraftType.CrossStitch) ?? content.items[0];
+        var item = System.Array.Find(content.items, i => i != null && Progress.CanDesign(i));
+        if (item == null)
+        {
+            LastMessage = $"You can design for a craft once you've handed over {Progression.OrdersToDesign} orders in it.";
+            GM.ChangeScreen(ScreenId.PatternStudio);
+            return;
+        }
+        Recolouring = false;
         int n = Save.patterns.FindAll(p => p.designed).Count + 1;
         var design = new Pattern { displayName = $"My Pattern {n}", craft = item.craft, width = 8, height = 8 };
         SelectedPattern = new OwnedPattern
@@ -1066,8 +1110,30 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         GM.ChangeScreen(ScreenId.PatternDesigner);
     }
 
+    /// The designer is swapping a pattern's colours (a new colourway): a tap recolours every square of that colour.
+    public bool Recolouring { get; private set; }
+
+    public bool CanMakeColourway(OwnedPattern p) => p != null && p.made >= MadeForColourway && Progress.CanDesign(ItemFor(p.itemId));
+
+    /// A copy of a pattern made ten times, to make in other colours (owner, 2026-11-01). It goes in the book as your own
+    /// once saved.
+    public void NewColourway()
+    {
+        var p = SelectedPattern;
+        if (!CanMakeColourway(p)) return;
+        var design = Materials.Copy(DesignFor(p));
+        design.displayName = $"{p.name} (new colours)";
+        SelectedPattern = new OwnedPattern
+        {
+            id = System.Guid.NewGuid().ToString("N"), name = design.displayName, itemId = p.itemId, price = p.price, designed = true, design = design,
+        };
+        Recolouring = true;
+        GM.ChangeScreen(ScreenId.PatternDesigner);
+    }
+
     public void EditDesign()
     {
+        Recolouring = false;
         if (SelectedPattern != null && SelectedPattern.designed) GM.ChangeScreen(ScreenId.PatternDesigner);
     }
 
@@ -1210,7 +1276,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     // and see you off (ink knots name_greet*, name_bye*, name_thanks* after buying something). ----
 
     public const string MarketFlag = "shop:market", BoutiqueFlag = "shop:boutique", PatternShopFlag = "shop:patterns";
-    public const int MarketOpensDay = 2, BoutiqueDeliveries = 3, PatternShopSales = 3;
+    public const int MarketOpensDay = 2, BoutiqueDeliveries = 3, PatternShopLevel = 2;
     bool boughtThisVisit;
 
     /// The shop a shop owner runs.
@@ -1229,7 +1295,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             OpenShop(MarketFlag, "The Supply Market", "Fabric, thread, yarn and tools, just across the square.");   // no names before they introduce themselves
         if (Save.totalDelivered >= BoutiqueDeliveries || Save.chapter >= 2)
             OpenShop(BoutiqueFlag, "The Boutique", "Clothes, hair and accessories: a new boutique across the square has opened its doors.");
-        if (Save.totalPatternsSold >= PatternShopSales || Save.chapter >= 2)   // once the shop sells patterns, a pattern shop takes an interest
+        if (Progress.PlayerLevel >= PatternShopLevel)   // the pattern shop first; the Pattern Studio a few levels later (owner, 2026-11-01)
             OpenShop(PatternShopFlag, "The Pattern Shop", "Ready-made patterns to sell in your shop, from simple to rare and fancy.");
         if (Save.day >= FurnitureOpensDay || Progress.PlayerLevel >= FurnitureLevel)
             OpenShop(FurnitureFlag, "The Workshop", "Furniture and decorations for your shop, made by the carpenter down the lane.");
@@ -1782,6 +1848,9 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
 
     /// Night: the piece is done, wrapped and set aside until its customer comes back for it. They don't
     /// say when: the doorbell will tell.
+    /// Times a pattern must be made before it can be made in other colours (owner, 2026-11-01).
+    public const int MadeForColourway = 10;
+
     public void SetAside()
     {
         if (!Selected.finished && Selected.item != null)   // one more thing made in this craft
@@ -1789,6 +1858,19 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             var made = Save.itemsMade.Find(x => x.craft == Selected.item.craft);
             if (made == null) Save.itemsMade.Add(made = new CraftCount { craft = Selected.item.craft });
             made.count++;
+            var owned = Selected.target != null ? Save.patterns.Find(p => p.id == Selected.target.id) : null;
+            if (owned != null)
+            {
+                owned.made++;
+                if (owned.made == MadeForColourway)
+                    Stamps.Earn(Save, $"colourway:{owned.id}", $"New colourways: {owned.name}", $"Made {MadeForColourway} times: you can make it in other colours now (Pattern Studio).", StampTheme.Craft, craft: Selected.item.craft.ToString());
+            }
+            // Fine work (owner, 2026-11-01): stamps for over 80%, over 90% and a perfect 100% on each pattern
+            string pname = Selected.target != null ? Selected.target.displayName : Selected.item.itemName;
+            string pid = Selected.target != null && !string.IsNullOrEmpty(Selected.target.id) ? Selected.target.id : Selected.itemId;
+            foreach (var (pct, word) in new[] { (100, "Perfect"), (90, "Excellent"), (80, "Fine work") })
+                if (LastAccuracy * 100f >= pct - 0.01f && (pct == 100 ? LastAccuracy >= 0.9999f : true))
+                    Stamps.Earn(Save, $"score:{pid}:{pct}", $"{word}: {pname}", pct == 100 ? "100%, not a stitch out of place." : $"Over {pct}%.", StampTheme.Craft, craft: Selected.item.craft.ToString());
         }
         Selected.finished = true;
         Selected.accuracy = LastAccuracy;
@@ -1896,6 +1978,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         Save.orders.Remove(Selected);
         Save.deliveredToday++;
         Save.totalDelivered++;
+        string mastery = Selected.item != null ? Progress.CountOrder(Selected.item.craft) : null;
         if (commission != null || Selected.commissionId != null && Selected.commissionId.StartsWith(OwnCommissionPrefix)) Save.totalCommissions++;
         foreach (int n in new[] { 1, 5, 10, 25, 50, 100 })
             if (Save.totalDelivered == n)
@@ -1913,6 +1996,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         if (commission != null)
             LastMessage += $" The \"{Selected.target.displayName}\" pattern is in your book: put it on the shelf in the Pattern Studio.";
         foreach (var s in taught) LastMessage += s.friend != null ? $" {s.friend.displayName} taught you {s.displayName}!" : $" You learned {s.displayName}!";
+        if (mastery != null) LastMessage += " " + mastery;
         if (chapter != null) QueueChapterScene(chapter);
         var stars = PricingCalculator.Stars(Selected.accuracy);
         Selected = null;

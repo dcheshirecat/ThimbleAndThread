@@ -471,6 +471,14 @@ public static class PlaceholderGenerator
         Skill("craft_sewing", "Sewing", "Cut, pin and sew: plushies and tote bags on the old machine.", true, CraftType.Sewing, chapter: 5);
         Skill(ShopDayPatternDesign, "Pattern Design", "Design your own patterns in the Pattern Studio, and take commissions.", false, cs,
               levelCraft: cs, craftLevel: 2, book: designBook);
+        // Owner, 2026-11-01: the pattern shop opens at level 2, the Pattern Studio a few levels later (level 5). Once.
+        var designSkill = AssetDatabase.LoadAssetAtPath<SkillDef>($"{Root}/Data/Skills/skill_{ShopDayPatternDesign}.asset");
+        if (designSkill != null && designSkill.playerLevel == 0)
+        {
+            designSkill.playerLevel = 5; designSkill.craftLevel = 0; designSkill.book = null;
+            EditorUtility.SetDirty(designSkill);
+            if (designBook != null) { designBook.market = MarketSlot.NotSold; EditorUtility.SetDirty(designBook); }
+        }
         Skill("french_knots", "French Knots", "Wrap the thread twice and pull through: tiny raised dots, like an eye.", false, CraftType.Embroidery,
               book: knotsBook, friend: juno, friendLevel: 1);
         RequireSkill(hoopArt, StepKind.FrenchKnots, "french_knots");

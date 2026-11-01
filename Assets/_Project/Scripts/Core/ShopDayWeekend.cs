@@ -152,9 +152,25 @@ public partial class ShopDay
     // ---- Sunday: the market stall ----
 
     public bool StallOpen => Save != null && Save.flags.Contains(StallFlag);
+    /// The stall needs a shop that's made a name for itself (owner, 2026-11-01): level 4.
+    public const int StallLevel = 4;
+    public bool CanHaveStall => Progress.PlayerLevel >= StallLevel;
+
+    /// A Sunday before the stall: a quiet day off.
+    void QuietSunday()
+    {
+        Save.visitorsToday.Clear();
+        Narrate(null, "Sunday. The shop's closed, and the square fills with market stalls. Maybe one day you'll have one of your own.",
+            ("Wander round the market", () => Narrate(null,
+                Pick("Jars of honey, a man selling lobster pots, a stall of old buttons in tins. You buy a tin of buttons for nothing.",
+                     "Stallholders call out prices. You note which ones draw a crowd."),
+                ("Head home", EndSaturday))),
+            ("Stay in and craft", EndSaturday));
+    }
 
     public void StartSunday()
     {
+        if (!StallOpen && !CanHaveStall) { QuietSunday(); return; }
         if (!StallOpen)
         {
             Save.flags.Add(StallFlag);
@@ -256,6 +272,7 @@ public partial class ShopDay
         GM.AddCoins(s.offer);
         Save.coinsToday += s.offer;
         if (s.friend != null) GM.AddRelationshipPoints(s.friend.customerId, 4);
+        Progress.AddBonusXp(s.friend != null ? 5 : 3);   // a good sale is experience too (owner, 2026-11-01)
         AudioManager.Play(Sfx.Coin);
         if (s.piece != null) { Save.stall.Remove(s.piece); LastMessage = $"Sold the {s.piece.name} for {s.offer} coins."; }
         else
@@ -281,6 +298,7 @@ public partial class ShopDay
         if (Random.value < 0.5f)
         {
             s.offer = Mathf.CeilToInt(s.offer * 1.2f);
+            Progress.AddBonusXp(4);
             s.line = Pick($"Fair enough, it's worth it. {s.offer} it is.", $"You drive a hard bargain! {s.offer}, then.");
         }
         else { LastMessage = "\"Hmm, a bit much for me.\" They moved on."; shopper = null; }
@@ -303,12 +321,19 @@ public partial class ShopDay
     }
 
     /// Pattern Studio: make the selected pattern to sell on the stall.
-    public void MakeForStall()
+    public void MakeForStall() => MakeForStall(SelectedPattern, ScreenId.PatternEdit);
+
+    /// The workroom's "Craft for the Stall": any pattern in your book you can make (owner, 2026-11-01).
+    public void MakeForStall(string patternId) => MakeForStall(Save.patterns.Find(x => x.id == patternId), ScreenId.Workroom);
+
+    /// Patterns in your book you could make for the stall.
+    public List<OwnedPattern> StallPatterns() => Save.patterns.FindAll(p => PatternShown(p) && Progress.CanMake(ItemFor(p.itemId)) && (!p.designed || p.design.cells.Count > 0));
+
+    void MakeForStall(OwnedPattern p, ScreenId back)
     {
-        var p = SelectedPattern;
         var item = p != null ? content.Item(p.itemId) : null;
-        if (item == null || !StallOpen) return;
-        if (!Progress.CanMake(item)) { LastMessage = $"You haven't learned {Progression.CraftName(item.craft)} yet."; GM.ChangeScreen(ScreenId.PatternEdit); return; }
+        if (item == null || !(StallOpen || CanHaveStall)) return;
+        if (!Progress.CanMake(item)) { LastMessage = $"You haven't learned {Progression.CraftName(item.craft)} yet."; GM.ChangeScreen(back); return; }
         Save.orders.Add(new Order
         {
             id = System.Guid.NewGuid().ToString("N"), customerId = StallId, itemId = item.itemId, item = item,
@@ -316,7 +341,7 @@ public partial class ShopDay
         });
         LastMessage = $"A {item.itemName.ToLower()} for your market stall is in the order book. Work on it at night.";
         GM.Persist();
-        GM.ChangeScreen(ScreenId.PatternEdit);
+        GM.ChangeScreen(back);
     }
 
     /// A stall piece is finished: it waits for Sunday.

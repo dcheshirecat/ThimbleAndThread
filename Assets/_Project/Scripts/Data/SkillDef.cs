@@ -22,6 +22,7 @@ public class SkillDef : ScriptableObject
     public SupplyDef book;                 // buying this book at the Supply Market
     public CustomerDef friend;             // this friend teaches it...
     public int friendLevel;                // ...once your friendship reaches this level
+    public int playerLevel;                // reaching this player level (0 = not this way)
 
     [Header("When learned")]
     public PatternDef[] grantsPatterns = new PatternDef[0];   // new patterns for the book

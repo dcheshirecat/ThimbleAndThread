@@ -14,6 +14,7 @@ public class Stamp
     public string detail;
     public StampTheme theme;
     public int day;
+    public string craft = "";  // the craft it's about (CraftType name), for the Journal's filter; "" = none
 }
 
 public static class Stamps
@@ -34,13 +35,27 @@ public static class Stamps
     public static void Announce(string text) => OnNotice?.Invoke(text, true);
 
     /// Stamps it if it's new. quiet: no pop-up and no news (catching up an older save).
-    public static bool Earn(SaveData save, string id, string title, string detail, StampTheme theme, bool quiet = false)
+    public static bool Earn(SaveData save, string id, string title, string detail, StampTheme theme, bool quiet = false, string craft = "")
     {
         if (save == null || save.stamps.Exists(s => s.id == id)) return false;
-        var stamp = new Stamp { id = id, title = title, detail = detail, theme = theme, day = save.day };
+        var stamp = new Stamp { id = id, title = title, detail = detail, theme = theme, day = save.day, craft = craft };
         save.stamps.Add(stamp);
         if (!quiet) OnEarned?.Invoke(stamp);
         return true;
+    }
+
+    /// The craft a stamp is about (older stamps: worked out from their id, e.g. "level:Knitting:3"), or "".
+    public static string CraftOf(Stamp s)
+    {
+        if (!string.IsNullOrEmpty(s.craft)) return s.craft;
+        if (s.id.StartsWith("level:") || s.id.StartsWith("mastery:"))
+        {
+            var parts = s.id.Split(':');
+            if (parts.Length > 1) return parts[1];
+        }
+        foreach (CraftType c in System.Enum.GetValues(typeof(CraftType)))
+            if (s.id == $"skill:craft_{Progression.CraftName(c).ToLower().Replace(' ', '_')}") return c.ToString();
+        return "";
     }
 
     public static Color ColorOf(StampTheme t) => t switch

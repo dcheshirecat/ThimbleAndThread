@@ -141,7 +141,7 @@ public class JournalUI : MonoBehaviour
             Page.Orders => Orders(),
             Page.Story => Story(),
             Page.Friends => Friends(),
-            Page.Skills => Skills(),
+            Page.Skills => Progress.SkillsReport(),
             Page.Supplies => Supplies(),
             Page.Stamps => StampsPage(),
             _ => Goals(),
@@ -266,28 +266,6 @@ public class JournalUI : MonoBehaviour
         rows.Add(card);
     }
 
-    string Skills()
-    {
-        // Crafts and techniques only appear once learned: which ones are still to come, and how, is a
-        // surprise (owner, 2026-10-30 and 2026-10-31).
-        var sb = new StringBuilder("<b>Crafts</b>\n");
-        int unknown = 0;
-        foreach (CraftType craft in System.Enum.GetValues(typeof(CraftType)))
-        {
-            if (!Progress.CraftOpen(craft)) { unknown++; continue; }
-            sb.AppendLine($"{Progression.CraftName(craft)}: level {Progress.Level(craft)} ({Progress.XpToNext(craft)} experience to the next)");
-        }
-        sb.AppendLine("\n<b>Techniques</b>");
-        foreach (var s in day.content.skills)
-        {
-            if (s == null || s.isCraft) continue;
-            if (Progress.Knows(s.skillId)) sb.AppendLine($"{s.displayName}: {s.description}");
-            else unknown++;
-        }
-        if (unknown > 0) sb.AppendLine(unknown == 1 ? "There's one more thing to learn out there..." : $"There are {unknown} more things to learn out there...");
-        return sb.ToString();
-    }
-
     string Supplies()
     {
         var sb = new StringBuilder();
@@ -310,13 +288,42 @@ public class JournalUI : MonoBehaviour
         return sb.ToString();
     }
 
+    string stampFilter = "";   // a craft (CraftType name) or "" for every stamp
+
+    /// The crafts to filter by: those learned (owner, 2026-11-01: see how you're doing in each craft).
+    List<string> StampFilters()
+    {
+        var list = new List<string> { "" };
+        foreach (CraftType c in System.Enum.GetValues(typeof(CraftType))) if (Progress.CraftOpen(c)) list.Add(c.ToString());
+        return list;
+    }
+
+    void NextStampFilter()
+    {
+        var list = StampFilters();
+        stampFilter = list[(list.IndexOf(stampFilter) + 1) % list.Count];
+        Show();
+    }
+
     string StampsPage()
     {
         if (stampTemplate == null) return "";
         stampTemplate.SetActive(false);
+        if (!StampFilters().Contains(stampFilter)) stampFilter = "";
+        string shownName = stampFilter == "" ? "All stamps" : Progression.CraftName((CraftType)System.Enum.Parse(typeof(CraftType), stampFilter));
+        var filter = Instantiate(rowTemplate, rowTemplate.transform.parent);
+        filter.gameObject.SetActive(true);
+        filter.name = "Stamp Filter";
+        filter.GetComponentInChildren<Text>().text = $"Showing: {shownName}  (tap to change)";
+        filter.onClick.AddListener(NextStampFilter);
+        filter.transform.SetSiblingIndex(stampGrid.GetSiblingIndex());
+        rows.Add(filter.gameObject);
+        int shown = 0;
         for (int i = Save.stamps.Count - 1; i >= 0; i--)   // newest first
         {
             var s = Save.stamps[i];
+            if (stampFilter != "" && Stamps.CraftOf(s) != stampFilter) continue;
+            shown++;
             var go = Instantiate(stampTemplate, stampGrid);
             go.SetActive(true);
             go.name = $"Stamp_{s.id}";
@@ -327,7 +334,7 @@ public class JournalUI : MonoBehaviour
             rows.Add(go);
         }
         return Save.stamps.Count == 0 ? "<b>Stamps</b>\n\nNo stamps yet. They come as you learn, make friends and grow the shop."
-                                      : $"<b>Stamps</b>  ({Save.stamps.Count})";
+                                      : $"<b>Stamps</b>  ({shown} of {Save.stamps.Count})";
     }
 
     /// Achievement quests: open goals, claimed here for coins and experience.

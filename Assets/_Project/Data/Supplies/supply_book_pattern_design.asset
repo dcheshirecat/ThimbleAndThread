@@ -23,7 +23,7 @@ MonoBehaviour:
   perPack: 1
   unit: book
   starterPacks: 0
-  market: 0
+  market: 3
   toolType: 
   size: 0
   assist: 0

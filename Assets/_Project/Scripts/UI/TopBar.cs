@@ -13,7 +13,8 @@ public class TopBar : MonoBehaviour
     public Image xpFill;
     public ShopkeeperView portrait;
     public Sprite[] symbols = new Sprite[7];   // Monday first
-    public GameObject bellBadge, noticesLayer, goalsButton;
+    public GameObject bellBadge, noticesLayer, goalsButton, skillsLayer;
+    public Text skillsText;
     public Text bellCount, noticesText;
     int shownNotices = -1;
 
@@ -97,4 +98,15 @@ public class TopBar : MonoBehaviour
         if (journal != null) journal.OpenAt(JournalUI.Page.Goals);
     }
     public void OpenPersonal() => GameManager.Instance.ChangeScreen(ScreenId.Customize);
+
+    /// The level and experience bar: how far to the next level, and your crafts and techniques (owner, 2026-11-01).
+    public void ToggleSkills()
+    {
+        if (skillsLayer == null || day == null) return;
+        if (skillsLayer.activeSelf) { skillsLayer.SetActive(false); return; }
+        skillsText.text = PlayerText.Fill(day.Progress.SkillsReport());
+        skillsLayer.transform.SetAsLastSibling();
+        skillsLayer.SetActive(true);
+        AudioManager.Play(Sfx.Click);
+    }
 }

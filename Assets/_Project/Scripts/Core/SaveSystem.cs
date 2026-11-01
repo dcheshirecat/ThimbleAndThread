@@ -93,7 +93,10 @@ public static class SaveSystem
                     st.amount = Mathf.CeilToInt(st.amount / 400f);
         data.met ??= new System.Collections.Generic.List<string>();
         if (data.version < 25) data.noticesSeen = data.stamps.Count;
-        if (data.version < 26) foreach (var o in data.orders) o.knitStyle = 0;   // their scarf stripes stay as they were begun   // the bell starts quiet: everything so far was already announced
+        if (data.version < 26) foreach (var o in data.orders) o.knitStyle = 0;   // their scarf stripes stay as they were begun
+        data.craftOrders ??= new System.Collections.Generic.List<CraftCount>();
+        if (data.version < 27)   // mastery is counted in orders now: start from the things made in each craft
+            foreach (var m in data.itemsMade) if (m != null) data.craftOrders.Add(new CraftCount { craft = m.craft, count = m.count });   // the bell starts quiet: everything so far was already announced
         foreach (var o in data.orders)
         {
             o.carried ??= new System.Collections.Generic.List<Vector2Int>();

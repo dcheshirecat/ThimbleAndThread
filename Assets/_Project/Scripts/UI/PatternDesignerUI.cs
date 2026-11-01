@@ -53,6 +53,7 @@ public class PatternDesignerUI : MonoBehaviour
         cloth = p.design.fabricId;
         OpenBoard(ToCatalogue(p.design));
         open = true;
+        if (host.Board != null) host.Board.recolour = day.Recolouring;   // a new colourway: tap a colour to swap it everywhere
         ShowSwatches();
         Refresh();
     }
@@ -226,7 +227,7 @@ public class PatternDesignerUI : MonoBehaviour
         Refresh();
     }
 
-    bool Allowed(int i) => day.content.items[i] != null && day.Progress.CanMake(day.content.items[i]);
+    bool Allowed(int i) => day.content.items[i] != null && day.Progress.CanDesign(day.content.items[i]);
 
     /// On to the next item the player can make (a craft not learned yet can't be designed for).
     void StepItem()

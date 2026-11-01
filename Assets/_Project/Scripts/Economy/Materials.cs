@@ -33,6 +33,16 @@ public static class Materials
 
     static float Sq(float v) => v * v;
 
+    /// A separate copy of a pattern (cells, palette and threads).
+    public static Pattern Copy(Pattern src)
+    {
+        var p = new Pattern { id = src.id, displayName = src.displayName, craft = src.craft, width = src.width, height = src.height, fabricId = src.fabricId };
+        p.palette.AddRange(src.palette);
+        p.threads.AddRange(src.threads);
+        foreach (var c in src.cells) p.cells.Add(c.Recolored(c.colorIndex));
+        return p;
+    }
+
     /// The fabric for a project: the one a commission requires, else the cloth the pattern was designed on,
     /// else the best Aida the player has enough of, or else the basic one to buy.
     public static SupplyDef FabricFor(Pattern p, ContentLibrary content, ShopManager shop, string requiredId = null)

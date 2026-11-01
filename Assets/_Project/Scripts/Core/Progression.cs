@@ -81,7 +81,8 @@ public class Progression
     {
         var ways = new List<string>();
         if (s.chapter > 0) ways.Add($"story chapter {s.chapter}");
-        if (s.craftLevel > 0) ways.Add($"{CraftName(s.levelCraft)} level {s.craftLevel}");
+        if (s.craftLevel > 0) ways.Add($"{CraftName(s.levelCraft)} mastery {s.craftLevel}");
+        if (s.playerLevel > 0) ways.Add($"level {s.playerLevel}");
         if (s.book != null) ways.Add($"the book \"{s.book.displayName}\" from the Supply Market");
         if (s.friend != null && s.friendLevel > 0) ways.Add($"{s.friend.displayName} at friendship level {s.friendLevel}");
         return ways.Count > 0 ? string.Join(", or ", ways) : "not yet known";
@@ -96,7 +97,8 @@ public class Progression
             if (s == null || Knows(s.skillId)) continue;
             string how = null;
             if (s.chapter > 0 && Save.chapter >= s.chapter) how = $"chapter {Save.chapter}";
-            else if (s.craftLevel > 0 && Level(s.levelCraft) >= s.craftLevel) how = $"reaching {CraftName(s.levelCraft)} level {s.craftLevel}";
+            else if (s.craftLevel > 0 && Level(s.levelCraft) >= s.craftLevel) how = $"reaching {CraftName(s.levelCraft)} mastery {s.craftLevel}";
+            else if (s.playerLevel > 0 && PlayerLevel >= s.playerLevel) how = $"reaching level {s.playerLevel}";
             else if (s.book != null && shop.Owns(s.book.supplyId)) how = $"reading \"{s.book.displayName}\"";
             else if (s.friend != null && s.friendLevel > 0 && GM.GetRelationship(s.friend.customerId).level >= s.friendLevel) how = $"{s.friend.displayName} showing you how";
             if (how == null) continue;
@@ -128,7 +130,36 @@ public class Progression
         else if (s.skillId == ShopDay.PatternDesignSkill)
             Explainers.Explain(Save, "skill:pattern_design", false,
                 "The Pattern Studio is open\nAt night, in the workroom, design your own patterns square by square. " +
-                "Put them on display to sell, or make them for customers. Customers who know you well may ask for something special.");
+                "Put them on display to sell, or make them for customers. Customers who know you well may ask for something special.\n" +
+                $"You can design for a craft once you've handed over {OrdersToDesign} orders in it.");
+    }
+
+    /// Your level, experience, crafts and techniques: the panel the experience bar opens (owner, 2026-11-01: moved out of
+    /// the Journal). Crafts and techniques only appear once learned; how the rest are learned stays a surprise.
+    public string SkillsReport()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"<b>Level {PlayerLevel}</b>");
+        sb.AppendLine($"Experience: {XpIntoLevel} of {XpForLevel} for this level. <b>{XpToNextLevel} more</b> to reach level {PlayerLevel + 1}.\n");
+        sb.AppendLine("<b>Crafts</b>  (mastery grows with every order you hand over)");
+        int unknown = 0;
+        foreach (CraftType craft in System.Enum.GetValues(typeof(CraftType)))
+        {
+            if (!CraftOpen(craft)) { unknown++; continue; }
+            int l = Level(craft);
+            sb.AppendLine($"{CraftName(craft)}: {MasteryName(l)} ({l} of {MaxMastery})" +
+                          (l < MaxMastery ? $", {OrdersToNext(craft)} more order{(OrdersToNext(craft) == 1 ? "" : "s")} to the next" : "") +
+                          (Knows(ShopDay.PatternDesignSkill) && !CanDesign(craft) ? $". Design for it after {OrdersToDesign} orders." : ""));
+        }
+        sb.AppendLine("\n<b>Techniques</b>");
+        foreach (var s in content.skills)
+        {
+            if (s == null || s.isCraft) continue;
+            if (Knows(s.skillId)) sb.AppendLine($"{s.displayName}: {s.description}");
+            else unknown++;
+        }
+        if (unknown > 0) sb.AppendLine(unknown == 1 ? "There's one more thing to learn out there..." : $"There are {unknown} more things to learn out there...");
+        return sb.ToString();
     }
 
     /// Older saves get stamps for what they'd already done, quietly (no pop-ups).
@@ -153,12 +184,69 @@ public class Progression
     // ---- Experience ----
 
     public int Xp(CraftType craft) => Save.craftXp.Find(x => x.craft == craft)?.xp ?? 0;
-    public int Level(CraftType craft) => 1 + Xp(craft) / XpPerLevel;
-    public int XpToNext(CraftType craft) => XpPerLevel - Xp(craft) % XpPerLevel;
+
+    // ---- Mastery (owner, 2026-11-01): a craft's level comes from orders handed over in it, ten levels, each further
+    //      apart than the last ----
+    public const int MaxMastery = 10;
+    static readonly int[] MasteryAt = { 1, 3, 6, 10, 15, 21, 28, 36, 45, 55 };   // orders to reach level 1, 2... 10
+    public int OrdersIn(CraftType craft) => Save.craftOrders.Find(x => x.craft == craft)?.count ?? 0;
+    public int Level(CraftType craft)
+    {
+        int n = OrdersIn(craft), l = 0;
+        while (l < MaxMastery && n >= MasteryAt[l]) l++;
+        return l;
+    }
+    /// Orders still to hand over for the next level (0 at the top).
+    public int OrdersToNext(CraftType craft) => Level(craft) >= MaxMastery ? 0 : MasteryAt[Level(craft)] - OrdersIn(craft);
+    public static string MasteryName(int level) => level switch
+    {
+        0 => "Beginner", 1 => "Novice", 2 => "Apprentice", 3 => "Hobbyist", 4 => "Practised", 5 => "Skilled",
+        6 => "Accomplished", 7 => "Expert", 8 => "Master", 9 => "Grand Master", _ => "Legend",
+    };
+
+    /// An order in this craft has been handed over. Returns a message if it was a new mastery level, else null.
+    public string CountOrder(CraftType craft)
+    {
+        var entry = Save.craftOrders.Find(x => x.craft == craft);
+        if (entry == null) Save.craftOrders.Add(entry = new CraftCount { craft = craft });
+        int before = Level(craft);
+        entry.count++;
+        if (Level(craft) == before) return null;
+        int l = Level(craft);
+        string msg = $"{CraftName(craft)} mastery {l}: {MasteryName(l)}!";
+        AddNews(msg);
+        Stamps.Earn(Save, $"mastery:{craft}:{l}", $"{CraftName(craft)}: {MasteryName(l)}", $"Mastery level {l}, after {OrdersIn(craft)} orders.", StampTheme.Craft, craft: craft.ToString());
+        CheckUnlocks();
+        return msg;
+    }
+
+    /// Whether you're good enough at a craft to design patterns for it (owner, 2026-11-01): Pattern Design learned, and
+    /// at least three orders in that craft handed over.
+    public const int OrdersToDesign = 3;
+    public bool CanDesign(CraftType craft) => Knows(ShopDay.PatternDesignSkill) && OrdersIn(craft) >= OrdersToDesign;
+    public bool CanDesign(CraftItemDef item) => item != null && CanMake(item) && CanDesign(item.craft);
 
     // Your own level (owner, 2026-10-31: an XP bar and a level, top left): all your experience together. Each level
     // takes a little longer than the last: level L starts at 30 * L * (L - 1) (60, 180, 360, 600...).
-    public int TotalXp { get { int n = 0; foreach (var x in Save.craftXp) n += x.xp; return n; } }
+    public int TotalXp { get { int n = Save.bonusXp; foreach (var x in Save.craftXp) n += x.xp; return n; } }
+    public int XpToNextLevel => LevelStart(PlayerLevel + 1) - TotalXp;
+    public int XpIntoLevel => TotalXp - LevelStart(PlayerLevel);
+    public int XpForLevel => LevelStart(PlayerLevel + 1) - LevelStart(PlayerLevel);
+
+    /// Experience for the shop itself (good days at the stall...), not for a craft.
+    public void AddBonusXp(int amount)
+    {
+        int before = PlayerLevel;
+        Save.bonusXp += amount;
+        LevelCheck(before);
+    }
+
+    void LevelCheck(int before)
+    {
+        if (PlayerLevel <= before) return;
+        Stamps.Earn(Save, $"player_level:{PlayerLevel}", $"Level {PlayerLevel}", "You're getting the hang of this shop.", StampTheme.Shop);
+        CheckUnlocks();
+    }
     static int LevelStart(int level) => 30 * level * (level - 1);
     public int PlayerLevel { get { int l = 1; while (TotalXp >= LevelStart(l + 1)) l++; return l; } }
     public float LevelProgress
@@ -176,15 +264,10 @@ public class Progression
         amount = Mathf.RoundToInt(amount * (1f + UpgradeAmount(UpgradeEffect.CraftLamp) / 100f));
         var entry = Save.craftXp.Find(x => x.craft == craft);
         if (entry == null) Save.craftXp.Add(entry = new CraftXp { craft = craft });
-        int before = Level(craft), playerBefore = PlayerLevel;
+        int playerBefore = PlayerLevel;
         entry.xp += amount;
-        if (PlayerLevel > playerBefore)
-            Stamps.Earn(Save, $"player_level:{PlayerLevel}", $"Level {PlayerLevel}", "You're getting the hang of this shop.", StampTheme.Shop);
-        if (Level(craft) == before) return null;
-        string msg = $"{CraftName(craft)} level {Level(craft)}!";
-        AddNews(msg);
-        Stamps.Earn(Save, $"level:{craft}:{Level(craft)}", $"{CraftName(craft)} level {Level(craft)}", "Practice makes perfect.", StampTheme.Craft);
-        return msg;
+        LevelCheck(playerBefore);
+        return PlayerLevel > playerBefore ? $"Level {PlayerLevel}!" : null;   // a craft's own level comes from orders (CountOrder)
     }
 
     // ---- Story chapters ----
@@ -299,10 +382,37 @@ public class Progression
         var parts = new List<string>();
         if (q.coins > 0) parts.Add($"{q.coins} coins");
         if (q.xp > 0) parts.Add($"{q.xp} {CraftName(craft).ToLower()} experience");
+        var gift = RewardSupply(q);
+        if (gift != null)
+        {
+            shop.Add(gift.supplyId, Mathf.Max(1, gift.perPack));
+            parts.Add(gift.market == MarketSlot.Rare ? $"a rare find: {gift.displayName}" : gift.displayName);
+        }
         string msg = $"{q.title}: {string.Join(" and ", parts)}.";
         AddNews(msg);
         CheckUnlocks();
         return levelUp != null ? $"{msg}\n{levelUp}" : msg;
+    }
+
+    /// How hard a goal is: 1 for the first of a chain, 2 for the one shown after it (QuestDef.after), and so on.
+    public int Tier(QuestDef q)
+    {
+        int tier = 1;
+        for (var at = q.after; at != null && tier < 20; at = at.after) tier++;
+        return tier;
+    }
+
+    /// A supply to go with a claimed goal (owner, 2026-11-01): the harder the goal, the rarer. Something for a craft
+    /// you've learned; never a book or a tool you already have.
+    SupplyDef RewardSupply(QuestDef q)
+    {
+        int tier = Tier(q);
+        var slot = tier >= 3 ? MarketSlot.Rare : tier == 2 ? MarketSlot.Rotating : MarketSlot.Always;
+        var pool = new List<SupplyDef>();
+        foreach (var s in content.supplies)
+            if (s != null && s.market == slot && s.kind != SupplyKind.Book && SupplyShown(s) && !(s.kind == SupplyKind.Tool && shop.Owns(s.supplyId)))
+                pool.Add(s);
+        return pool.Count == 0 ? null : pool[Random.Range(0, pool.Count)];
     }
 
     // ---- Shop upgrades ----

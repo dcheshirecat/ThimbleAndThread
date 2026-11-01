@@ -353,8 +353,28 @@ public static class TestSceneBuilder
         var psColors = ui.patternStudioButton.colors;
         psColors.disabledColor = new Color(0.55f, 0.55f, 0.6f, 0.6f);
         ui.patternStudioButton.colors = psColors;
+        ui.stallCraftButton = Button(b, "Craft for the Stall", ui.ToggleStallPicker, 1100).gameObject;
         var workroomJournal = Button(b, "Journal", null, 1100);   // wired to the journal overlay below
         Button(b, "Go to Bed", day.GoToBed, 1100);
+        var stallPicker = new GameObject("Stall Picker", typeof(RectTransform), typeof(Image), typeof(Button));
+        stallPicker.transform.SetParent(p, false);
+        Stretch((RectTransform)stallPicker.transform);
+        stallPicker.GetComponent<Image>().color = new Color(0, 0, 0, 0.4f);
+        UnityEventTools.AddPersistentListener(stallPicker.GetComponent<Button>().onClick, ui.ToggleStallPicker);
+        var stallBox = Shape(stallPicker.transform, "Stall Box", new Vector2(0.5f, 0.5f), new Vector2(1850, 2000), new Color(1, 0.97f, 0.9f), uiSprite);
+        stallBox.GetComponent<Image>().raycastTarget = true;
+        stallBox.gameObject.AddComponent<ClickBlocker>();
+        var stallHead = MakeText(stallBox, "Heading", "Make something for Sunday's stall", 64);
+        var shrt = (RectTransform)stallHead.transform;
+        shrt.anchorMin = new Vector2(0, 1); shrt.anchorMax = new Vector2(1, 1); shrt.pivot = new Vector2(0.5f, 1);
+        shrt.sizeDelta = new Vector2(0, 130); shrt.anchoredPosition = new Vector2(0, -20);
+        stallHead.alignment = TextAnchor.MiddleCenter; stallHead.color = Ink;
+        ui.stallPickTemplate = Button(ScrollList(stallBox, 0.1f, 0.9f), "Stall Pick Template", null, 1700);
+        var stallClose = Button(stallBox, "Stall Picker Close", ui.ToggleStallPicker, 500);
+        Place(stallClose, new Vector2(0.5f, 0.05f), new Vector2(500, 130));
+        stallClose.GetComponentInChildren<Text>().text = "Close";
+        stallPicker.SetActive(false);
+        ui.stallPicker = stallPicker;
 
         // Order book
         p = Panel(ScreenId.OrderBook, "Order Book", new Color(0.96f, 0.92f, 0.84f));
@@ -674,6 +694,7 @@ public static class TestSceneBuilder
         ui.editDesignButton = Button(b, "Edit Design", day.EditDesign, 860).gameObject;
         ui.makeForMeButton = Button(b, "Make One for Me", day.MakeForMyself, 860).gameObject;
         ui.makeForStallButton = Button(b, "Make One for the Stall", day.MakeForStall, 860).gameObject;
+        ui.colourwayButton = Button(b, "New Colourway", day.NewColourway, 860).gameObject;
         b = Column(p, 0.72f, 0.2f);
         ui.shelfLabel = Button(b, "Shelf", day.ToggleShelf, 860).GetComponentInChildren<Text>();
         var delete = Button(b, "Delete", day.DeletePattern, 860);
@@ -748,12 +769,13 @@ public static class TestSceneBuilder
         journal.tabs = new Image[jTabNames.Length];
         for (int i = 0; i < jTabNames.Length; i++)
         {
-            var tab = Button(jTabRows[i / 4], "Tab " + jTabNames[i], null, 390);
+            var tab = Button(jTabRows[i < 4 ? 0 : 1], "Tab " + jTabNames[i], null, 390);
             tab.GetComponent<LayoutElement>().preferredHeight = 110;
             tab.GetComponentInChildren<Text>().text = jTabNames[i];
             tab.GetComponentInChildren<Text>().fontSize = 46;
             UnityEventTools.AddIntPersistentListener(tab.onClick, journal.ShowPage, i);
             journal.tabs[i] = tab.GetComponent<Image>();
+            if (jTabNames[i] == "Skills") tab.gameObject.SetActive(false);   // skills open from the experience bar now
         }
         var jPageGo = new GameObject("Page", typeof(RectTransform), typeof(Image));
         var jPage = (RectTransform)jPageGo.transform;
@@ -1278,7 +1300,7 @@ public static class TestSceneBuilder
         bar.day = day;
         const float top = 0.958f, y = 0.893f;   // the personal area and the gear on top; the day and coins below
         // Top left (owner, 2026-10-31): your portrait, your level and an experience bar. Tap = your look and your shop.
-        var me = Button(panel, "Personal", bar.OpenPersonal, 760);
+        var me = Button(panel, "Personal", bar.ToggleSkills, 760);   // the level and bar: your skills; the portrait: your look
         Place(me, new Vector2(0.215f, top), new Vector2(780, 170));
         me.GetComponent<Image>().color = new Color(1, 1, 1, 0.85f);
         var meText = me.GetComponentInChildren<Text>();
@@ -1291,7 +1313,7 @@ public static class TestSceneBuilder
         var frame = Shape(me.transform, "Portrait", new Vector2(0, 0.5f), new Vector2(160, 160), new Color(0.85f, 0.78f, 0.68f), Knob());
         frame.anchoredPosition = new Vector2(95, 0);
         frame.gameObject.AddComponent<Mask>().showMaskGraphic = true;
-        frame.GetComponent<Image>().raycastTarget = false;
+        UnityEventTools.AddPersistentListener(frame.gameObject.AddComponent<Button>().onClick, bar.OpenPersonal);
         bar.portrait = Keeper(frame, new Vector2(0.5f, 0.5f), content);
         bar.portrait.transform.localScale = Vector3.one * 0.32f;
         ((RectTransform)bar.portrait.transform).anchoredPosition = new Vector2(0, -150);
@@ -1369,6 +1391,27 @@ public static class TestSceneBuilder
         close.GetComponentInChildren<Text>().text = "Close";
         noticesLayer.SetActive(false);
         bar.noticesLayer = noticesLayer;
+        // The skills panel (the experience bar opens it): level, experience to go, crafts and techniques
+        var skillsLayer = new GameObject("Skills Layer", typeof(RectTransform), typeof(Image), typeof(Button));
+        skillsLayer.transform.SetParent(panel, false);
+        Stretch((RectTransform)skillsLayer.transform);
+        skillsLayer.GetComponent<Image>().color = new Color(0, 0, 0, 0.25f);
+        UnityEventTools.AddPersistentListener(skillsLayer.GetComponent<Button>().onClick, bar.ToggleSkills);
+        var skillsPanel = Shape(skillsLayer.transform, "Skills Panel", new Vector2(0.5f, 0.55f), new Vector2(1800, 1900), new Color(1, 0.97f, 0.9f), uiSprite);
+        skillsPanel.GetComponent<Image>().raycastTarget = true;
+        skillsPanel.gameObject.AddComponent<ClickBlocker>();
+        var skillsList = ScrollList(skillsPanel, 0.1f, 0.97f);
+        bar.skillsText = MakeText(skillsList, "Skills Text", "", 50);
+        bar.skillsText.alignment = TextAnchor.UpperLeft;
+        bar.skillsText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        bar.skillsText.verticalOverflow = VerticalWrapMode.Overflow;
+        bar.skillsText.color = Ink;
+        bar.skillsText.gameObject.AddComponent<LayoutElement>().preferredWidth = 1600;
+        var skillsClose = Button(skillsPanel, "Skills Close", bar.ToggleSkills, 500);
+        Place(skillsClose, new Vector2(0.5f, 0.05f), new Vector2(500, 130));
+        skillsClose.GetComponentInChildren<Text>().text = "Close";
+        skillsLayer.SetActive(false);
+        bar.skillsLayer = skillsLayer;
         bar.dayText = Label(panel, "DayChapter", new Vector2(0.04f, 0.812f), new Vector2(0.68f, 0.862f), 54, TextAnchor.MiddleLeft);
         bar.dayText.color = textColor;
         return bar;

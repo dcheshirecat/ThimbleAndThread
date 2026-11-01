@@ -23,7 +23,7 @@ public class OrderFlowUI : MonoBehaviour
     public RectTransform shelfTemplate;   // a grid of supply tiles
     public Button marketTemplate;         // one supply tile (children Icon, Name, Info), inside shelfTemplate
     [Header("Pattern edit")] public Text patternText, shelfLabel, deleteLabel; public RawImage patternPreview;
-    public GameObject editDesignButton, deleteButton, makeForMeButton, makeForStallButton;
+    public GameObject editDesignButton, deleteButton, makeForMeButton, makeForStallButton, colourwayButton;
 
     readonly List<GameObject> orderRows = new List<GameObject>();
     readonly List<GameObject> patternRows = new List<GameObject>();
@@ -59,6 +59,8 @@ public class OrderFlowUI : MonoBehaviour
             patternStudioButton.GetComponentInChildren<Text>().color = open ? new Color(0.2f, 0.15f, 0.2f) : new Color(0.2f, 0.15f, 0.2f, 0.35f);
         }
         workroomStatus.text = $"Orders to work on: {toDo}\nSet aside for tomorrow: {ready}\n\n{day.LastMessage}";
+        if (stallCraftButton != null) stallCraftButton.SetActive(day.StallOpen || day.CanHaveStall);
+        if (stallPicker != null && screen != ScreenId.Workroom) stallPicker.SetActive(false);
         summaryText.text = "The shop is closed for the night.\n\n" +
                            $"Patterns sold: {save.patternsSoldToday}\nOrders handed over: {save.deliveredToday}\n" +
                            $"Coins earned today: {save.coinsToday}\nTotal coins: {save.coins}\n\n" +
@@ -163,12 +165,43 @@ public class OrderFlowUI : MonoBehaviour
         editDesignButton.SetActive(p.designed);
         if (makeForMeButton != null) makeForMeButton.SetActive(PlayerProfile.Wearable(p.itemId));
         if (makeForStallButton != null) makeForStallButton.SetActive(day.StallOpen && day.Progress.CanMake(day.ItemFor(p.itemId)));
+        if (colourwayButton != null) colourwayButton.SetActive(day.CanMakeColourway(p));
+        if (!day.CanMakeColourway(p) && day.Progress.Knows(ShopDay.PatternDesignSkill) && p.made > 0)
+            patternText.text += $"\n\nMade {p.made} of {ShopDay.MadeForColourway} times: then you can make it in new colours.";
         deleteButton.SetActive(p.designed);
         deleteLabel.text = day.ConfirmingDelete ? "Tap Again to Delete" : "Delete";
         SetPreview(patternPreview, day.DesignFor(p));
     }
 
     /// The Supply Market's shopping list: what each order is missing (owner, 2026-10-31).
+    // ---- Craft for the Stall (owner, 2026-11-01): at night, pick any pattern to make a piece for Sunday's stall ----
+    public GameObject stallCraftButton, stallPicker;
+    public Button stallPickTemplate;
+    readonly List<GameObject> stallRows = new List<GameObject>();
+
+    public void ToggleStallPicker()
+    {
+        if (stallPicker == null) return;
+        bool show = !stallPicker.activeSelf;
+        stallPicker.SetActive(show);
+        if (!show) return;
+        stallPicker.transform.SetAsLastSibling();
+        foreach (var r in stallRows) Destroy(r);
+        stallRows.Clear();
+        stallPickTemplate.gameObject.SetActive(false);
+        foreach (var p in day.StallPatterns())
+        {
+            var item = day.ItemFor(p.itemId);
+            string id = p.id;
+            var row = Instantiate(stallPickTemplate, stallPickTemplate.transform.parent);
+            row.gameObject.SetActive(true);
+            row.name = $"Stall_{id}";
+            row.GetComponentInChildren<Text>().text = $"{p.name}  ·  {item.itemName}";
+            row.onClick.AddListener(() => { stallPicker.SetActive(false); day.MakeForStall(id); });
+            stallRows.Add(row.gameObject);
+        }
+    }
+
     public void ToggleShoppingList()
     {
         if (shoppingList == null) return;
