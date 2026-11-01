@@ -472,6 +472,21 @@ public static class PlaceholderGenerator
               book: knotsBook, friend: juno, friendLevel: 1);
         RequireSkill(hoopArt, StepKind.FrenchKnots, "french_knots");
 
+        // ---- Three more townsfolk (owner, 2026-10-31: more characters), tied to the new crafts ----
+        var wenna = Customer("wenna", "Wenna Trelawney", "Runs the quilting bee at St. Brigid's (she/her). Seventy-four; has opinions about seams.",
+                 new Color(0.55f, 0.45f, 0.60f), new[] { (sampler, 0), (tablecloth, 1) });
+        Character(wenna, "wenna", 3, false);
+        Likes(wenna, 0.5f);
+        Makes(wenna, CraftType.Quilting, CraftType.Sewing);
+        var felix = Customer("felix", "Felix Adeyemi", "Runs Petals, the florist on Fore Street (he/him). Dreamy; talks to his plants.",
+                 new Color(0.45f, 0.70f, 0.45f), new[] { (tote, 0), (hoopArt, 1) });
+        Character(felix, "felix", 2, false);
+        Likes(felix, 0.85f);
+        var sam = Customer("sam", "Sam", "Benji's fiancé (they/them). Teaches music at the primary school; calm, organised, quietly funny.",
+                 new Color(0.60f, 0.55f, 0.40f), new[] { (sampler, 0), (tote, 0), (sewnPlushie, 1) });
+        Character(sam, "sam", 3, false);
+        Likes(sam, 0.7f);
+
         // ---- Needlepoint (owner, 2026-10-31: new crafts): tent stitch on stiff canvas mounted on stretcher bars. Taught by
         // Dot (friendship 3), or from a book, or once your cross stitch is good enough (level 5). ----
         var np = CraftType.Needlepoint;
@@ -498,6 +513,8 @@ public static class PlaceholderGenerator
         Wants(owen, cushion, 0);
         Wants(hal, cushion, 1);
         Wants(gwen, cushion, 2);
+        Wants(felix, cushion, 0);
+        Wants(sam, cushion, 1);
         Makes(ada, np);
         // ---- Quilting (owner, 2026-10-31: new crafts): patchwork, opened with sewing in chapter 5 (the Community Quilt), or
         // taught by Owen (friendship 3; the church has a quilting bee). ----
@@ -523,6 +540,8 @@ public static class PlaceholderGenerator
         Wants(mara, quilt, 1);
         Wants(tobias, quilt, 2);
         Wants(owen, quilt, 0);
+        Wants(wenna, quilt, 0);
+        Wants(sam, quilt, 1);
         Wants(isla, quilt, 1);
         // A quilt pattern: each square is a patch ('.' = cream).
         BookPattern("harbour_squares", "Harbour Squares", quilt, 18, new[] { navy, red },
@@ -543,6 +562,9 @@ public static class PlaceholderGenerator
             Step(StepKind.HangWeaving, "Tie it onto a dowel", materials: Need("dowel", 1)));
         Skill("craft_weaving", "Weaving", "Over, under, over: rows of yarn on a frame loom, for wall hangings.", true, wv, book: weaveBook, friend: kit, friendLevel: 3);
         Wants(kit, hanging, 0);
+        Wants(felix, hanging, 0);
+        Wants(wenna, hanging, 1);
+        Wants(sam, hanging, 2);
         Wants(isla, hanging, 2);
         Wants(juno, hanging, 1);
         Wants(rowan, hanging, 1);

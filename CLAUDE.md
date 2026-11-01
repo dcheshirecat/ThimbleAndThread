@@ -800,4 +800,7 @@ Supplies: frame_loom (tool "loom"), warp_cotton, weaving_yarn, dowel. Item "wall
 zigzag round the pegs), WeaveRows (Crafts/WeavingSteps.cs: per row tap the shed stick if needed, swipe across = shuttle, swipe down =
 beat; same shed twice = float, unbeaten = gap; points x shed, y beaten), HangWeaving (knots on the dowel). Row colour = the colour
 filling most of that chart row (Loom.RowColor; chart rows count from the bottom). Book pattern Sunset Bands. Kit, Isla, Juno, Rowan want them.
-Still to do from 16: more characters.
+DONE batch 12 (16, characters; 23 in all): Wenna Trelawney (quilting bee at St. Brigid's, she/her, ch3; she and Aunt Win made the
+lifeboat crew's quilt in 1987), Felix Adeyemi (Petals the florist, he/him, ch2), Sam (Benji's fiancé, they/them, music teacher, ch3).
+Full knot sets like the others; all friendship only. They ask for the new crafts' items too.
+Round 8 is done. Open: owner's art; ci-lowmem (exit 137 still intermittent on main).

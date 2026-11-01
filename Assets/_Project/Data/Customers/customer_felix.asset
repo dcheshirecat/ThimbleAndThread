@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af2bf79f2df3bdf48932578e82012d62, type: 3}
+  m_Name: customer_felix
+  m_EditorClassIdentifier: Assembly-CSharp::CustomerDef
+  customerId: felix
+  displayName: Felix Adeyemi
+  bio: Runs Petals, the florist on Fore Street (he/him). Dreamy; talks to his plants.
+  fullBody: {fileID: 21300000, guid: cf1069bc484c3dc42b5cb9559e60e190, type: 3}
+  portraits:
+  - expression: 0
+    sprite: {fileID: 21300000, guid: 12ee4c8fb39ac8543abe67cc7c2b5996, type: 3}
+  - expression: 1
+    sprite: {fileID: 21300000, guid: c478a9c986004a14d9ed09ad2f2f761b, type: 3}
+  - expression: 2
+    sprite: {fileID: 21300000, guid: 290a09604200e694984076e93e7c5522, type: 3}
+  - expression: 3
+    sprite: {fileID: 21300000, guid: 962ee5310ae1dc144ac8b04f5b2e5fa8, type: 3}
+  - expression: 4
+    sprite: {fileID: 21300000, guid: 41512de06ec1ca84da949a1e5d4d47f1, type: 3}
+  requestable:
+  - item: {fileID: 11400000, guid: c290e0d30e10d3a43b2e345eaef53cd3, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: 10c1ffff1a3b659439f05d80f5834bda, type: 2}
+    minRelationshipLevel: 1
+  - item: {fileID: 11400000, guid: 0a1dfd56a39613546becd1d2d533cd71, type: 2}
+    minRelationshipLevel: 0
+  - item: {fileID: 11400000, guid: 25bff531bbd3db4439a095e91167f01d, type: 2}
+    minRelationshipLevel: 0
+  firstChapter: 2
+  likesSurprises: 0.85
+  preferences: []
+  makes: 
+  shopOwner: 0
+  romanceable: 0
+  inkName: felix
