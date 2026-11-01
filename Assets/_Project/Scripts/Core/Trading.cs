@@ -39,6 +39,7 @@ public class Trading
         public List<string> threads = new List<string>();   // supplyId per palette colour
         public string grid;
         public string fabricId;   // the cloth it's designed on (older codes: none)
+        public string quarters;   // three-quarter stitches: "x.y.corner;" each (older codes: none)
     }
 
     readonly ContentLibrary content;
@@ -96,7 +97,7 @@ public class Trading
         var shared = new SharedPattern
         {
             name = p.name, itemId = p.itemId, price = p.price, craft = (int)d.craft,
-            width = d.width, height = d.height, threads = new List<string>(d.threads), grid = Grid(d), fabricId = d.fabricId,
+            width = d.width, height = d.height, threads = new List<string>(d.threads), grid = Grid(d), fabricId = d.fabricId, quarters = Quarters(d),
         };
         foreach (var c in d.palette) shared.palette.Add(ColorUtility.ToHtmlStringRGB(c));
         var packet = new Packet { id = NewId(), kind = "pattern", pattern = shared };
@@ -225,6 +226,7 @@ public class Trading
             design.palette.Add(ColorUtility.TryParseHtmlString("#" + hex, out var c) ? c : Color.white);
         design.threads.AddRange(sp.threads);
         if (!ReadGrid(sp.grid, design)) { error = "That code doesn't look right."; return null; }
+        ReadQuarters(sp.quarters, design);
         Materials.EnsureThreads(design, content);
 
         string name = string.IsNullOrWhiteSpace(sp.name) ? "A friend's pattern" : sp.name.Trim();
@@ -304,6 +306,25 @@ public class Trading
             i += run;
         }
         return sb.ToString();
+    }
+
+    static string Quarters(Pattern p)
+    {
+        var sb = new StringBuilder();
+        foreach (var c in p.cells) if (c.quarter > 0) sb.Append($"{c.x}.{c.y}.{c.quarter};");
+        return sb.ToString();
+    }
+
+    static void ReadQuarters(string quarters, Pattern p)
+    {
+        if (string.IsNullOrEmpty(quarters)) return;
+        foreach (var part in quarters.Split(';'))
+        {
+            var bits = part.Split('.');
+            if (bits.Length != 3 || !int.TryParse(bits[0], out int x) || !int.TryParse(bits[1], out int y) || !int.TryParse(bits[2], out int k) || k < 1 || k > 4) continue;
+            var cell = p.cells.Find(c => c.x == x && c.y == y);
+            if (cell != null) { cell.quarter = k; cell.halfStitch = false; }
+        }
     }
 
     static bool ReadGrid(string grid, Pattern p)

@@ -102,7 +102,7 @@ public class OrderFlowUI : MonoBehaviour
         var step = order.CurrentStep;
         bool stitching = step.kind == StepKind.CrossStitch;
         minigameHint.text = order.patternOnly ? "Tap or drag over the faint squares to fill them in."
-            : stitching ? "Drag corner to corner for one leg of the X, then along the other diagonal to cross it. Either leg can go on top, but keep every X crossing the same way (Undo unpicks one). Half stitches (a printed dash) are just the top leg of your crosses. Match each square's thread colour."
+            : stitching ? "Drag corner to corner for one leg of the X, then along the other diagonal to cross it. Either leg can go on top, but keep every X crossing the same way (Undo unpicks one). Half stitches (a printed dash) are just the top leg of your crosses. Match each square's thread colour." + (order.target != null && order.target.cells.Exists(c => c.quarter > 0) ? " Three-quarter stitches: one long leg, then drag from the printed corner to the middle of the square." : "")
             : StepHint(step.kind);
         if (order.Steps.Length > 1) minigameHint.text = $"{step.label}. {minigameHint.text}";
         if (screen == ScreenId.Minigame && !string.IsNullOrEmpty(day.LastMessage)) minigameHint.text += $"\n{day.LastMessage}";
@@ -457,7 +457,7 @@ public class OrderFlowUI : MonoBehaviour
             string text = day.minigame.Picking ? "Back to the Needle" : "Stitch Picker";
             if (label.text != text) label.text = text;
         }
-        string live = day.minigame.Step is PieceStep p ? p.LiveHint : null;
+        string live = day.minigame.Step is PieceStep p ? p.LiveHint : day.minigame.Step is CrossStitchStep cs ? cs.LiveHint : null;
         if (live == liveHint) return;
         liveHint = live;
         minigameHint.text = live == null ? baseHint : baseHint + "\n" + live;
@@ -488,6 +488,7 @@ public class OrderFlowUI : MonoBehaviour
         StepKind.QuiltIt => "Quilt through all three layers: running stitch along each diagonal line.",
         StepKind.WarpLoom => "Wind the warp: drag the thread up and down round the pegs, all the way across the loom.",
         StepKind.WeaveRows => "For each row: tap the shed stick under the loom so the other half of the warps lifts, swipe across to pass the shuttle, then swipe down to beat the row into place.",
+        StepKind.PressSeams => "Read the care label and set the heat with the dial at the top right, then run the iron along each seam so it lies flat. Too cool and it springs back up; too hot scorches (Undo dabs a scorch off).",
         StepKind.HangWeaving => "Tap each mark along the top to knot the warp loops round the dowel.",
         StepKind.BackgroundFill => "Fill every empty square in the background colour, in tent stitch (/). Long diagonal drags fill a row at a time.",
         StepKind.ChooseFabric => "Tap the fabric to make it from. Only fabrics you have enough of are shown.",

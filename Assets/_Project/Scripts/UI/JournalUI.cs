@@ -64,6 +64,14 @@ public class JournalUI : MonoBehaviour
         AudioManager.Play(Sfx.Click);
     }
 
+    /// Opens the book at a page (e.g. Goals, from the notices bell).
+    public void OpenAt(Page page)
+    {
+        if (animating) return;
+        current = page;
+        Open();
+    }
+
     public void Close()
     {
         if (!IsOpen || animating) return;

@@ -145,6 +145,9 @@ public static class PlaceholderGenerator
         InsertBefore(sewnPlushie, StepKind.TurnRightSideOut, Step(StepKind.ClipCurves, "Clip the curves", tools: Tool("scissors", "Fabric scissors")));
         InsertBefore(tote, StepKind.CutPieces, Step(StepKind.PinPattern, "Pin the pattern to the fabric", tools: pinsTool));
         InsertBefore(tote, StepKind.HemTop, Step(StepKind.BoxCorners, "Box the corners", tools: Tool("sewing_machine", "Sewing machine")));
+        // Pressed seams (owner, round 6): a sewist irons each seam flat before turning or boxing.
+        InsertBefore(sewnPlushie, StepKind.ClipCurves, Step(StepKind.PressSeams, "Press the seams"));
+        InsertBefore(tote, StepKind.BoxCorners, Step(StepKind.PressSeams, "Press the side seams"));
         foreach (var st in sewnPlushie.steps)
             if (st.kind == StepKind.CloseOpening && st.label == "Close the opening") { st.label = "Ladder-stitch it closed"; EditorUtility.SetDirty(sewnPlushie); }
 
@@ -572,6 +575,36 @@ public static class PlaceholderGenerator
         // A weaving chart: each row is woven in the colour that fills most of it.
         BookPattern("sunset_bands", "Sunset Bands", hanging, 12, new[] { red, navy },
             "11111111\n11111111\n........\n22222222\n22222222\n........\n11111111\n22222222");
+
+        // ---- Cables (owner: "more complex crafting... cables"): a cable-knit scarf, a knitting technique learned from Nadia
+        // (friendship 3), knitting level 3, or a book. ----
+        var cableBook = Supply("book_cables", "Cables and Arans", SupplyKind.Book, CraftType.Knitting, 24, 1, new Color(0.55f, 0.45f, 0.35f), 1, "book", R);
+        var cableScarf = Item("cable_scarf", "Cable-Knit Scarf", CraftType.Knitting, 55, 16, new Color(0.85f, 0.80f, 0.68f));
+        Garments(cableScarf, Garment.CableScarf);
+        var cableNeedles = Tool("knitting_needles", "Knitting needles", matchYarn: true);
+        Recipe(cableScarf,
+            Step(StepKind.ChooseYarn, "Choose the yarn"),
+            Step(StepKind.CastOn, "Cast on", tools: cableNeedles),
+            Step(StepKind.KnitRows, "Knit the cables", pieces: 320, tools: cableNeedles),
+            Step(StepKind.CastOff, "Cast off", tools: cableNeedles),
+            Step(StepKind.WeaveEnds, "Weave in the ends", tools: Tool("tapestry_needle", "Tapestry needle")),
+            Step(StepKind.Press, "Block it"));
+        Skill("cables", "Cables", "Hold two stitches on a cable needle and knit across: twisted ropes, like an Aran jumper.", false, CraftType.Knitting,
+              levelCraft: CraftType.Knitting, craftLevel: 3, book: cableBook, friend: nadia, friendLevel: 3);
+        RequireSkill(cableScarf, StepKind.KnitRows, "cables");
+        Wants(tobias, cableScarf, 1);
+        Wants(nadia, cableScarf, 0);
+        Wants(gwen, cableScarf, 1);
+        Wants(theo, cableScarf, 1);
+        Wants(hal, cableScarf, 2);
+        // The edge columns carry the pattern's texture; the cables are the same on every cable scarf.
+        BookPattern("harbour_cables", "Harbour Cables", cableScarf, 14, new[] { white },
+            "1.\n.1\n1.\n.1");
+
+        // Three-quarter stitches round off the pebbles (upper case letters); the flecks of sand are confetti: single stitches
+        // scattered too far apart to carry the thread between them.
+        BookPattern("pebble_beach", "Pebble Beach", sampler, 14, new[] { charcoal, sky, red },
+            "3.......3...\n...DA.......\n...CB...HE..\n........GF.3\n.3..........\n......DA....\n..HE..CB....\n..GF.......3\n........3...\n3.....3.....");
 
         // A needlepoint chart: '1'.. the design in tent stitch; the rest is filled in with the background colour.
         BookPattern("rose_cushion", "Tea Rose Cushion", cushion, 14, new[] { red, charcoal },

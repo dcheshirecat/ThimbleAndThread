@@ -11,6 +11,12 @@ public class StitchCell
     public int x, y;
     public int colorIndex;      // index into Pattern.palette
     public bool halfStitch;     // true = only one diagonal done
+    public int quarter;         // a three-quarter stitch: 1..4 = the corner its quarter leg comes from (1 bottom left,
+                                // 2 top left, 3 top right, 4 bottom right; its long leg is the diagonal not touching that
+                                // corner, and the opposite corner of the square stays empty). 0 = not one.
+
+    /// The same stitch with another colour (copies keep half and three-quarter stitches).
+    public StitchCell Recolored(int colour) => new StitchCell { x = x, y = y, colorIndex = colour, halfStitch = halfStitch, quarter = quarter };
 }
 
 [Serializable]
@@ -124,7 +130,7 @@ public class MarketPurchase
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 24;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique). 20: the day clock (clock, nextArrival). 21: the Sunday market stall (stall). 22: special orders on their way (deliveries). 23: sales to other players (SentCode.price/paid), surpriseOwed. 24: furniture (decor, decorPlaced)
+    public const int CurrentVersion = 25;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique). 20: the day clock (clock, nextArrival). 21: the Sunday market stall (stall). 22: special orders on their way (deliveries). 23: sales to other players (SentCode.price/paid), surpriseOwed. 24: furniture (decor, decorPlaced). 25: the notices bell (noticesSeen)
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
@@ -167,6 +173,7 @@ public class SaveData
     public List<string> pendingScenes = new List<string>();          // story scenes to play next time a hub is on screen
     public PlayerProfile player = new PlayerProfile();               // name, pronouns, look (customization scene)
     public List<string> knownPrefs = new List<string>();
+    public int noticesSeen;                                           // stamps already seen in the notices list (the top bar's bell)
     public List<Stamp> stamps = new List<Stamp>();                   // achievements, stamped in the Journal
     public List<string> notes = new List<string>();                  // "customerId|what you learned" from their dialogue (~ note)
     public List<string> met = new List<string>();                    // customers who've come in (or whose shop you've visited)             // "customerId:preferenceId" the player has been told

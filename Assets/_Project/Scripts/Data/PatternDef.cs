@@ -3,6 +3,8 @@ using UnityEngine;
 // A ready-made pattern, e.g. one of the great-aunt's book patterns.
 // Create via Assets > Create > Craft > Pattern. Draw the design as text in "grid":
 // one line per row, top row first; '.' is empty and '1'..'9' pick a colour from "palette".
+// 'a'..'i' are half stitches in colour 1..9. Upper case letters are three-quarter stitches: 'A'..'D' in colour 1
+// with the quarter leg from the bottom left, top left, top right, bottom right corner; 'E'..'H' colour 2, and so on.
 //
 //   ..1..1..
 //   .111111.
@@ -44,9 +46,11 @@ public class PatternDef : ScriptableObject
             {
                 // '1'..'9': a full cross in that colour; 'a'..'i': a half stitch ("/") in colour 1..9.
                 bool half = line[x] >= 'a' && line[x] <= 'i';
-                int index = half ? line[x] - 'a' : line[x] - '1';
+                bool threeQuarter = line[x] >= 'A' && line[x] <= 'Z';
+                int index = half ? line[x] - 'a' : threeQuarter ? (line[x] - 'A') / 4 : line[x] - '1';
                 if (index >= 0 && index < p.palette.Count)
-                    p.cells.Add(new StitchCell { x = x, y = height - 1 - row, colorIndex = index, halfStitch = half });
+                    p.cells.Add(new StitchCell { x = x, y = height - 1 - row, colorIndex = index, halfStitch = half,
+                                                 quarter = threeQuarter ? (line[x] - 'A') % 4 + 1 : 0 });
             }
         }
         return p;

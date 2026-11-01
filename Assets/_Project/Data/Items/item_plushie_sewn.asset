@@ -25,6 +25,7 @@ MonoBehaviour:
     palette: []
     threads: []
     cells: []
+    fabricId: 
   basePrice: 45
   patternPrice: 12
   requiredSupplyIds: []
@@ -92,6 +93,16 @@ MonoBehaviour:
       label: Sewing machine
       exactSize: 0
       matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 46
+    label: Press the seams
+    tools: []
     materials: []
     fabricPieces: 0
     requiredSkill: 

@@ -8,7 +8,8 @@ public enum StepKind { CrossStitch, Hem, ChooseFabric, CutPieces, Pin, SewSeam, 
                        ChooseYarn, CastOn, KnitRows, CastOff, MagicRing, CrochetRounds,
                        HoopFabric, Backstitch, SatinFill, FrenchKnots, Press, WeaveEnds, SewUp, Fringe, MitreCorners, PinPattern, ClipCurves, BoxCorners,
                        TransferDesign, TightenHoop, StemStitch, FinishBack, SewParts, MountCanvas, TentStitch, BackgroundFill,
-                       CutPatches, SewRows, QuiltSandwich, QuiltIt, WarpLoom, WeaveRows, HangWeaving }
+                       CutPatches, SewRows, QuiltSandwich, QuiltIt, WarpLoom, WeaveRows, HangWeaving,
+                       PressSeams }
 
 // One step of making an item, e.g. "Stitch the motif" then "Hem the edges".
 // Items list their steps in order in CraftItemDef.steps.
@@ -48,4 +49,6 @@ public class StepProgress
     public List<Vector2> points = new List<Vector2>();
     public List<int> strokeStarts = new List<int>();   // index in points where each stroke begins
     public int mistakes;                    // e.g. swiping a knit where a purl was due
+    public int setting = -1;                // a dial on the step (e.g. the iron's heat), -1 = not set
+    public List<Vector2> marks = new List<Vector2>();   // things left on the work besides the strokes (e.g. scorch marks)
 }

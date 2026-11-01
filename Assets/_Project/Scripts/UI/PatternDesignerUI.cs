@@ -77,7 +77,7 @@ public class PatternDesignerUI : MonoBehaviour
         foreach (var c in design.cells)
         {
             int i = c.colorIndex < design.threads.Count ? threads.FindIndex(t => t.supplyId == design.threads[c.colorIndex]) : -1;
-            if (i >= 0) p.cells.Add(new StitchCell { x = c.x, y = c.y, colorIndex = i });
+            if (i >= 0) p.cells.Add(c.Recolored(i));
         }
         return p;
     }
@@ -142,7 +142,7 @@ public class PatternDesignerUI : MonoBehaviour
         p.palette.AddRange(src.palette);
         p.threads.AddRange(src.threads);
         foreach (var c in src.cells)
-            if (c.x < width && c.y < height) p.cells.Add(new StitchCell { x = c.x, y = c.y, colorIndex = c.colorIndex });
+            if (c.x < width && c.y < height) p.cells.Add(c.Recolored(c.colorIndex));
         return p;
     }
 
@@ -251,12 +251,15 @@ public class PatternDesignerUI : MonoBehaviour
     public void Cancel() => day.CancelDesign();
 
     public Text halfLabel;
-    /// Half stitches: just one leg (the top one of the piece's crosses), for smooth diagonal edges.
+    /// The kind of stitch painted: full crosses, half stitches (just the top leg, for smooth diagonal edges), or
+    /// three-quarter stitches (tap near the corner of a square to cut that corner away, for rounded shapes).
     public void ToggleHalf()
     {
         var b = host.Board;
         if (b == null) return;
-        b.paintHalf = !b.paintHalf;
-        if (halfLabel != null) halfLabel.text = b.paintHalf ? "Half: on" : "Half: off";
+        if (!b.paintHalf && !b.paintQuarter) b.paintHalf = true;
+        else if (b.paintHalf) { b.paintHalf = false; b.paintQuarter = true; }
+        else b.paintQuarter = false;
+        if (halfLabel != null) halfLabel.text = b.paintHalf ? "Stitch: Half" : b.paintQuarter ? "Stitch: 3/4" : "Stitch: Full";
     }
 }

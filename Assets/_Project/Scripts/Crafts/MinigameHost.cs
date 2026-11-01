@@ -71,6 +71,7 @@ public class MinigameHost : MonoBehaviour
         StepKind.WarpLoom => go.AddComponent<WarpLoomStep>(),
         StepKind.WeaveRows => go.AddComponent<WeaveRowsStep>(),
         StepKind.HangWeaving => go.AddComponent<HangWeavingStep>(),
+        StepKind.PressSeams => go.AddComponent<PressSeamsStep>(),
         StepKind.MagicRing => go.AddComponent<MagicRingStep>(),
         StepKind.CrochetRounds => go.AddComponent<CrochetRoundsStep>(),
         StepKind.CutPieces => go.AddComponent<CutPiecesStep>(),
@@ -105,7 +106,11 @@ public class MinigameHost : MonoBehaviour
         var board = Board;
         if (board == null) return;
         board.erase = index < 0;
-        if (index >= 0) board.currentColor = index;
+        if (index >= 0)
+        {
+            board.currentColor = index;
+            board.NewThread();   // picking up a colour (even the same one again): a fresh length of thread
+        }
     }
 
     public void Undo() => step?.Undo();

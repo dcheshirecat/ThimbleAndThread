@@ -36,6 +36,8 @@ MonoBehaviour:
     minRelationshipLevel: 1
   - item: {fileID: 11400000, guid: 759bb51d40664bf49943bb326c33d641, type: 2}
     minRelationshipLevel: 1
+  - item: {fileID: 11400000, guid: c0eb040ae55cb404c9fa33a1cf72b3d3, type: 2}
+    minRelationshipLevel: 1
   firstChapter: 2
   likesSurprises: 0.6
   preferences: []

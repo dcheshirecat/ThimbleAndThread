@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45c28a39eda5e48428a2af6696dc98e3, type: 3}
+  m_Name: skill_cables
+  m_EditorClassIdentifier: Assembly-CSharp::SkillDef
+  skillId: cables
+  displayName: Cables
+  description: 'Hold two stitches on a cable needle and knit across: twisted ropes, like an Aran jumper.'
+  isCraft: 0
+  craft: 1
+  chapter: 0
+  levelCraft: 1
+  craftLevel: 3
+  book: {fileID: 11400000, guid: 9dd4f47efe46db7478a0878da449e636, type: 2}
+  friend: {fileID: 11400000, guid: 66c742ea364752047b67a5ae571da6de, type: 2}
+  friendLevel: 3
+  grantsPatterns: []

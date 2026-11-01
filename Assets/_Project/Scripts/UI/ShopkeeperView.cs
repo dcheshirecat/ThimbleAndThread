@@ -52,7 +52,7 @@ public class ShopkeeperView : MonoBehaviour
         // Accessory (a made scarf takes its place)
         var acc = content != null && !string.IsNullOrEmpty(p.wornAccessory) ? System.Array.Find(content.cosmetics, c => c != null && c.cosmeticId == p.wornAccessory) : null;
         accessory.enabled = acc != null;
-        if (made != null && made.itemId == "scarf")
+        if (made != null && (made.itemId == "scarf" || made.itemId == "cable_scarf"))
         {
             accessory.enabled = true;
             accessory.color = made.yarn;

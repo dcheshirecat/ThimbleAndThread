@@ -92,6 +92,12 @@ public static class SaveSystem
                 if (st != null && (st.supplyId == "aida_14ct" || st.supplyId == "aida_cream" || st.supplyId == "aida_18ct" || st.supplyId == "linen_28ct"))
                     st.amount = Mathf.CeilToInt(st.amount / 400f);
         data.met ??= new System.Collections.Generic.List<string>();
+        if (data.version < 25) data.noticesSeen = data.stamps.Count;   // the bell starts quiet: everything so far was already announced
+        foreach (var o in data.orders)
+        {
+            o.carried ??= new System.Collections.Generic.List<Vector2Int>();
+            if (o.steps != null) foreach (var st in o.steps) if (st != null) st.marks ??= new System.Collections.Generic.List<Vector2>();
+        }
         data.itemsMade ??= new System.Collections.Generic.List<CraftCount>();
         data.questsClaimed ??= new System.Collections.Generic.List<string>();
         data.questsReady ??= new System.Collections.Generic.List<string>();

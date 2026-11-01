@@ -64,6 +64,7 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPick
         var restore = new List<StitchMark>(order.work);
         if (Background) restore.AddRange(order.backgroundWork);
         Board.restore = restore;
+        Board.restoreCarried = Tent ? null : new List<Vector2Int>(order.carried);
         Board.fabricColor = area.fabricColor;
         Board.assist = area.assist;
     }
@@ -76,9 +77,11 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPick
             order.StepState(stepIndex).progress = Done(order.backgroundWork);
             return CrossStitchCanvas.TentScore(order.backgroundWork, target);
         }
-        if (Board != null && Board.Ready) order.work = Board.Marks();   // before Ready the board is still empty
+        if (Board != null && Board.Ready) { order.work = Board.Marks(); if (!Tent) order.carried = Board.Carried(); }   // before Ready the board is still empty
         if (Tent) order.StepState(stepIndex).progress = Done(order.work);
-        return Tent ? CrossStitchCanvas.TentScore(order.work, order.target) : CrossStitchCanvas.Score(order.work, order.target);
+        if (Tent) return CrossStitchCanvas.TentScore(order.work, order.target);
+        float carries = target.cells.Count == 0 ? 0f : order.carried.Count / (float)target.cells.Count;
+        return CrossStitchCanvas.Score(order.work, order.target) * Mathf.Clamp01(1f - 0.5f * carries);
     }
 
     public void Undo()
@@ -87,6 +90,9 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPick
     }
 
     public string FinishBlocker => null;
+
+    /// Shown under the hint while stitching: a long carry just made.
+    public string LiveHint => Board != null && !Tent ? Board.Warning : null;
 
     public bool CanPick => order != null && !order.patternOnly;
     public bool Picking { get => Board != null && Board.picking; set { if (Board != null) Board.SetPicking(value); } }
@@ -98,7 +104,7 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPick
         {
             if (Board == null || !Board.Ready || order.patternOnly) return null;
             if (Tent) return TentMistakes();
-            int wrong = 0, overHalf = 0;
+            int wrong = 0, overHalf = 0, quarters = 0;
             var marks = Board.Marks();
             int top = CrossStitchCanvas.TopLeg(marks);
             foreach (var m in marks)
@@ -106,12 +112,16 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPick
                 var cell = order.target.cells.Find(c => c.x == m.x && c.y == m.y);
                 if (cell == null || cell.colorIndex != m.color) wrong++;
                 else if (cell.halfStitch && !CrossStitchCanvas.RightHalf(m.mask, top)) overHalf++;   // the bottom leg, or a full X
+                else if (cell.quarter > 0 && m.mask != CrossStitchCanvas.QuarterMask(cell.quarter)) quarters++;
             }
             int crossed = Board.WrongCrosses();
             var parts = new List<string>();
             if (wrong > 0) parts.Add(wrong == 1 ? "1 stitch in the wrong place or colour" : $"{wrong} stitches in the wrong place or colour");
             if (overHalf > 0) parts.Add(overHalf == 1 ? "1 half stitch done wrong (it's just the leg that lies on top of your crosses)" : $"{overHalf} half stitches done wrong (they're just the leg that lies on top of your crosses)");
             if (crossed > 0) parts.Add(crossed == 1 ? "1 cross lying the other way from the rest" : $"{crossed} crosses lying the other way from the rest");
+            if (quarters > 0) parts.Add(quarters == 1 ? "1 three-quarter stitch done wrong (a long leg plus a quarter leg from the marked corner to the middle)" : $"{quarters} three-quarter stitches done wrong (a long leg plus a quarter leg from the marked corner to the middle)");
+            int carried = Board.Carried().Count;
+            if (carried > 0) parts.Add(carried == 1 ? "1 stitch reached by carrying the thread too far across the back (it shows through)" : $"{carried} stitches reached by carrying the thread too far across the back (they show through)");
             return parts.Count == 0 ? null : string.Join(" and ", parts);
         }
     }

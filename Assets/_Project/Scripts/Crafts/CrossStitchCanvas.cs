@@ -5,7 +5,10 @@ using UnityEngine.EventSystems;
 /// Cross stitch minigame.
 /// Two modes:
 ///  - Stitch: drag from one grid corner to the diagonal corner to make a half stitch;
-///            drag the opposite diagonal to complete the X.
+///            drag the opposite diagonal to complete the X. A drag from a corner to the middle of a square is a
+///            quarter stitch: with a long leg, it makes a three-quarter stitch (for rounded shapes).
+///            Confetti (single stitches scattered apart): carrying the thread more than LongCarry squares across the
+///            back shows through, a mistake; tapping the thread's colour again starts a fresh length.
 ///  - PatternFill: tap/drag cells to paint pixels (pattern-making mode).
 /// Each stitch uses the current thread colour. Undo steps back one drag at a time.
 /// Attach to an empty GameObject. Assign a Camera and a 1x1 square Sprite.
@@ -30,6 +33,8 @@ public class CrossStitchCanvas : MonoBehaviour
     public List<StitchMark> restore;   // optional: work saved earlier, redrawn when the board starts
     public Pattern design;             // optional, PatternFill: a design to keep editing (palette and coloured cells)
     public bool paintHalf;             // designing: squares painted now are half stitches (just the top leg)
+    public bool paintQuarter;          // designing: squares painted now are three-quarter stitches (tap near the corner to cut away)
+    public List<Vector2Int> restoreCarried;   // optional: squares reached by a long carry, saved earlier
     public bool erase;                 // PatternFill: painting clears squares instead
     public DesignFrame frame;          // PatternFill: how the item is really made, shown on the board (owner, 2026-10-31)
     public Holder holder;              // Stitch: what holds the fabric taut while stitching (owner, 2026-10-31: the hoop shows)
@@ -87,6 +92,37 @@ public class CrossStitchCanvas : MonoBehaviour
 
     public bool CanUndo => history.Count > 0;
 
+    // ---- Three-quarter stitches: mask bits 4, 8, 16, 32 are quarter legs from corners 1..4 to the middle ----
+    public static int QuarterBit(int corner) => 2 << corner;
+    /// What a three-quarter stitch needs: its long leg (the diagonal not touching the corner) and the quarter leg.
+    public static int QuarterMask(int corner) => (corner == 1 || corner == 3 ? 2 : 1) | QuarterBit(corner);
+    static int QuarterIn(int mask) { for (int k = 1; k <= 4; k++) if ((mask & QuarterBit(k)) != 0) return k; return 0; }
+    static Vector2Int CornerOf(Vector2Int cell, int k) => k switch
+    {
+        1 => cell, 2 => new Vector2Int(cell.x, cell.y + 1), 3 => new Vector2Int(cell.x + 1, cell.y + 1), _ => new Vector2Int(cell.x + 1, cell.y),
+    };
+    static int StitchMaskOf(StitchCell c) => c.quarter > 0 ? QuarterBit(c.quarter) : c.halfStitch ? 1 : 3;   // designing: how a square is saved
+
+    // ---- Confetti: the thread on the back ----
+    public const int LongCarry = 3;   // squares the thread may travel across the back between stitches
+    readonly Dictionary<int, Vector2Int> threadAt = new Dictionary<int, Vector2Int>();   // where each colour last came up
+    readonly HashSet<Vector2Int> carried = new HashSet<Vector2Int>();
+    /// The last thing worth saying about the work (a long carry), shown under the hint.
+    public string Warning { get; private set; }
+
+    /// Tapping the thread's colour again: end this length and start a fresh one wherever the next stitch is.
+    public void NewThread() { threadAt.Remove(currentColor); Warning = null; }
+
+    /// Squares reached by carrying the thread too far across the back (still stitched).
+    public List<Vector2Int> Carried()
+    {
+        var list = new List<Vector2Int>();
+        foreach (var c in carried) if (stitchProgress.ContainsKey(c)) list.Add(c);
+        return list;
+    }
+
+    void PruneCarried() => carried.RemoveWhere(c => !stitchProgress.ContainsKey(c));
+
     void Start()
     {
         if (material == null) material = new Material(Shader.Find("Sprites/Default"));
@@ -101,8 +137,9 @@ public class CrossStitchCanvas : MonoBehaviour
 
         var start = restore ?? new List<StitchMark>();
         if (design != null)
-            foreach (var c in design.cells) start.Add(new StitchMark { x = c.x, y = c.y, mask = c.halfStitch ? 1 : 3, color = c.colorIndex });
+            foreach (var c in design.cells) start.Add(new StitchMark { x = c.x, y = c.y, mask = StitchMaskOf(c), color = c.colorIndex });
         Apply(start);
+        if (restoreCarried != null) { foreach (var c in restoreCarried) carried.Add(c); PruneCarried(); }
         Ready = true;
     }
 
@@ -111,7 +148,7 @@ public class CrossStitchCanvas : MonoBehaviour
     {
         var marks = new List<StitchMark>();
         if (mode == Mode.PatternFill)
-            foreach (var c in pattern.cells) marks.Add(new StitchMark { x = c.x, y = c.y, mask = c.halfStitch ? 1 : 3, color = c.colorIndex });
+            foreach (var c in pattern.cells) marks.Add(new StitchMark { x = c.x, y = c.y, mask = StitchMaskOf(c), color = c.colorIndex });
         else
             foreach (var kv in stitchProgress)
                 marks.Add(new StitchMark { x = kv.Key.x, y = kv.Key.y, mask = kv.Value, color = stitchColor[kv.Key], crossedWrong = CrossedWrong(kv.Key) });
@@ -125,6 +162,8 @@ public class CrossStitchCanvas : MonoBehaviour
         var previous = history.Pop();
         Clear();
         Apply(previous);
+        PruneCarried();
+        Warning = null;
     }
 
     void Clear()
@@ -136,6 +175,8 @@ public class CrossStitchCanvas : MonoBehaviour
         firstLeg.Clear();
         pattern.cells.Clear();
         foreach (var kv in cellViews) kv.Value.color = GuideColor(kv.Key.x, kv.Key.y);   // the chart shows again
+        foreach (var kv in quarterViews) if (kv.Value) Destroy(kv.Value.gameObject);
+        quarterViews.Clear();
     }
 
     void Apply(List<StitchMark> marks)
@@ -145,10 +186,15 @@ public class CrossStitchCanvas : MonoBehaviour
             var cell = new Vector2Int(m.x, m.y);
             if (!cellViews.ContainsKey(cell)) continue;
             int color = Mathf.Clamp(m.color, 0, pattern.palette.Count - 1);
-            if (mode == Mode.PatternFill) { if ((m.mask == 3 || m.mask == 1) && Inside(cell.x, cell.y)) PaintCell(cell, color, m.mask == 1); continue; }
+            if (mode == Mode.PatternFill)
+            {
+                if ((m.mask == 3 || m.mask == 1 || QuarterIn(m.mask) > 0) && Inside(cell.x, cell.y)) PaintCell(cell, color, m.mask == 1, QuarterIn(m.mask));
+                continue;
+            }
             int first = m.crossedWrong ? 2 : 1, second = 3 - first;   // replay the legs in the order they were made
             if ((m.mask & first) != 0) AddStitch(cell, first, color);
             if ((m.mask & second) != 0) AddStitch(cell, second, color);
+            for (int k = 1; k <= 4; k++) if ((m.mask & QuarterBit(k)) != 0) AddStitch(cell, QuarterBit(k), color);
         }
     }
 
@@ -174,6 +220,19 @@ public class CrossStitchCanvas : MonoBehaviour
         if (mode == Mode.Stitch && target != null)
             foreach (var t in target.cells)
             {
+                if (t.quarter > 0)   // a three-quarter stitch: its long leg and the quarter leg, printed
+                {
+                    var ink = Color.Lerp(fabricColor, target.palette[t.colorIndex], 0.6f);
+                    var c0 = new Vector2Int(t.x, t.y);
+                    int longLeg = QuarterMask(t.quarter) & 3;
+                    var la = CornerOf(c0, longLeg == 1 ? 1 : 2); var lb = CornerOf(c0, longLeg == 1 ? 3 : 4);
+                    var leg = MakeLine(ink, cellSize * 0.07f); leg.sortingOrder = 1;
+                    leg.SetPosition(0, Vector3.Lerp(CornerPos(la), CornerPos(lb), 0.2f)); leg.SetPosition(1, Vector3.Lerp(CornerPos(la), CornerPos(lb), 0.8f));
+                    var q = MakeLine(ink, cellSize * 0.07f); q.sortingOrder = 1;
+                    q.SetPosition(0, Vector3.Lerp(CornerPos(CornerOf(c0, t.quarter)), transform.TransformPoint(CellCenter(t.x, t.y)), 0.3f));
+                    q.SetPosition(1, transform.TransformPoint(CellCenter(t.x, t.y)));
+                    continue;
+                }
                 if (!t.halfStitch) continue;
                 var mark = MakeLine(Color.Lerp(fabricColor, target.palette[t.colorIndex], 0.6f), cellSize * 0.08f);
                 mark.sortingOrder = 1;
@@ -268,6 +327,7 @@ public class CrossStitchCanvas : MonoBehaviour
         keep.RemoveAll(m => m.x == cell.x && m.y == cell.y);
         Clear();
         Apply(keep);
+        PruneCarried();
         Ripper.Poke();
         AudioManager.Play(Sfx.Click);
     }
@@ -370,7 +430,7 @@ public class CrossStitchCanvas : MonoBehaviour
         {
             // The chart printed faintly on the fabric: a light tint of the square's thread colour.
             if (t == null) return Color.clear;
-            var tint = Color.Lerp(fabricColor, target.palette[t.colorIndex], t.halfStitch ? 0.15f : 0.35f);
+            var tint = Color.Lerp(fabricColor, target.palette[t.colorIndex], t.halfStitch ? 0.15f : t.quarter > 0 ? 0.25f : 0.35f);
             tint.a = 1f;
             return tint;
         }
@@ -388,8 +448,7 @@ public class CrossStitchCanvas : MonoBehaviour
 
     Vector3 CornerPos(Vector2Int c) => transform.TransformPoint(new Vector3(c.x * cellSize, c.y * cellSize, 0));
 
-    // Works with mouse in the editor and a single touch on iPad (Unity maps touch to mouse
-    // with the legacy Input Manager; for the new Input System, swap in Pointer.current).
+    // Input comes through PointerInput (mouse in the editor and on PC, one finger on a phone).
     // A drag only counts if it started on the board itself: presses on a UI button (a floss colour,
     // Finish...) or anywhere else off the grid are ignored for their whole length. (Before, only the
     // first frame was ignored, so tapping a button painted the nearest edge square.)
@@ -397,13 +456,13 @@ public class CrossStitchCanvas : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (PointerInput.Down)
         {
-            pressing = !OverUI() && OnBoard(WorldPoint());
+            pressing = !PointerInput.OverUI() && OnBoard(WorldPoint());
             if (pressing) OnPress(WorldPoint());
         }
-        else if (pressing && Input.GetMouseButton(0)) OnDrag(WorldPoint());
-        else if (pressing && Input.GetMouseButtonUp(0)) { pressing = false; OnRelease(WorldPoint()); }
+        else if (pressing && PointerInput.Held) OnDrag(WorldPoint());
+        else if (pressing && PointerInput.Up) { pressing = false; OnRelease(WorldPoint()); }
     }
 
     bool OnBoard(Vector3 local)
@@ -412,21 +471,9 @@ public class CrossStitchCanvas : MonoBehaviour
         return local.x >= -margin && local.y >= -margin && local.x <= width * cellSize + margin && local.y <= height * cellSize + margin;
     }
 
-    /// True when the pointer is over a UI element. Checks touches by finger id too, since on phones
-    /// IsPointerOverGameObject() with no id only knows about the mouse.
-    static bool OverUI()
-    {
-        var es = EventSystem.current;
-        if (es == null) return false;
-        if (es.IsPointerOverGameObject()) return true;
-        for (int i = 0; i < Input.touchCount; i++)
-            if (es.IsPointerOverGameObject(Input.GetTouch(i).fingerId)) return true;
-        return false;
-    }
-
     Vector3 WorldPoint()
     {
-        var p = cam.ScreenToWorldPoint(Input.mousePosition);
+        var p = cam.ScreenToWorldPoint(PointerInput.Position);
         p.z = 0;
         return transform.InverseTransformPoint(p);
     }
@@ -442,7 +489,7 @@ public class CrossStitchCanvas : MonoBehaviour
     void OnPress(Vector3 local)
     {
         strokeStart = Marks();
-        if (mode == Mode.PatternFill) { Paint(CellAt(local)); return; }
+        if (mode == Mode.PatternFill) { Paint(CellAt(local), local); return; }
         if (picking) { lastPicked = new Vector2Int(-1, -1); Unpick(CellAt(local)); return; }
         dragStartCorner = NearestCorner(local);
         Needle.MoveTo(CornerPos(dragStartCorner.Value), true);
@@ -454,7 +501,7 @@ public class CrossStitchCanvas : MonoBehaviour
 
     void OnDrag(Vector3 local)
     {
-        if (mode == Mode.PatternFill) { if (OnBoard(local)) Paint(CellAt(local)); return; }
+        if (mode == Mode.PatternFill) { if (OnBoard(local)) Paint(CellAt(local), local); return; }
         if (picking) { if (OnBoard(local)) Unpick(CellAt(local)); return; }
         if (previewLine != null)
             previewLine.SetPosition(1, transform.TransformPoint(local));
@@ -483,6 +530,22 @@ public class CrossStitchCanvas : MonoBehaviour
             Needle.Poke();
             if (previewLine) Destroy(previewLine.gameObject);
 
+            // A quarter stitch: from a corner of a square to its middle (where Aida is pierced for it)
+            if (!tent)
+            {
+                var qcell = CellAt(local);
+                if (Vector3.Distance(local, CellCenter(qcell.x, qcell.y)) <= cellSize * 0.3f)
+                    for (int k = 1; k <= 4; k++)
+                        if (CornerOf(qcell, k) == a)
+                        {
+                            Needle.MoveTo(transform.TransformPoint(CellCenter(qcell.x, qcell.y)));
+                            AddStitch(qcell, QuarterBit(k), currentColor, byHand: true);
+                            AudioManager.Play(Sfx.Stitch);
+                            EndStroke();
+                            return;
+                        }
+            }
+
             // Valid stitch = diagonal across exactly one cell
             int dx = b.x - a.x, dy = b.y - a.y;
             if (tent && Mathf.Abs(dx) == Mathf.Abs(dy) && Mathf.Abs(dx) > 1)   // needlepoint: a whole diagonal row at once
@@ -500,7 +563,7 @@ public class CrossStitchCanvas : MonoBehaviour
                 var cell = new Vector2Int(Mathf.Min(a.x, b.x), Mathf.Min(a.y, b.y));
                 // Which diagonal? "/" connects (0,0)-(1,1) ; "\" connects (0,1)-(1,0)
                 bool isSlash = (dx * dy) > 0;
-                AddStitch(cell, isSlash ? 1 : 2, currentColor);
+                AddStitch(cell, isSlash ? 1 : 2, currentColor, byHand: true);
                 AudioManager.Play(Sfx.Stitch);
             }
         }
@@ -560,22 +623,43 @@ public class CrossStitchCanvas : MonoBehaviour
     /// Whether a half-stitch square holds the right single leg.
     public static bool RightHalf(int mask, int topLeg) => topLeg == 0 ? mask == 1 || mask == 2 : mask == topLeg;
 
-    void AddStitch(Vector2Int cell, int bit, int color)
+    void AddStitch(Vector2Int cell, int bit, int color, bool byHand = false)
     {
         stitchProgress.TryGetValue(cell, out int done);
         if ((done & bit) != 0) return; // already stitched that diagonal
-        bool firstOfCell = done == 0;
-        if (firstOfCell) firstLeg[cell] = bit;
+        if (byHand && done == 0 && mode == Mode.Stitch && !tent) CheckCarry(cell, color);
+        bool quarterLeg = bit >= 4;
+        bool firstLegOfCell = (done & 3) == 0;
+        if (!quarterLeg && firstLegOfCell) firstLeg[cell] = bit;
         done |= bit;
         stitchProgress[cell] = done;
         stitchColor[cell] = color;
+        if (byHand) threadAt[color] = cell;
 
-        bool slash = bit == 1;
-        DrawThread(CornerPos(new Vector2Int(cell.x, slash ? cell.y : cell.y + 1)),
-                   CornerPos(new Vector2Int(cell.x + 1, slash ? cell.y + 1 : cell.y)),
-                   pattern.palette[color], firstOfCell ? 5 : 9);   // whichever leg comes second lies on top
+        if (quarterLeg)   // corner to the middle, over the long leg
+            DrawThread(CornerPos(CornerOf(cell, QuarterIn(bit))), transform.TransformPoint(CellCenter(cell.x, cell.y)), pattern.palette[color], 9);
+        else
+        {
+            bool slash = bit == 1;
+            DrawThread(CornerPos(new Vector2Int(cell.x, slash ? cell.y : cell.y + 1)),
+                       CornerPos(new Vector2Int(cell.x + 1, slash ? cell.y + 1 : cell.y)),
+                       pattern.palette[color], firstLegOfCell ? 5 : 9);   // whichever leg comes second lies on top
+        }
 
         if (done == 3) CompleteCell(cell, color);
+        else if (done >= 4 && (done & 3) != 0 && mode == Mode.Stitch) cellViews[cell].color = Color.clear;   // a three-quarter stitch covers its chart square
+    }
+
+    /// The thread travels across the back from the last stitch in this colour. More than LongCarry squares and it
+    /// shows through the fabric (a mistake), unless a fresh length was started.
+    void CheckCarry(Vector2Int cell, int color)
+    {
+        if (!threadAt.TryGetValue(color, out var from) || !stitchProgress.ContainsKey(from)) { Warning = null; return; }
+        int far = Mathf.Max(Mathf.Abs(cell.x - from.x), Mathf.Abs(cell.y - from.y));
+        if (far <= LongCarry) { Warning = null; return; }
+        carried.Add(cell);
+        Warning = $"The thread ran {far} squares across the back to get there: it'll show through. Undo, then tap the colour again to start a fresh length.";
+        AudioManager.Play(Sfx.Click);
     }
 
     /// One stitch as real floss: a soft shadow, the thread itself and a sheen along it, running from
@@ -612,25 +696,49 @@ public class CrossStitchCanvas : MonoBehaviour
         // TODO: play satisfying "pop" sound, award tiny progress to the commission
     }
 
-    void Paint(Vector2Int cell)
+    void Paint(Vector2Int cell, Vector3 local)
     {
         if (!Inside(cell.x, cell.y)) return;
         if (erase)
         {
             pattern.cells.RemoveAll(c => c.x == cell.x && c.y == cell.y);
             cellViews[cell].color = GuideColor(cell.x, cell.y);
+            if (quarterViews.TryGetValue(cell, out var old)) { if (old) Destroy(old.gameObject); quarterViews.Remove(cell); }
             return;
         }
-        // A pattern-only order copies its chart's half stitches; the designer paints them when Half is on.
+        // A pattern-only order copies its chart's half and three-quarter stitches; the designer paints them when chosen.
         var chart = target?.cells.Find(c => c.x == cell.x && c.y == cell.y);
-        PaintCell(cell, currentColor, chart != null ? chart.halfStitch : paintHalf);
+        if (chart != null) { PaintCell(cell, currentColor, chart.halfStitch, chart.quarter); return; }
+        int quarter = 0;
+        if (paintQuarter)   // the corner tapped nearest is cut away; the quarter leg comes from the opposite one
+        {
+            float fx = local.x / cellSize - cell.x, fy = local.y / cellSize - cell.y;
+            int cut = fx < 0.5f ? (fy < 0.5f ? 1 : 2) : (fy < 0.5f ? 4 : 3);
+            quarter = (cut + 1) % 4 + 1;
+        }
+        PaintCell(cell, currentColor, paintHalf && !paintQuarter, quarter);
     }
 
-    void PaintCell(Vector2Int cell, int color, bool half = false)
+    readonly Dictionary<Vector2Int, LineRenderer> quarterViews = new Dictionary<Vector2Int, LineRenderer>();
+
+    void PaintCell(Vector2Int cell, int color, bool half = false, int quarter = 0)
     {
         pattern.cells.RemoveAll(c => c.x == cell.x && c.y == cell.y);
-        cellViews[cell].color = half ? Color.Lerp(pattern.palette[color], Color.white, 0.55f) : pattern.palette[color];   // half: paler
-        pattern.cells.Add(new StitchCell { x = cell.x, y = cell.y, colorIndex = color, halfStitch = half });
+        cellViews[cell].color = half || quarter > 0 ? Color.Lerp(pattern.palette[color], Color.white, 0.55f) : pattern.palette[color];   // half: paler
+        pattern.cells.Add(new StitchCell { x = cell.x, y = cell.y, colorIndex = color, halfStitch = half && quarter == 0, quarter = quarter });
+        if (quarterViews.TryGetValue(cell, out var old)) { if (old) Destroy(old.gameObject); quarterViews.Remove(cell); }
+        if (quarter > 0)   // the designer shows the stitch's shape: a triangle-ish wedge drawn as its two legs
+        {
+            var shape = MakeLine(Color.Lerp(pattern.palette[color], Color.black, 0.25f), cellSize * 0.12f);
+            shape.positionCount = 3;
+            shape.sortingOrder = 6;
+            int longLeg = QuarterMask(quarter) & 3;
+            var la = CornerOf(cell, longLeg == 1 ? 1 : 2); var lb = CornerOf(cell, longLeg == 1 ? 3 : 4);
+            shape.SetPosition(0, Vector3.Lerp(CornerPos(la), CornerPos(lb), 0.1f));
+            shape.SetPosition(1, Vector3.Lerp(CornerPos(CornerOf(cell, quarter)), transform.TransformPoint(CellCenter(cell.x, cell.y)), 0.2f));
+            shape.SetPosition(2, Vector3.Lerp(CornerPos(la), CornerPos(lb), 0.9f));
+            quarterViews[cell] = shape;
+        }
     }
 
     LineRenderer MakeLine(Color color, float w)
@@ -683,9 +791,16 @@ public class CrossStitchCanvas : MonoBehaviour
         int top = TopLeg(marks);
         var halves = new HashSet<Vector2Int>();
         foreach (var t in target.cells) if (t.halfStitch) halves.Add(new Vector2Int(t.x, t.y));
+        var quarters = new Dictionary<Vector2Int, int>();
+        foreach (var t in target.cells) if (t.quarter > 0) quarters[new Vector2Int(t.x, t.y)] = QuarterMask(t.quarter);
         foreach (var m in marks)
         {
             var at = new Vector2Int(m.x, m.y);
+            if (quarters.TryGetValue(at, out int need))   // a three-quarter stitch: its long leg and its quarter leg
+            {
+                if (wanted[at] == m.color) correct += m.mask == need ? 1f : m.mask == 3 ? 0.3f : (m.mask & need) == m.mask ? 0.5f : 0.25f;
+                continue;
+            }
             if (halves.Contains(at))   // a half stitch: just the top leg; the other leg or a full X is a mistake
             {
                 if (wanted[at] == m.color) correct += RightHalf(m.mask, top) ? 1f : m.mask == 3 ? 0.25f : 0.5f;

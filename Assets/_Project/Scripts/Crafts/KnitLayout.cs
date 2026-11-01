@@ -3,7 +3,7 @@ using UnityEngine;
 
 /// What a knitted item is shaped like (owner, 2026-10-31: a sweater is knitted like a real sweater, in
 /// pieces, with the pattern worked into it, not as a square).
-public enum Garment { Square, Scarf, Sweater }
+public enum Garment { Square, Scarf, Sweater, CableScarf }
 
 /// Where a knitted piece's stitches sit in the step area, in the order they're knitted: rows from the
 /// bottom up, each row left to right, one sub-piece after another (e.g. two sleeves).
@@ -21,6 +21,8 @@ public class KnitLayout
         public int color;          // palette index for colourwork, or -1 for the main yarn
         public int part;           // which sub-piece (0, or 1 for the second sleeve)
         public int row;            // row within its sub-piece
+        public int cable;          // cables: 0 none, 1 the first of four stitches crossed to the front (C4F), 2 to the back
+                                   // (C4B), 3 one of the other three stitches of that cross
     }
 
     public float cell;             // size of one stitch, in 0..1 of the area
@@ -78,6 +80,7 @@ public class KnitLayout
         switch (garment)
         {
             case Garment.Scarf: k.Scarf(pw, ph); break;
+            case Garment.CableScarf: k.CableScarf(pw, ph); break;
             case Garment.Sweater:
                 int w = Mathf.Clamp(pw + 2, 8, 14), h = Mathf.Clamp(ph + 5, 10, 17);
                 if (piece == "back") k.Body(w, h, false);
@@ -92,9 +95,9 @@ public class KnitLayout
 
     bool PatternAt(int x, int y) => pattern != null && pattern.cells.Exists(c => c.x == x && c.y == y);
 
-    void Add(int x, int y, bool purl, int color, int part, int row)
+    void Add(int x, int y, bool purl, int color, int part, int row, int cable = 0)
     {
-        stitches.Add(new KnitStitch { cell = new Vector2Int(x, y), purl = purl, color = color, part = part, row = row });
+        stitches.Add(new KnitStitch { cell = new Vector2Int(x, y), purl = purl, color = color, part = part, row = row, cable = cable });
         gridWidth = Mathf.Max(gridWidth, x + 1);
         gridHeight = Mathf.Max(gridHeight, y + 1);
     }
@@ -120,6 +123,31 @@ public class KnitLayout
                 bool stripe = !rib && pattern != null && pattern.palette.Count > 0 && ((y - 2) / 4) % 2 == 1;
                 Add(x, y, rib ? Rib(x) : PatternAt((x + offX) % pw, (y - 2) % ph), stripe ? 0 : -1, 0, y);
             }
+    }
+
+    /// Cables (owner: "more complex crafting... cables"): an Aran-style scarf with two four-stitch cables, each between
+    /// purl columns, on a ribbed start and end. Every fourth row the cables cross: the left one to the front (C4F, it
+    /// leans left), the right one to the back (C4B, it leans right), so they twist in towards each other like a pair.
+    /// Knit k p [cable] p p [cable] p k (14 stitches); the pattern's purls show in the edge columns.
+    public const int CableEvery = 4;
+    void CableScarf(int pw, int ph)
+    {
+        const int w = 14;
+        int h = Mathf.Clamp(Mathf.Max(ph * 2, 20), 20, 26);
+        for (int y = 0; y < h; y++)
+        {
+            bool rib = y < 2 || y >= h - 2;
+            bool cross = !rib && (y - 2) % CableEvery == CableEvery - 2;
+            for (int x = 0; x < w; x++)
+            {
+                if (rib) { Add(x, y, Rib(x), -1, 0, y); continue; }
+                bool left = x >= 2 && x <= 5, right = x >= 8 && x <= 11;
+                int cable = !cross ? 0 : x == 2 ? 1 : x == 8 ? 2 : left || right ? 3 : 0;
+                bool purl = x == 1 || x == 6 || x == 7 || x == 12;
+                if (x == 0 || x == w - 1) purl = PatternAt(x == 0 ? 0 : pw - 1, (y - 2) % ph);   // the pattern's texture on the edges
+                Add(x, y, purl, -1, 0, y, cable);
+            }
+        }
     }
 
     /// The back or front of a sweater: ribbed hem, then the body, then the neckline taken out of the top

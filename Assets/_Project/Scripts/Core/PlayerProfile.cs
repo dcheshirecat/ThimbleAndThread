@@ -20,7 +20,7 @@ public class PlayerProfile
     /// The customer id of orders the player makes for themselves.
     public const string SelfId = "me";
     /// Items the player can wear when they make one for themselves.
-    public static bool Wearable(string itemId) => itemId == "sweater" || itemId == "scarf";
+    public static bool Wearable(string itemId) => itemId == "sweater" || itemId == "scarf" || itemId == "cable_scarf";
 }
 
 /// Something the player made for themselves (owner, 2026-10-30: wear what you make, seen in the shop).

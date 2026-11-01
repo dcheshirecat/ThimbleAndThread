@@ -14,7 +14,8 @@ public class Order
     public int dayPlaced;
     public Pattern target;            // what to stitch or design
     public List<StitchMark> work = new List<StitchMark>();
-    public List<StitchMark> backgroundWork = new List<StitchMark>();   // needlepoint: the background's tent stitches (BackgroundFill)
+    public List<StitchMark> backgroundWork = new List<StitchMark>();
+    public List<Vector2Int> carried = new List<Vector2Int>();   // cross stitch: squares reached by carrying the thread too far across the back   // needlepoint: the background's tent stitches (BackgroundFill)
     public bool materialsUsed;        // fabric cut and thread set aside when work first started
     public string fabricId;           // the fabric it's stitched on
     public bool finished;             // set aside at night, ready to hand over during the day

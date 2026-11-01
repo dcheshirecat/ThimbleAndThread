@@ -1149,7 +1149,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             p.palette.Add(d.palette[i]);
             p.threads.Add(i < d.threads.Count ? d.threads[i] : "");
         }
-        foreach (var c in d.cells) p.cells.Add(new StitchCell { x = c.x, y = c.y, colorIndex = used.IndexOf(c.colorIndex) });
+        foreach (var c in d.cells) p.cells.Add(c.Recolored(used.IndexOf(c.colorIndex)));
         return p;
     }
 
@@ -1288,7 +1288,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         if (p == null) return 1;
         var colours = new HashSet<int>();
         bool halves = false;
-        foreach (var c in p.cells) { colours.Add(c.colorIndex); halves |= c.halfStitch; }
+        foreach (var c in p.cells) { colours.Add(c.colorIndex); halves |= c.halfStitch || c.quarter > 0; }
         int score = (p.width * p.height > 100 ? 1 : 0) + (p.cells.Count > 60 ? 1 : 0) + Mathf.Max(0, colours.Count - 1) + (halves ? 1 : 0);
         return Mathf.Clamp(1 + score, 1, 5);
     }
