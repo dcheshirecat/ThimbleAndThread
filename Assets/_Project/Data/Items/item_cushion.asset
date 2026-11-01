@@ -30,6 +30,18 @@ MonoBehaviour:
   patternPrice: 14
   requiredSupplyIds: []
   steps:
+  - kind: 47
+    label: Tape the canvas edges
+    tools: []
+    materials:
+    - supplyId: masking_tape
+      amount: 1
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 36
     label: Tack the canvas to the stretcher bars
     tools:

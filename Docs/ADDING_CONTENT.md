@@ -104,7 +104,13 @@ Studio designs plushies too. Bags (e.g. "Market Tote") work the same way: the fi
 panel, the top edge stays open and is hemmed, and the handle is sewn on just below it.
 **Half stitches** in a book pattern's grid: a lowercase letter, 'a' for colour 1, 'b' for colour 2 and so on (only the "/" leg is
 stitched; good for diagonal edges).
+**Three-quarter stitches** (for rounded shapes): an uppercase letter. 'A' to 'D' are colour 1 with the short leg coming
+from the bottom-left, top-left, top-right or bottom-right corner (the corner opposite it is left empty); 'E' to 'H'
+are colour 2, 'I' to 'L' colour 3, and so on. "Pebble Beach" shows how: each pebble is four of them round a centre.
+In the Pattern Studio, the Stitch button switches between Full, Half and 3/4; with 3/4, tap near the corner to cut away.
 **Knitting patterns** depend on the item's **Garment** (on the item asset):
+- **CableScarf**: an Aran-style strip with two four-stitch cables that cross every fourth row (C4F and C4B);
+  the pattern only adds texture to the edge columns. Knitting it needs the Cables technique.
 - **Scarf**: a long strip with ribbed ends. The pattern is texture: filled squares are purl stitches,
   empty ones knit, repeated along the scarf (so "Wave Stripes" knits a wavy texture).
 - **Sweater**: knitted in pieces like a real one. Each Cast On / Knit Rows step has a **Piece**: `back`

@@ -499,6 +499,7 @@ public static class PlaceholderGenerator
         Supply("cushion_pad", "Cushion Pad", SupplyKind.Notion, np, 6, 1, new Color(0.96f, 0.96f, 0.94f), 1, "pads", A);
         var npBook = Supply("book_needlepoint", "Needlepoint for Cross Stitchers", SupplyKind.Book, cs, 30, 1, new Color(0.55f, 0.30f, 0.35f), 1, "book", R);
         var cushion = Item("cushion", "Needlepoint Cushion", np, 55, 14, new Color(0.75f, 0.40f, 0.45f));
+        Supply("masking_tape", "Masking Tape", SupplyKind.Notion, np, 2, 1, new Color(0.93f, 0.86f, 0.62f), 1, "rolls", A);
         Recipe(cushion,
             Step(StepKind.MountCanvas, "Tack the canvas to the stretcher bars", materials: Need("mono_canvas", 1), tools: Tool("stretcher_bars", "Stretcher bars")),
             Step(StepKind.TentStitch, "Tent-stitch the design", tools: Tool("tapestry_needle", "Tapestry needle")),
@@ -575,6 +576,12 @@ public static class PlaceholderGenerator
         // A weaving chart: each row is woven in the colour that fills most of it.
         BookPattern("sunset_bands", "Sunset Bands", hanging, 12, new[] { red, navy },
             "11111111\n11111111\n........\n22222222\n22222222\n........\n11111111\n22222222");
+
+        // Deeper new crafts (owner, 2026-11-01): tape the canvas edges; lay out and press the quilt top; tie off the weaving.
+        InsertBefore(cushion, StepKind.MountCanvas, Step(StepKind.BindCanvas, "Tape the canvas edges", materials: Need("masking_tape", 1)));
+        InsertBefore(quilt, StepKind.SewRows, Step(StepKind.LayoutPatches, "Lay out the patches"));
+        InsertBefore(quilt, StepKind.QuiltSandwich, Step(StepKind.PressQuiltSeams, "Press the seams"));
+        InsertBefore(hanging, StepKind.HangWeaving, Step(StepKind.TieOffWarps, "Cut it off the loom and tie off the warps"));
 
         // ---- Cables (owner: "more complex crafting... cables"): a cable-knit scarf, a knitting technique learned from Nadia
         // (friendship 3), knitting level 3, or a book. ----

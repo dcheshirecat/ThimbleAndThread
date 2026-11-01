@@ -134,3 +134,153 @@ public class QuiltSandwichStep : PlacementStep
         return pin;
     }
 }
+
+/// Lay out the patches on the floor (owner: deeper mini-games). The cut patches wait in piles by fabric along the bottom:
+/// tap a pile to pick it up, then tap or drag over the squares where that fabric goes, following the chart. A patch in
+/// the wrong fabric spoils the pattern (lay the right one over it; Undo takes the last one back).
+/// Saved points: (square index, fabric) per patch laid, fabric -1 = the cream background.
+public class LayoutPatchesStep : PieceStep, IMistakes
+{
+    const float TrayY = 0.035f;
+    int held = -1;
+    readonly Dictionary<int, GameObject> laid = new Dictionary<int, GameObject>();
+    readonly List<SpriteRenderer> piles = new List<SpriteRenderer>();
+    List<int> fabrics;   // -1 (cream) then each palette colour the chart uses
+
+    Pattern P => order.target;
+    int Width => Mathf.Max(1, P.width);
+    int Count => Width * Mathf.Max(1, P.height);
+
+    int Wanted(int i)
+    {
+        var cell = P.cells.Find(c => c.x == i % Width && c.y == i / Width);
+        return cell != null && cell.colorIndex < P.palette.Count ? cell.colorIndex : -1;
+    }
+
+    Color FabricColor(int f) => f < 0 || f >= P.palette.Count ? Quilt.Cream : new Color(P.palette[f].r, P.palette[f].g, P.palette[f].b, 1f);
+
+    protected override void Build()
+    {
+        Square(new Vector2(0.5f, 0.5f), 0.86f, new Color(0.62f, 0.50f, 0.40f), -1);   // the floorboards
+        for (int i = 0; i < Count; i++)   // the chart, faintly chalked where each patch goes
+        {
+            var at = Quilt.PatchCenter(P, i % Width, i / Width, out float size);
+            var c = FabricColor(Wanted(i)); c.a = 0.28f;
+            Rect(at, Vector2.one * size * 0.9f, c, 0);
+        }
+        fabrics = new List<int> { -1 };
+        foreach (var c in P.cells) if (!fabrics.Contains(c.colorIndex) && c.colorIndex < P.palette.Count) fabrics.Add(c.colorIndex);
+        for (int k = 0; k < fabrics.Count; k++)
+        {
+            piles.Add(Square(PileAt(k), 0.07f, FabricColor(fabrics[k]), 3));
+            Square(PileAt(k) + new Vector2(0.006f, -0.006f), 0.07f, new Color(0, 0, 0, 0.3f), 2);
+        }
+        foreach (var p in State.points) Lay((int)p.x, (int)p.y);
+        ShowHeld();
+    }
+
+    Vector2 PileAt(int k) => new Vector2(0.5f + (k - (fabrics.Count - 1) / 2f) * 0.12f, TrayY);
+
+    void ShowHeld()
+    {
+        for (int k = 0; k < piles.Count; k++) piles[k].transform.localScale = Vector3.one * Side * (fabrics[k] == held ? 0.09f : 0.07f);
+    }
+
+    void Lay(int i, int fabric)
+    {
+        if (laid.TryGetValue(i, out var old)) Destroy(old);
+        var at = Quilt.PatchCenter(P, i % Width, i / Width, out float size);
+        laid[i] = Rect(at, Vector2.one * size * 0.95f, FabricColor(fabric), 1).gameObject;
+    }
+
+    /// The patch laid on each square now (the last one laid there).
+    Dictionary<int, int> Current()
+    {
+        var now = new Dictionary<int, int>();
+        foreach (var p in State.points) now[(int)p.x] = (int)p.y;
+        return now;
+    }
+
+    public override string LiveHint
+    {
+        get
+        {
+            int left = Count - Current().Count;
+            if (held == -2 || left > 0 && fabrics != null && held == -1 && State.points.Count == 0) return "Tap a pile of patches to pick it up.";
+            return left > 0 ? $"{left} squares still to fill." : "All laid out. Tap Finish.";
+        }
+    }
+
+    protected override void OnPress(Vector2 p)
+    {
+        for (int k = 0; k < fabrics.Count; k++)
+            if (Vector2.Distance(p, PileAt(k)) < 0.05f) { held = fabrics[k]; ShowHeld(); AudioManager.Play(Sfx.Click); return; }
+        LayAt(p);
+    }
+
+    protected override void OnDrag(Vector2 p) => LayAt(p);
+
+    void LayAt(Vector2 p)
+    {
+        int n = Mathf.Max(Width, P.height);
+        float size = (Quilt.Hi - Quilt.Lo) / n;
+        int x = Mathf.FloorToInt((p.x - Quilt.Lo) / size), y = Mathf.FloorToInt((p.y - Quilt.Lo) / size);
+        if (x < 0 || y < 0 || x >= Width || y >= P.height) return;
+        int i = y * Width + x;
+        var now = Current();
+        if (now.TryGetValue(i, out int there) && there == held) return;
+        State.points.Add(new Vector2(i, held));
+        Lay(i, held);
+    }
+
+    public override void Undo()
+    {
+        if (State.points.Count == 0) return;
+        int i = (int)State.points[State.points.Count - 1].x;
+        State.points.RemoveAt(State.points.Count - 1);
+        var now = Current();
+        if (now.TryGetValue(i, out int f)) Lay(i, f);
+        else if (laid.TryGetValue(i, out var old)) { Destroy(old); laid.Remove(i); }
+    }
+
+    public string MistakesLeft
+    {
+        get
+        {
+            int wrong = 0;
+            foreach (var kv in Current()) if (kv.Value != Wanted(kv.Key)) wrong++;
+            return wrong == 0 ? null : wrong == 1 ? "1 patch in the wrong fabric" : $"{wrong} patches in the wrong fabric";
+        }
+    }
+
+    public override float SaveWork()
+    {
+        var now = Current();
+        int right = 0;
+        foreach (var kv in now) if (kv.Value == Wanted(kv.Key)) right++;
+        State.progress = now.Count / (float)Count;
+        return right / (float)Count;
+    }
+}
+
+/// Press the quilt top's seams before layering it: iron along every row seam (PressSeamsStep: the heat matters).
+public class QuiltPressStep : PressSeamsStep
+{
+    protected override void DrawPiece() => DrawPatchwork(order.target);
+
+    protected override List<Vector2> Guide() => Guides()[0];
+
+    protected override List<List<Vector2>> Guides()
+    {
+        var lines = new List<List<Vector2>>();
+        var p = order.target;
+        int n = Mathf.Max(p.width, p.height);
+        for (int y = 1; y < p.height; y++)
+        {
+            float at = Quilt.Lo + y * (Quilt.Hi - Quilt.Lo) / n;
+            lines.Add(new List<Vector2> { new Vector2(Quilt.Lo, at), new Vector2(Quilt.Lo + p.width * (Quilt.Hi - Quilt.Lo) / n, at) });
+        }
+        if (lines.Count == 0) lines.Add(new List<Vector2> { new Vector2(Quilt.Lo, 0.5f), new Vector2(Quilt.Hi, 0.5f) });
+        return lines;
+    }
+}

@@ -47,6 +47,16 @@ MonoBehaviour:
     patternThread: 0
     threadAmount: 0
     piece: 
+  - kind: 48
+    label: Lay out the patches
+    tools: []
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 40
     label: Piece the patches together
     tools:
@@ -55,6 +65,16 @@ MonoBehaviour:
       label: Quilting needle
       exactSize: 0
       matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 49
+    label: Press the seams
+    tools: []
     materials: []
     fabricPieces: 0
     requiredSkill: 

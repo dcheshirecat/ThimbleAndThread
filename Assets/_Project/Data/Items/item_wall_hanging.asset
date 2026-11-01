@@ -64,6 +64,16 @@ MonoBehaviour:
     patternThread: 0
     threadAmount: 0
     piece: 
+  - kind: 50
+    label: Cut it off the loom and tie off the warps
+    tools: []
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
   - kind: 45
     label: Tie it onto a dowel
     tools: []

@@ -804,3 +804,31 @@ DONE batch 12 (16, characters; 23 in all): Wenna Trelawney (quilting bee at St. 
 lifeboat crew's quilt in 1987), Felix Adeyemi (Petals the florist, he/him, ch2), Sam (Benji's fiancé, they/them, music teacher, ch3).
 Full knot sets like the others; all friendship only. They ask for the new crafts' items too.
 Round 8 is done. Open: owner's art; ci-lowmem (exit 137 still intermittent on main).
+
+## Leftovers from earlier lists, 2026-11-01 (owner: "work on all the things you mentioned plus the new craft minigames")
+DONE batch A (save version 25):
+- Touch input wrapper: Utility/PointerInput.cs (Down/Held/Up/Position/OverUI); CrossStitchCanvas and PieceStep use it.
+- Press seams (round 6 sewing list): Crafts/PressSeamsStep.cs (StepKind.PressSeams; heat dial top right, State.setting =
+  heat, State.marks = scorches; too cool springs back, too hot scorches). Plushie: before Clip Curves; tote: before Box Corners.
+- Cables: Garment.CableScarf (KnitLayout.CableScarf: 14 wide, k p [C4F] p p [C4B] p k, crosses every 4th row;
+  KnitStitch.cable 1 = C4F start, 2 = C4B start, 3 = in the cross). KnitRowsStep: diagonal down swipe at a cross start knits all
+  four (left = front, right = back); +1000 on the start's code = crossed; plain knit there = "not crossed"; Undo takes all four.
+  Item cable_scarf "Cable-Knit Scarf", skill "cables" (knitting level 3, book "Cables and Arans", Nadia friendship 3),
+  book pattern Harbour Cables; wearable like a scarf.
+- Cross stitch: three-quarter stitches (StitchCell.quarter 1..4 = the quarter leg's corner; mask bits 4/8/16/32 =
+  CrossStitchCanvas.QuarterBit; QuarterMask = long leg + quarter leg; drag a corner to the square's middle). Confetti: a new
+  square more than LongCarry (3) squares from that colour's last stitch is a long carry (Order.carried, a mistake, score x(1 -
+  0.5 x share)); picking up a colour (MinigameHost.SelectColour) starts a fresh length (NewThread). Book pattern Pebble Beach.
+  Designer: Stitch Full / Half / 3/4. StitchCell.Recolored keeps half/3/4 in copies (Compact, ToCatalogue and Copy used to drop
+  half stitches). Trade codes carry 3/4 stitches in SharedPattern.quarters.
+- Notices bell (round 7 item 2 alternative, owner wanted both): TopBar "Notices" button with a count badge (new stamps since
+  SaveData.noticesSeen + goals ready); opens "What's new" (tap outside closes), See Goals -> JournalUI.OpenAt(Page.Goals).
+DONE batch B (deeper new crafts):
+- Needlepoint: BindCanvas "Tape the canvas edges" (masking_tape) first; the background is basketweave: tent row drags remember
+  their direction (StitchMark.crossedWrong = down, mask bit 64 = CrossStitchCanvas.RowBit = in a row); two neighbouring
+  diagonals worked the same way = a ridge (CrossStitchCanvas.Ridges), a mistake that lowers the score.
+- Quilting: LayoutPatches "Lay out the patches" (piles by fabric; tap a pile, tap/drag squares; points (square, fabric)) before
+  piecing; PressQuiltSeams (QuiltPressStep) before the sandwich.
+- Weaving: the weft is bubbled (swipe across in a hill, >= 0.04 above straight; straight = pulled tight, edges draw in, point y
+  + 2); TieOffWarps "Cut it off the loom and tie off the warps" before hanging.
+Still open: art; ci-lowmem; owner's questions above (landscape backgrounds; customer customization).

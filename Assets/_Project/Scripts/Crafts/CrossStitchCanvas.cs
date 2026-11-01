@@ -43,6 +43,10 @@ public class CrossStitchCanvas : MonoBehaviour
 
     public enum Holder { None, Hoop, QSnap, Frame }   // Frame: needlepoint canvas on wooden stretcher bars
     public bool tent;                  // needlepoint: tent stitch, one "/" per square; a drag along a diagonal stitches the whole row
+    // Needlepoint basketweave: which squares were worked as part of a diagonal row, and which of those going down it.
+    // Saved in StitchMark.crossedWrong (down) and mask bit 64 (in a row) for tent work.
+    readonly HashSet<Vector2Int> rowDown = new HashSet<Vector2Int>(), inRow = new HashSet<Vector2Int>();
+    public const int RowBit = 64;
 
     /// How many squares wide the board must be drawn so the holder fits round it in the same space.
     public static float SpanFor(Holder h, int width, int height) => h switch
@@ -151,7 +155,8 @@ public class CrossStitchCanvas : MonoBehaviour
             foreach (var c in pattern.cells) marks.Add(new StitchMark { x = c.x, y = c.y, mask = StitchMaskOf(c), color = c.colorIndex });
         else
             foreach (var kv in stitchProgress)
-                marks.Add(new StitchMark { x = kv.Key.x, y = kv.Key.y, mask = kv.Value, color = stitchColor[kv.Key], crossedWrong = CrossedWrong(kv.Key) });
+                marks.Add(tent ? new StitchMark { x = kv.Key.x, y = kv.Key.y, mask = kv.Value | (inRow.Contains(kv.Key) ? RowBit : 0), color = stitchColor[kv.Key], crossedWrong = rowDown.Contains(kv.Key) }
+                               : new StitchMark { x = kv.Key.x, y = kv.Key.y, mask = kv.Value, color = stitchColor[kv.Key], crossedWrong = CrossedWrong(kv.Key) });
         return marks;
     }
 
@@ -173,6 +178,7 @@ public class CrossStitchCanvas : MonoBehaviour
         stitchProgress.Clear();
         stitchColor.Clear();
         firstLeg.Clear();
+        rowDown.Clear(); inRow.Clear();
         pattern.cells.Clear();
         foreach (var kv in cellViews) kv.Value.color = GuideColor(kv.Key.x, kv.Key.y);   // the chart shows again
         foreach (var kv in quarterViews) if (kv.Value) Destroy(kv.Value.gameObject);
@@ -189,6 +195,13 @@ public class CrossStitchCanvas : MonoBehaviour
             if (mode == Mode.PatternFill)
             {
                 if ((m.mask == 3 || m.mask == 1 || QuarterIn(m.mask) > 0) && Inside(cell.x, cell.y)) PaintCell(cell, color, m.mask == 1, QuarterIn(m.mask));
+                continue;
+            }
+            if (tent)
+            {
+                if ((m.mask & 1) != 0) AddStitch(cell, 1, color);
+                if ((m.mask & 2) != 0) AddStitch(cell, 2, color);
+                if ((m.mask & RowBit) != 0) { inRow.Add(cell); if (m.crossedWrong) rowDown.Add(cell); }
                 continue;
             }
             int first = m.crossedWrong ? 2 : 1, second = 3 - first;   // replay the legs in the order they were made
@@ -553,7 +566,13 @@ public class CrossStitchCanvas : MonoBehaviour
                 bool slash = dx * dy > 0;
                 int x0 = Mathf.Min(a.x, b.x), y0 = Mathf.Min(a.y, b.y), y1 = Mathf.Max(a.y, b.y);
                 for (int k = 0; k < Mathf.Abs(dx); k++)
-                    AddStitch(new Vector2Int(x0 + k, slash ? y0 + k : y1 - 1 - k), slash ? 1 : 2, currentColor);
+                {
+                    var at = new Vector2Int(x0 + k, slash ? y0 + k : y1 - 1 - k);
+                    if (stitchProgress.ContainsKey(at)) continue;   // already stitched (e.g. the design): the row passes it by
+                    AddStitch(at, slash ? 1 : 2, currentColor);
+                    if (b.y < a.y) rowDown.Add(at);   // worked down the diagonal, or up it
+                    inRow.Add(at);
+                }
                 AudioManager.Play(Sfx.Stitch);
                 EndStroke();
                 return;
@@ -768,9 +787,30 @@ public class CrossStitchCanvas : MonoBehaviour
         foreach (var m in marks)
         {
             if (!wanted.TryGetValue(new Vector2Int(m.x, m.y), out int color)) { extra++; continue; }
-            if (color == m.color) correct += m.mask == 1 ? 1f : m.mask == 2 ? 0.4f : 0.3f;
+            int legs = m.mask & 3;
+            if (color == m.color) correct += legs == 1 ? 1f : legs == 2 ? 0.4f : 0.3f;
         }
         return correct / (wanted.Count + extra);
+    }
+
+    /// Basketweave (needlepoint backgrounds): rows go down one diagonal and up the next, so the back weaves like a basket
+    /// and the canvas doesn't pull out of shape. Two neighbouring diagonals worked in rows the same way leave a ridge.
+    /// Returns how many ridges, and how many diagonals were worked in rows.
+    public static int Ridges(List<StitchMark> marks, out int rowDiagonals)
+    {
+        var down = new Dictionary<int, int>();   // diagonal (x - y) -> rows down minus rows up
+        foreach (var m in marks)
+        {
+            if ((m.mask & RowBit) == 0) continue;
+            int d = m.x - m.y;
+            down.TryGetValue(d, out int v);
+            down[d] = v + (m.crossedWrong ? 1 : -1);
+        }
+        rowDiagonals = down.Count;
+        int ridges = 0;
+        foreach (var kv in down)
+            if (kv.Value != 0 && down.TryGetValue(kv.Key + 1, out int next) && next != 0 && (next > 0) == (kv.Value > 0)) ridges++;
+        return ridges;
     }
 
     /// How close the player's work matches a target pattern (0..1) - use for quality/price.

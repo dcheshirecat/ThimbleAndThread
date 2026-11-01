@@ -75,7 +75,8 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPick
         {
             if (Board != null && Board.Ready) order.backgroundWork = BackgroundMarks();
             order.StepState(stepIndex).progress = Done(order.backgroundWork);
-            return CrossStitchCanvas.TentScore(order.backgroundWork, target);
+            int ridges = CrossStitchCanvas.Ridges(order.backgroundWork, out int rows);
+            return CrossStitchCanvas.TentScore(order.backgroundWork, target) * (rows == 0 ? 1f : Mathf.Clamp01(1f - 0.4f * ridges / rows));
         }
         if (Board != null && Board.Ready) { order.work = Board.Marks(); if (!Tent) order.carried = Board.Carried(); }   // before Ready the board is still empty
         if (Tent) order.StepState(stepIndex).progress = Done(order.work);
@@ -137,13 +138,18 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPick
         {
             var cell = target.cells.Find(c => c.x == m.x && c.y == m.y);
             if (cell == null || cell.colorIndex != m.color) wrong++;
-            else if (m.mask == 2) slant++;
-            else if (m.mask == 3) crossed++;
+            else if ((m.mask & 3) == 2) slant++;
+            else if ((m.mask & 3) == 3) crossed++;
         }
         var parts = new List<string>();
         if (wrong > 0) parts.Add(wrong == 1 ? "1 stitch in the wrong place or colour" : $"{wrong} stitches in the wrong place or colour");
         if (slant > 0) parts.Add(slant == 1 ? "1 stitch slanting the wrong way (tent stitches all go /)" : $"{slant} stitches slanting the wrong way (tent stitches all go /)");
         if (crossed > 0) parts.Add(crossed == 1 ? "1 square crossed into an X (needlepoint is one stitch a square)" : $"{crossed} squares crossed into Xs (needlepoint is one stitch a square)");
+        if (Background)
+        {
+            int ridges = CrossStitchCanvas.Ridges(BackgroundMarks(), out _);
+            if (ridges > 0) parts.Add(ridges == 1 ? "1 ridge in the basketweave (two rows side by side worked the same way: go down one diagonal, up the next)" : $"{ridges} ridges in the basketweave (rows side by side worked the same way: go down one diagonal, up the next)");
+        }
         return parts.Count == 0 ? null : string.Join(" and ", parts);
     }
 
