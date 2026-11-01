@@ -9,7 +9,8 @@ public enum Garment { Square, Scarf, Sweater, CableScarf }
 /// bottom up, each row left to right, one sub-piece after another (e.g. two sleeves).
 /// - Square (old items): the pattern's grid; its filled squares are purls, which make the texture.
 /// - Scarf: a long strip with ribbed ends; the pattern's purls repeat along it, and stripes of four rows in
-///   the pattern's (first) colour alternate with the main yarn.
+///   two-row stripes take turns: the main yarn, then each of the pattern's colours (older orders: four-row stripes in
+///   the first colour only).
 /// - Sweater, by piece ("back", "front", "sleeves"): ribbed hems and cuffs, a shaped neckline, tapered
 ///   sleeves; the front carries the pattern as colourwork (each filled square in its palette colour).
 public class KnitLayout
@@ -30,6 +31,7 @@ public class KnitLayout
     public int gridWidth, gridHeight;
     public readonly List<KnitStitch> stitches = new List<KnitStitch>();
     Pattern pattern;
+    bool allStripes;   // scarf stripes take turns through every pattern colour (older orders: only the first)
 
     public int Stitches => stitches.Count;
     public Vector2 Size => new Vector2(gridWidth, gridHeight) * cell;
@@ -70,12 +72,12 @@ public class KnitLayout
     public static KnitLayout For(Order order, string piece)
     {
         var garment = order != null && order.item != null && !order.legacyKnit ? order.item.garment : Garment.Square;
-        return For(order?.target, garment, piece);
+        return For(order?.target, garment, piece, order == null || order.knitStyle >= 1);
     }
 
-    public static KnitLayout For(Pattern p, Garment garment, string piece)
+    public static KnitLayout For(Pattern p, Garment garment, string piece, bool allStripes = true)
     {
-        var k = new KnitLayout { pattern = p };
+        var k = new KnitLayout { pattern = p, allStripes = allStripes };
         int pw = Mathf.Max(1, p != null ? p.width : 8), ph = Mathf.Max(1, p != null ? p.height : 8);
         switch (garment)
         {
@@ -120,8 +122,11 @@ public class KnitLayout
             for (int x = 0; x < w; x++)
             {
                 bool rib = y < 2 || y >= h - 2;
-                bool stripe = !rib && pattern != null && pattern.palette.Count > 0 && ((y - 2) / 4) % 2 == 1;
-                Add(x, y, rib ? Rib(x) : PatternAt((x + offX) % pw, (y - 2) % ph), stripe ? 0 : -1, 0, y);
+                int colour = -1;
+                if (!rib && pattern != null && pattern.palette.Count > 0)
+                    colour = allStripes ? ((y - 2) / 2) % (pattern.palette.Count + 1) - 1   // two-row stripes: main, colour 1, colour 2..., main
+                           : ((y - 2) / 4) % 2 == 1 ? 0 : -1;                             // older orders: four rows of colour 1 now and then
+                Add(x, y, rib ? Rib(x) : PatternAt((x + offX) % pw, (y - 2) % ph), colour, 0, y);
             }
     }
 

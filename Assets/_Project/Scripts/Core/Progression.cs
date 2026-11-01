@@ -33,7 +33,25 @@ public class Progression
     /// Whether the market shows this supply: only once a craft that uses it is learned, so the shelves don't
     /// give away what's still to come (owner, 2026-10-31). Yarn serves knitting and crochet; stuffing and
     /// eyes serve sewing and crochet; hoops and tapestry needles serve cross stitch as well.
-    public bool SupplyShown(SupplyDef s) => s != null && s.kind switch
+    public bool SupplyShown(SupplyDef s) => s != null && (CraftShown(s) || NeededByMakeable(s));
+
+    /// Tools and materials a recipe you can already make calls for, whatever craft they belong to (e.g. pins for mitring
+    /// a tablecloth's corners, a crochet hook for knotting a scarf's fringe).
+    bool NeededByMakeable(SupplyDef s)
+    {
+        foreach (var item in content.items)
+        {
+            if (item == null || !CanMake(item)) continue;
+            foreach (var step in item.Steps)
+            {
+                if (s.kind == SupplyKind.Tool && step.tools != null && System.Array.Exists(step.tools, t => t != null && t.toolType == s.toolType)) return true;
+                if (step.materials != null && System.Array.Exists(step.materials, m => m != null && m.supplyId == s.supplyId)) return true;
+            }
+        }
+        return false;
+    }
+
+    bool CraftShown(SupplyDef s) => s.kind switch
     {
         SupplyKind.Yarn => CraftOpen(CraftType.Knitting) || CraftOpen(CraftType.Crochet),
         SupplyKind.Stuffing or SupplyKind.Eyes => CraftOpen(CraftType.Sewing) || CraftOpen(CraftType.Crochet),

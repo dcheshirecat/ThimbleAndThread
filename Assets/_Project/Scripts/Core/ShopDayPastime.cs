@@ -33,7 +33,7 @@ public partial class ShopDay
         var c = System.Array.Find(Chores, x => x.id == id);
         Save.flags.Add($"chore:{id}:{Save.day}");
         PassMinutes(ChoreMinutes);
-        LastMessage = $"{c.done} (Charm +{ChoreCharm} today.)";
+        Stamps.Notice($"{c.done}\n<size=40>Charm +{ChoreCharm} today.</size>");
         GM.Persist();
     }
 
@@ -53,7 +53,7 @@ public partial class ShopDay
         int minutes = KettleMinutes;
         if (Save.nextArrival > Save.clock) minutes = Mathf.Min(minutes, Save.nextArrival - Save.clock);
         PassMinutes(Mathf.Max(5, minutes));
-        LastMessage = KettleLines[Random.Range(0, KettleLines.Length)];
+        Stamps.Notice(KettleLines[Random.Range(0, KettleLines.Length)]);
         GM.Persist();
     }
 
@@ -104,7 +104,7 @@ public partial class ShopDay
         Save.flags.Add($"window:{Save.day}:{Save.clock / 60}");
         var lines = new List<string>(TownLines);
         foreach (var (who, line) in PeopleLines) if (Save.met.Contains(who)) { lines.Add(line); lines.Add(line); }   // people you know catch your eye
-        LastMessage = lines[Random.Range(0, lines.Count)];
+        Stamps.Notice(lines[Random.Range(0, lines.Count)]);
         PassMinutes(5);
         GM.Persist();
     }

@@ -52,7 +52,7 @@ public class TopBar : MonoBehaviour
         weekdaySymbol.enabled = weekdaySymbol.sprite != null;
         weekdayName.text = Week.Names[w];
         string time = save.night ? "Night" : save.clock >= ShopDay.ClosesAt ? "Closing time" : ShopDay.TimeText(Mathf.Max(ShopDay.OpensAt, save.clock));
-        dayText.text = $"<b>Day {save.day}  ·  {time}</b>" + (chapter.Length > 0 ? $"\n{chapter}" : "");
+        dayText.text = $"<b>Day {save.day}  ·  {time}</b>";   // the chapter is in the Journal's Story page (owner, 2026-11-01)
         coinText.text = save.coins.ToString();
     }
 

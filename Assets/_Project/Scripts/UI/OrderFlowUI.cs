@@ -87,7 +87,7 @@ public class OrderFlowUI : MonoBehaviour
             (order.patternOnly ? "Pattern only: fill in the squares to design it." : RecipeText(order)) +
             (order.finished ? $"\nFinished ({Mathf.RoundToInt(order.accuracy * 100)}% accuracy)." : $"\nProgress: {progress}%") +
             MaterialsText(order) +
-            (night ? "" : order.finished ? $"\n\nWrapped and waiting. {who} will come by for it; you never quite know when."
+            (night ? "" : order.finished ? (order.customerId == PlayerProfile.SelfId ? "\n\nIt's in your wardrobe." : $"\n\nWrapped and waiting. {who} will come by for it; you never quite know when.")
                 : day.ShortOf(order).Count > 0 ? "\n\nBefore you can work on it, get what's missing at the Supply Market."
                 : "\n\nYou have everything for it: work on it tonight, in the workroom.");
         if (!string.IsNullOrEmpty(day.LastMessage) && screen == ScreenId.Workbench) workbenchText.text += $"\n\n{day.LastMessage}";
@@ -126,9 +126,11 @@ public class OrderFlowUI : MonoBehaviour
                           $"Stars: {day.LastStars} / 3\n" +
                           "\n" +   // what they'll pay stays a surprise until the hand-over
                           (string.IsNullOrEmpty(day.LastLearned) ? "" : $"{day.LastLearned}\n\n") +
-                          "Set it aside: they'll come by for it one of these days.";
+                          (order.customerId == PlayerProfile.SelfId ? "Put it away: it goes into your wardrobe."
+                           : order.customerId == ShopDay.StallId ? "Set it aside for the Sunday stall."
+                           : "Set it aside: they'll come by for it one of these days.");
         var extras = day.ExtrasFor(order);
-        if (extras.Count > 0)
+        if (extras.Count > 0 && order.customerId != PlayerProfile.SelfId && order.customerId != ShopDay.StallId)
             resultText.text += "\n\nAdd a special touch? They might love the surprise... or not.";
         for (int i = 0; i < extraButtons.Length; i++)
         {
@@ -185,6 +187,18 @@ public class OrderFlowUI : MonoBehaviour
             foreach (var m in missing) text.AppendLine($"  {m}");
             text.AppendLine();
         }
+        var altogether = day.ShortfallAll();
+        if (altogether.Count > 0)
+        {
+            text.AppendLine("<b>Altogether, still to buy</b>");
+            foreach (var kv in altogether)
+            {
+                var s = day.content.Supply(kv.Key);
+                text.AppendLine($"  {kv.Value} more {(s != null ? s.unit + " of " + s.displayName : kv.Key)}");
+            }
+            text.AppendLine();
+            count++;
+        }
         if (count == 0) text.Append("Nothing missing: you have everything for every order in the book.");
         else text.Append("Things on the list are marked \"On your list\" on the shelves. Some may not be in stock right now.");
         shoppingListText.text = text.ToString();
@@ -193,6 +207,7 @@ public class OrderFlowUI : MonoBehaviour
     /// Whether a supply would help with something an order is missing.
     bool OnShoppingList(SupplyDef s)
     {
+        if (day.ShortfallAll().ContainsKey(s.supplyId)) return true;   // stays on the list until enough is bought for every order
         foreach (var order in day.Orders)
         {
             if (order.patternOnly || order.finished || order.needsDesign || order.item == null) continue;
@@ -454,7 +469,8 @@ public class OrderFlowUI : MonoBehaviour
             bool can = day.minigame.CanPick;
             if (pickerButton.gameObject.activeSelf != can) pickerButton.gameObject.SetActive(can);
             var label = pickerButton.GetComponentInChildren<Text>();
-            string text = day.minigame.Picking ? "Back to the Needle" : "Stitch Picker";
+            bool knitting = day.minigame.Step is KnitRowsStep;
+            string text = day.minigame.Picking ? (knitting ? "Back to Knitting" : "Back to the Needle") : knitting ? "Frog (Rip Back)" : "Stitch Picker";
             if (label.text != text) label.text = text;
         }
         string live = day.minigame.Step is PieceStep p ? p.LiveHint : day.minigame.Step is CrossStitchStep cs ? cs.LiveHint : null;

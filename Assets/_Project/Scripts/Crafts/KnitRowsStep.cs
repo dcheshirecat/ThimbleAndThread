@@ -16,7 +16,7 @@ using UnityEngine;
 /// four stitches of the cross. A cross the wrong way twists against its pair; a plain knit there leaves it uncrossed.
 /// Each finished stitch is saved as a point: x is its evenness (0..1); y codes the stitch, see Code() (+Dropped
 /// while it's dropped; saves from before dropped stitches never have it; +Crossed on the first stitch of a worked cross).
-public class KnitRowsStep : PieceStep, IMistakes
+public class KnitRowsStep : PieceStep, IMistakes, IStitchPicker
 {
     const float MinSwipe = 0.04f;       // shorter drags aren't swipes
     const float RushedBelow = 0.35f;    // a stitch made this much faster than your rhythm drops off the needle
@@ -32,6 +32,31 @@ public class KnitRowsStep : PieceStep, IMistakes
     int held;                                    // the yarn in hand: -1 the main yarn, else a pattern colour
 
     int Done => State.points.Count;
+
+    // ---- Frogging (owner, 2026-11-01): rip the knitting back to a chosen stitch ----
+    public bool CanPick => Done > 0;
+    public bool Picking { get => frogging; set => frogging = value && Done > 0; }
+    bool frogging;
+
+    /// Rips back: every stitch knitted after the one tapped comes undone (a cable cross all together).
+    void FrogTo(Vector2 p)
+    {
+        int at = -1;
+        for (int i = 0; i < Done; i++) if (Vector2.Distance(p, Knit.CellCenter(i)) <= Knit.cell * 0.7f) { at = i; break; }
+        if (at < 0) return;
+        if (InWorkedCross(at)) at = CrossStart(at);
+        while (Done > at)
+        {
+            State.points.RemoveAt(Done - 1);
+            Destroy(stitches[stitches.Count - 1]);
+            stitches.RemoveAt(stitches.Count - 1);
+        }
+        held = Done > 0 ? HeldFor(Done - 1) : Knit.Stitches > 0 ? Knit.stitches[0].color : -1;
+        ShowBall();
+        frogging = false;
+        AudioManager.Play(Sfx.Click);
+        ShowNext();
+    }
 
     // A stitch's code (point.y): wrong type (0/1) + 2 * (yarn held + 2). Saves from before yarns were held
     // stored only 0 or 1: those stitches were in the right yarn.
@@ -63,6 +88,13 @@ public class KnitRowsStep : PieceStep, IMistakes
     }
     bool WrongYarn(int i) => HeldFor(i) != Knit.stitches[i].color;
 
+    /// The yarn a saved stitch was knitted in (-1 = the main yarn); planned = the yarn the chart wanted there.
+    public static int HeldYarn(Vector2 point, int planned)
+    {
+        int code = (int)point.y % Crossed;
+        return code < 2 ? planned : code / 2 - 2;
+    }
+
     protected override void Build()
     {
         for (int i = 0; i < Knit.Stitches; i++) Square(Knit.CellCenter(i), Knit.cell, new Color(1, 1, 1, 0.08f), 0);   // the piece's shape
@@ -74,11 +106,27 @@ public class KnitRowsStep : PieceStep, IMistakes
         ShowNext();
     }
 
-    /// The ball of yarn the player is holding, by the work.
+    readonly List<GameObject> yarnBalls = new List<GameObject>();
+
+    /// The ball of yarn the player is holding, by the work, and every yarn this piece is knitted in beside it (owner,
+    /// 2026-11-01: it wasn't clear how many yarns there were): the one in hand is ringed.
     void ShowBall()
     {
         if (ball != null) Destroy(ball);
         ball = Dot(new Vector2(0.12f, 0.04f), 0.07f, Knit.PaletteColor(held, Yarn), 5, shine: true);
+        foreach (var g in yarnBalls) Destroy(g);
+        yarnBalls.Clear();
+        var yarns = new List<int>();
+        foreach (var st in Knit.stitches) if (!yarns.Contains(st.color)) yarns.Add(st.color);
+        if (yarns.Count < 2) return;
+        yarns.Sort();
+        for (int k = 0; k < yarns.Count; k++)
+        {
+            var at = new Vector2(0.3f + k * 0.08f, 0.04f);
+            bool inHand = yarns[k] == held;   // the one in hand sits up, bigger
+            yarnBalls.Add(Dot(at + (inHand ? new Vector2(0, 0.012f) : Vector2.zero), inHand ? 0.058f : 0.036f, Knit.PaletteColor(yarns[k], Yarn), 5, shine: true));
+        }
+        yarnBalls.Add(Label(new Vector2(0.3f + (yarns.Count - 1) * 0.04f, -0.055f), $"{yarns.Count} yarns in this piece", 0.028f, new Color(1, 1, 1, 0.7f), 5).gameObject);
     }
 
     void DrawStitch(int i)
@@ -165,6 +213,7 @@ public class KnitRowsStep : PieceStep, IMistakes
     {
         get
         {
+            if (frogging) return "Frogging: tap the stitch to rip back to. Everything knitted after it comes undone.";
             int dropped = DroppedCount();
             if (dropped > 0) return dropped == 1 ? "A stitch dropped! Tap the ladder to pick it up with your hook." : $"{dropped} stitches dropped! Tap each ladder to pick it up.";
             if (Done >= Knit.Stitches) return "All knitted. Tap Finish.";
@@ -182,6 +231,7 @@ public class KnitRowsStep : PieceStep, IMistakes
     protected override void OnRelease(Vector2 p)
     {
         var d = p - pressAt;
+        if (frogging) { if (d.magnitude < MinSwipe) FrogTo(pressAt); return; }
         if (d.magnitude < MinSwipe) { PickUp(pressAt); return; }   // a tap: on a ladder, pick the stitch back up
         if (Done >= Knit.Stitches) return;
         bool diagonal = d.y < 0 && Mathf.Abs(d.x) >= 0.5f * Mathf.Abs(d.y) && Mathf.Abs(d.y) >= 0.5f * Mathf.Abs(d.x);

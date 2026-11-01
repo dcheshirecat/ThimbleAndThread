@@ -49,11 +49,25 @@ public class PatternDesignerUI : MonoBehaviour
         itemIndex = Mathf.Max(0, System.Array.FindIndex(day.content.items, i => i != null && i.itemId == p.itemId));
         if (day.DesigningFor == null && !Allowed(itemIndex)) StepItem();   // only things you've learned to make
         price = p.price;
-        threads = Materials.Threads(day.content);
+        threads = PaletteFor(day.content.items[itemIndex]);
         cloth = p.design.fabricId;
         OpenBoard(ToCatalogue(p.design));
         open = true;
+        ShowSwatches();
+        Refresh();
+    }
 
+    /// The colours a design can use come from the material it's made in (owner, 2026-11-01): yarns for knitting and
+    /// crochet, embroidery floss for everything stitched with a needle. Owning red yarn doesn't unlock red floss.
+    List<SupplyDef> PaletteFor(CraftItemDef item)
+    {
+        bool yarn = item != null && (item.craft == CraftType.Knitting || item.craft == CraftType.Crochet);
+        var list = yarn ? new List<SupplyDef>(System.Array.FindAll(day.content.supplies, s => s != null && s.kind == SupplyKind.Yarn)) : Materials.Threads(day.content);
+        return list.Count > 0 ? list : Materials.Threads(day.content);
+    }
+
+    void ShowSwatches()
+    {
         var colours = new List<Color>();
         var names = new List<string>();
         var locked = new List<bool>();
@@ -65,7 +79,6 @@ public class PatternDesignerUI : MonoBehaviour
             locked.Add(have <= 0);
         }
         swatches.Show(colours, names, locked);   // picks the first owned colour
-        Refresh();
     }
 
     /// The design with the full thread catalogue as its palette, so every market colour can be painted.
@@ -77,9 +90,23 @@ public class PatternDesignerUI : MonoBehaviour
         foreach (var c in design.cells)
         {
             int i = c.colorIndex < design.threads.Count ? threads.FindIndex(t => t.supplyId == design.threads[c.colorIndex]) : -1;
+            if (i < 0 && c.colorIndex < design.palette.Count) i = Nearest(design.palette[c.colorIndex]);   // made in another material: the closest colour
             if (i >= 0) p.cells.Add(c.Recolored(i));
         }
         return p;
+    }
+
+    int Nearest(Color c)
+    {
+        int best = -1;
+        float bestD = float.MaxValue;
+        for (int k = 0; k < threads.Count; k++)
+        {
+            var t = threads[k].color;
+            float d = (c.r - t.r) * (c.r - t.r) + (c.g - t.g) * (c.g - t.g) + (c.b - t.b) * (c.b - t.b);
+            if (d < bestD) { bestD = d; best = k; }
+        }
+        return best;
     }
 
     /// The design as it is on the board right now (catalogue palette and threads).
@@ -184,8 +211,18 @@ public class PatternDesignerUI : MonoBehaviour
     {
         if (day.DesigningFor != null) return;   // a commission decides what it makes
         var before = CrossStitchCanvas.FrameFor(day.content.items[itemIndex]);
+        var beforeColours = threads;
         StepItem();
-        if (CrossStitchCanvas.FrameFor(day.content.items[itemIndex]) != before) { OpenBoard(Copy(Current(), Current().width, Current().height)); ApplyTool(); }
+        var now = PaletteFor(day.content.items[itemIndex]);
+        if (now.Count != beforeColours.Count || !now.TrueForAll(beforeColours.Contains))   // floss <-> yarn: the colours change too
+        {
+            var current = Current();
+            threads = now;
+            OpenBoard(ToCatalogue(current));
+            ShowSwatches();
+            ApplyTool();
+        }
+        else if (CrossStitchCanvas.FrameFor(day.content.items[itemIndex]) != before) { OpenBoard(Copy(Current(), Current().width, Current().height)); ApplyTool(); }
         Refresh();
     }
 

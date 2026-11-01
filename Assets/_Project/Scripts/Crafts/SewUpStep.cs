@@ -27,11 +27,13 @@ public class SewUpStep : TracingStep
         // The front's colourwork, scaled onto the body.
         float scale = (BodyRight - BodyLeft) / front.Size.x;
         var bodyOrigin = new Vector2(BodyLeft, Hem);
-        for (int i = 0; i < front.Stitches; i++)
+        var yarn = Yarn;
+        for (int i = 0; i < front.Stitches; i++)   // as it was really knitted: a stitch in the wrong colour shows here too
         {
-            if (front.stitches[i].color < 0) continue;
+            var c = KnittedColor(front, "front", i);
+            if (front.stitches[i].color < 0 && c == yarn) continue;
             var at = bodyOrigin + (front.CellCenter(i) - front.origin) * scale;
-            if (at.y < Shoulder - 0.02f) Square(at, front.cell * scale, front.ColorOf(i, Yarn), 3);
+            if (at.y < Shoulder - 0.02f) Square(at, front.cell * scale, c, 3);
         }
     }
 

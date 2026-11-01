@@ -92,7 +92,8 @@ public static class SaveSystem
                 if (st != null && (st.supplyId == "aida_14ct" || st.supplyId == "aida_cream" || st.supplyId == "aida_18ct" || st.supplyId == "linen_28ct"))
                     st.amount = Mathf.CeilToInt(st.amount / 400f);
         data.met ??= new System.Collections.Generic.List<string>();
-        if (data.version < 25) data.noticesSeen = data.stamps.Count;   // the bell starts quiet: everything so far was already announced
+        if (data.version < 25) data.noticesSeen = data.stamps.Count;
+        if (data.version < 26) foreach (var o in data.orders) o.knitStyle = 0;   // their scarf stripes stay as they were begun   // the bell starts quiet: everything so far was already announced
         foreach (var o in data.orders)
         {
             o.carried ??= new System.Collections.Generic.List<Vector2Int>();

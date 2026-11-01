@@ -33,14 +33,29 @@ public abstract class PieceStep : MonoBehaviour, ICraftStep
     protected KnitLayout Knit => knitLayout ??= KnitLayout.For(order, Recipe.piece);
     protected Color Yarn => Color.Lerp(area.fabricColor, Color.black, 0.25f);
 
-    /// Draws a finished knitted piece: the fabric behind each stitch, then the stitch in its yarn colour.
+    /// Draws a finished knitted piece: the fabric behind each stitch, then the stitch in the yarn it was really knitted
+    /// in (owner, 2026-11-01: mistakes show in the finished piece; a stitch in the wrong colour stays that colour).
     protected void DrawKnitted(KnitLayout k, int sorting)
     {
         for (int i = 0; i < k.Stitches; i++)
         {
             Rect(k.CellCenter(i), Vector2.one * k.cell * 1.02f, area.fabricColor, sorting);
-            Stitch(k.CellCenter(i), k.cell, k.Purl(i), k.ColorOf(i, Yarn), sorting + 1);
+            Stitch(k.CellCenter(i), k.cell, k.Purl(i), KnittedColor(k, Recipe.piece, i), sorting + 1);
         }
+    }
+
+    /// The yarn a stitch of a knitted piece was actually knitted in (from that piece's Knit Rows step), or the planned one.
+    protected Color KnittedColor(KnitLayout k, string piece, int i)
+    {
+        var steps = order.Steps;
+        for (int s = 0; s < steps.Length; s++)
+        {
+            if (steps[s].kind != StepKind.KnitRows || (steps[s].piece ?? "") != (piece ?? "")) continue;
+            var points = order.StepState(s).points;
+            if (i < points.Count) return k.PaletteColor(KnitRowsStep.HeldYarn(points[i], k.stitches[i].color), Yarn);
+            break;
+        }
+        return k.ColorOf(i, Yarn);
     }
     protected PieceShape Shape => shape ??= PieceShape.For(order.target, ShapePadding);
     /// Space around the piece's shape; embroidery leaves more, for the hoop.

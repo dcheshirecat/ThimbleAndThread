@@ -138,12 +138,16 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
                                                 : "Six o'clock: closing time.\n<size=40>Flip the sign when you're ready.</size>");
     }
 
+    /// Whether the player is in one of the town's shops right now.
+    public bool InAShop => GM.Current == ScreenId.Market || GM.Current == ScreenId.Boutique || GM.Current == ScreenId.PatternShop || GM.Current == ScreenId.Furniture;
+
     void RingBell()
     {
         BellRinging = true;
         AudioManager.Play(Sfx.Bell);
         Haptics.Buzz();
-        if (GM.Current != ScreenId.Shop) Stamps.Notice("Ding-dong! Someone's at the shop door.");
+        // In another shop the phone just buzzes (owner, 2026-11-01); anywhere else a notice pops up too.
+        if (GM.Current != ScreenId.Shop && !InAShop) Stamps.Notice("Ding-dong! Someone's at the shop door.");
         OnBell?.Invoke();
     }
 
@@ -929,9 +933,9 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         string delivered = ReceiveDeliveries();
         InviteVisitors();
         GM.Persist();
-        if (IsSaturday || IsSunday) { LastMessage = ""; if (delivered.Length > 0) Stamps.Announce(delivered.Trim()); StartWeekendDay(); return; }
-        int ready = Save.orders.FindAll(o => o.finished).Count;
-        LastMessage = $"Good morning! Day {Save.day}." + (ready > 0 ? $" {ready} wrapped order{(ready == 1 ? "" : "s")} waiting to be picked up." : "") + delivered;
+        if (delivered.Length > 0) Stamps.Announce(delivered.Trim());   // a pop-up when a shop order arrives (owner, 2026-11-01)
+        LastMessage = "";
+        if (IsSaturday || IsSunday) { StartWeekendDay(); return; }
         GM.ChangeScreen(ScreenId.Shop);
     }
 
@@ -1428,6 +1432,21 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
 
     /// What an unfinished order still needs that the player doesn't have: supplies, tools, a fabric or yarn to
     /// choose. Empty when everything's in the cupboard (or there's nothing to make yet, e.g. a design first).
+    /// What all the open orders still need added together, less what's in the cupboard: supplyId -> how much more to
+    /// get. (Each order on its own can look covered when two orders want the same piece of Aida.)
+    public Dictionary<string, int> ShortfallAll()
+    {
+        var total = new Dictionary<string, int>();
+        foreach (var o in Save.orders)
+        {
+            if (o.patternOnly || o.finished || o.needsDesign || o.item == null) continue;
+            foreach (var n in NeedsFor(o)) { total.TryGetValue(n.supplyId, out int v); total[n.supplyId] = v + n.amount; }
+        }
+        var more = new Dictionary<string, int>();
+        foreach (var kv in total) { int m = kv.Value - shop.Stock(kv.Key); if (m > 0) more[kv.Key] = m; }
+        return more;
+    }
+
     public List<string> ShortOf(Order o)
     {
         var list = new List<string>();

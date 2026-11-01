@@ -124,6 +124,6 @@ public partial class ShopDay
         }
         if (came.Count == 0) return "";
         came.Reverse();
-        return $" A delivery came: {string.Join(", ", came)}.";
+        return $"A delivery came!\n<size=40>{string.Join(", ", came)}</size>";
     }
 }

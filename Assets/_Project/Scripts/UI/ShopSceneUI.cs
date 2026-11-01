@@ -75,7 +75,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         bool someoneComing = day.CustomersWaiting > 0;
         bubble.SetActive(Ringing);
         bubbleText.text = Ringing ? "Ding-dong! Someone's at the door." : "";
-        statusText.text = day.LastMessage ?? "";   // the day and chapter are in the top bar
+        statusText.text = "";   // owner, 2026-11-01: no running commentary on the shop screen (only chore instructions)
         ShowPage(Page, instant: true);
     }
 
@@ -179,6 +179,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     void ShowPastimes()
     {
         bool can = day.CanPassTime;
+        pastimeButton.SetActive(Page == 1);   // only by the counter, not over the pickup or display lists
         pastimeButton.GetComponent<Button>().interactable = can;
         if (!pastimeLayer.activeSelf) return;
         kettleButton.interactable = can;
@@ -283,6 +284,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
     public void ShowPage(int p, bool instant = false)
     {
+        if (pastimeButton != null) pastimeButton.SetActive(p == 1);
         Page = Mathf.Clamp(p, 0, pages.Length - 1);
         if (instant) { offset = -Page; Place(); }
         pageLabel.text = string.Join("  ", new[] { Page == 0 ? "●" : "○", Page == 1 ? "●" : "○", Page == 2 ? "●" : "○" });   // page dots

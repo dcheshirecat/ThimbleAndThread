@@ -235,13 +235,13 @@ public static class TestSceneBuilder
         var left = shopScene.pages[0];
         Label(left, "Heading", new Vector2(0.06f, 0.71f), new Vector2(0.94f, 0.77f), 76, TextAnchor.MiddleCenter).text = "Waiting for pickup";
         shopScene.pickupEmpty = Label(left, "Info", new Vector2(0.08f, 0.64f), new Vector2(0.92f, 0.71f), 52, TextAnchor.UpperCenter);
-        shopScene.pickupTemplate = Button(StackList(left, 0.63f), "Pickup Template", null, 1800);
+        shopScene.pickupTemplate = Button(ScrollList(left, 0.14f, 0.63f, nested: true), "Pickup Template", null, 1800);
         TallRow(shopScene.pickupTemplate, 230, 54);
         // Right: the pattern display
         var right = shopScene.pages[2];
         Label(right, "Heading", new Vector2(0.06f, 0.71f), new Vector2(0.94f, 0.77f), 76, TextAnchor.MiddleCenter).text = "The pattern display";
         shopScene.displayInfo = Label(right, "Info", new Vector2(0.08f, 0.63f), new Vector2(0.92f, 0.71f), 50, TextAnchor.UpperCenter);
-        shopScene.displayTemplate = Button(StackList(right, 0.62f), "Display Template", null, 1800);
+        shopScene.displayTemplate = Button(ScrollList(right, 0.14f, 0.62f, nested: true), "Display Template", null, 1800);
         TallRow(shopScene.displayTemplate, 260, 52);
         var dtText = shopScene.displayTemplate.GetComponentInChildren<Text>();
         ((RectTransform)dtText.transform).offsetMin = new Vector2(300, 0);
@@ -442,7 +442,8 @@ public static class TestSceneBuilder
 
         // Side screens
         p = Panel(ScreenId.Market, "Supply Market", new Color(0.85f, 0.70f, 0.60f));
-        ui.marketStatus = Label(p, "Status", new Vector2(0.22f, 0.82f), new Vector2(0.96f, 0.92f), 56, TextAnchor.MiddleCenter);
+        ui.marketStatus = Label(p, "Status", new Vector2(0.22f, 0.82f), new Vector2(0.76f, 0.92f), 56, TextAnchor.MiddleCenter);
+        Coins(p);
         OwnerPortrait(p, content.Customer(ShopDay.MarketOwnerId), day.ChatWithMarketOwner);
         var shelves = ScrollList(p, 0.14f, 0.81f);
         ui.shelfTitleTemplate = ShelfTitle(shelves);
@@ -570,6 +571,7 @@ public static class TestSceneBuilder
 
         // The Sunday market stall (StallUI): the table, the shopkeeper behind it, and the shopper in front
         p = Panel(ScreenId.Stall, "", new Color(0.78f, 0.88f, 0.95f));
+        Coins(p);
         var stall = canvasGo.AddComponent<StallUI>();
         stall.day = day;
         stall.clockText = Label(p, "Clock", new Vector2(0.05f, 0.9f), new Vector2(0.95f, 0.97f), 58, TextAnchor.MiddleCenter);
@@ -594,6 +596,7 @@ public static class TestSceneBuilder
 
         // Marsh's Workshop: furniture and decorations for your shop (FurnitureUI)
         p = Panel(ScreenId.Furniture, "Marsh's Workshop", new Color(0.86f, 0.78f, 0.66f));
+        Coins(p);
         var furniture = canvasGo.AddComponent<FurnitureUI>();
         furniture.day = day;
         furniture.statusText = Label(p, "Status", new Vector2(0.22f, 0.79f), new Vector2(0.96f, 0.92f), 52, TextAnchor.MiddleCenter);
@@ -608,6 +611,7 @@ public static class TestSceneBuilder
 
         // Finch's Pattern Parlour: ready-made patterns to sell (PatternShopUI)
         p = Panel(ScreenId.PatternShop, "Finch's Pattern Parlour", new Color(0.80f, 0.86f, 0.78f));
+        Coins(p);
         var pshop = canvasGo.AddComponent<PatternShopUI>();
         pshop.day = day;
         pshop.statusText = Label(p, "Status", new Vector2(0.22f, 0.79f), new Vector2(0.96f, 0.92f), 52, TextAnchor.MiddleCenter);
@@ -626,6 +630,7 @@ public static class TestSceneBuilder
 
         // Moreau's boutique: hair, tops, accessories (BoutiqueUI)
         p = Panel(ScreenId.Boutique, "Moreau's Boutique", new Color(0.92f, 0.82f, 0.88f));
+        Coins(p);
         var boutique = canvasGo.AddComponent<BoutiqueUI>();
         boutique.day = day;
         boutique.statusText = Label(p, "Status", new Vector2(0.22f, 0.82f), new Vector2(0.96f, 0.92f), 56, TextAnchor.MiddleCenter);
@@ -966,9 +971,9 @@ public static class TestSceneBuilder
 
     /// A vertical list that scrolls when it's longer than the band between y = bottom and y = top.
     /// Returns the list's content, where rows (or a row template) go.
-    static Transform ScrollList(Transform panel, float bottom, float top)
+    static Transform ScrollList(Transform panel, float bottom, float top, bool nested = false)
     {
-        var view = new GameObject("List", typeof(RectTransform), typeof(RectMask2D), typeof(ScrollRect), typeof(Image));
+        var view = new GameObject("List", typeof(RectTransform), typeof(RectMask2D), nested ? typeof(NestedScroll) : typeof(ScrollRect), typeof(Image));
         var vrt = (RectTransform)view.transform;
         vrt.SetParent(panel, false);
         vrt.anchorMin = new Vector2(0.03f, bottom); vrt.anchorMax = new Vector2(0.97f, top);
@@ -1230,6 +1235,17 @@ public static class TestSceneBuilder
 
     /// A plain coloured shape (placeholder art), centred at a fraction of its parent.
     /// The shop owner behind their counter, top left of their shop: tap them to chat.
+    /// Coins at the top right of a shop or the stall (UI/CoinCounter.cs).
+    static void Coins(Transform panel)
+    {
+        var coins = Shape(panel, "Coins", new Vector2(0.86f, 0.885f), new Vector2(330, 110), new Color(1, 1, 1, 0.85f), uiSprite);
+        Shape(coins, "CoinIcon", new Vector2(0.2f, 0.5f), new Vector2(80, 80), new Color(0.98f, 0.80f, 0.25f), Knob());
+        var counter = coins.gameObject.AddComponent<CoinCounter>();
+        counter.text = MakeText(coins, "CoinText", "0", 60);
+        Stretch((RectTransform)counter.text.transform);
+        ((RectTransform)counter.text.transform).offsetMin = new Vector2(120, 0);
+    }
+
     static void OwnerPortrait(Transform parent, CustomerDef owner, UnityAction chat)
     {
         var face = owner != null ? owner.GetPortrait(Expression.Neutral) : null;
