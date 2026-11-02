@@ -50,6 +50,7 @@ public static class SaveSystem
         data.decor ??= new System.Collections.Generic.List<string>();
         data.decorPlaced ??= new System.Collections.Generic.List<string>();
         data.letters ??= new System.Collections.Generic.List<Letter>();
+        data.window ??= new System.Collections.Generic.List<string>();
         data.visitorsToday ??= new System.Collections.Generic.List<string>();
         data.ownedSupplies ??= new System.Collections.Generic.List<string>();
         data.unlockedItems ??= new System.Collections.Generic.List<string>();

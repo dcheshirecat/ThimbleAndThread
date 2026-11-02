@@ -259,6 +259,43 @@ public static class TestSceneBuilder
         Shape(doorRt, "Window", new Vector2(0.5f, 0.75f), new Vector2(220, 200), new Color(0.75f, 0.88f, 0.95f), uiSprite);
         Shape(doorRt, "Knob", new Vector2(0.82f, 0.45f), new Vector2(50, 50), new Color(0.95f, 0.80f, 0.35f), Knob());
         shopScene.door = doorRt;
+        // The shop window (owner, 2026-11-02): left of the counter, showing what's in it; tap to dress it.
+        var shopWindow = Button(mid, "Shop Window", shopScene.ToggleShopWindow, 380);
+        shopWindow.GetComponentInChildren<Text>().text = "";
+        var swRt = (RectTransform)shopWindow.transform;
+        Object.DestroyImmediate(shopWindow.GetComponent<LayoutElement>());
+        swRt.anchorMin = swRt.anchorMax = new Vector2(0.15f, 0.5f);
+        swRt.sizeDelta = new Vector2(380, 430);
+        shopWindow.GetComponent<Image>().color = new Color(0.55f, 0.38f, 0.25f);   // the frame
+        var glass = Shape(swRt, "Glass", new Vector2(0.5f, 0.5f), new Vector2(330, 380), new Color(0.80f, 0.90f, 0.97f), uiSprite);
+        glass.GetComponent<Image>().raycastTarget = false;
+        shopScene.windowSlots = new Image[3];
+        for (int i = 0; i < 3; i++)
+        {
+            var slot = Shape(glass, $"Shown {i}", new Vector2(0.5f, 0.78f - i * 0.28f), new Vector2(150, 100), Color.white, null);
+            var img = slot.GetComponent<Image>();
+            img.preserveAspect = true;
+            img.raycastTarget = false;
+            shopScene.windowSlots[i] = img;
+            slot.gameObject.SetActive(false);
+        }
+        var windowLayer = new GameObject("Window Layer", typeof(RectTransform), typeof(Image), typeof(Button));
+        windowLayer.transform.SetParent(p, false);
+        Stretch((RectTransform)windowLayer.transform);
+        windowLayer.GetComponent<Image>().color = new Color(0, 0, 0, 0.4f);
+        UnityEventTools.AddPersistentListener(windowLayer.GetComponent<Button>().onClick, shopScene.ToggleShopWindow);
+        var windowBox = Shape(windowLayer.transform, "Window Box", new Vector2(0.5f, 0.5f), new Vector2(1850, 1900), new Color(0.97f, 0.95f, 0.90f), uiSprite);
+        windowBox.GetComponent<Image>().raycastTarget = true;
+        windowBox.gameObject.AddComponent<ClickBlocker>();
+        Label(windowBox, "Window Title", new Vector2(0.05f, 0.92f), new Vector2(0.95f, 0.98f), 80, TextAnchor.MiddleCenter).text = "The Shop Window";
+        shopScene.windowInfo = Label(windowBox, "Info", new Vector2(0.05f, 0.72f), new Vector2(0.95f, 0.91f), 54, TextAnchor.UpperCenter);
+        shopScene.windowInfo.color = Ink;
+        shopScene.windowTemplate = Button(ScrollList(windowBox, 0.12f, 0.71f), "Window Row Template", null, 1700);
+        var windowClose = Button(windowBox, "Window Close", shopScene.ToggleShopWindow, 500);
+        Place(windowClose, new Vector2(0.5f, 0.05f), new Vector2(500, 130));
+        windowClose.GetComponentInChildren<Text>().text = "Done";
+        windowLayer.SetActive(false);
+        shopScene.windowLayer = windowLayer;
         var bubble = Shape(mid, "Bubble", new Vector2(0.5f, 0.745f), new Vector2(1500, 170), Color.white, uiSprite);
         shopScene.bubble = bubble.gameObject;
         shopScene.bubbleText = MakeText(bubble, "Text", "", 56);

@@ -226,6 +226,8 @@ public class SaveData
     public int noticesSeen;                                           // stamps already seen in the notices list (the top bar's bell)
     public List<Stamp> stamps = new List<Stamp>();                   // achievements, stamped in the Journal
     public List<Letter> letters = new List<Letter>();                // letters from friends (version 33)
+    public List<string> window = new List<string>();                 // the shop window: "p:patternId" / "s:stall piece id"
+    public int windowDay;                                            // the day the window was last dressed
     public List<string> notes = new List<string>();                  // "customerId|what you learned" from their dialogue (~ note)
     public List<string> met = new List<string>();                    // customers who've come in (or whose shop you've visited)             // "customerId:preferenceId" the player has been told
     public List<string> recentLines = new List<string>();            // dialogue knots heard lately, newest first (to avoid repeats)

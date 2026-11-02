@@ -91,6 +91,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         if (!OnShop || Save == null) return;
         ShowShops();
         ShowDecor();   // only rebuilds when what's out changes
+        ShowWindow();
         if (pastimeButton != null) ShowPastimes();
         if (Ringing && !opening)   // the door rattles now and then until it's answered
         {
@@ -233,6 +234,66 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         atticButton.interactable = day.CanSort("attic");
         basementButton.gameObject.SetActive(day.HasExpansion("basement"));
         basementButton.interactable = day.CanSort("basement");
+    }
+
+    // ---- The shop window (owner, 2026-11-02): up to three things on show ----
+    public GameObject windowLayer;
+    public Text windowInfo;
+    public Button windowTemplate;
+    public Image[] windowSlots;          // the little things shown in the window on the shop page
+    readonly List<GameObject> windowRows = new List<GameObject>();
+    string windowShownFor;
+
+    public void ToggleShopWindow()
+    {
+        bool show = !windowLayer.activeSelf;
+        windowLayer.SetActive(show);
+        if (show) { windowLayer.transform.SetAsLastSibling(); BuildWindow(); }
+    }
+
+    void BuildWindow()
+    {
+        foreach (var r in windowRows) Destroy(r);
+        windowRows.Clear();
+        windowTemplate.gameObject.SetActive(false);
+        var shown = day.WindowShown();
+        string state = shown.Count == 0 ? "The window's empty." : day.WindowFresh ? $"Dressed on day {Save.windowDay}: passers-by are stopping to look."
+                     : $"Dressed on day {Save.windowDay}: it's looking a bit tired. Change something to freshen it up.";
+        windowInfo.text = $"Put up to {ShopDay.WindowMax} things in your window: pieces waiting for the stall, or patterns. "
+                        + $"A window dressed in the last week draws people in.\n<b>{state}</b>"
+                        + (string.IsNullOrEmpty(day.LastMessage) ? "" : $"\n{day.LastMessage}");
+        foreach (var e in day.WindowChoices())
+        {
+            var entry = e;
+            var row = Instantiate(windowTemplate, windowTemplate.transform.parent);
+            row.gameObject.SetActive(true);
+            row.name = $"WindowRow_{windowRows.Count}";
+            bool inWindow = shown.Contains(entry);
+            row.GetComponentInChildren<Text>().text = day.WindowLabel(entry) + (inWindow ? "  ·  <b>in the window</b>" : "");
+            row.GetComponent<Image>().color = inWindow ? new Color(0.85f, 0.95f, 0.85f) : Color.white;
+            row.onClick.AddListener(() => { day.ToggleWindow(entry); BuildWindow(); });
+            windowRows.Add(row.gameObject);
+        }
+        if (windowRows.Count == 0) windowInfo.text += "\nNothing to show yet: make something for the stall, or get a pattern you can make.";
+        windowShownFor = null;
+    }
+
+    /// The window on the shop page shows what's in it.
+    void ShowWindow()
+    {
+        if (windowSlots == null) return;
+        string sig = string.Join(",", Save.window) + Save.stall.Count;
+        if (sig == windowShownFor) return;
+        windowShownFor = sig;
+        var shown = day.WindowShown();
+        for (int i = 0; i < windowSlots.Length; i++)
+        {
+            var item = i < shown.Count ? day.ItemInWindow(shown[i]) : null;
+            windowSlots[i].gameObject.SetActive(item != null);
+            if (item == null) continue;
+            windowSlots[i].sprite = item.icon;
+            windowSlots[i].color = item.icon != null ? Color.white : new Color(0.9f, 0.7f, 0.6f);
+        }
     }
 
     // ---- Your furniture and decorations (owner, 2026-11-02: anywhere in the shop) ----

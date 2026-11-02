@@ -252,7 +252,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         Shuffle(list);
         // Pickups first, then people who love today's weather (owner, 2026-11-02: weather changes who visits).
         var weather = Today;
-        int Rank(string id) => (PickupFor(content.Customer(id)) != null ? 2 : 0) + (LikesWeather(id, weather) ? 1 : 0);
+        int Rank(string id) => (PickupFor(content.Customer(id)) != null ? 4 : 0) + (DrawnByWindow(id) ? 2 : 0) + (LikesWeather(id, weather) ? 1 : 0);
         list.Sort((a, b) => Rank(b).CompareTo(Rank(a)));
         int visits = DailyVisits;
         int pickups = list.FindAll(id => PickupFor(content.Customer(id)) != null).Count;
@@ -278,7 +278,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         get
         {
             int friends = Save.relationships.FindAll(r => r.level >= 2).Count;
-            return Mathf.Max(3, 8 + (Progress.PlayerLevel - 1) + friends + Progress.UpgradeAmount(UpgradeEffect.ExtraVisitor) + WeatherVisits);
+            return Mathf.Max(3, 8 + (Progress.PlayerLevel - 1) + friends + Progress.UpgradeAmount(UpgradeEffect.ExtraVisitor) + WeatherVisits + WindowVisits);
         }
     }
 
@@ -1057,6 +1057,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         NewOnlineOffers();
         InviteVisitors();
         MorningPost();
+        WindowReminder();
         GM.Persist();
         LastMessage = "";
         if (IsSaturday || IsSunday) { StartWeekendDay(); return; }
