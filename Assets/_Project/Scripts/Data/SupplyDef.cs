@@ -26,6 +26,7 @@ public class SupplyDef : ScriptableObject
     public string unit = "uses";           // what a unit is: "squares", "stitches", "plushies", "pairs"...
     public int starterPacks;               // packs a new game starts with (the starter kit)
     public MarketSlot market = MarketSlot.Rotating;
+    [Range(0, 4)] public int season;        // 0 = all year; 1 spring, 2 summer, 3 autumn, 4 winter: only on sale then (and always then)
 
     [Header("Tools and sizes")]
     public string toolType;                // tools: "hoop", "tapestry_needle", "crochet_hook", "knitting_needles", "scissors"...

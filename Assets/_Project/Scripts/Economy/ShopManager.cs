@@ -68,6 +68,11 @@ public class ShopManager : MonoBehaviour
             foreach (var s in content.supplies)
             {
                 if (s == null || (int)GroupOf(s.kind) != g) continue;
+                if (s.season != 0)   // seasonal (owner, 2026-11-02): on the shelf all through its season, gone otherwise
+                {
+                    if (s.season == (Week.DayOfYear(Save.day) - 1) / Week.SeasonDays + 1 && s.market != MarketSlot.NotSold) sale.Add(s);
+                    continue;
+                }
                 if (s.market == MarketSlot.Always) sale.Add(s);
                 else if (s.market == MarketSlot.Rotating) uncommon.Add(s);
                 else if (s.market == MarketSlot.Rare) rare.Add(s);

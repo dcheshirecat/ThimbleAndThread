@@ -8,7 +8,7 @@ public partial class ShopDay
 {
     public const string FairFlag = "stall:fair";
     public bool AtFair => Save != null && Save.flags.Contains(FairFlag);
-    public string MarketName => AtFair ? "Harbour Fair" : "Square Market";
+    public string MarketName => FestivalToday is FestivalDef f ? f.name : AtFair ? "Harbour Fair" : "Square Market";
 
     /// The square's goals: name, how far along, target.
     public List<(string name, int have, int need)> MarketGoals()

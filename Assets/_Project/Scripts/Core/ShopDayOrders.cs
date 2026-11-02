@@ -30,7 +30,7 @@ public partial class ShopDay
         var list = new List<SupplyDef>();
         foreach (var s in content.supplies)
         {
-            if (s == null || s.market == MarketSlot.NotSold || !Progress.SupplyShown(s)) continue;
+            if (s == null || s.market == MarketSlot.NotSold || !Progress.SupplyShown(s) || !InSeason(s)) continue;
             if ((s.kind == SupplyKind.Tool || s.kind == SupplyKind.Book) && (shop.Owns(s.supplyId) || OnOrder("supply", s.supplyId) > 0)) continue;
             list.Add(s);
         }

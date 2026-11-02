@@ -143,7 +143,9 @@ public partial class ShopDay
     void QuietSunday()
     {
         Save.visitorsToday.Clear();
-        Narrate(null, "Sunday. The shop's closed, and the square fills with market stalls. Maybe one day you'll have one of your own.",
+        Narrate(null, FestivalToday is FestivalDef fest
+            ? $"Sunday, and the {fest.name}! The shop's closed and the whole town is out. Maybe one day you'll have a stall of your own."
+            : "Sunday. The shop's closed, and the square fills with market stalls. Maybe one day you'll have one of your own.",
             ("Wander round the market", () => Narrate(null,
                 Pick("Jars of honey, a man selling lobster pots, a stall of old buttons in tins. You buy a tin of buttons for nothing.",
                      "Stallholders call out prices. You note which ones draw a crowd."),
@@ -164,6 +166,7 @@ public partial class ShopDay
                 "Stocking the stall\nAt night, open a pattern in the Pattern Studio and tap Make One for the Stall. Finished pieces " +
                 "wait for Sunday. Shoppers name a price: take it, ask for more (they might walk off), or keep the piece.");
         }
+        AnnounceFestival();
         Save.visitorsToday.Clear();
         Save.clock = StallOpens;
         stallSoldToday.Clear();
@@ -245,7 +248,8 @@ public partial class ShopDay
         if (shopper == null && Save.clock >= nextShopper && Save.clock < StallCloses)
         {
             shopper = NewShopper();
-            nextShopper = Save.clock + (AtFair ? Random.Range(4, 10) : Random.Range(6, 15));   // the fair is busier
+            nextShopper = Save.clock + (FestivalToday is FestivalDef fest ? Random.Range(fest.gapMin, fest.gapMax + 1)   // festivals are busiest
+                                        : AtFair ? Random.Range(4, 10) : Random.Range(6, 15));   // the fair is busier
         }
     }
 
@@ -256,7 +260,7 @@ public partial class ShopDay
         {
             var item = content.Item(piece.itemId);
             if (item == null) continue;
-            int price = Mathf.Max(1, Mathf.RoundToInt(item.basePrice * Mathf.Lerp(0.6f, 1.15f, piece.quality)));
+            int price = FestivalOffer(Mathf.Max(1, Mathf.RoundToInt(item.basePrice * Mathf.Lerp(0.6f, 1.15f, piece.quality))), item, false);
             wants.Add(new Shopper { piece = piece, offer = price,
                 line = Pick($"Oh, look at this {piece.name}! Would you take {price} coins?", $"Is the {piece.name} handmade? I'll give you {price} for it.",
                             $"My daughter would love the {piece.name}. {price} coins?") });
@@ -265,9 +269,10 @@ public partial class ShopDay
         foreach (var p in StallShown())
         {
             if (IsMystery(p) || CopiesToSell(p) <= 0) continue;   // only copies you can spare
-            wants.Add(new Shopper { pattern = p, offer = p.price,
-                line = Pick($"I make these myself. Could I buy a copy of your {p.name} pattern? {p.price} coins?",
-                            $"That {p.name} chart is lovely. {p.price} for a copy?") });
+            int copyPrice = FestivalOffer(p.price, null, true);
+            wants.Add(new Shopper { pattern = p, offer = copyPrice,
+                line = Pick($"I make these myself. Could I buy a copy of your {p.name} pattern? {copyPrice} coins?",
+                            $"That {p.name} chart is lovely. {copyPrice} for a copy?") });
         }
         int leaves = Save.clock + 20;
         string stranger = Strangers[Random.Range(0, Strangers.Length)];

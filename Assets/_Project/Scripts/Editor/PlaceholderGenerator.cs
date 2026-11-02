@@ -191,6 +191,24 @@ public static class PlaceholderGenerator
         Supply("alpaca_yarn",  "100% Alpaca Yarn", SupplyKind.Yarn, CraftType.Knitting, 35, 3, new Color(0.90f, 0.86f, 0.80f), 300, "stitches", X, 0, "", 3);
         Supply("mohair_yarn",  "Mohair Yarn",      SupplyKind.Yarn, CraftType.Knitting, 30, 3, new Color(0.80f, 0.70f, 0.85f), 300, "stitches", X, 0, "", 3);
 
+        // Seasonal supplies (owner, 2026-11-02): on the market's shelves all through their season only (SupplyDef.season).
+        Seasonal(1, "floss_blossom", "Blossom Pink Floss", SupplyKind.Thread, cs, 4, 1, new Color(0.98f, 0.78f, 0.84f), 30, "squares");
+        Seasonal(1, "floss_lilac", "Lilac Floss", SupplyKind.Thread, cs, 4, 1, new Color(0.78f, 0.68f, 0.90f), 30, "squares");
+        Seasonal(1, "lilac_cotton_yarn", "Lilac Cotton Yarn", SupplyKind.Yarn, CraftType.Crochet, 7, 1, new Color(0.80f, 0.72f, 0.92f), 300, "stitches", 4);
+        Seasonal(1, "floral_cotton", "Floral Quilting Cotton", SupplyKind.Fabric, CraftType.Quilting, 9, 2, new Color(0.95f, 0.82f, 0.86f), 1, "fat quarters");
+        Seasonal(2, "floss_seaglass", "Sea Glass Floss", SupplyKind.Thread, cs, 4, 1, new Color(0.62f, 0.85f, 0.80f), 30, "squares");
+        Seasonal(2, "floss_sunshine", "Sunshine Floss", SupplyKind.Thread, cs, 4, 1, new Color(0.99f, 0.86f, 0.30f), 30, "squares");
+        Seasonal(2, "sunshine_cotton_yarn", "Sunshine Cotton Yarn", SupplyKind.Yarn, CraftType.Crochet, 7, 1, new Color(0.99f, 0.86f, 0.35f), 300, "stitches", 4);
+        Seasonal(2, "deckchair_canvas", "Deckchair Stripe Canvas", SupplyKind.Fabric, CraftType.Sewing, 10, 2, new Color(0.30f, 0.55f, 0.85f), 4, "pieces");
+        Seasonal(3, "floss_mustard", "Mustard Floss", SupplyKind.Thread, cs, 4, 1, new Color(0.85f, 0.65f, 0.15f), 30, "squares");
+        Seasonal(3, "floss_pumpkin", "Pumpkin Floss", SupplyKind.Thread, cs, 4, 1, new Color(0.92f, 0.50f, 0.15f), 30, "squares");
+        Seasonal(3, "tweed_wool", "Harvest Tweed Wool", SupplyKind.Yarn, CraftType.Knitting, 14, 2, new Color(0.55f, 0.40f, 0.28f), 300, "stitches", 4);
+        Seasonal(3, "plum_wool", "Plum Wool", SupplyKind.Yarn, CraftType.Knitting, 12, 2, new Color(0.45f, 0.20f, 0.38f), 300, "stitches", 4);
+        Seasonal(4, "floss_holly", "Holly Green Floss", SupplyKind.Thread, cs, 4, 1, new Color(0.10f, 0.42f, 0.22f), 30, "squares");
+        Seasonal(4, "floss_snow_sparkle", "Snow Sparkle Floss", SupplyKind.Thread, cs, 8, 3, new Color(0.95f, 0.96f, 1.00f), 30, "squares");
+        Seasonal(4, "fairisle_wool", "Fair Isle Wool", SupplyKind.Yarn, CraftType.Knitting, 16, 2, new Color(0.70f, 0.12f, 0.15f), 300, "stitches", 4);
+        Seasonal(4, "velvet_ribbon", "Red Velvet Ribbon", SupplyKind.Notion, CraftType.Sewing, 8, 2, new Color(0.65f, 0.08f, 0.12f), 2, "lengths");
+
         // Floss: a skein covers 30 squares. These are also the Pattern Studio's colours.
         var red      = Supply("floss_red",      "Red Floss",      SupplyKind.Thread, cs, 3, 1, new Color(0.85f, 0.25f, 0.30f), 30, "squares", A, 1);
         var pink     = Supply("floss_pink",     "Pink Floss",     SupplyKind.Thread, cs, 3, 1, new Color(0.95f, 0.70f, 0.80f), 30, "squares", R);
@@ -1224,6 +1242,15 @@ public static class PlaceholderGenerator
             EditorUtility.SetDirty(def);
         }
         if (isNew) AssetDatabase.CreateAsset(def, assetPath);
+        return def;
+    }
+
+    /// A seasonal supply (only sold in its season; 1 spring .. 4 winter).
+    static SupplyDef Seasonal(int season, string id, string name, SupplyKind kind, CraftType craft, int price, int tier, Color c,
+                              int perPack, string unit, int size = 0)
+    {
+        var def = Supply(id, name, kind, craft, price, tier, c, perPack, unit, MarketSlot.Rotating, 0, "", size);
+        if (def.season != season) { def.season = season; EditorUtility.SetDirty(def); }
         return def;
     }
 

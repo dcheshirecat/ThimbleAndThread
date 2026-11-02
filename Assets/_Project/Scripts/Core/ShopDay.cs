@@ -249,7 +249,10 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         // How many come grows with the shop (owner, 2026-11-01): anyone collecting today always comes; the rest are a
         // random few, and once there are more visits than people, some drop by twice.
         Shuffle(list);
-        list.Sort((a, b) => (PickupFor(content.Customer(b)) != null).CompareTo(PickupFor(content.Customer(a)) != null));
+        // Pickups first, then people who love today's weather (owner, 2026-11-02: weather changes who visits).
+        var weather = Today;
+        int Rank(string id) => (PickupFor(content.Customer(id)) != null ? 2 : 0) + (LikesWeather(id, weather) ? 1 : 0);
+        list.Sort((a, b) => Rank(b).CompareTo(Rank(a)));
         int visits = DailyVisits;
         int pickups = list.FindAll(id => PickupFor(content.Customer(id)) != null).Count;
         if (list.Count > Mathf.Max(visits, pickups)) list.RemoveRange(Mathf.Max(visits, pickups), list.Count - Mathf.Max(visits, pickups));
@@ -274,7 +277,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         get
         {
             int friends = Save.relationships.FindAll(r => r.level >= 2).Count;
-            return 8 + (Progress.PlayerLevel - 1) + friends + Progress.UpgradeAmount(UpgradeEffect.ExtraVisitor);
+            return Mathf.Max(3, 8 + (Progress.PlayerLevel - 1) + friends + Progress.UpgradeAmount(UpgradeEffect.ExtraVisitor) + WeatherVisits);
         }
     }
 
@@ -462,7 +465,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     void Suggested(CustomerDef c, OwnedPattern p)
     {
         var item = ItemFor(p.itemId);
-        bool wanted = OrderGenerator.Wants(c, GM.GetRelationship(c.customerId).level).Exists(i => i.itemId == p.itemId);
+        bool wanted = OrderGenerator.Wants(c, GM.GetRelationship(c.customerId).level).Exists(i => i.itemId == p.itemId)
+                      || (SuitsWeather(item) && Random.value < 0.4f);   // just the thing for today's weather
         bool makesIt = item != null && c.makes != null && System.Array.IndexOf(c.makes, item.craft) >= 0;
         if (wanted && !makesIt)
         {
@@ -526,7 +530,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
                 ("Continue", () => Leave($"{c.displayName} browsed the display but didn't find anything.")));
             return;
         }
-        var pick = matches[Random.Range(0, matches.Count)];
+        var suited = matches.FindAll(p => SuitsWeather(ItemFor(p.itemId)));   // the weather sways what catches their eye
+        var pick = suited.Count > 0 && Random.value < 0.7f ? suited[Random.Range(0, suited.Count)] : matches[Random.Range(0, matches.Count)];
         if (c.makes != null && System.Array.IndexOf(c.makes, ItemFor(pick.itemId).craft) >= 0)
         {
             SaleOffer = pick;   // they make this kind of thing themselves: they buy the pattern
@@ -993,6 +998,10 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         if (Week.IsSaturday(tomorrow))
             Stamps.Announce("Tomorrow is Saturday\n<size=68>The shop stays closed. Spend the day with a friend, go to the craft circle " +
                             "or the jumble sale, or stay in and craft. Tonight's a good night to finish something.</size>");
+        else if (Week.IsSunday(tomorrow) && FestivalOn(tomorrow) is FestivalDef fest)
+            Stamps.Announce(StallOpen || CanHaveStall
+                ? $"Tomorrow: the {fest.name}!\n<size=68>{fest.blurb} Ready to sell: {Save.stall.Count} piece{(Save.stall.Count == 1 ? "" : "s")}.</size>"
+                : $"Tomorrow: the {fest.name}\n<size=68>The shop stays closed, and the whole town turns out.</size>");
         else if (Week.IsSunday(tomorrow))
             Stamps.Announce(StallOpen || CanHaveStall
                 ? $"Tomorrow is Sunday: market day\n<size=68>Your stall on the square, 10 till 4. Ready to sell: {Save.stall.Count} " +
