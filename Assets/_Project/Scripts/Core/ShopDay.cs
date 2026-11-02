@@ -76,7 +76,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     static int Gap(int clock)
     {
         bool busy = (clock >= 11 * 60 + 30 && clock < 13 * 60 + 30) || (clock >= 15 * 60 && clock < 17 * 60);
-        return busy ? Random.Range(12, 31) : Random.Range(30, 71);
+        return busy ? Random.Range(8, 21) : Random.Range(18, 41);   // owner, 2026-11-02: a bit more often (was 12-30 and 30-70)
     }
 
     // ---- Shop hours (owner, 2026-10-31: the other shops open at set hours) ----
@@ -267,14 +267,14 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         }
     }
 
-    /// Visits in a day: 3, one more for every level after the first and for every friend at level 2 or more, and
+    /// Visits in a day (owner, 2026-11-02: up from 3): 5, one more for every level after the first and for every friend at level 2 or more, and
     /// the sign out front's extra.
     public int DailyVisits
     {
         get
         {
             int friends = Save.relationships.FindAll(r => r.level >= 2).Count;
-            return 3 + (Progress.PlayerLevel - 1) + friends + Progress.UpgradeAmount(UpgradeEffect.ExtraVisitor);
+            return 5 + (Progress.PlayerLevel - 1) + friends + Progress.UpgradeAmount(UpgradeEffect.ExtraVisitor);
         }
     }
 
