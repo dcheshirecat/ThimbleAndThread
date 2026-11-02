@@ -31,6 +31,7 @@ Or just send the PNGs to Claude with a note saying what each one is.
 | Art | Folder | Filename | Size |
 |---|---|---|---|
 | Backgrounds | `Art/Backgrounds/` | `bg_shop_day.png`, `bg_workroom_night.png`, `bg_workbench.png` | 2048 x 4440, portrait (see below) |
+| Town map (Saturdays) | `Art/Backgrounds/` | `town_map.png` | 2048 x 3600 (the placeholder is 1024 x 1800, same shape). The sea along the bottom; it scrolls up and down. The pins sit on top at the spots in `ShopDay.MapSpot` (Core/ShopDayTown.cs, fractions from the left and from the bottom): draw the places there, or ask Claude to move the spots to match your drawing. |
 | Customer, full body | `Art/Characters/Customers/` | `customer_mara_body.png` | 1500 x 2000 |
 | Customer portraits | `Art/Characters/Customers/` | `customer_mara_happy.png` (neutral, happy, sad, surprised, thoughtful) | 1024 x 1024 |
 | Player character | `Art/Characters/Player/` | `player_<layer>_<name>.png` | same canvas for all layers |

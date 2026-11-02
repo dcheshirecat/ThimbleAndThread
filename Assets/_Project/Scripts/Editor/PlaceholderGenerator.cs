@@ -776,6 +776,7 @@ public static class PlaceholderGenerator
             (x, y) => { float r = Mathf.Sqrt(x * x + y * y), a = Mathf.Atan2(y, x); return r < 0.22f || (r < 0.42f && r > 0.27f && Mathf.Cos(a * 8) > 0.55f); }, // sun
         };
         for (int i = 0; i < 7; i++) MakeIcon($"{Root}/Art/UI/Weekdays/{Week.SymbolFile(i)}", shapes[i]);
+        TownMap($"{Root}/Art/Backgrounds/town_map.png");
         MakeIcon($"{Root}/Art/UI/icon_pencil.png", (x, y) =>   // the shop edit button: a pencil, point down-left
         {
             float u = (x + y) * 0.7071f, v = (y - x) * 0.7071f;   // u along the pencil, v across it
@@ -788,6 +789,60 @@ public static class PlaceholderGenerator
             float r = Mathf.Sqrt(x * x + y * y), a = Mathf.Atan2(y, x);
             return r > 0.11f && (r < 0.3f || (r < 0.42f && Mathf.Cos(a * 8) > 0.3f));
         });
+    }
+
+    /// The Saturday town map's placeholder (2048 x 3600 shape, drawn at half size): sea along the bottom with the harbour and the
+    /// headland, the beach, a hill rising to the church, and the streets between the places (ShopDay.MapSpot, MapRoads). The
+    /// owner replaces it with a drawing of the same shape; the pins sit on top at ShopDay.MapSpot.
+    static void TownMap(string path)
+    {
+        if (File.Exists(path)) return;
+        const int w = 1024, h = 1800;
+        var pixels = new Color32[w * h];
+        Color sea = new Color(0.45f, 0.66f, 0.86f), deep = new Color(0.33f, 0.53f, 0.78f), sand = new Color(0.93f, 0.86f, 0.66f);
+        Color low = new Color(0.66f, 0.82f, 0.58f), high = new Color(0.48f, 0.68f, 0.45f), road = new Color(0.94f, 0.90f, 0.80f), edge = new Color(0.78f, 0.72f, 0.60f);
+        var roads = new System.Collections.Generic.List<(Vector2, Vector2)>();
+        foreach (var (a, b) in ShopDay.MapRoads) roads.Add((ShopDay.MapSpot(a), ShopDay.MapSpot(b)));
+        for (int py = 0; py < h; py++)
+            for (int px = 0; px < w; px++)
+            {
+                float u = (px + 0.5f) / w, v = (py + 0.5f) / h;
+                float coast = 0.15f + 0.02f * Mathf.Sin(u * 9f);
+                coast -= 0.11f * Mathf.Clamp01(1 - Mathf.Abs(u - 0.87f) / 0.1f);                 // the headland, for the lighthouse
+                if (u > 0.47f && u < 0.64f) coast = Mathf.Max(coast, 0.17f + 0.02f * Mathf.Sin((u - 0.47f) / 0.17f * Mathf.PI)); // the harbour basin
+                Color c;
+                if (v < coast) c = Color.Lerp(deep, sea, Mathf.Clamp01(v / coast));
+                else if (v < coast + 0.035f && u < 0.36f) c = sand;                              // the beach
+                else
+                {
+                    c = Color.Lerp(low, high, Mathf.SmoothStep(0, 1, (v - 0.3f) / 0.6f));        // the hill
+                    if (Mathf.Repeat(v * 40f, 1f) < 0.04f && v > 0.7f) c = Color.Lerp(c, high * 0.85f, 0.4f);   // contour lines up the hill
+                    float best = 1;
+                    foreach (var (a, b) in roads)
+                    {
+                        Vector2 ab = b - a, p = new Vector2(u, v * h / w) - new Vector2(a.x, a.y * h / w);
+                        Vector2 abs = new Vector2(ab.x, ab.y * h / w);
+                        float t = Mathf.Clamp01(Vector2.Dot(p, abs) / abs.sqrMagnitude);
+                        best = Mathf.Min(best, (p - abs * t).magnitude);
+                    }
+                    if (best < 0.012f) c = road;
+                    else if (best < 0.016f) c = edge;
+                }
+                if (v < coast && Mathf.Repeat(u * 14f + Mathf.Sin(v * 60f) * 0.3f, 1f) < 0.04f && Mathf.Repeat(v * 30f, 1f) < 0.3f)
+                    c = Color.Lerp(c, Color.white, 0.35f);                                       // a few waves
+                pixels[py * w + px] = c;
+            }
+        var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+        tex.SetPixels32(pixels);
+        File.WriteAllBytes(path, tex.EncodeToPNG());
+        Object.DestroyImmediate(tex);
+        AssetDatabase.ImportAsset(path);
+        var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+        imp.textureType = TextureImporterType.Sprite;
+        imp.spriteImportMode = SpriteImportMode.Single;
+        imp.mipmapEnabled = false;
+        imp.maxTextureSize = 4096;
+        imp.SaveAndReimport();
     }
 
     static bool Star(float x, float y)

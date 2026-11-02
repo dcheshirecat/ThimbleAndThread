@@ -41,6 +41,47 @@ public partial class ShopDay
         new TownPlace("tech", "Byte & Bobbin", "Repairs and gadgets, up in the chandlery loft.", null, ScreenId.TechShop),
     };
 
+    /// Where each place sits on the town map (owner, 2026-11-02: an interactive map of points, not a list), as fractions of the
+    /// map picture (x from the left, y from the bottom; the sea is along the bottom). The placeholder map is drawn to match
+    /// (PlaceholderGenerator.TownMap): if the owner's drawing puts a place somewhere else, change its spot here.
+    public static Vector2 MapSpot(string placeId) => placeId switch
+    {
+        "lighthouse" => new Vector2(0.86f, 0.10f),
+        "harbour" => new Vector2(0.55f, 0.12f),
+        "beach" => new Vector2(0.17f, 0.12f),
+        "cafe" => new Vector2(0.28f, 0.25f),
+        "home" => new Vector2(0.50f, 0.27f),       // Thimble & Thread
+        "curios" => new Vector2(0.74f, 0.22f),
+        "tech" => new Vector2(0.88f, 0.34f),
+        "studio" => new Vector2(0.66f, 0.38f),
+        "boutique" => new Vector2(0.16f, 0.40f),
+        "market" => new Vector2(0.42f, 0.42f),
+        "knot" => new Vector2(0.27f, 0.53f),
+        "patterns" => new Vector2(0.56f, 0.52f),
+        "workshop" => new Vector2(0.84f, 0.50f),
+        "tearoom" => new Vector2(0.12f, 0.63f),
+        "florist" => new Vector2(0.70f, 0.62f),
+        "bookshop" => new Vector2(0.42f, 0.64f),
+        "library" => new Vector2(0.20f, 0.75f),
+        "park" => new Vector2(0.56f, 0.76f),
+        "homes" => new Vector2(0.84f, 0.72f),
+        "church" => new Vector2(0.30f, 0.88f),
+        "school" => new Vector2(0.60f, 0.90f),
+        "hospital" => new Vector2(0.86f, 0.86f),
+        _ => new Vector2(0.5f, 0.5f),
+    };
+
+    /// The streets between places on the map (the placeholder drawing's roads).
+    public static readonly (string, string)[] MapRoads =
+    {
+        ("beach", "cafe"), ("cafe", "home"), ("home", "harbour"), ("harbour", "curios"), ("curios", "tech"), ("tech", "lighthouse"),
+        ("home", "market"), ("market", "boutique"), ("boutique", "tearoom"), ("market", "knot"), ("market", "patterns"),
+        ("curios", "studio"), ("studio", "patterns"), ("studio", "florist"), ("tech", "workshop"), ("florist", "workshop"),
+        ("patterns", "bookshop"), ("florist", "bookshop"), ("knot", "tearoom"), ("bookshop", "library"), ("bookshop", "park"),
+        ("park", "school"), ("park", "homes"), ("workshop", "homes"), ("homes", "hospital"), ("school", "hospital"),
+        ("library", "church"), ("church", "school"), ("cafe", "boutique"),
+    };
+
     public const int OutingsPerSaturday = 3;
     public const string TownFlag = "town:open";
     static readonly string[] TimesOfDay = { "morning", "afternoon", "evening" };

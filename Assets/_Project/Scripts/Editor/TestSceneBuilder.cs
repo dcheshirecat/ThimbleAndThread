@@ -884,27 +884,88 @@ public static class TestSceneBuilder
         Button(b, "Cancel", designer.Cancel, 360);
 
         // The journal: a storybook overlay that slides in over any screen (JournalUI)
-        // The town map on Saturdays (UI/TownMapUI.cs): placeholder art, the places on a grid over land and sea
+        // The town map on Saturdays (UI/TownMapUI.cs; owner, 2026-11-02: an interactive map of points). A map picture that
+        // scrolls up and down (Art/Backgrounds/town_map.png, 2048 x 3600 shape), a pin per place at ShopDay.MapSpot, and a card
+        // for the pin you tap.
         p = Panel(ScreenId.TownMap, "Saturday in Town", new Color(0.62f, 0.78f, 0.62f));
-        var sea = Shape(p, "Sea", new Vector2(0.5f, 0.08f), new Vector2(2048, 700), new Color(0.45f, 0.65f, 0.85f), uiSprite);
-        sea.GetComponent<Image>().raycastTarget = false;
         var town = canvasGo.AddComponent<TownMapUI>();
         town.day = day;
         town.status = Label(p, "Status", new Vector2(0.05f, 0.84f), new Vector2(0.95f, 0.9f), 50, TextAnchor.MiddleCenter);
+        var mapView = new GameObject("Map View", typeof(RectTransform), typeof(RectMask2D), typeof(ScrollRect), typeof(Image));
+        var mvrt = (RectTransform)mapView.transform;
+        mvrt.SetParent(p, false);
+        mvrt.anchorMin = new Vector2(0, 0.11f); mvrt.anchorMax = new Vector2(1, 0.835f);
+        mvrt.offsetMin = mvrt.offsetMax = Vector2.zero;
+        mapView.GetComponent<Image>().color = new Color(0.45f, 0.66f, 0.86f);   // sea, past the map's edges
+        var mapGo = new GameObject("Map", typeof(RectTransform), typeof(Image), typeof(Button));
+        var mrt = (RectTransform)mapGo.transform;
+        mrt.SetParent(mvrt, false);
+        mrt.anchorMin = new Vector2(0, 0); mrt.anchorMax = new Vector2(1, 0);   // hangs from the bottom: it opens on the seafront
+        mrt.pivot = new Vector2(0.5f, 0);
+        mrt.sizeDelta = new Vector2(0, 3600);
+        var mapImg = mapGo.GetComponent<Image>();
+        mapImg.sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"{Root}/Art/Backgrounds/town_map.png");
+        mapImg.color = mapImg.sprite != null ? Color.white : new Color(0.62f, 0.78f, 0.62f);
+        UnityEventTools.AddPersistentListener(mapGo.GetComponent<Button>().onClick, town.CloseCard);   // tap the map: close the card
+        var mapScroll = mapView.GetComponent<ScrollRect>();
+        mapScroll.content = mrt;
+        mapScroll.horizontal = false;
+        mapScroll.movementType = ScrollRect.MovementType.Clamped;
+        town.scroll = mapScroll;
+        Button Pin(string id, string name, Vector2 spot)
+        {
+            var pin = Button(mrt, "Pin " + id, null, 150);
+            Place(pin, spot, new Vector2(150, 150));
+            pin.GetComponentInChildren<Text>().text = "";
+            pin.GetComponent<Image>().sprite = Knob();
+            pin.GetComponent<Image>().type = Image.Type.Simple;
+            var plaque = Shape(pin.transform, "Name", new Vector2(0.5f, 0f), new Vector2(460, 120), new Color(1, 0.98f, 0.92f, 0.88f), uiSprite);
+            plaque.pivot = new Vector2(0.5f, 1);
+            plaque.anchoredPosition = new Vector2(0, -6);
+            var label = MakeText(plaque, "Text", name, 48);
+            Stretch((RectTransform)label.transform);
+            ((RectTransform)label.transform).offsetMin = new Vector2(10, 4);
+            ((RectTransform)label.transform).offsetMax = new Vector2(-10, -4);
+            label.fontStyle = FontStyle.Bold;
+            var faceFrame = Shape(pin.transform, "Face", new Vector2(1f, 1f), new Vector2(130, 130), new Color(1f, 0.97f, 0.9f), Knob());
+            faceFrame.gameObject.AddComponent<Mask>().showMaskGraphic = true;
+            Shape(faceFrame, "Img", new Vector2(0.5f, 0.5f), new Vector2(114, 114), Color.white, Knob()).GetComponent<Image>().preserveAspect = true;
+            faceFrame.gameObject.SetActive(false);
+            var count = MakeText(pin.transform, "Count", "", 44);
+            var crt = (RectTransform)count.transform;
+            crt.anchorMin = crt.anchorMax = new Vector2(1.6f, 1f);
+            crt.sizeDelta = new Vector2(100, 70);
+            count.fontStyle = FontStyle.Bold;
+            return pin;
+        }
         town.places = new Button[ShopDay.Places.Length];
         for (int i = 0; i < ShopDay.Places.Length; i++)
         {
-            int col = i % 3, row = i / 3;
-            var place = Button(p, "Place " + ShopDay.Places[i].id, null, 600);
-            Place(place, new Vector2(0.18f + col * 0.32f, 0.79f - row * 0.095f), new Vector2(620, 190));
-            var pt = place.GetComponentInChildren<Text>();
-            pt.fontSize = 44;
-            pt.horizontalOverflow = HorizontalWrapMode.Wrap;
-            bool shopPlace = ShopDay.Places[i].shop != ScreenId.Title;
-            place.GetComponent<Image>().color = shopPlace ? new Color(0.98f, 0.90f, 0.75f) : new Color(1, 1, 1, 0.92f);
-            UnityEventTools.AddIntPersistentListener(place.onClick, town.GoTo, i);
+            var place = Pin(ShopDay.Places[i].id, ShopDay.Places[i].name, ShopDay.MapSpot(ShopDay.Places[i].id));
+            UnityEventTools.AddIntPersistentListener(place.onClick, town.Select, i);
             town.places[i] = place;
         }
+        town.homePin = Pin("home", "Thimble & Thread", ShopDay.MapSpot("home"));
+        UnityEventTools.AddPersistentListener(town.homePin.onClick, town.SelectHome);
+        var placeCard = Shape(p, "Place Card", new Vector2(0.5f, 0.22f), new Vector2(1900, 620), new Color(1, 0.97f, 0.9f), uiSprite);
+        placeCard.GetComponent<Image>().raycastTarget = true;
+        placeCard.gameObject.AddComponent<ClickBlocker>();
+        town.cardTitle = Label(placeCard, "Title", new Vector2(0.04f, 0.76f), new Vector2(0.96f, 0.96f), 68, TextAnchor.MiddleLeft);
+        town.cardTitle.fontStyle = FontStyle.Bold;
+        town.cardTitle.color = Ink;
+        town.cardBody = Label(placeCard, "Body", new Vector2(0.04f, 0.3f), new Vector2(0.96f, 0.76f), 54, TextAnchor.UpperLeft);
+        town.cardBody.color = Ink;
+        town.goButton = Button(placeCard, "Go There", town.Go, 700);
+        Place(town.goButton, new Vector2(0.3f, 0.14f), new Vector2(700, 140));
+        town.goLabel = town.goButton.GetComponentInChildren<Text>();
+        var goColors = town.goButton.colors;
+        goColors.disabledColor = new Color(0.6f, 0.6f, 0.6f, 0.55f);
+        town.goButton.colors = goColors;
+        var cardClose = Button(placeCard, "Card Close", town.CloseCard, 500);
+        Place(cardClose, new Vector2(0.75f, 0.14f), new Vector2(500, 140));
+        cardClose.GetComponentInChildren<Text>().text = "Close";
+        placeCard.gameObject.SetActive(false);
+        town.card = placeCard.gameObject;
         Button(Column(p, 0.5f, 0.05f), "Go Home", day.GoHomeSaturday, 800);
 
         // The calendar (UI/CalendarUI.cs): this season's four weeks and the birthdays in them

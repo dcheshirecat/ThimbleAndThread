@@ -867,3 +867,7 @@ Online orders (level 7) and the attic (level 7) / basement (level 9, after the a
 Owner, 2026-11-02 (fonts again): TestSceneBuilder.BiggerText runs over every Text at the end of the build: sizes under 90 x1.3 (at least 56),
 best fit on (shrinks only where the box is too small, never below the old size or 46); boxed labels (Label, TileText) now truncate instead of
 spilling so best fit works; list texts that grow with a layout keep overflowing. Runtime <size=N> tags scaled the same. Shop header text ends at 0.76 (clear of the coins).
+DONE (owner, 2026-11-02) Interactive town map: UI/TownMapUI.cs. A scrolling map picture (Art/Backgrounds/town_map.png, 2048 x 3600 shape;
+placeholder drawn by PlaceholderGenerator.TownMap with roads ShopDay.MapRoads), anchored at its bottom so it opens on the seafront. A pin per
+place at ShopDay.MapSpot (gold = shop, grey = not open yet) with its name plaque and the face of someone you know there (+N more, pink ring =
+birthday); your own shop is a red pin (Go Home). Tapping a pin opens a card (blurb, who's here, what to do; Go There / Go Inside) -> ShopDay.GoTo.
