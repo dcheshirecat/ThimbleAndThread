@@ -273,6 +273,16 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
   lowercase, underscores, & = and, + = plus, lone - = minus), via ContentLibrary.buttonArt (ContentLibraryRefresher fills
   it and imports that folder as sprites). Found: sprite swap, preserveAspect, typed label hidden; else the plain button.
   Changing words (names, prices) stay typed. The list of 136 is in Docs/ART_LIST.md 1b+ (320 px tall).
+  No _pressed drawing = ColorTint darken; in a layout a drawn button grows to its drawing's shape (max 4x height).
+  First art: btn_play.png + btn_play_pressed.png (owner uploaded ui_button_play*; Claude renames, converts Display P3 ->
+  sRGB, trims both with the SAME box so pressing doesn't jump).
+- Text sizes: the owner tried "text grows to fill its box" and bigger paragraph text (x1.6) and found it WAY TOO BIG;
+  reverted to BiggerText as in commit dbe1c8b (x1.3, best fit only shrinks). Button text size is fine. Don't change
+  text sizes again without showing the owner first.
+- Handwriting font (owner, 2026-11-02): Docs/HANDWRITING_FONT.md, Tools/HandwritingFont (layout.py, make_template.py,
+  build_font.py: fontTools + OpenCV tracing; tested with a stand-in). Choices: English set + game symbols (+ é · ♥ ● ○
+  the game uses), one version per letter, used everywhere, the owner writes a bold set too. TestSceneBuilder uses
+  Art/Fonts/ThimbleHand-Regular.ttf when it exists. Waiting for the owner's sheets.
 
 ## Status
 Done and on main: project setup, save slots + autosave, order book with resumable work, day/night,

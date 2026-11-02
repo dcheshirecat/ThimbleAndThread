@@ -18,6 +18,9 @@ public class ButtonArt : MonoBehaviour
     Color plainColor;
     SpriteState plainState;
     Selectable.Transition plainTransition;
+    ColorBlock plainColors;
+    LayoutElement layout;
+    float plainHeight;
     string shownFor;
     bool drawn, hasDisabled;
 
@@ -32,6 +35,9 @@ public class ButtonArt : MonoBehaviour
         plainColor = image.color;
         plainState = button.spriteState;
         plainTransition = button.transition;
+        plainColors = button.colors;
+        layout = GetComponent<LayoutElement>();
+        if (layout != null) plainHeight = layout.preferredHeight;
     }
 
     void LateUpdate()
@@ -54,10 +60,27 @@ public class ButtonArt : MonoBehaviour
             image.type = Image.Type.Simple;
             image.preserveAspect = true;
             image.color = Color.white;
-            button.transition = Selectable.Transition.SpriteSwap;
-            button.spriteState = new SpriteState { pressedSprite = pressed ?? normal, highlightedSprite = normal,
-                                                   selectedSprite = normal, disabledSprite = disabled ?? normal };
             hasDisabled = disabled != null;
+            if (pressed != null)
+            {
+                button.transition = Selectable.Transition.SpriteSwap;
+                button.spriteState = new SpriteState { pressedSprite = pressed, highlightedSprite = normal,
+                                                       selectedSprite = normal, disabledSprite = disabled ?? normal };
+            }
+            else   // no pressed drawing yet: darken a little while held
+            {
+                button.transition = Selectable.Transition.ColorTint;
+                var c = ColorBlock.defaultColorBlock;
+                c.pressedColor = new Color(0.78f, 0.78f, 0.78f);
+                c.disabledColor = Color.white;   // LateUpdate fades it instead
+                button.colors = c;
+            }
+            // In a list, let the button grow taller to match the drawing's shape (up to 4 times its usual height).
+            if (layout != null && layout.preferredWidth > 0 && plainHeight > 0)
+            {
+                float aspect = normal.rect.width / normal.rect.height;
+                layout.preferredHeight = Mathf.Clamp(layout.preferredWidth / aspect, plainHeight, plainHeight * 4f);
+            }
         }
         else
         {
@@ -67,6 +90,8 @@ public class ButtonArt : MonoBehaviour
             image.color = plainColor;
             button.transition = plainTransition;
             button.spriteState = plainState;
+            button.colors = plainColors;
+            if (layout != null && plainHeight > 0) layout.preferredHeight = plainHeight;
         }
         if (label != null) label.enabled = !drawn;
     }

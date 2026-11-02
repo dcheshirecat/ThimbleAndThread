@@ -46,7 +46,9 @@ public static class TestSceneBuilder
 
     static void Create()
     {
-        font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        // The owner's handwriting font (Tools/HandwritingFont) once it's built; until then Unity's built-in one.
+        font = AssetDatabase.LoadAssetAtPath<Font>($"{Root}/Art/Fonts/ThimbleHand-Regular.ttf")
+               ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         uiSprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
 
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
