@@ -1,5 +1,16 @@
 # Art sizes (PNG, transparent, 2x oversampled where possible)
 The game is portrait. UI reference canvas: 2048 x 2732 (width is fixed; taller phones show more height).
+
+## Colour profile: sRGB (every file)
+- Make every canvas in **sRGB** (Procreate: new canvas > Colour Profile > RGB > **sRGB IEC61966-2.1**).
+- **Not Display P3** (Procreate's default on newer iPads). Unity treats every PNG as sRGB, so P3 art comes out
+  duller or with shifted colours in the game, and phones show it differently from the iPad.
+- Procreate can't convert a canvas afterwards: choose sRGB when you create it. To check an existing one:
+  Actions > Canvas > Canvas information > Colour Profile.
+- Export as PNG (Share > PNG), never JPEG.
+
+The full list of what to draw: [ART_LIST.md](ART_LIST.md).
+
 | Asset | px |
 |---|---|
 | Full backgrounds | 2048 x 4440 (keep important things in the middle 2048 x 2732) |
