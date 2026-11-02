@@ -935,3 +935,16 @@ Picked from Claude's ideas list, plus three of the owner's own:
 12. Trade options easier and more simplified.
 13. Move decorations anywhere in the shop (free placement), not just in and out of fixed spots.
 14. Read a book / pass-the-time options live in the COMPUTER ON THE COUNTER, not the button at the bottom of the shop.
+DONE so far (2026-11-02 evening list):
+- 14: the counter computer (always there; ShopSceneUI.ToggleComputer, "Computer Layer") holds Read / Online Orders / Attic / Basement.
+- 13: free decor placement: decorPlaced entries "slot:id@page,x,y" (ShopDay.PutOut/PutAway/PlacedPieces; plain "slot:id" =
+  usual spot); any number of a kind; ShopSceneUI.ShowDecor clones the slot template per piece (free ones on the page's
+  "Decor Layer"); DecorEditor drops anywhere on the current page. No save version bump (same list of strings).
+- 12: Trade = 3 tabs (TradeUI.Tab Send / Open / Surprise); Send: parcel + price (0 = Free gift, more = sale), share your
+  designs, your codes listed below.
+- 8, 3, 9: Core/ShopDaySeasons.cs: Weather per save+day (marketSeed), season-weighted; WeatherVisits; SunLovers/RainLovers
+  ranked first in InviteVisitors; SuitsWeather sways Browse and Suggested; top bar shows it. SupplyDef.season (1..4): on sale
+  all season only (ShopManager.OnSale, Orderable); 16 seasonal supplies (generator Seasonal()). Festivals on each season's
+  day 21 (a Sunday): Blossom Fair (patterns x1.5), Regatta Day (busy; totes/hoops/hangings x1.4), Harvest Fair (pieces x1.3,
+  warm things x1.6), Winter Market (all x1.3); calendar shows them; TomorrowNote; first time = stamp + explainer.
+- Test harness: Editor/TempSmokeTest.cs + TempSmokeSteps.cs (excluded in .git/info/exclude, never commit).
