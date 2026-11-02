@@ -877,7 +877,7 @@ the workshop opens or you own a piece) replaces the Decorate button. UI/DecorEdi
 up and its spot (Spot_<slot> outlines) glows; dropping near it places it (swaps the old one back); drag a placed piece (UI/DecorPiece.cs on
 each Decor_<slot>) down to the tray to put it away; pickup-corner pieces switch to that page. Pieces still snap to their DecorSlot spot.
 Customize's Your Shop tab still works too.
-Owner, 2026-11-02: customers come more often: gaps 8-20 game minutes in the busy hours, else 18-40 (ShopDay.Gap); DailyVisits starts at 5.
+Owner, 2026-11-02 (twice): customers come more often: gaps 4-10 game minutes in the busy hours, else 9-20 (ShopDay.Gap; NextGap min 3); first visitor 3-8 min after opening; DailyVisits starts at 8.
 Online orders (level 7) and the attic (level 7) / basement (level 9, after the attic) stay locked until then; their buttons only show once open/bought.
 Owner, 2026-11-02 (fonts again): TestSceneBuilder.BiggerText runs over every Text at the end of the build: sizes under 90 x1.3 (at least 56),
 best fit on (shrinks only where the box is too small, never below the old size or 46); boxed labels (Label, TileText) now truncate instead of

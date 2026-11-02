@@ -40,7 +40,7 @@ public partial class ShopDay
         return Mathf.Min(n, 60);
     }
 
-    int NextGap(int clock) => Mathf.Max(5, Gap(clock) * (100 - VisitorBoost(clock)) / 100);
+    int NextGap(int clock) => Mathf.Max(3, Gap(clock) * (100 - VisitorBoost(clock)) / 100);
 
     bool boosting;
     /// Friendship points with someone a placed piece is about count for more.
