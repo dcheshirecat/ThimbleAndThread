@@ -832,3 +832,22 @@ DONE batch B (deeper new crafts):
 - Weaving: the weft is bubbled (swipe across in a hill, >= 0.04 above straight; straight = pulled tight, edges draw in, point y
   + 2); TieOffWarps "Cut it off the loom and tie off the warps" before hanging.
 Still open: art; ci-lowmem; owner's questions above (landscape backgrounds; customer customization).
+
+## Owner notes 2026-11-01 (38 notes) and 2026-11-02 additions (branch minigames)
+DONE batch 1-3 (merged): supplies a makeable recipe needs always show (pins, crochet hook); scarf stripes in every colour
+(Order.knitStyle); frogging (KnitRowsStep as IStitchPicker); knitting as really knitted in later steps; wardrobe text; no status
+text on the shop; buzz only in shops; delivery pop-ups (Delivery.arrivesAt: each arrives at its order time, DeliverDue); scrolling
+lists (UI/NestedScroll); CoinCounter in shops/stall; ShortfallAll for the shopping list; designer colours by material (yarn vs floss);
+craft mastery by orders (Progression.Level/CountOrder, 10 levels, craftOrders); XP bar opens SkillsReport (Journal Skills tab hidden);
+pattern shop level 2, Pattern Design level 5 (SkillDef.playerLevel), design a craft after 3 orders (CanDesign); stamps filter (craft,
+kind, oldest first) and 80/90/100% stamps; goal supply rewards by tier (QuestDef.after chain); colourways after 10 made
+(Recolouring); DailyVisits grows; stall at level 4 (QuietSunday before), Craft for the Stall in the workroom, stall XP (bonusXp);
+TomorrowNote before weekends; PauseMenu; CalendarUI (Week seasons: 4 x 28 days, CustomerDef.birthday); hearts (ShopDayHearts:
+RomanceLevel 3, 2 date / 5 dating / 10 together, Partner helps); Saturday town map (ShopDayTown, ScreenId.TownMap, 3 outings,
+CustomerDef.place); stall talking heads/Chat/Arrange (stallPatterns, OwnedPattern.copies, keep one); magazines (BuyMagazine,
+fromMagazine ??? until makeable) + copies at the pattern shop (no ordering patterns); Read (ShopDayReading: books 5 chapters, finishing
+teaches SkillDef.book) and Decorate replace Pass the Time; no long-carry mistakes; workshop at level 3; introduction after choosing a
+slot (TutorialUI returns to Customize); first-day guide (ShopDayGuide, flag guide:on); MinFont 40 in TestSceneBuilder.MakeText.
+Save version 30.
+TO DO (batch 4): 7 a second decor shop with boosts + romanceable owner; 21 decoratable pickup area; 36 counter decor + automatic
+computer; 9 online orders (Friday courier); 19 tech shop automations; 22 expansions (attic, basement, second-hand).
