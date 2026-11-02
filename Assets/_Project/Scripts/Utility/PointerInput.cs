@@ -8,7 +8,7 @@ using UnityEngine.EventSystems;
 public static class PointerInput
 {
     /// The pointer went down this frame.
-    public static bool Down => Input.GetMouseButtonDown(0);
+    public static bool Down => Input.GetMouseButtonDown(0) && Input.touchCount < 2;   // two fingers zoom and turn the work instead
     /// The pointer is held.
     public static bool Held => Input.GetMouseButton(0);
     /// The pointer came up this frame.

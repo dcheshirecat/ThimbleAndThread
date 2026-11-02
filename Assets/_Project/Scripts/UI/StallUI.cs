@@ -8,6 +8,7 @@ public class StallUI : MonoBehaviour
 {
     public ShopDay day;
     public Text clockText, tableText, shopperText, messageText;
+    public Text goalsText;               // the square market's goals (ShopDayFair); empty at the fair
     public GameObject shopperPanel, sellButton, haggleButton;
     public Text declineLabel;
     public ShopkeeperView keeper;
@@ -69,7 +70,7 @@ public class StallUI : MonoBehaviour
         foreach (var r in arrangeRows) Destroy(r);
         arrangeRows.Clear();
         arrangeTemplate.gameObject.SetActive(false);
-        arrangeInfo.text = $"Patterns on show: {save.stallPatterns.Count} of {ShopDay.StallPatternSpots}. Shoppers buy copies; you always keep one. " +
+        arrangeInfo.text = $"Patterns on show: {save.stallPatterns.Count} of {day.StallPatternSpots}. Shoppers buy copies; you always keep one. " +
                            "More copies at Finch's Pattern Parlour.";
         foreach (var p in save.patterns)
         {
@@ -93,7 +94,7 @@ public class StallUI : MonoBehaviour
         shown = day.CurrentShopper; shownStall = save.stall.Count; shownClock = save.clock; shownMessage = day.LastMessage;
         bool over = save.clock >= ShopDay.StallCloses;
         clockText.text = over ? "Four o'clock: the market's winding down. Pack up when you're ready."
-                              : $"Sunday market  ·  {ShopDay.TimeText(save.clock)}  ·  open till 4 pm";
+                              : $"{day.MarketName}  ·  {ShopDay.TimeText(save.clock)}  ·  open till 4 pm";
         var counts = new Dictionary<string, int>();
         foreach (var s in save.stall) { counts.TryGetValue(s.name, out int n); counts[s.name] = n + 1; }
         var lines = new List<string>();
@@ -101,6 +102,9 @@ public class StallUI : MonoBehaviour
         var pats = day.StallShown().ConvertAll(x => $"{x.name} ({ShopDay.CopiesToSell(x)})");
         tableText.text = "<b>On your table</b>\n" + (lines.Count == 0 ? "No handmade pieces yet (make some at night: Craft for the Stall)." : string.Join("\n", lines)) +
                          "\n<b>Patterns</b>: " + (pats.Count == 0 ? "none on show (Arrange the Stall)" : string.Join(", ", pats));
+        if (goalsText != null)   // the square's goals: meet them all for a pitch at a bigger market
+            goalsText.text = day.AtFair ? "" : "<b>Market goals</b> (meet them all, and a bigger market wants you)\n" + string.Join("  ·  ", day.MarketGoals().ConvertAll(g =>
+                g.have >= g.need ? $"<color=#2E7D32>{g.name}: done</color>" : $"{g.name}: {g.have}/{g.need}"));
         var sh = day.CurrentShopper;
         shopperPanel.SetActive(sh != null);
         if (sh != null)
@@ -112,7 +116,7 @@ public class StallUI : MonoBehaviour
             if (circle == null) circle = shopperFace.sprite;
             shopperFace.sprite = face != null ? face : circle;   // a stranger: a round placeholder face
             shopperFace.color = face != null ? Color.white : sh.face;
-            shopperInitial.text = face != null || string.IsNullOrEmpty(sh.name) ? "" : sh.name.Split(' ')[sh.name.Split(' ').Length - 1].Substring(0, 1).ToUpper();
+            shopperInitial.text = face != null || string.IsNullOrEmpty(sh.name) ? "" : sh.regular != null ? sh.name.Substring(0, 1) : sh.name.Split(' ')[sh.name.Split(' ').Length - 1].Substring(0, 1).ToUpper();
             chatButton.SetActive(!sh.chatted);
             sellButton.SetActive(buying);
             haggleButton.SetActive(buying && !sh.haggled);

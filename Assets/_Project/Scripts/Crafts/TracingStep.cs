@@ -180,12 +180,18 @@ public abstract class TracingStep : PieceStep, IMistakes, IStitchPicker
         if (!UseLoupe) return;
         if (loupe == null) MakeLoupe();
         // Above the finger; beside it near the top of the work.
-        var at = p + new Vector2(0, 0.25f);
-        if (at.y + LoupeRadius > 1.08f) at = p + new Vector2(p.x > 0.5f ? -0.27f : 0.27f, 0.05f);
+        // "Above" is up the screen, even with the work turned round (MinigameHost.Turn).
+        var rot = area.cam.transform.rotation;
+        Vector2 up = rot * Vector2.up, right = rot * Vector2.right;
+        var at = p + up * 0.25f;
+        if (rot == Quaternion.identity && at.y + LoupeRadius > 1.08f) at = p + new Vector2(p.x > 0.5f ? -0.27f : 0.27f, 0.05f);
+        else if (rot != Quaternion.identity && (at.x < -0.1f || at.x > 1.1f || at.y < -0.1f || at.y > 1.1f)) at = p + right * 0.27f;
         var look = World(p);
         loupeCam.transform.position = new Vector3(look.x, look.y, area.cam.transform.position.z);
+        loupeCam.transform.rotation = rot;
         var spot = World(at);
         loupe.transform.position = new Vector3(spot.x, spot.y, 0);
+        loupe.transform.rotation = rot;
         loupe.SetActive(true);
         loupeCam.enabled = true;
     }

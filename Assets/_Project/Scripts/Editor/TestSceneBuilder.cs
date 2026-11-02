@@ -524,6 +524,7 @@ public static class TestSceneBuilder
         Button(b, "Finish", day.FinishCrafting, 520);
         ui.pickerButton = Button(p, "Stitch Picker", minigame.TogglePicker, 700);   // a seam ripper: unpick stitches one by one
         Place(ui.pickerButton, new Vector2(0.5f, 0.115f), new Vector2(760, 120));
+        ViewButtons(p, minigame, 0.245f);
         // Finish's pop-up: mistakes left in (fix them, or finish anyway), or why the step can't finish yet
         var finishPanel = Shape(p, "FinishPanel", new Vector2(0.5f, 0.55f), new Vector2(1700, 900), new Color(1f, 0.97f, 0.9f), uiSprite);
         finishPanel.GetComponent<Image>().raycastTarget = true;   // the board underneath can't be touched meanwhile
@@ -692,6 +693,8 @@ public static class TestSceneBuilder
         var table = Shape(p, "Table", new Vector2(0.5f, 0.5f), new Vector2(1800, 480), new Color(0.62f, 0.45f, 0.30f), uiSprite);
         stall.tableText = Label(table, "OnTable", new Vector2(0.05f, 0.06f), new Vector2(0.95f, 0.94f), 54, TextAnchor.UpperLeft);
         stall.tableText.color = Color.white;
+        // The square's goals (ShopDayFair), just under the table
+        stall.goalsText = Label(table, "Goals", new Vector2(0.02f, -0.72f), new Vector2(0.98f, -0.03f), 50, TextAnchor.UpperCenter);
         var shopperCard = Shape(p, "Shopper", new Vector2(0.5f, 0.27f), new Vector2(1840, 560), new Color(1f, 0.98f, 0.92f), uiSprite);
         stall.shopperText = Label(shopperCard, "Line", new Vector2(0.2f, 0.4f), new Vector2(0.97f, 0.95f), 54, TextAnchor.MiddleCenter);
         // Talking heads (owner, 2026-11-01): a friend's portrait, or a placeholder face for someone from town
@@ -1796,6 +1799,19 @@ public static class TestSceneBuilder
     const int ShrinkTo = 46, ScaledFloor = 56;
 
     static int Scaled(int size) => size >= 90 ? size : Mathf.Max(ScaledFloor, Mathf.RoundToInt(size * TextScale));
+
+    /// Zoom in, zoom out, turn and back to normal, for the work being crafted (MinigameHost; pinch and twist do the same).
+    static void ViewButtons(Transform parent, MinigameHost host, float y)
+    {
+        var row = Row(parent, 0.5f, y);
+        row.name = "View Buttons";
+        foreach (var (label, action) in new (string, UnityEngine.Events.UnityAction)[]
+                 { ("Zoom In", host.ZoomIn), ("Zoom Out", host.ZoomOut), ("Turn", host.Turn), ("Reset View", host.ResetView) })
+        {
+            var b = Button(row, label, action, 360);
+            b.GetComponent<LayoutElement>().preferredHeight = 120;
+        }
+    }
 
     static void BiggerText(Transform root)
     {

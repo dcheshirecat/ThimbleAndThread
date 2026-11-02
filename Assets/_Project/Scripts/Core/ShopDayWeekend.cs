@@ -167,6 +167,7 @@ public partial class ShopDay
         Save.visitorsToday.Clear();
         Save.clock = StallOpens;
         stallSoldToday.Clear();
+        sundayTakings = 0;
         shopper = null;
         nextShopper = StallOpens + Random.Range(3, 8);
         GM.ChangeScreen(ScreenId.Stall);
@@ -185,6 +186,7 @@ public partial class ShopDay
         public string name;          // who they are ("A fisherman in oilskins", or a friend's name)
         public Color face;           // a stranger's placeholder portrait colour
         public bool chatted;
+        public string regular;       // one of the Harbour Fair's regulars (ShopDayFair), or null
     }
 
     static readonly string[] Strangers =
@@ -194,7 +196,7 @@ public partial class ShopDay
     };
 
     // ---- The stall's patterns (owner, 2026-11-01): choose which are on show; a copy sold is a copy gone (keep your own) ----
-    public const int StallPatternSpots = 4;
+    public int StallPatternSpots => AtFair ? 6 : 4;   // the fair's pitch is bigger
     public List<OwnedPattern> StallShown() => Save.patterns.FindAll(p => Save.stallPatterns.Contains(p.id));
     public static int CopiesToSell(OwnedPattern p) => Mathf.Max(0, p.copies - 1);
 
@@ -215,7 +217,8 @@ public partial class ShopDay
         s.chatted = true;
         Progress.AddBonusXp(2);
         if (s.friend != null) GM.AddRelationshipPoints(s.friend.customerId, 3);
-        s.line = s.friend != null
+        s.line = s.regular != null ? RegularChat(s.regular)
+            : s.friend != null
             ? Pick("Isn't it a lovely day for it? I'm so glad you've got a stall.", "I've told everyone at work about your shop, you know.", "You look like you were born behind a stall!")
             : Pick("Lovely morning for it. Is all this your own work? Amazing.", "My gran used to knit like this. You've brought it all back.",
                    "We're just visiting, but we'll come and find your shop.", "How long does something like that take you? Goodness.");
@@ -242,7 +245,7 @@ public partial class ShopDay
         if (shopper == null && Save.clock >= nextShopper && Save.clock < StallCloses)
         {
             shopper = NewShopper();
-            nextShopper = Save.clock + Random.Range(6, 15);
+            nextShopper = Save.clock + (AtFair ? Random.Range(4, 10) : Random.Range(6, 15));   // the fair is busier
         }
     }
 
@@ -270,8 +273,12 @@ public partial class ShopDay
         string stranger = Strangers[Random.Range(0, Strangers.Length)];
         var face = Color.HSVToRGB(Random.value, 0.35f, 0.85f);
         if (wants.Count == 0 || Random.value < 0.15f)
-            return new Shopper { line = Pick("Just looking, thanks! Lovely stall.", "Gorgeous work. I'll come back when I've been paid.", "Ooh. Hmm. Maybe next week!"),
-                                 leavesAt = Save.clock + 8, name = stranger, face = face };
+        {
+            var browser = new Shopper { line = Pick("Just looking, thanks! Lovely stall.", "Gorgeous work. I'll come back when I've been paid.", "Ooh. Hmm. Maybe next week!"),
+                                        leavesAt = Save.clock + 8, name = stranger, face = face };
+            if (AtFair) FairShopper(browser);
+            return browser;
+        }
         var s = wants[Random.Range(0, wants.Count)];
         var picked = new Shopper { line = s.line, piece = s.piece, pattern = s.pattern, offer = s.offer, leavesAt = leaves, name = stranger, face = face };
         // Now and then it's someone you know (owner, 2026-10-31: more to the weekends): a sale to a friend counts for friendship.
@@ -285,6 +292,7 @@ public partial class ShopDay
             picked.name = picked.friend.displayName;
             picked.line = Pick("Ooh, your stall! ", "There you are! ", "I came to see what you've made. ") + picked.line;
         }
+        if (AtFair) FairShopper(picked);
         return picked;
     }
 
@@ -307,6 +315,7 @@ public partial class ShopDay
             LastMessage = $"Sold a copy of {s.pattern.name} for {s.offer} coins.";
         }
         StallSales++;
+        CountStallSale(s);
         shopper = null;
         GM.Persist();
     }
