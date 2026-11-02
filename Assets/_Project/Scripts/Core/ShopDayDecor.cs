@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// Furniture and decorations (owner, 2026-10-31): bought at Marsh's Workshop (UI/FurnitureUI.cs), placed from your
-/// portrait (Customize, "Your Shop"), shown in the shop scene. Placed pieces add charm: customers pay 1% more per point.
+/// portrait (Customize, "Your Shop") or by dragging them about in the shop (the pencil, UI/DecorEditor.cs). Placed pieces add charm: customers pay 1% more per point.
 public partial class ShopDay
 {
     public const string FurnitureOwnerId = "benji";
@@ -60,7 +60,7 @@ public partial class ShopDay
             boughtThisVisit = true;
             bool placed = Placed(d.slot) == null;
             if (placed) Place(d.slot, decorId);
-            LastMessage = $"Bought the {d.displayName.ToLower()}!" + (placed ? " It's in your shop already." : " Tap your portrait (top left) to put it out.");
+            LastMessage = $"Bought the {d.displayName.ToLower()}!" + (placed ? " It's in your shop already." : " Tap the pencil in your shop to put it out.");
             if (Save.decor.Count == 1) Stamps.Earn(Save, "decor:first", "Making it yours", d.displayName, StampTheme.Shop);
             GM.Persist();
         }

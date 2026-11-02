@@ -166,10 +166,10 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     public void GoToCurios() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.CuriosOwnerId, ScreenId.Curios); }
     public void GoToTech() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.TechOwnerId, ScreenId.TechShop); }
 
-    // ---- Things to do between customers (owner, 2026-11-02: real things, not minigames): read, decorate ----
+    // ---- Things to do between customers (owner, 2026-11-02: real things, not minigames): read (decorating: DecorEditor) ----
     public GameObject pastimeButton;      // the row of them under the counter
     public Button readButton;
-    public GameObject decorateButton, onlineButton, computer, onlineLayer;
+    public GameObject onlineButton, computer, onlineLayer;
     public Button atticButton, basementButton, onlineTemplate;
     public Text onlineInfo;
     readonly List<GameObject> onlineRows = new List<GameObject>();
@@ -209,7 +209,6 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     }
 
     public void Read() { day.ReadChapter(); Refresh(); }
-    public void Decorate() => day.Decorate();
 
     void ShowPastimes()
     {
@@ -217,7 +216,6 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         readButton.interactable = day.CanRead;
         var label = readButton.GetComponentInChildren<Text>();
         if (label.text != day.ReadLabel) label.text = day.ReadLabel;
-        decorateButton.SetActive(day.ShopOpen(ScreenId.Furniture));
         onlineButton.SetActive(day.OnlineOpen);
         computer.SetActive(day.OnlineOpen);   // the computer appears on the counter once online orders open
         atticButton.gameObject.SetActive(day.HasExpansion("attic"));

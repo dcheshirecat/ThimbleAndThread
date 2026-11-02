@@ -35,7 +35,7 @@ public class FurnitureUI : MonoBehaviour
     public void Chat() => day.ChatWith(ShopDay.OwnerOf(screen), screen);
     public void Leave() => day.LeaveShop(ShopDay.OwnerOf(screen));
 
-    static string SpotName(DecorSlot s) => s switch
+    public static string SpotName(DecorSlot s) => s switch
     {
         DecorSlot.Wall => "on the wall",
         DecorSlot.Counter => "on the counter",

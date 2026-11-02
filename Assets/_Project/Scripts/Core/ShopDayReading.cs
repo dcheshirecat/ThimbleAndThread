@@ -53,11 +53,4 @@ public partial class ShopDay
         }
         GM.Persist();
     }
-
-    /// The shop's Decorate button: your furniture and decorations (once the workshop's open).
-    public void Decorate()
-    {
-        CustomizeUI.OpenAtShop = true;
-        GM.ChangeScreen(ScreenId.Customize);
-    }
 }

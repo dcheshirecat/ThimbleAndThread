@@ -180,6 +180,11 @@ public static class TestSceneBuilder
         p = Panel(ScreenId.Shop, "", new Color(0.95f, 0.88f, 0.78f), "Art/Backgrounds/bg_shop_day.png");
         var shopScene = p.gameObject.AddComponent<ShopSceneUI>();
         shopScene.day = day;
+        var decorEditor = p.gameObject.AddComponent<DecorEditor>();
+        decorEditor.scene = shopScene;
+        decorEditor.day = day;
+        decorEditor.plainSprite = uiSprite;
+        decorEditor.markers = new Image[System.Enum.GetValues(typeof(DecorSlot)).Length];
         var pageNames = new[] { "Page_Pickups", "Page_Shop", "Page_Display" };
         shopScene.pages = new RectTransform[3];
         for (int i = 0; i < 3; i++)
@@ -200,6 +205,12 @@ public static class TestSceneBuilder
         shopScene.decorSpots = new Image[System.Enum.GetValues(typeof(DecorSlot)).Length];
         RectTransform DecorSpot(int i, Transform parent, Vector2 anchor, Vector2 pivot, Vector2 pos, Vector2 size)
         {
+            // While decorating (the pencil), an outline shows where this spot is; it glows for the piece in hand.
+            var marker = Shape(parent, $"Spot_{(DecorSlot)i}", anchor, size, Color.white, uiSprite);
+            marker.pivot = pivot;
+            marker.anchoredPosition = pos;
+            decorEditor.markers[i] = marker.GetComponent<Image>();
+            marker.gameObject.SetActive(false);
             var spot = Shape(parent, $"Decor_{(DecorSlot)i}", anchor, size, Color.white, null);
             spot.pivot = pivot;
             spot.anchoredPosition = pos;
@@ -207,6 +218,9 @@ public static class TestSceneBuilder
             img.preserveAspect = true;
             img.raycastTarget = false;
             shopScene.decorSpots[i] = img;
+            var lift = spot.gameObject.AddComponent<DecorPiece>();   // picked up while decorating
+            lift.editor = decorEditor;
+            lift.slot = i;
             spot.gameObject.SetActive(false);
             return spot;
         }
@@ -313,7 +327,6 @@ public static class TestSceneBuilder
         var readColors = shopScene.readButton.colors;
         readColors.disabledColor = new Color(0.6f, 0.6f, 0.6f, 0.55f);
         shopScene.readButton.colors = readColors;
-        shopScene.decorateButton = Button(things, "Decorate", shopScene.Decorate, 420).gameObject;
         shopScene.onlineButton = Button(things, "Online Orders", shopScene.ToggleOnline, 480).gameObject;
         shopScene.atticButton = Button(things, "Attic", shopScene.SortAttic, 300);
         shopScene.basementButton = Button(things, "Basement", shopScene.SortBasement, 360);
@@ -334,6 +347,69 @@ public static class TestSceneBuilder
         onlineClose.GetComponentInChildren<Text>().text = "Close";
         onlineLayer.SetActive(false);
         shopScene.onlineLayer = onlineLayer;
+        // The shop edit button (owner, 2026-11-02): a pencil on the right, near the bottom. It opens the tray of your
+        // furniture and decorations; drag them into the shop (DecorEditor).
+        var tray = Shape(p, "Decor Tray", new Vector2(0.5f, 0.1f), Vector2.zero, new Color(1, 0.97f, 0.9f, 0.97f), uiSprite);
+        tray.anchorMin = new Vector2(0, 0); tray.anchorMax = new Vector2(1, 0.2f);
+        tray.offsetMin = tray.offsetMax = Vector2.zero;
+        tray.GetComponent<Image>().raycastTarget = true;   // the drop zone for putting pieces away
+        tray.gameObject.AddComponent<ClickBlocker>();
+        decorEditor.trayInfo = Label(tray, "Info", new Vector2(0.03f, 0.74f), new Vector2(0.80f, 0.98f), 44, TextAnchor.MiddleLeft);
+        decorEditor.trayInfo.color = Ink;
+        var trayDone = Button(tray, "Decor Done", decorEditor.Stop, 300);
+        Place(trayDone, new Vector2(0.9f, 0.86f), new Vector2(300, 120));
+        trayDone.GetComponentInChildren<Text>().text = "Done";
+        var trayView = new GameObject("Pieces", typeof(RectTransform), typeof(RectMask2D), typeof(ScrollRect), typeof(Image));
+        var tvrt = (RectTransform)trayView.transform;
+        tvrt.SetParent(tray, false);
+        tvrt.anchorMin = new Vector2(0.02f, 0.04f); tvrt.anchorMax = new Vector2(0.98f, 0.72f);
+        tvrt.offsetMin = tvrt.offsetMax = Vector2.zero;
+        trayView.GetComponent<Image>().color = new Color(1, 1, 1, 0.001f);
+        var trayContent = new GameObject("Content", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(ContentSizeFitter));
+        var tcrt = (RectTransform)trayContent.transform;
+        tcrt.SetParent(tvrt, false);
+        tcrt.anchorMin = new Vector2(0, 0); tcrt.anchorMax = new Vector2(0, 1);
+        tcrt.pivot = new Vector2(0, 0.5f);
+        tcrt.offsetMin = tcrt.offsetMax = Vector2.zero;
+        var tl = trayContent.GetComponent<HorizontalLayoutGroup>();
+        tl.spacing = 24;
+        tl.childAlignment = TextAnchor.MiddleLeft;
+        tl.childControlWidth = tl.childControlHeight = true;
+        tl.childForceExpandWidth = false; tl.childForceExpandHeight = true;
+        trayContent.GetComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        var trayScroll = trayView.GetComponent<ScrollRect>();
+        trayScroll.content = tcrt;
+        trayScroll.vertical = false;
+        trayScroll.movementType = ScrollRect.MovementType.Clamped;
+        decorEditor.trayContent = tcrt;
+        var pieceGo = new GameObject("Piece Template", typeof(RectTransform), typeof(Image), typeof(LayoutElement), typeof(DecorPiece));
+        pieceGo.transform.SetParent(tcrt, false);
+        pieceGo.GetComponent<Image>().sprite = uiSprite;
+        pieceGo.GetComponent<Image>().type = Image.Type.Sliced;
+        pieceGo.GetComponent<LayoutElement>().preferredWidth = 340;
+        var pieceIcon = Shape(pieceGo.transform, "Icon", new Vector2(0.5f, 0.66f), new Vector2(190, 190), Color.white, null);
+        pieceIcon.GetComponent<Image>().preserveAspect = true;
+        var pieceName = MakeText(pieceGo.transform, "Name", "", 40);
+        var pnrt = (RectTransform)pieceName.transform;
+        pnrt.anchorMin = new Vector2(0.03f, 0.02f); pnrt.anchorMax = new Vector2(0.97f, 0.36f);
+        pnrt.offsetMin = pnrt.offsetMax = Vector2.zero;
+        pieceName.color = Ink;
+        pieceName.raycastTarget = false;
+        decorEditor.pieceTemplate = pieceGo.GetComponent<DecorPiece>();
+        decorEditor.pieceTemplate.editor = decorEditor;
+        pieceGo.SetActive(false);
+        decorEditor.tray = tray.gameObject;
+        tray.gameObject.SetActive(false);
+        var pencil = Button(p, "Edit Shop", decorEditor.Toggle, 170);
+        Place(pencil, new Vector2(0.925f, 0.26f), new Vector2(170, 170));
+        pencil.GetComponentInChildren<Text>().text = "";
+        pencil.GetComponent<Image>().sprite = Knob();
+        pencil.GetComponent<Image>().type = Image.Type.Simple;
+        var pencilIcon = Shape(pencil.transform, "Pencil", new Vector2(0.5f, 0.5f), new Vector2(120, 120), Ink, AssetDatabase.LoadAssetAtPath<Sprite>($"{Root}/Art/UI/icon_pencil.png"));
+        if (pencilIcon.GetComponent<Image>().sprite == null) { Object.DestroyImmediate(pencilIcon.gameObject); pencil.GetComponentInChildren<Text>().text = "Edit"; }
+        decorEditor.pencil = pencil.gameObject;
+        decorEditor.pencilBack = pencil.GetComponent<Image>();
+        pencil.gameObject.SetActive(false);
         shopScene.pageLabel = Label(p, "PageName", new Vector2(0.2f, 0.778f), new Vector2(0.8f, 0.812f), 52, TextAnchor.MiddleCenter);
         shopScene.pageLabel.raycastTarget = false;   // the Shops button sits beside it
         var b = Row(p, 0.5f, 0.05f);

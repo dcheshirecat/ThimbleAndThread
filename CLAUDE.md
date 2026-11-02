@@ -857,3 +857,8 @@ friendship) and the order inbox); expansions at Marsh's Workshop (attic level 7,
 SaveData.secondhand, sold to visitors in WhatTheyWant); DecorSlot CounterLeft, PickupWall, PickupShelf (the pickup corner has
 shelving and its own decor). Dialogue/jasper.ink, ravi.ink (drafts for the owner to edit). Romance options now include Jasper, Ravi.
 Open: art; ci-lowmem; owner's questions (landscape backgrounds; customer customization).
+DONE (owner, 2026-11-02) Decorating by drag and drop: the pencil (Button_EditShop, right side near the bottom of the shop, shown once
+the workshop opens or you own a piece) replaces the Decorate button. UI/DecorEditor.cs: a tray of owned pieces along the bottom; drag one
+up and its spot (Spot_<slot> outlines) glows; dropping near it places it (swaps the old one back); drag a placed piece (UI/DecorPiece.cs on
+each Decor_<slot>) down to the tray to put it away; pickup-corner pieces switch to that page. Pieces still snap to their DecorSlot spot.
+Customize's Your Shop tab still works too.

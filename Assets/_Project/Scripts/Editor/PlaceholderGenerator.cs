@@ -776,6 +776,13 @@ public static class PlaceholderGenerator
             (x, y) => { float r = Mathf.Sqrt(x * x + y * y), a = Mathf.Atan2(y, x); return r < 0.22f || (r < 0.42f && r > 0.27f && Mathf.Cos(a * 8) > 0.55f); }, // sun
         };
         for (int i = 0; i < 7; i++) MakeIcon($"{Root}/Art/UI/Weekdays/{Week.SymbolFile(i)}", shapes[i]);
+        MakeIcon($"{Root}/Art/UI/icon_pencil.png", (x, y) =>   // the shop edit button: a pencil, point down-left
+        {
+            float u = (x + y) * 0.7071f, v = (y - x) * 0.7071f;   // u along the pencil, v across it
+            if (Mathf.Abs(v) > 0.11f || u > 0.44f) return false;
+            if (u < -0.24f) return Mathf.Abs(v) < 0.11f * (u + 0.44f) / 0.2f;   // the sharpened tip
+            return !(u > 0.27f && u < 0.31f);                                    // a gap before the eraser
+        });
         MakeIcon($"{Root}/Art/UI/icon_gear.png", (x, y) =>
         {
             float r = Mathf.Sqrt(x * x + y * y), a = Mathf.Atan2(y, x);

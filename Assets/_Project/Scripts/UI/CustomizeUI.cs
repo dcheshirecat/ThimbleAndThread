@@ -48,7 +48,7 @@ public class CustomizeUI : MonoBehaviour
         if (id != ScreenId.Customize || GameManager.Instance.Save == null) return;
         nameField.text = P.name;
         messageText.text = P.created ? "Change anything you like." : "Welcome! Who's taking over the shop?";
-        shopMode = OpenAtShop;   // the shop's Decorate button opens on Your Shop
+        shopMode = OpenAtShop;   // set to open on Your Shop
         OpenAtShop = false;
         Show();
     }

@@ -1413,10 +1413,10 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             ? $"{name} is open\nBy day, tap Shops at the top right. Clothes, hairstyles and accessories for your shopkeeper: try a look, then buy it."
             : flag == FurnitureFlag
             ? $"{name} is open\nBy day, tap Shops at the top right. Furniture and decorations for your shop: a charming shop earns a little more " +
-              "from every order. Put pieces out with Decorate, under the counter."
+              "from every order. Put pieces out with the pencil on the right of your shop."
             : flag == CuriosFlag
             ? $"{name} is open\nBy day, tap Shops. Antiques and oddments that make your shop work better: more experience, more " +
-              "visitors at certain hours, closer friendships. Put them out with Decorate."
+              "visitors at certain hours, closer friendships. Put them out with the pencil in your shop."
             : flag == TechFlag
             ? $"{name} is open\nBy day, tap Shops. Gadgets that run parts of the shop for you, each with a cost: a door that answers " +
               "itself takes orders, but you won't make friends that way. Switch them on and off in the shop."
