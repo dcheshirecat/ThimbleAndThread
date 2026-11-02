@@ -186,6 +186,7 @@ public static class TestSceneBuilder
         shopScene.day = day;
         var decorEditor = p.gameObject.AddComponent<DecorEditor>();
         decorEditor.scene = shopScene;
+        shopScene.decorEditor = decorEditor;
         decorEditor.day = day;
         decorEditor.plainSprite = uiSprite;
         decorEditor.markers = new Image[System.Enum.GetValues(typeof(DecorSlot)).Length];
@@ -242,8 +243,8 @@ public static class TestSceneBuilder
         computer.pivot = new Vector2(0.5f, 0f);
         computer.anchoredPosition = new Vector2(0, 25);
         Shape(computer, "Screen", new Vector2(0.5f, 0.55f), new Vector2(190, 120), new Color(0.55f, 0.80f, 0.95f), uiSprite);
-        computer.GetComponent<Image>().raycastTarget = false;
-        computer.gameObject.SetActive(false);
+        UnityEventTools.AddPersistentListener(computer.gameObject.AddComponent<Button>().onClick, shopScene.ToggleComputer);   // tap it to use it
+        computer.gameObject.AddComponent<ButtonSound>();
         shopScene.computer = computer.gameObject;
         DecorSpot(3, mid, new Vector2(0.8f, 0.6f), new Vector2(0f, 0f), new Vector2(185, -340), new Vector2(200, 380));
         var doorButton = Button(mid, "Door", shopScene.TapDoor, 360);
@@ -324,29 +325,32 @@ public static class TestSceneBuilder
         Button(sm, "Menu Close", shopScene.ToggleShops, 800).GetComponentInChildren<Text>().text = "Close";
         shopsLayer.SetActive(false);
         shopScene.shopsMenu = shopsLayer;
-        // Things to do between customers: read a chapter of a book, decorate the shop
-        var things = Row(p, 0.5f, 0.118f);
+        // The computer on the counter (owner, 2026-11-02): tap it for things to do between customers (read a chapter,
+        // online orders, sort the attic or basement). Its panel is the Computer Layer below.
+        var onlineLayer = new GameObject("Online Layer", typeof(RectTransform), typeof(Image), typeof(Button));
+        onlineLayer.transform.SetParent(p, false);
+        Stretch((RectTransform)onlineLayer.transform);
+        onlineLayer.GetComponent<Image>().color = new Color(0, 0, 0, 0.4f);
+        UnityEventTools.AddPersistentListener(onlineLayer.GetComponent<Button>().onClick, shopScene.ToggleComputer);
+        onlineLayer.name = "Computer Layer";
+        var onlineBox = Shape(onlineLayer.transform, "Computer Box", new Vector2(0.5f, 0.5f), new Vector2(1850, 1900), new Color(0.93f, 0.96f, 1f), uiSprite);
+        onlineBox.GetComponent<Image>().raycastTarget = true;
+        onlineBox.gameObject.AddComponent<ClickBlocker>();
+        Label(onlineBox, "Computer Title", new Vector2(0.05f, 0.92f), new Vector2(0.95f, 0.98f), 80, TextAnchor.MiddleCenter).text = "The Computer";
+        var things = Row(onlineBox, 0.5f, 0.86f);
         shopScene.pastimeButton = things.gameObject;
         shopScene.readButton = Button(things, "Read", shopScene.Read, 420);
         var readColors = shopScene.readButton.colors;
         readColors.disabledColor = new Color(0.6f, 0.6f, 0.6f, 0.55f);
         shopScene.readButton.colors = readColors;
-        shopScene.onlineButton = Button(things, "Online Orders", shopScene.ToggleOnline, 480).gameObject;
+        shopScene.onlineButton = Button(things, "Online Orders", shopScene.ShowOnline, 480).gameObject;
         shopScene.atticButton = Button(things, "Attic", shopScene.SortAttic, 300);
         shopScene.basementButton = Button(things, "Basement", shopScene.SortBasement, 360);
-        var onlineLayer = new GameObject("Online Layer", typeof(RectTransform), typeof(Image), typeof(Button));
-        onlineLayer.transform.SetParent(p, false);
-        Stretch((RectTransform)onlineLayer.transform);
-        onlineLayer.GetComponent<Image>().color = new Color(0, 0, 0, 0.4f);
-        UnityEventTools.AddPersistentListener(onlineLayer.GetComponent<Button>().onClick, shopScene.ToggleOnline);
-        var onlineBox = Shape(onlineLayer.transform, "Online Box", new Vector2(0.5f, 0.5f), new Vector2(1850, 1700), new Color(0.93f, 0.96f, 1f), uiSprite);
-        onlineBox.GetComponent<Image>().raycastTarget = true;
-        onlineBox.gameObject.AddComponent<ClickBlocker>();
-        shopScene.onlineInfo = Label(onlineBox, "Info", new Vector2(0.05f, 0.84f), new Vector2(0.95f, 0.97f), 56, TextAnchor.MiddleCenter);
+        shopScene.onlineInfo = Label(onlineBox, "Info", new Vector2(0.05f, 0.7f), new Vector2(0.95f, 0.81f), 56, TextAnchor.MiddleCenter);
         shopScene.onlineInfo.color = Ink;
-        shopScene.onlineTemplate = Button(ScrollList(onlineBox, 0.12f, 0.83f), "Online Template", null, 1700);
+        shopScene.onlineTemplate = Button(ScrollList(onlineBox, 0.12f, 0.69f), "Online Template", null, 1700);
         TallRow(shopScene.onlineTemplate, 240, 54);
-        var onlineClose = Button(onlineBox, "Online Close", shopScene.ToggleOnline, 500);
+        var onlineClose = Button(onlineBox, "Online Close", shopScene.ToggleComputer, 500);
         Place(onlineClose, new Vector2(0.5f, 0.05f), new Vector2(500, 130));
         onlineClose.GetComponentInChildren<Text>().text = "Close";
         onlineLayer.SetActive(false);

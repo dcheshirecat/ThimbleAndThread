@@ -90,6 +90,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     {
         if (!OnShop || Save == null) return;
         ShowShops();
+        ShowDecor();   // only rebuilds when what's out changes
         if (pastimeButton != null) ShowPastimes();
         if (Ringing && !opening)   // the door rattles now and then until it's answered
         {
@@ -167,7 +168,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     public void GoToTech() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.TechOwnerId, ScreenId.TechShop); }
 
     // ---- Things to do between customers (owner, 2026-11-02: real things, not minigames): read (decorating: DecorEditor) ----
-    public GameObject pastimeButton;      // the row of them under the counter
+    public GameObject pastimeButton;      // the row of them in the computer's panel
     public Button readButton;
     public GameObject onlineButton, computer, onlineLayer;
     public Button atticButton, basementButton, onlineTemplate;
@@ -177,19 +178,30 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     public void SortAttic() { day.SortThrough("attic"); Refresh(); }
     public void SortBasement() { day.SortThrough("basement"); Refresh(); }
 
-    /// Today's online orders: accept the ones you'd like to make.
-    public void ToggleOnline()
+    /// The computer on the counter: read, online orders, the attic and basement (owner, 2026-11-02).
+    public void ToggleComputer()
     {
         bool show = !onlineLayer.activeSelf;
         onlineLayer.SetActive(show);
-        if (show) { onlineLayer.transform.SetAsLastSibling(); BuildOnline(); }
+        if (!show) return;
+        onlineLayer.transform.SetAsLastSibling();
+        if (day.OnlineOpen) BuildOnline();
+        else ClearOnline("Read a chapter while it's quiet, or tidy up.");
     }
 
-    void BuildOnline()
+    public void ShowOnline() => BuildOnline();
+
+    void ClearOnline(string info)
     {
         foreach (var r in onlineRows) Destroy(r);
         onlineRows.Clear();
         onlineTemplate.gameObject.SetActive(false);
+        onlineInfo.text = info;
+    }
+
+    void BuildOnline()
+    {
+        ClearOnline("");
         int waiting = Save.orders.FindAll(o => o.customerId == ShopDay.OnlineId && o.finished).Count;
         onlineInfo.text = $"Today's online orders. The courier comes on Fridays" + (waiting > 0 ? $" ({waiting} parcel{(waiting == 1 ? "" : "s")} packed)." : ".");
         for (int i = 0; i < Save.onlineOffers.Count; i++)
@@ -212,33 +224,93 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
     void ShowPastimes()
     {
-        pastimeButton.SetActive(Page == 1);   // only by the counter, not over the pickup or display lists
+        if (!onlineLayer.activeSelf) return;   // the computer's menu, while it's open
         readButton.interactable = day.CanRead;
         var label = readButton.GetComponentInChildren<Text>();
         if (label.text != day.ReadLabel) label.text = day.ReadLabel;
         onlineButton.SetActive(day.OnlineOpen);
-        computer.SetActive(day.OnlineOpen);   // the computer appears on the counter once online orders open
         atticButton.gameObject.SetActive(day.HasExpansion("attic"));
         atticButton.interactable = day.CanSort("attic");
         basementButton.gameObject.SetActive(day.HasExpansion("basement"));
         basementButton.interactable = day.CanSort("basement");
     }
 
-    // ---- Your furniture and decorations, in their spots (DecorSlot order) ----
+    // ---- Your furniture and decorations (owner, 2026-11-02: anywhere in the shop) ----
+    // decorSpots are the per-kind templates at their usual spots (DecorSlot order). Each piece that's out is a copy:
+    // at its usual spot, or wherever it was dropped (on that page's Decor Layer).
     public Image[] decorSpots;
+    public readonly List<DecorPiece> DecorShown = new List<DecorPiece>();
+    string decorShownFor;
 
     void ShowDecor()
     {
         if (decorSpots == null) return;
-        for (int i = 0; i < decorSpots.Length; i++)
+        string sig = string.Join(";", Save.decorPlaced) + "|" + Save.decor.Count;
+        if (sig == decorShownFor) return;
+        decorShownFor = sig;
+        foreach (var p in DecorShown) if (p != null) Destroy(p.gameObject);
+        DecorShown.Clear();
+        foreach (var spot in decorSpots) if (spot != null) spot.gameObject.SetActive(false);
+        foreach (var p in day.PlacedPieces())
         {
-            var d = day.Placed((DecorSlot)i);
-            decorSpots[i].gameObject.SetActive(d != null);
-            if (d == null) continue;
-            decorSpots[i].sprite = d.icon;
-            decorSpots[i].color = d.icon != null ? Color.white : d.color;
+            var template = decorSpots[(int)p.def.slot];
+            if (template == null) continue;
+            Image img;
+            if (!p.free) img = Instantiate(template, template.transform.parent);
+            else
+            {
+                var page = pages[Mathf.Clamp(p.page, 0, pages.Length - 1)];
+                img = Instantiate(template, DecorLayer(page));
+                var rt = (RectTransform)img.transform;
+                rt.anchorMin = rt.anchorMax = p.pos;
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                rt.anchoredPosition = Vector2.zero;
+            }
+            img.gameObject.SetActive(true);
+            img.name = $"Decor_{p.def.decorId}";
+            img.sprite = p.def.icon;
+            img.color = p.def.icon != null ? Color.white : p.def.color;
+            img.enabled = true;
+            var piece = img.GetComponent<DecorPiece>();
+            piece.decorId = p.def.decorId;
+            piece.slot = -1;
+            piece.placed = true;
+            img.raycastTarget = decorEditor != null && decorEditor.Editing;
+            DecorShown.Add(piece);
         }
     }
+
+    public DecorEditor decorEditor;
+
+    /// Free-placed pieces sit on a layer that fills the page, above the furniture and below the buttons' clicks
+    /// (they only catch touches while decorating).
+    static RectTransform DecorLayer(RectTransform page)
+    {
+        var layer = page.Find("Decor Layer") as RectTransform;
+        if (layer == null)
+        {
+            layer = new GameObject("Decor Layer", typeof(RectTransform)).GetComponent<RectTransform>();
+            layer.SetParent(page, false);
+            layer.anchorMin = Vector2.zero; layer.anchorMax = Vector2.one;
+            layer.offsetMin = layer.offsetMax = Vector2.zero;
+        }
+        layer.SetAsLastSibling();
+        return layer;
+    }
+
+    /// Where on the page under a screen point (0..1), for dropping a piece.
+    public bool PagePoint(Vector2 screenPos, Camera cam, out int page, out Vector2 pos)
+    {
+        page = Page;
+        pos = Vector2.zero;
+        var rt = pages[Page];
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rt, screenPos, cam, out var local)) return false;
+        var r = rt.rect;
+        pos = new Vector2((local.x - r.xMin) / r.width, (local.y - r.yMin) / r.height);
+        return pos.x >= 0 && pos.x <= 1 && pos.y >= 0 && pos.y <= 1;
+    }
+
+    public void RefreshDecor() { decorShownFor = null; ShowDecor(); }
 
     /// A shop in the menu: there once it has opened; its hours under its name, greyed out while it's shut.
     void ShopEntry(GameObject entry, ScreenId shop, string name)
@@ -280,7 +352,6 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
     public void ShowPage(int p, bool instant = false)
     {
-        if (pastimeButton != null) pastimeButton.SetActive(p == 1);
         Page = Mathf.Clamp(p, 0, pages.Length - 1);
         if (instant) { offset = -Page; Place(); }
         pageLabel.text = string.Join("  ", new[] { Page == 0 ? "●" : "○", Page == 1 ? "●" : "○", Page == 2 ? "●" : "○" });   // page dots

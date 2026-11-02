@@ -8,14 +8,15 @@ public class DecorPiece : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 {
     public DecorEditor editor;
     public string decorId;
-    public int slot = -1;                // a DecorSlot when it's out in the shop
+    public int slot = -1;                // the template at a DecorSlot's usual spot (never dragged itself)
+    public bool placed;                  // a piece out in the shop (decorId), not a tile in the tray
 
     ScrollRect passTo;                   // a sideways drag in the tray goes to the tray's scrolling
 
     public void OnBeginDrag(PointerEventData e)
     {
         passTo = null;
-        if (slot < 0 && Mathf.Abs(e.delta.x) > Mathf.Abs(e.delta.y)) passTo = GetComponentInParent<ScrollRect>();
+        if (!placed && Mathf.Abs(e.delta.x) > Mathf.Abs(e.delta.y)) passTo = GetComponentInParent<ScrollRect>();
         if (passTo != null) passTo.OnBeginDrag(e);
         else editor.BeginDrag(this, e.position);
     }

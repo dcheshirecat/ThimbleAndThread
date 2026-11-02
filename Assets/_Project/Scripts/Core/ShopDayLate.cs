@@ -20,7 +20,7 @@ public partial class ShopDay
 
     IEnumerable<DecorDef> PlacedDecor()
     {
-        foreach (DecorSlot s in System.Enum.GetValues(typeof(DecorSlot))) if (Placed(s) is DecorDef d) yield return d;
+        foreach (var p in PlacedPieces()) yield return p.def;
     }
 
     /// Extra experience, in percent, from what's placed.

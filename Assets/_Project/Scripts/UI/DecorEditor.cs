@@ -3,9 +3,9 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// Decorating the shop by hand (owner, 2026-11-02): the pencil on the right of the shop scene opens a tray of your
-/// furniture and decorations along the bottom. Drag a piece up into the shop: the spot it fits glows, and dropping it
-/// there puts it out (swapping whatever was there back into the tray). Drag a piece out of the shop and down into the
-/// tray to put it away. Pieces for the pickup corner switch to that page as you pick them up.
+/// furniture and decorations along the bottom. Drag a piece up into the shop and drop it ANYWHERE on the page you're on
+/// (owner, 2026-11-02 evening: move them around, not just in and out); drag pieces that are out to move them, or down
+/// into the tray to put them away. Swipe the shop's pages to decorate the pickup corner or the display.
 public class DecorEditor : MonoBehaviour
 {
     public ShopSceneUI scene;
@@ -25,7 +25,7 @@ public class DecorEditor : MonoBehaviour
     public bool Editing => tray != null && tray.activeSelf;
     readonly List<GameObject> pieces = new List<GameObject>();
     DecorDef held;                       // being dragged
-    int heldFrom = -1;                   // the spot it came from, or -1 from the tray
+    DecorPiece heldPiece;                // the copy out in the shop it was lifted from, or null from the tray
     RectTransform ghost;
     string note = "";
 
@@ -89,7 +89,7 @@ public class DecorEditor : MonoBehaviour
     {
         DropGhost();
         held = null;
-        heldFrom = -1;
+        heldPiece = null;
         if (tray != null) tray.SetActive(false);
         if (pencilBack != null) pencilBack.color = PencilIdle;
         ShowMarkers(null);
@@ -114,7 +114,7 @@ public class DecorEditor : MonoBehaviour
             var icon = piece.transform.Find("Icon").GetComponent<Image>();
             icon.sprite = d.icon != null ? d.icon : plainSprite;
             icon.color = d.icon != null ? Color.white : d.color;
-            bool placed = day.Placed(d.slot) == d;
+            bool placed = day.IsOut(d.decorId);
             piece.transform.Find("Name").GetComponent<Text>().text = d.displayName + (placed ? "\n<i>(in the shop)</i>" : "");
             piece.GetComponent<Image>().color = placed ? new Color(0.85f, 0.95f, 0.85f) : Color.white;
             pieces.Add(piece.gameObject);
@@ -127,7 +127,7 @@ public class DecorEditor : MonoBehaviour
 
     void ShowInfo()
     {
-        string help = "Drag a piece up to its spot in the shop. Drag one out of the shop and down here to put it away.";
+        string help = "Drag a piece up and drop it anywhere in the shop. Drag pieces about to move them, or down here to put them away.";
         trayInfo.text = $"<b>Charm {day.Charm}/{ShopDay.MaxCharm}</b>  ·  " + (note != "" ? note : help);
     }
 
@@ -138,27 +138,24 @@ public class DecorEditor : MonoBehaviour
         for (int i = 0; i < markers.Length; i++)
         {
             if (markers[i] == null) continue;
-            markers[i].gameObject.SetActive(Editing);
-            markers[i].color = lit != null && (int)lit.slot == i ? MarkerLit : MarkerIdle;
+            markers[i].gameObject.SetActive(false);   // pieces go anywhere now: no spots to show
         }
     }
 
     /// Pieces already out in the shop can be picked up while editing (and only then: otherwise taps pass through).
     void SetSpotsDraggable(bool on)
     {
-        if (scene == null || scene.decorSpots == null) return;
-        foreach (var spot in scene.decorSpots) if (spot != null) spot.raycastTarget = on;
+        if (scene == null) return;
+        foreach (var piece in scene.DecorShown) if (piece != null) piece.GetComponent<Image>().raycastTarget = on;
     }
 
-    static int PageOf(DecorSlot slot) => slot == DecorSlot.PickupWall || slot == DecorSlot.PickupShelf ? 0 : ShopSceneUI.MiddlePage;
 
     /// Tapping a piece in the tray: what it is and where it goes.
     public void Tapped(DecorPiece piece)
     {
-        var d = piece.slot >= 0 ? day.Placed((DecorSlot)piece.slot) : day.Decor(piece.decorId);
+        var d = day.Decor(piece.decorId);
         if (d == null || !Editing) return;
-        scene.ShowPage(PageOf(d.slot));
-        note = $"{d.displayName}: goes {FurnitureUI.SpotName(d.slot)}, +{d.charm} charm" + BoostText(d) + ".";
+        note = $"{d.displayName}: +{d.charm} charm" + BoostText(d) + (day.IsOut(d.decorId) ? ". Drag it to move it." : ". Drag it into the shop.");
         ShowInfo();
         ShowMarkers(d);
     }
@@ -176,11 +173,10 @@ public class DecorEditor : MonoBehaviour
     public void BeginDrag(DecorPiece piece, Vector2 screenPos)
     {
         if (!Editing) return;
-        held = piece.slot >= 0 ? day.Placed((DecorSlot)piece.slot) : day.Decor(piece.decorId);
-        heldFrom = piece.slot;
+        held = day.Decor(piece.decorId);
+        heldPiece = piece.placed ? piece : null;
         if (held == null) return;
-        scene.ShowPage(PageOf(held.slot));
-        if (heldFrom >= 0) scene.decorSpots[heldFrom].enabled = false;   // lifted off its spot
+        if (heldPiece != null) heldPiece.GetComponent<Image>().enabled = false;   // lifted off the floor
         var go = new GameObject("Held Piece", typeof(RectTransform), typeof(Image));
         ghost = (RectTransform)go.transform;
         ghost.SetParent(Root, false);
@@ -192,7 +188,7 @@ public class DecorEditor : MonoBehaviour
         img.preserveAspect = true;
         img.raycastTarget = false;
         ghost.SetAsLastSibling();
-        note = $"Bring the {held.displayName.ToLower()} to the glowing spot.";
+        note = $"Drop the {held.displayName.ToLower()} where you'd like it.";
         ShowInfo();
         ShowMarkers(held);
         MoveDrag(screenPos);
@@ -205,31 +201,35 @@ public class DecorEditor : MonoBehaviour
             ghost.anchoredPosition = local - Root.rect.center;
     }
 
-    public void EndDrag(Vector2 screenPos) => Drop(OverTray(screenPos), NearSpot(screenPos));
+    public void EndDrag(Vector2 screenPos)
+    {
+        bool onTray = OverTray(screenPos);
+        bool onPage = scene.PagePoint(screenPos, Cam, out int page, out var pos);
+        Drop(onTray, onPage, page, pos);
+    }
 
-    /// Where a dragged piece lands: on its spot (put out), on the tray (put away), or anywhere else (back where it was).
-    public void Drop(bool onTray, bool onSpot)
+    /// Where a dragged piece lands: anywhere on the page (put out, or moved there), on the tray (put away), or off the
+    /// shop altogether (back where it was).
+    public void Drop(bool onTray, bool onPage, int page, Vector2 pos)
     {
         var d = held;
-        int from = heldFrom;
+        bool wasOut = heldPiece != null;
         DropGhost();
         held = null;
-        heldFrom = -1;
+        heldPiece = null;
         if (d == null) return;
-        if (onSpot)
+        if (onTray)
         {
-            var was = day.Placed(d.slot);
-            day.Place(d.slot, d.decorId);
-            note = was != null && was != d ? $"The {d.displayName.ToLower()} is out; the {was.displayName.ToLower()} is back in the tray."
-                                           : $"The {d.displayName.ToLower()} is out in the shop.";
+            if (wasOut) { day.PutAway(d.decorId); note = $"Put the {d.displayName.ToLower()} away."; }
+            else note = "";
         }
-        else if (onTray && from >= 0)
+        else if (onPage)
         {
-            day.Place(d.slot, "");
-            note = $"Put the {d.displayName.ToLower()} away.";
+            day.PutOut(d.decorId, page, pos);
+            note = wasOut ? $"Moved the {d.displayName.ToLower()}." : $"The {d.displayName.ToLower()} is out in the shop.";
         }
-        else note = from >= 0 ? "" : $"That goes {FurnitureUI.SpotName(d.slot)}: drop it on the glowing spot.";
-        scene.Refresh();
+        else note = "";
+        scene.RefreshDecor();
         Build();
     }
 
@@ -237,21 +237,10 @@ public class DecorEditor : MonoBehaviour
     {
         if (ghost != null) Destroy(ghost.gameObject);
         ghost = null;
-        if (scene != null && scene.decorSpots != null) foreach (var spot in scene.decorSpots) if (spot != null) spot.enabled = true;
+        if (scene != null) foreach (var piece in scene.DecorShown) if (piece != null) piece.GetComponent<Image>().enabled = true;
     }
 
     bool OverTray(Vector2 screenPos) => RectTransformUtility.RectangleContainsScreenPoint((RectTransform)tray.transform, screenPos, Cam);
-
-    /// Close enough to the held piece's spot: inside its outline, or within a finger's width of it.
-    bool NearSpot(Vector2 screenPos)
-    {
-        if (held == null || markers == null || (int)held.slot >= markers.Length || OverTray(screenPos)) return false;
-        var marker = (RectTransform)markers[(int)held.slot].transform;
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(marker, screenPos, Cam, out var local)) return false;
-        var r = marker.rect;
-        const float slack = 160;
-        return local.x > r.xMin - slack && local.x < r.xMax + slack && local.y > r.yMin - slack && local.y < r.yMax + slack;
-    }
 
     /// For tests: the screen point at the middle of a spot.
     public Vector2 SpotCentre(DecorSlot slot)
