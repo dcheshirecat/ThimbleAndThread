@@ -6,7 +6,7 @@
 === mara_visit ===
 Mara: Oh! Hello. Sorry, I always feel like I'm interrupting. # thoughtful
 Mara: She finally fell asleep in the pram, so I've got... about four minutes.
-~ note(Has a baby daughter, and almost no sleep.)
+~ note(Has a baby daughter, Poppy, and almost no sleep.)
 -> END
 
 === mara_visit_2 ===

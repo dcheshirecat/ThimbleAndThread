@@ -58,7 +58,7 @@ public class TownMapUI : MonoBehaviour
             var p = ShopDay.Places[i];
             var pin = places[i];
             var people = day.PeopleAt(p.id);
-            bool shut = p.shop != ScreenId.Title && !day.ShopOpen(p.shop);
+            bool shut = day.Shut(p) != null;
             pin.GetComponent<Image>().color = shut ? PinShut : p.shop != ScreenId.Title ? PinShop : PinPlace;
             pin.transform.localScale = Vector3.one * (i == selected ? 1.25f : 1f);
             var name = pin.transform.Find("Name/Text").GetComponent<Text>();
@@ -113,15 +113,16 @@ public class TownMapUI : MonoBehaviour
         }
         var p = ShopDay.Places[selected];
         var people = day.PeopleAt(p.id);
-        bool shut = p.shop != ScreenId.Title && !day.ShopOpen(p.shop);
+        string shut = day.Shut(p);
         string here = people.Count == 0 ? "No one you know is here just now."
             : people.Count == 1 ? $"{people[0].displayName} is here." : $"Here: {string.Join(", ", people.ConvertAll(c => c.displayName))}.";
         foreach (var c in people) if (day.IsBirthday(c, Save.day)) here += $" It's {c.displayName.Split(' ')[0]}'s birthday!";
         if (p.activity != null) here += $"\nYou could: {p.activity.ToLower()}.";
         cardTitle.text = p.name;
-        cardBody.text = $"{p.blurb}\n" + (shut ? "It isn't open to you yet." : here);
-        goLabel.text = p.shop != ScreenId.Title ? "Go Inside" : "Go There";
-        goButton.interactable = !shut;
+        if (p.id == ShopDay.HomesId && shut == null) here += "\nYou can call on friends who are in, and give close friends a present.";
+        cardBody.text = $"{p.blurb}\n" + (shut ?? here);
+        goLabel.text = p.shop != ScreenId.Title ? "Go Inside" : p.id == ShopDay.HomesId ? "Knock" : "Go There";
+        goButton.interactable = shut == null;
     }
 
     public void CloseCard()

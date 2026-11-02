@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
@@ -200,8 +201,17 @@ public class JournalUI : MonoBehaviour
             }
             var r = GameManager.Instance.GetRelationship(cust.customerId);
             var sb = new StringBuilder();
+            var notes = new List<string>();
             foreach (var n in Save.notes)
-                if (n.StartsWith(cust.customerId + "|")) sb.AppendLine("· " + n.Substring(cust.customerId.Length + 1));
+                if (n.StartsWith(cust.customerId + "|")) notes.Add(n.Substring(cust.customerId.Length + 1));
+            // Each thing once: a note that a fuller one already says (older saves kept both) is left out.
+            for (int i = 0; i < notes.Count; i++)
+            {
+                bool covered = false;
+                for (int j = 0; j < notes.Count && !covered; j++)
+                    covered = j != i && ShopDay.SameFact(notes[i], notes[j]) && (notes[j].Length > notes[i].Length || (notes[j].Length == notes[i].Length && j < i));
+                if (!covered) sb.AppendLine("· " + notes[i]);
+            }
             if (sb.Length == 0) sb.AppendLine("You don't know much about them yet.");
             // Likes and dislikes, only the ones found out (by adding that touch to their order).
             var likes = new List<string>();
@@ -211,8 +221,8 @@ public class JournalUI : MonoBehaviour
             string likePrefix = cust.customerId + ":like:";   // what they've said they love (ShopDay.NoteLike)
             foreach (var k in Save.knownPrefs)
                 if (k.StartsWith(likePrefix)) likes.Add(k.Substring(likePrefix.Length));
-            if (likes.Count > 0) sb.AppendLine("Likes: " + string.Join(", ", likes));
-            if (dislikes.Count > 0) sb.AppendLine("Dislikes: " + string.Join(", ", dislikes));
+            if (likes.Count > 0) sb.AppendLine("Likes: " + string.Join(", ", likes.Distinct()));
+            if (dislikes.Count > 0) sb.AppendLine("Dislikes: " + string.Join(", ", dislikes.Distinct()));
             if (day.ShowsHearts(cust))
             {
                 int h = ShopDay.Hearts(r);

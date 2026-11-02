@@ -25,6 +25,7 @@ public class Order
     public float accuracy;            // recorded when finished
     public string commissionId;       // a commission (see CommissionDef), or empty
     public bool needsDesign;          // a commission waits for the player to design its pattern first
+    public string colourWish = "";    // the colours the customer asked for (a ShopDay colour family), or empty; recoloured first
     public string requiredSupplyId;   // a commission's must-use fabric or yarn, or empty
     public string fromPatternId;      // the shelf pattern the customer picked, for its sales record
     public int fit;                   // for an indirect request: 1 = the pattern fit, 2 = the best fit (more friendship)

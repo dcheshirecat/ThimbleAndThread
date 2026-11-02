@@ -99,13 +99,114 @@ public partial class ShopDay
         return !string.IsNullOrEmpty(c.place) && rng.NextDouble() < 0.6 ? c.place : "homes";
     }
 
-    /// The people you've met at a place today.
+    /// The people you've met at a place today. At the homes, only the friends whose door you know (KnowsHome).
     public List<CustomerDef> PeopleAt(string placeId)
     {
         var list = new List<CustomerDef>();
         foreach (var c in content.customers)
-            if (c != null && Save.met.Contains(c.customerId) && c.firstChapter <= Save.chapter && PlaceOf(c) == placeId) list.Add(c);
+            if (c != null && Save.met.Contains(c.customerId) && c.firstChapter <= Save.chapter && PlaceOf(c) == placeId
+                && (placeId != HomesId || KnowsHome(c))) list.Add(c);
         return list;
+    }
+
+    // ---- Not everywhere is open to you (owner, 2026-11-02): a home only when they're in, presents only for close friends ----
+
+    public const string HomesId = "homes";
+    public const int HomeLevel = 1;    // friendship at which someone has told you where they live
+    public const int GiftLevel = 3;    // friendship needed to give someone a present at home (or romance: hearts enough to date)
+    /// Places you can't just wander into: only when someone you know is there.
+    static readonly string[] PrivatePlaces = { "hospital", "school", "studio" };
+
+    public bool KnowsHome(CustomerDef c) => c != null && !c.shopOwner && Save.met.Contains(c.customerId)
+        && (GM.GetRelationship(c.customerId).level >= HomeLevel || CanDate(c));
+
+    public bool CanGift(CustomerDef c) => GM.GetRelationship(c.customerId).level >= GiftLevel || CanDate(c);
+
+    /// Why a place can't be visited right now, or null when it can.
+    public string Shut(TownPlace p)
+    {
+        if (p.shop != ScreenId.Title) return ShopOpen(p.shop) ? null : "It isn't open to you yet.";
+        if (p.id == HomesId)
+        {
+            if (!System.Array.Exists(content.customers, c => KnowsHome(c))) return "You don't know anyone well enough yet to call at their house.";
+            return PeopleAt(HomesId).Count > 0 ? null : "None of your friends are in just now. Try again later.";
+        }
+        if (p.id == "library" && SaturdayTime == "evening") return "The library's shut for the evening.";
+        if (System.Array.IndexOf(PrivatePlaces, p.id) >= 0 && PeopleAt(p.id).Count == 0)
+            return "You can't just wander in. Nobody you know is in today.";
+        return null;
+    }
+
+    /// Fore Street: a front door for each friend whose home you know. You can knock on the ones who are in.
+    void Homes()
+    {
+        var place = System.Array.Find(Places, p => p.id == HomesId);
+        var options = new List<(string, System.Action)>();
+        var lines = new List<string>();
+        foreach (var c in content.customers)
+        {
+            if (!KnowsHome(c) || c.firstChapter > Save.chapter) continue;
+            var who = c;
+            if (PlaceOf(c) == HomesId)
+            {
+                lines.Add($"{c.displayName}'s house: a light on, someone's in.");
+                options.Add(($"Knock at {c.displayName}'s", () => AtHome(who)));
+            }
+            else lines.Add($"{c.displayName}'s house: no one's in.");
+        }
+        options.Add(("Back to the map", BackToMap));
+        Narrate(null, $"{place.name}. {place.blurb}\n\n{string.Join("\n", lines)}", options.ToArray());
+    }
+
+    /// At a friend's front door: tea, a birthday, a day together, a present.
+    void AtHome(CustomerDef c)
+    {
+        Met(c.customerId);
+        var options = new List<(string, System.Action)>();
+        if (CanWishBirthday(c)) options.Add(("Wish them a happy birthday", () => WishBirthday(c, () => AtHome(c))));
+        if (CanDate(c)) options.Add(("Ask them out for the day", () => Visit(c, true)));
+        else if (GM.GetRelationship(c.customerId).level >= VisitLevel) options.Add(("Spend the day together", () => Visit(c, false)));
+        else if (!Save.flags.Contains($"hello:{c.customerId}:{Save.day}")) options.Add(("Stop for a cup of tea", () => SayHello(c, HomesId)));
+        if (CanGift(c) && !Save.flags.Contains(GiftFlag(c))) options.Add(("Give them a present", () => ChooseGift(c)));
+        options.Add(("Say goodbye", Homes));
+        Say(c, Pick("Oh! Hello! Come in, mind the shoes.", "You found me! Come in, the kettle's just boiled.", "Well, this is a nice surprise."), options.ToArray());
+    }
+
+    string GiftFlag(CustomerDef c) => $"gift:{c.customerId}:{Save.day}";
+
+    /// Presents are things you've made: the pieces waiting for the Sunday stall.
+    void ChooseGift(CustomerDef c)
+    {
+        var options = new List<(string, System.Action)>();
+        foreach (var piece in Save.stall)
+        {
+            if (options.Count >= 4) break;
+            var p = piece;
+            options.Add(($"The {p.name}", () => GiveGift(c, p)));
+        }
+        options.Add(("Not today", () => AtHome(c)));
+        Narrate(null, Save.stall.Count == 0
+            ? "You haven't anything made to give. (Pieces you make for the stall can be given as presents.)"
+            : "Which of your makes would they like?", options.ToArray());
+    }
+
+    void GiveGift(CustomerDef c, StallItem piece)
+    {
+        Save.stall.Remove(piece);
+        Save.flags.Add(GiftFlag(c));
+        bool wanted = c.requestable != null && System.Array.Exists(c.requestable, o => o != null && o.item != null && o.item.itemId == piece.itemId);
+        GM.AddRelationshipPoints(c.customerId, (wanted ? 14 : 8) + Mathf.RoundToInt(piece.quality * 4));
+        if (ShowsHearts(c)) AddHearts(c, wanted ? 15 : 10);
+        string like = $"{c.customerId}:like:your {piece.name}";   // they said so: the Journal lists it
+        if (wanted && !Save.knownPrefs.Contains(like)) Save.knownPrefs.Add(like);
+        Progress.AddNews($"You gave {c.displayName} your {piece.name}.");
+        Stamps.Earn(Save, "town:gift", "A present", $"For {c.displayName}.", StampTheme.Friendship);
+        GM.Persist();
+        string knot = Fresh(Variants($"{c.inkName}_gift"));
+        if (knot != null) { Play(c, new List<string> { knot }, () => AtHome(c)); return; }
+        Say(c, wanted ? Pick($"For me? I've wanted one of these for ages. Oh, I love it.", "You made this? I'm going to cry. It's exactly right.")
+                      : Pick("For me? That's so kind. I'll find just the place for it.", "You didn't have to! Thank you. Really."),
+            ("Continue", () => AtHome(c)));
     }
 
     /// The map's place was tapped: what's there, who's there, and what to do.
@@ -115,9 +216,11 @@ public partial class ShopDay
         if (place.id == null) return;
         var options = new List<(string, System.Action)>();
         var people = PeopleAt(placeId);
+        string shut = Shut(place);
+        if (shut != null) { Narrate(null, $"{place.name}. {place.blurb}\n\n{shut}", ("Back to the map", BackToMap)); return; }
+        if (placeId == HomesId) { Homes(); return; }
         if (place.shop != ScreenId.Title)
         {
-            if (!ShopOpen(place.shop)) { Narrate(null, $"{place.name}. {place.blurb}\n\nIt isn't open to you yet.", ("Back to the map", BackToMap)); return; }
             options.Add(("Go inside", () => EnterShop(OwnerOf(place.shop), place.shop)));
         }
         foreach (var c in people)

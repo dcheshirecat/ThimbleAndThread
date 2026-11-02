@@ -94,7 +94,7 @@ public class OrderFlowUI : MonoBehaviour
                 : "\n\nYou have everything for it: work on it tonight, in the workroom.");
         if (!string.IsNullOrEmpty(day.LastMessage) && screen == ScreenId.Workbench) workbenchText.text += $"\n\n{day.LastMessage}";
         bool started = order.work.Count > 0 || order.step > 0;
-        startLabel.text = order.needsDesign ? "Design the Pattern"
+        startLabel.text = order.needsDesign ? (string.IsNullOrEmpty(order.colourWish) ? "Design the Pattern" : "Choose the Colours")
             : order.finished ? "Rework It"
             : order.Steps.Length > 1 ? (started ? "Keep Working: " : "Start: ") + order.CurrentStep.label
             : started ? "Keep Working" : "Start Crafting";
@@ -460,6 +460,9 @@ public class OrderFlowUI : MonoBehaviour
     string CommissionText(Order order)
     {
         var c = day.CommissionOf(order);
+        if (!string.IsNullOrEmpty(order.colourWish))
+            return $"They'd like it in {ShopDay.WishWords(order.colourWish)}." + (order.needsDesign
+                ? " Recolour the pattern first: pick a colour, then tap a square to swap every square of its colour.\n\n" : "\n\n");
         if (c == null)
             return order.needsDesign ? "A commission you offered: design a brand-new pattern for it first (it isn't judged).\n\n" : "";
         var text = $"Commission: \"{c.request}\"\n";

@@ -187,6 +187,8 @@ public class PatternDesignerUI : MonoBehaviour
         var item = day.content.items[itemIndex];
         var d = Current();
         makesLabel.text = $"Makes: {item.itemName}";
+        if (day.DesigningFor != null && !string.IsNullOrEmpty(day.DesigningFor.colourWish))
+            makesLabel.text += $"  ·  They'd like {ShopDay.WishWords(day.DesigningFor.colourWish)}";
         sizeLabel.text = $"Size: {d.width} x {d.height}";
         if (clothLabel != null)
         {

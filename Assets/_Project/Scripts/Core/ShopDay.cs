@@ -459,7 +459,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             Offer = OrderGenerator.FromPattern(c, item, DesignFor(p), Save.day);
             Offer.fromPatternId = p.id;
             NoteLike(c, p);
-            Reaction(c, "yes", () => Say(c, $"Could you make me a {item.itemName.ToLower()} like that?", Offer.target, ("Take the Order", AcceptOffer), ("Not Today", DeclineOffer)));
+            string wish = MaybeColourWish(c, Offer);
+            Reaction(c, "yes", () => Say(c, $"Could you make me a {item.itemName.ToLower()} like that?{wish}", Offer.target, ("Take the Order", AcceptOffer), ("Not Today", DeclineOffer)));
         }
         else if (makesIt)
         {
@@ -528,7 +529,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             Offer = OrderGenerator.FromPattern(c, ItemFor(pick.itemId), DesignFor(pick), Save.day);
             Offer.fromPatternId = pick.id;
             NoteLike(c, pick);
-            Say(c, $"Your {pick.name} pattern is lovely! Could you make me a {Offer.item.itemName.ToLower()} with it?\n\n(No rush, whenever you have time.)",
+            string wish = MaybeColourWish(c, Offer);
+            Say(c, $"Your {pick.name} pattern is lovely! Could you make me a {Offer.item.itemName.ToLower()} with it?{wish}\n\n(No rush, whenever you have time.)",
                 Offer.target, ("Take the Order", AcceptOffer), ("Not Today", DeclineOffer));
         }
     }
@@ -564,8 +566,31 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         Offer = OrderGenerator.FromPattern(c, ItemFor(p.itemId), DesignFor(p), Save.day);
         Offer.fromPatternId = p.id;
         Offer.fit = fit;
-        Say(c, fit == 2 ? "Oh! That's exactly it. How did you know?" : "Oh, that could work! Yes, let's do that.",
+        string wish = MaybeColourWish(c, Offer);
+        Say(c, (fit == 2 ? "Oh! That's exactly it. How did you know?" : "Oh, that could work! Yes, let's do that.") + wish,
             DesignFor(p), ("Continue", AcceptOffer));
+    }
+
+    static readonly HashSet<string> NoteFiller = new HashSet<string>
+        { "a", "an", "the", "and", "of", "to", "in", "on", "at", "for", "her", "his", "their", "she", "he", "they", "is", "was", "it", "with", "has", "be", "by", "from", "up" };
+
+    static HashSet<string> NoteWords(string text)
+    {
+        var words = new HashSet<string>();
+        foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(text.ToLowerInvariant(), "[a-z']+"))
+            if (!NoteFiller.Contains(m.Value)) words.Add(m.Value);
+        return words;
+    }
+
+    /// Two journal notes that say the same thing: nearly all the words of the shorter one are in the longer.
+    public static bool SameFact(string a, string b)
+    {
+        var wa = NoteWords(a);
+        var wb = NoteWords(b);
+        if (wa.Count < 3 || wb.Count < 3) return a == b;
+        int shared = 0;
+        foreach (var w in wa) if (wb.Contains(w)) shared++;
+        return shared >= 0.8f * Mathf.Min(wa.Count, wb.Count);
     }
 
     /// They said they love this pattern (by ordering it, buying it, or saying so): the Journal notes it, and only that
@@ -607,7 +632,9 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             Save.orders.Add(Offer);
             var from = Save.patterns.Find(x => x.id == Offer.fromPatternId);
             if (from != null) from.ordered++;
-            LastMessage = Offer.needsDesign
+            LastMessage = !string.IsNullOrEmpty(Offer.colourWish)
+                ? $"{Visitor.displayName}'s {Offer.item.itemName.ToLower()} is in your order book. Recolour the pattern in {WishWords(Offer.colourWish)} first."
+                : Offer.needsDesign
                 ? $"{Visitor.displayName}'s commission is in your order book. Design its pattern tonight."
                 : $"{Visitor.displayName}'s {Offer.item.itemName.ToLower()} is in your order book.";
         }
@@ -751,6 +778,10 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
                 string entry = who != null ? $"{who.customerId}|{arg}" : null;
                 if (entry != null && arg.Length > 0 && !Save.notes.Contains(entry))
                 {
+                    // The same thing said again in other words (owner, 2026-11-02: Mara's daughter and lack of sleep were
+                    // listed twice): keep one note, the fuller of the two.
+                    int same = Save.notes.FindIndex(n => n.StartsWith(who.customerId + "|") && SameFact(n.Substring(who.customerId.Length + 1), arg));
+                    if (same >= 0) { if (arg.Length > Save.notes[same].Length - who.customerId.Length - 1) Save.notes[same] = entry; break; }
                     Save.notes.Add(entry);
                     Progress.AddNews($"Noted in your journal about {who.displayName}: {arg}");
                 }
@@ -922,10 +953,14 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     void DesignCommission(Order o)
     {
         DesigningFor = o;
+        bool colours = !string.IsNullOrEmpty(o.colourWish);   // a colourway they asked for: same pattern, new colours
+        Recolouring = colours;
+        var design = colours ? Materials.Copy(o.target) : o.target;
+        if (colours && !design.displayName.Contains("(in ")) design.displayName = $"{o.target.displayName} (in {WishWords(o.colourWish)})";
         SelectedPattern = new OwnedPattern
         {
-            id = System.Guid.NewGuid().ToString("N"), name = o.target.displayName, itemId = o.itemId,
-            price = Mathf.Max(1, o.item.patternPrice), designed = true, design = o.target,
+            id = System.Guid.NewGuid().ToString("N"), name = design.displayName, itemId = o.itemId,
+            price = Mathf.Max(1, o.item.patternPrice), designed = true, design = design,
         };
         LastMessage = "";
         GM.ChangeScreen(ScreenId.PatternDesigner);
@@ -1192,7 +1227,9 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     /// The designer is swapping a pattern's colours (a new colourway): a tap recolours every square of that colour.
     public bool Recolouring { get; private set; }
 
-    public bool CanMakeColourway(OwnedPattern p) => p != null && p.made >= MadeForColourway && Progress.CanDesign(ItemFor(p.itemId));
+    /// Your own designs any time (owner, 2026-11-02); other patterns once you've made them MadeForColourway times.
+    public bool CanMakeColourway(OwnedPattern p) => p != null && (p.designed || p.made >= MadeForColourway) && Save.patterns.Contains(p)
+        && Progress.CanDesign(ItemFor(p.itemId));
 
     /// A copy of a pattern made ten times, to make in other colours (owner, 2026-11-01). It goes in the book as your own
     /// once saved.
@@ -1245,6 +1282,17 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         o.target = Compact(design);
         o.needsDesign = false;
         DesigningFor = null;
+        if (Recolouring)   // the new colourway goes in the book as well
+        {
+            Recolouring = false;
+            var from = Save.patterns.Find(x => x.id == o.fromPatternId);
+            Save.patterns.Add(new OwnedPattern
+            {
+                id = System.Guid.NewGuid().ToString("N"), name = o.target.displayName, itemId = o.itemId,
+                price = from != null ? from.price : Mathf.Max(1, o.item.patternPrice), designed = true, design = Materials.Copy(o.target),
+            });
+            Stamps.Earn(Save, "colourway:first", "Your first colourway", $"\"{o.target.displayName}\"", StampTheme.Craft);
+        }
         SelectedPattern = null;
         Selected = o;
         GM.Persist();
@@ -1257,6 +1305,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     {
         if (DesigningFor != null)
         {
+            Recolouring = false;
             Selected = DesigningFor;
             DesigningFor = null;
             SelectedPattern = null;
@@ -2060,6 +2109,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
 
         // Special touches: a gamble. If they like the surprise it's worth more; if not, it costs a little goodwill.
         var surprises = new List<string>();
+        string colourLine = ColourReaction(Selected, ref points);   // the colours they asked for
+        if (colourLine != null) surprises.Add(colourLine);
         foreach (var id in Selected.extras)
         {
             var s = content.Supply(id);

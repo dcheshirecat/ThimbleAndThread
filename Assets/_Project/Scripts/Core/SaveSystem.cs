@@ -141,6 +141,7 @@ public static class SaveSystem
         // Version 10 had no pickup days: anything already finished can be collected right away.
         foreach (var o in data.orders) if (o.finished && o.pickupDay == 0) o.pickupDay = data.day;
         foreach (var o in data.orders) o.extras ??= new System.Collections.Generic.List<string>();
+        foreach (var o in data.orders) o.colourWish ??= "";   // version 32: colourways customers ask for
         // ...and no gathering step: orders already under way count as gathered.
         if (data.version < 11) foreach (var o in data.orders) if (o.step > 0 || o.work.Count > 0 || o.materialsUsed || o.finished) o.gathered = true;
         data.version = SaveData.CurrentVersion;
