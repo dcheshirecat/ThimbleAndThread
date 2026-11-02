@@ -46,4 +46,6 @@ MonoBehaviour:
   makes: 02000000i
   shopOwner: 0
   romanceable: 0
+  birthday: 13
+  place: studio
   inkName: kit

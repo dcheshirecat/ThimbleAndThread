@@ -50,4 +50,6 @@ MonoBehaviour:
   makes: 0400000001000000i
   shopOwner: 0
   romanceable: 1
+  birthday: 35
+  place: knot
   inkName: rowan

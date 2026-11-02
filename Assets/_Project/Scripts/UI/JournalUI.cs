@@ -213,11 +213,18 @@ public class JournalUI : MonoBehaviour
                 if (k.StartsWith(likePrefix)) likes.Add(k.Substring(likePrefix.Length));
             if (likes.Count > 0) sb.AppendLine("Likes: " + string.Join(", ", likes));
             if (dislikes.Count > 0) sb.AppendLine("Dislikes: " + string.Join(", ", dislikes));
-            if (r.romance) sb.AppendLine(Save.flags.Contains($"{cust.inkName}_together") ? "♥ Together." : "♥ You're seeing each other.");
+            if (day.ShowsHearts(cust))
+            {
+                int h = ShopDay.Hearts(r);
+                sb.AppendLine(day.Partner == cust ? "You live together." : h >= ShopDay.HeartsDating ? "You're dating."
+                              : h >= ShopDay.HeartsToDate ? "You could ask them on a date on Saturday."
+                              : r.level < ShopDay.RomanceLevel ? $"Become closer friends (level {ShopDay.RomanceLevel}) for the hearts to grow." : "");
+            }
+            if (cust.birthday > 0) sb.AppendLine($"Birthday: {Week.Date(cust.birthday)}");
             foreach (var s in day.content.skills)   // only once it's happened: what they'll teach is a surprise
                 if (s != null && s.friend == cust && s.friendLevel > 0 && Progress.Knows(s.skillId) && r.level >= s.friendLevel)
                     sb.AppendLine($"Taught you {s.displayName}.");
-            FriendCard(cust.displayName, r, cust.GetPortrait(Expression.Neutral), sb.ToString().TrimEnd());
+            FriendCard(day.ShowsHearts(cust) ? $"{cust.displayName}  {day.HeartScale(cust)}" : cust.displayName, r, cust.GetPortrait(Expression.Neutral), sb.ToString().TrimEnd());
             shown++;
         }
         return shown == 0 ? "<b>Friends</b>\n\nYou haven't met anyone yet. Customers ring the bell during the day." : "<b>Friends</b>";
@@ -293,10 +300,21 @@ public class JournalUI : MonoBehaviour
     /// The crafts to filter by: those learned (owner, 2026-11-01: see how you're doing in each craft).
     List<string> StampFilters()
     {
-        var list = new List<string> { "" };
+        var list = new List<string> { "", "oldest" };
+        foreach (StampTheme t in System.Enum.GetValues(typeof(StampTheme))) list.Add("theme:" + t);
         foreach (CraftType c in System.Enum.GetValues(typeof(CraftType))) if (Progress.CraftOpen(c)) list.Add(c.ToString());
         return list;
     }
+
+    static string FilterName(string f) =>
+        f == "" ? "All, newest first" : f == "oldest" ? "All, in the order you got them"
+        : f.StartsWith("theme:") ? Stamps.Word((StampTheme)System.Enum.Parse(typeof(StampTheme), f.Substring(6))) + " stamps"
+        : Progression.CraftName((CraftType)System.Enum.Parse(typeof(CraftType), f));
+
+    bool PassesFilter(Stamp s) =>
+        stampFilter == "" || stampFilter == "oldest" ? true
+        : stampFilter.StartsWith("theme:") ? s.theme.ToString() == stampFilter.Substring(6)
+        : Stamps.CraftOf(s) == stampFilter;
 
     void NextStampFilter()
     {
@@ -310,7 +328,7 @@ public class JournalUI : MonoBehaviour
         if (stampTemplate == null) return "";
         stampTemplate.SetActive(false);
         if (!StampFilters().Contains(stampFilter)) stampFilter = "";
-        string shownName = stampFilter == "" ? "All stamps" : Progression.CraftName((CraftType)System.Enum.Parse(typeof(CraftType), stampFilter));
+        string shownName = FilterName(stampFilter);
         var filter = Instantiate(rowTemplate, rowTemplate.transform.parent);
         filter.gameObject.SetActive(true);
         filter.name = "Stamp Filter";
@@ -319,10 +337,10 @@ public class JournalUI : MonoBehaviour
         filter.transform.SetSiblingIndex(stampGrid.GetSiblingIndex());
         rows.Add(filter.gameObject);
         int shown = 0;
-        for (int i = Save.stamps.Count - 1; i >= 0; i--)   // newest first
+        for (int k = 0; k < Save.stamps.Count; k++)   // newest first, unless asked for the order they came in
         {
-            var s = Save.stamps[i];
-            if (stampFilter != "" && Stamps.CraftOf(s) != stampFilter) continue;
+            var s = Save.stamps[stampFilter == "oldest" ? k : Save.stamps.Count - 1 - k];
+            if (!PassesFilter(s)) continue;
             shown++;
             var go = Instantiate(stampTemplate, stampGrid);
             go.SetActive(true);

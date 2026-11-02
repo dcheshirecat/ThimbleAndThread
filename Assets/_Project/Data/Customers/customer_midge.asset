@@ -42,4 +42,6 @@ MonoBehaviour:
   makes: 00000000i
   shopOwner: 0
   romanceable: 0
+  birthday: 95
+  place: bookshop
   inkName: midge

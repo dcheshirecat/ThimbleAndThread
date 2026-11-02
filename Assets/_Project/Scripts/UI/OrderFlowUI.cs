@@ -288,8 +288,15 @@ public class OrderFlowUI : MonoBehaviour
             if (!day.PatternShown(p)) continue;   // a craft not learned yet
             var item = day.ItemFor(p.itemId);
             string id = p.id;
+            if (day.IsMystery(p))   // from a magazine, and nothing you can make sense of yet
+            {
+                var mystery = AddRow(patternTemplate, $"Pattern_{id}", "???  ·  you'll need to learn something new to make sense of this one", () => { });
+                mystery.GetComponent<Button>().interactable = false;
+                patternRows.Add(mystery);
+                continue;
+            }
             patternRows.Add(AddRow(patternTemplate, $"Pattern_{id}",
-                $"{p.name}  ·  {(item != null ? item.itemName : p.itemId)}  ·  {p.price} coins  ·  {(p.onShelf ? "On display" : "In the book")}  ·  sold {p.sold}, ordered {p.ordered}",
+                $"{p.name}  ·  {(item != null ? item.itemName : p.itemId)}  ·  {p.price} coins  ·  {(p.onShelf ? "On display" : "In the book")}  ·  {p.copies} cop{(p.copies == 1 ? "y" : "ies")}",
                 () => day.SelectPattern(id)));
         }
     }

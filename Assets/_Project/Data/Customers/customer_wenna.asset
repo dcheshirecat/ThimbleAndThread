@@ -42,4 +42,6 @@ MonoBehaviour:
   makes: 0600000003000000i
   shopOwner: 0
   romanceable: 0
+  birthday: 16
+  place: church
   inkName: wenna

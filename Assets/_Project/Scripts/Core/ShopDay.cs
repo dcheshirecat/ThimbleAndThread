@@ -45,6 +45,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         GM.OnGameLoaded += OnGameLoaded;
         GM.OnScreenChanged += OnScreenChanged;
         GM.OnRelationshipLevelUp += FriendshipLevelUp;
+        GM.OnRelationshipPoints += OnFriendshipPoints;
     }
 
     void FriendshipLevelUp(string customerId, int level)
@@ -111,8 +112,9 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         }
         if (Save == null || Save.night || IsSunday) { BellRinging = false; return; }   // Sundays: the stall keeps its own time
         if (GM.Current == ScreenId.Dialogue || GM.Current == ScreenId.Title || GM.Current == ScreenId.SaveSelect || GM.Current == ScreenId.Customize
-            || GM.Current == ScreenId.Tutorial || GM.Current == ScreenId.Settings || !Save.player.created) return;   // the day waits
+            || GM.Current == ScreenId.Tutorial || GM.Current == ScreenId.Settings || !Save.player.created || PauseMenu.Paused) return;   // the day waits
         Tick();
+        if (Save.deliveries.Count > 0) DeliverDue(false);
         if (CustomersWaiting == 0) { BellRinging = false; return; }
         if (BellRinging)   // no one's answered: ring again now and then
         {
@@ -134,8 +136,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         clockCarry -= whole;
         Save.clock = Mathf.Min(ClosesAt, Save.clock + whole);
         if (Save.clock == ClosesAt)
-            Stamps.Notice(CustomersWaiting > 0 ? "Six o'clock: closing time.\n<size=40>Anyone who didn't make it will come another day.</size>"
-                                                : "Six o'clock: closing time.\n<size=40>Flip the sign when you're ready.</size>");
+            Stamps.Notice(CustomersWaiting > 0 ? "Six o'clock: closing time.\n<size=52>Anyone who didn't make it will come another day.</size>"
+                                                : "Six o'clock: closing time.\n<size=52>Flip the sign when you're ready.</size>");
     }
 
     /// Whether the player is in one of the town's shops right now.
@@ -146,6 +148,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         BellRinging = true;
         AudioManager.Play(Sfx.Bell);
         Haptics.Buzz();
+        GuideBell();
         // In another shop the phone just buzzes (owner, 2026-11-01); anywhere else a notice pops up too.
         if (GM.Current != ScreenId.Shop && !InAShop) Stamps.Notice("Ding-dong! Someone's at the shop door.");
         OnBell?.Invoke();
@@ -160,6 +163,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         GM.OnGameLoaded -= OnGameLoaded;
         GM.OnScreenChanged -= OnScreenChanged;
         GM.OnRelationshipLevelUp -= FriendshipLevelUp;
+        GM.OnRelationshipPoints -= OnFriendshipPoints;
     }
 
     void OnGameLoaded(bool isNewGame)
@@ -167,7 +171,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         minigame.Close();
         Visitor = null; Offer = null; SaleOffer = null; Selected = null; SelectedPattern = null; DesigningFor = null;
         playing = false;
-        if (isNewGame) Save.pendingScenes.Add("chapter_1");   // the story's opening, once the shop is on screen
+        if (isNewGame) { Save.pendingScenes.Add("chapter_1"); Save.flags.Add(GuideFlag); }   // the story's opening, then the guide
 
         // The great-aunt's book: starter patterns for new games, and any starter pattern added in an
         // update for older saves (book patterns can't be deleted, so a missing one was never there).
@@ -355,10 +359,12 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     /// on display, or (with good friends) offer to make them something special.
     void WhatTheyWant(CustomerDef c)
     {
-        var options = new List<(string, System.Action)> { ("See what they're after", () => TheirIdea(c)) };
+        var options = new List<(string, System.Action)>();
+        if (CanWishBirthday(c)) options.Add(("Wish them a happy birthday", () => WishBirthday(c, () => WhatTheyWant(c))));
+        options.Add(("See what they're after", () => TheirIdea(c)));
         if (Shelf.Count > 0) options.Add(("Suggest a pattern on display", () => SuggestPattern(c)));
         if (CanOfferCommission(c)) options.Add(("Offer to make something special", () => OfferCommission(c)));
-        if (options.Count == 1) { TheirIdea(c); return; }
+        if (options.Count == 1) { TheirIdea(c); return; }   // (a birthday wish always gives a choice)
         Narrate(c, $"{c.displayName} looks around the shop.", options.ToArray());
     }
 
@@ -667,6 +673,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         {
             var c = who != null && Speaks(who, speaker) ? who : System.Array.Find(content.customers, x => x != null && Speaks(x, speaker));
             if (c != null && !Save.met.Contains(c.customerId)) speaker = "???";
+            else if (c != null && ShowsHearts(c)) speaker = $"{speaker}  <size=34>{HeartScale(c)}</size>";
         }
         if (previewTexture != null) Destroy(previewTexture);
         previewTexture = preview != null ? PatternPreview.Make(preview) : null;
@@ -842,8 +849,12 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     /// Plays waiting story scenes when a hub screen comes up.
     void OnScreenChanged(ScreenId id)
     {
+        GuideFor(id);
         // Back on a Saturday morning (e.g. after loading): the day off begins.
         if (id == ScreenId.Shop && !playing && Save != null && !Save.night && IsSaturday && !Save.flags.Contains(SaturdayDoneFlag)) { StartSaturday(); return; }
+        if (id == ScreenId.TownMap) Explainers.Explain(Save, "saturday", true,
+            "Saturdays\nThe shop's closed, and the town's yours. Tap a place on the map to see who's there: spend time with a friend, " +
+            "go on a date, or join in what's going on. Three outings make a day; popping into a shop doesn't count. Go Home whenever you like.");
         if (playing || Save == null || Save.pendingScenes.Count == 0 || (id != ScreenId.Shop && id != ScreenId.Workroom)) return;
         var knot = Save.pendingScenes[0];
         Save.pendingScenes.RemoveAt(0);
@@ -919,13 +930,13 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     {
         int tomorrow = Save.day + 1;
         if (Week.IsSaturday(tomorrow))
-            Stamps.Announce("Tomorrow is Saturday\n<size=40>The shop stays closed. Spend the day with a friend, go to the craft circle " +
+            Stamps.Announce("Tomorrow is Saturday\n<size=52>The shop stays closed. Spend the day with a friend, go to the craft circle " +
                             "or the jumble sale, or stay in and craft. Tonight's a good night to finish something.</size>");
         else if (Week.IsSunday(tomorrow))
             Stamps.Announce(StallOpen || CanHaveStall
-                ? $"Tomorrow is Sunday: market day\n<size=40>Your stall on the square, 10 till 4. Ready to sell: {Save.stall.Count} " +
+                ? $"Tomorrow is Sunday: market day\n<size=52>Your stall on the square, 10 till 4. Ready to sell: {Save.stall.Count} " +
                   $"piece{(Save.stall.Count == 1 ? "" : "s")}. Tonight you can still craft something for it (Craft for the Stall).</size>"
-                : "Tomorrow is Sunday\n<size=40>A day of rest: the shop stays closed.</size>");
+                : "Tomorrow is Sunday\n<size=52>A day of rest: the shop stays closed.</size>");
     }
 
     /// For the end-of-day summary: what's coming, so there's something to look forward to. Never how the story
@@ -967,10 +978,10 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         Save.patternsSoldToday = 0;
         Save.flags.RemoveAll(f => f.StartsWith("chore:") || f.StartsWith("window:"));   // yesterday's pastimes
         GM.NextDay();
-        string delivered = ReceiveDeliveries();
+        DeliverDue(true);   // anything due first thing; the rest come during the day
+        PartnerHelps();
         InviteVisitors();
         GM.Persist();
-        if (delivered.Length > 0) Stamps.Announce(delivered.Trim());   // a pop-up when a shop order arrives (owner, 2026-11-01)
         LastMessage = "";
         if (IsSaturday || IsSunday) { StartWeekendDay(); return; }
         GM.ChangeScreen(ScreenId.Shop);
@@ -1040,7 +1051,57 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
 
     /// The shop's display page: puts a pattern from the book on display, if there's room and it can be made.
     /// Patterns for crafts not learned yet stay hidden in the book until the craft is (owner, 2026-10-31).
-    public bool PatternShown(OwnedPattern p) => ItemFor(p.itemId) is not CraftItemDef item || Progress.CraftOpen(item.craft);
+    public bool PatternShown(OwnedPattern p) => ItemFor(p.itemId) is not CraftItemDef item || Progress.CraftOpen(item.craft) || p.fromMagazine;
+
+    /// A magazine pattern you can't make yet: its name, picture and what it makes stay ??? until you've learned how.
+    public bool IsMystery(OwnedPattern p) => p != null && p.fromMagazine && !Progress.CanMake(ItemFor(p.itemId));
+    public string ShownName(OwnedPattern p) => IsMystery(p) ? "???" : p.name;
+
+    // ---- Magazines (owner, 2026-11-01): no ordering particular patterns; a magazine holds 1 to 5 at random ----
+    public const int MagazinePrice = 35;
+
+    public void BuyMagazine()
+    {
+        if (Save == null || Save.night) return;
+        if (!GM.TrySpend(MagazinePrice)) { LastMessage = $"A magazine is {MagazinePrice} coins."; GM.ChangeScreen(ScreenId.PatternShop); return; }
+        float r = Random.value;
+        int count = r < 0.3f ? 1 : r < 0.6f ? 2 : r < 0.8f ? 3 : r < 0.92f ? 4 : 5;
+        var pool = new List<PatternDef>();
+        foreach (var d in content.patterns)
+            if (d != null && d.item != null)
+            {
+                int weight = d.rarity == MarketSlot.Rare ? 1 : d.rarity == MarketSlot.Rotating ? 3 : 6;
+                for (int w = 0; w < weight; w++) pool.Add(d);
+            }
+        var got = new List<string>();
+        for (int n = 0; n < count && pool.Count > 0; n++)
+        {
+            var d = pool[Random.Range(0, pool.Count)];
+            var owned = Save.patterns.Find(x => x.id == d.patternId);
+            if (owned != null) { owned.copies++; got.Add($"another copy of {ShownName(owned)}"); continue; }
+            var p = new OwnedPattern { id = d.patternId, name = d.displayName, itemId = d.item.itemId, price = d.price, fromMagazine = true };
+            Save.patterns.Add(p);
+            got.Add(IsMystery(p) ? "??? (you can't make sense of it yet)" : p.name);
+        }
+        GM.AddRelationshipPoints(PatternShopOwnerId, 1);
+        boughtThisVisit = true;
+        Stamps.Earn(Save, "magazine:first", "Your first magazine", "Patterns, and a few surprises.", StampTheme.Shop);
+        LastMessage = $"Inside the magazine: {string.Join(", ", got)}.";
+        GM.Persist();
+        GM.ChangeScreen(ScreenId.PatternShop);
+    }
+
+    /// A printed copy of a pattern you own, to sell at the stall.
+    public int CopyPrice(OwnedPattern p) => Mathf.Max(2, p.price / 2);
+
+    public void BuyCopy(string id)
+    {
+        var p = Save.patterns.Find(x => x.id == id);
+        if (p == null || IsMystery(p) || Save.night) return;
+        if (!GM.TrySpend(CopyPrice(p))) LastMessage = $"Not enough coins for a copy ({CopyPrice(p)} coins).";
+        else { p.copies++; boughtThisVisit = true; LastMessage = $"One more copy of {p.name}: you have {p.copies}."; GM.Persist(); }
+        GM.ChangeScreen(ScreenId.PatternShop);
+    }
 
     public bool PutOnDisplay(string patternId)
     {
@@ -1297,7 +1358,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             OpenShop(BoutiqueFlag, "The Boutique", "Clothes, hair and accessories: a new boutique across the square has opened its doors.");
         if (Progress.PlayerLevel >= PatternShopLevel)   // the pattern shop first; the Pattern Studio a few levels later (owner, 2026-11-01)
             OpenShop(PatternShopFlag, "The Pattern Shop", "Ready-made patterns to sell in your shop, from simple to rare and fancy.");
-        if (Save.day >= FurnitureOpensDay || Progress.PlayerLevel >= FurnitureLevel)
+        if (Progress.PlayerLevel >= FurnitureLevel)
             OpenShop(FurnitureFlag, "The Workshop", "Furniture and decorations for your shop, made by the carpenter down the lane.");
     }
 

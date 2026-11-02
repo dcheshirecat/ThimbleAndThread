@@ -5,7 +5,7 @@ public enum ScreenId
 {
     Title, Shop, Dialogue, Workbench, Minigame, Result,
     Market, PatternStudio, Journal, Settings, DaySummary,
-    SaveSelect, OrderBook, Workroom, PatternEdit, PatternDesigner, Tutorial, Trade, Gather, Customize, Boutique, PatternShop, Stall, Furniture   // new values go at the end so saved scene references keep their numbers
+    SaveSelect, OrderBook, Workroom, PatternEdit, PatternDesigner, Tutorial, Trade, Gather, Customize, Boutique, PatternShop, Stall, Furniture, TownMap   // new values go at the end so saved scene references keep their numbers
 }
 
 /// Central game state: current screen, save data, coins, relationships.
@@ -22,6 +22,7 @@ public class GameManager : MonoBehaviour
     public event Action<ScreenId> OnScreenChanged;
     public event Action<int> OnCoinsChanged;
     public event Action<string, int> OnRelationshipLevelUp;   // customerId, new level
+    public event Action<string, int> OnRelationshipPoints;    // customerId, points added (hearts grow with them)
 
     // Fast Enter Play Mode keeps statics between Play sessions; clear the stale instance.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -32,6 +33,7 @@ public class GameManager : MonoBehaviour
 
     /// The hub for the current time of day: the shop by day, the workroom by night.
     public ScreenId HubScreen => Save == null ? ScreenId.Shop : Save.night ? ScreenId.Workroom
+                                 : Week.IsSaturday(Save.day) && Save.player.created && !Save.flags.Contains($"saturday:{Save.day}") ? ScreenId.TownMap
                                  : Week.IsSunday(Save.day) && Save.flags.Contains(ShopDay.StallFlag) ? ScreenId.Stall : ScreenId.Shop;
 
     /// Raised after a slot is started or loaded, so other systems can rebuild from Save.
@@ -50,7 +52,7 @@ public class GameManager : MonoBehaviour
         Save = SaveSystem.NewGame();
         OnGameLoaded?.Invoke(true);
         Persist();
-        ChangeScreen(ScreenId.Customize);   // a new game starts by making the shopkeeper
+        ChangeScreen(ScreenId.Tutorial);   // a new game starts with the introduction, then making the shopkeeper
     }
 
     /// Loads the slot, or starts a new game there if it is empty.
@@ -117,7 +119,9 @@ public class GameManager : MonoBehaviour
     public void AddRelationshipPoints(string customerId, int points)
     {
         var r = GetRelationship(customerId);
-        if (r.AddPoints(points)) OnRelationshipLevelUp?.Invoke(customerId, r.level);
+        bool up = r.AddPoints(points);
+        OnRelationshipPoints?.Invoke(customerId, points);
+        if (up) OnRelationshipLevelUp?.Invoke(customerId, r.level);
     }
 
     // ---- Days ----

@@ -44,4 +44,6 @@ MonoBehaviour:
   makes: 
   shopOwner: 0
   romanceable: 0
+  birthday: 46
+  place: harbour
   inkName: theo

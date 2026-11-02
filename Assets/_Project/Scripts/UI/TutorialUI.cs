@@ -30,7 +30,7 @@ public class TutorialUI : MonoBehaviour
     {
         if (GameManager.Instance == null) return;
         GameManager.Instance.OnScreenChanged += OnScreenChanged;
-        if (!Seen && Pages.Length > 0) GameManager.Instance.ChangeScreen(ScreenId.Tutorial);   // first time the app is opened
+        // (owner, 2026-11-02: the introduction plays when a new game starts, after choosing its slot, not on first launch)
     }
 
     void OnDestroy()
@@ -41,7 +41,10 @@ public class TutorialUI : MonoBehaviour
     void OnScreenChanged(ScreenId id)
     {
         if (id != ScreenId.Tutorial) return;
-        returnTo = GameManager.Instance.Previous == ScreenId.Settings ? ScreenId.Settings : ScreenId.Title;
+        var from = GameManager.Instance.Previous;
+        returnTo = from == ScreenId.Settings ? ScreenId.Settings
+                 : GameManager.Instance.Save != null && !GameManager.Instance.Save.player.created ? ScreenId.Customize   // a new game: on to the shopkeeper
+                 : ScreenId.Title;
         index = 0;
         Show();
     }

@@ -585,6 +585,34 @@ public static class PlaceholderGenerator
         BookPattern("sunset_bands", "Sunset Bands", hanging, 12, new[] { red, navy },
             "11111111\n11111111\n........\n22222222\n22222222\n........\n11111111\n22222222");
 
+        // Saturday places (owner, 2026-11-01: a town map): where each person is often found. Set once; edit freely.
+        {
+            var places = new Dictionary<string, string>
+            {
+                { "mara", "park" }, { "tobias", "harbour" }, { "juno", "park" }, { "priya", "library" }, { "eli", "cafe" },
+                { "isla", "lighthouse" }, { "rowan", "knot" }, { "hal", "harbour" }, { "nadia", "hospital" }, { "sol", "beach" },
+                { "dot", "tearoom" }, { "gwen", "harbour" }, { "benji", "workshop" }, { "midge", "bookshop" }, { "kit", "studio" },
+                { "owen", "church" }, { "theo", "harbour" }, { "wenna", "church" }, { "felix", "florist" }, { "sam", "school" },
+            };
+            foreach (var g in AssetDatabase.FindAssets("t:CustomerDef", new[] { $"{Root}/Data" }))
+            {
+                var c = AssetDatabase.LoadAssetAtPath<CustomerDef>(AssetDatabase.GUIDToAssetPath(g));
+                if (c != null && string.IsNullOrEmpty(c.place) && places.TryGetValue(c.customerId, out var where)) { c.place = where; EditorUtility.SetDirty(c); }
+            }
+        }
+        // Birthdays (owner, 2026-11-01): spread across the year's 112 days, set once per character (edit them freely).
+        {
+            var guids = AssetDatabase.FindAssets("t:CustomerDef", new[] { $"{Root}/Data" });
+            var people = new List<CustomerDef>();
+            foreach (var g in guids) people.Add(AssetDatabase.LoadAssetAtPath<CustomerDef>(AssetDatabase.GUIDToAssetPath(g)));
+            people.Sort((a, b) => string.CompareOrdinal(a.customerId, b.customerId));
+            for (int i = 0; i < people.Count; i++)
+                if (people[i] != null && people[i].birthday == 0)
+                {
+                    people[i].birthday = 1 + (i * 41 + 9) % Week.YearDays;
+                    EditorUtility.SetDirty(people[i]);
+                }
+        }
         // Deeper new crafts (owner, 2026-11-01): tape the canvas edges; lay out and press the quilt top; tie off the weaving.
         InsertBefore(cushion, StepKind.MountCanvas, Step(StepKind.BindCanvas, "Tape the canvas edges", materials: Need("masking_tape", 1)));
         InsertBefore(quilt, StepKind.SewRows, Step(StepKind.LayoutPatches, "Lay out the patches"));

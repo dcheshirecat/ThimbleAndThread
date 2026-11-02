@@ -83,7 +83,7 @@ public class Progression
         if (s.chapter > 0) ways.Add($"story chapter {s.chapter}");
         if (s.craftLevel > 0) ways.Add($"{CraftName(s.levelCraft)} mastery {s.craftLevel}");
         if (s.playerLevel > 0) ways.Add($"level {s.playerLevel}");
-        if (s.book != null) ways.Add($"the book \"{s.book.displayName}\" from the Supply Market");
+        if (s.book != null) ways.Add($"reading the book \"{s.book.displayName}\" from the Supply Market");
         if (s.friend != null && s.friendLevel > 0) ways.Add($"{s.friend.displayName} at friendship level {s.friendLevel}");
         return ways.Count > 0 ? string.Join(", or ", ways) : "not yet known";
     }
@@ -99,7 +99,7 @@ public class Progression
             if (s.chapter > 0 && Save.chapter >= s.chapter) how = $"chapter {Save.chapter}";
             else if (s.craftLevel > 0 && Level(s.levelCraft) >= s.craftLevel) how = $"reaching {CraftName(s.levelCraft)} mastery {s.craftLevel}";
             else if (s.playerLevel > 0 && PlayerLevel >= s.playerLevel) how = $"reaching level {s.playerLevel}";
-            else if (s.book != null && shop.Owns(s.book.supplyId)) how = $"reading \"{s.book.displayName}\"";
+            else if (s.book != null && Save.books.Exists(b => b.id == s.book.supplyId && b.chapters >= ShopDay.BookChapters)) how = $"reading \"{s.book.displayName}\"";
             else if (s.friend != null && s.friendLevel > 0 && GM.GetRelationship(s.friend.customerId).level >= s.friendLevel) how = $"{s.friend.displayName} showing you how";
             if (how == null) continue;
             Learn(s, how);
@@ -355,7 +355,7 @@ public class Progression
         {
             if (!QuestShown(q) || !QuestDone(q) || Save.questsReady.Contains(q.questId)) continue;
             Save.questsReady.Add(q.questId);
-            Stamps.Announce($"Goal reached: {q.title}!\n<size=40>Claim your reward in the Journal.</size>");
+            Stamps.Announce($"Goal reached: {q.title}!\n<size=52>Claim your reward in the Journal.</size>");
             n++;
         }
         return n;

@@ -45,6 +45,8 @@ public class CustomerDef : ScriptableObject
     public CraftType[] makes = new CraftType[0];   // crafts they do themselves: they'd buy those patterns to make
     public bool shopOwner;                 // runs a shop the player visits (market, boutique): never comes in as a customer   // chance they're pleased by a special touch they didn't ask for
     public bool romanceable;               // adult characters only: friendship can grow into romance
+    [Range(0, 112)] public int birthday;
+    public string place;                   // where they're often found on a Saturday (a ShopDay.Places id); otherwise at home   // day of the year (1..112: four seasons of 28 days, spring first); 0 = none
     public string inkName;                 // the name of this character's knots in the dialogue (e.g. "mara")
 
     public Sprite GetPortrait(Expression e)

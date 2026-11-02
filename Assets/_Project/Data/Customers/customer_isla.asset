@@ -52,4 +52,6 @@ MonoBehaviour:
   makes: 01000000i
   shopOwner: 0
   romanceable: 1
+  birthday: 43
+  place: lighthouse
   inkName: isla

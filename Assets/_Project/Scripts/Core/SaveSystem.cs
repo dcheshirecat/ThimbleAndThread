@@ -95,6 +95,20 @@ public static class SaveSystem
         if (data.version < 25) data.noticesSeen = data.stamps.Count;
         if (data.version < 26) foreach (var o in data.orders) o.knitStyle = 0;   // their scarf stripes stay as they were begun
         data.craftOrders ??= new System.Collections.Generic.List<CraftCount>();
+        data.stallPatterns ??= new System.Collections.Generic.List<string>();
+        data.books ??= new System.Collections.Generic.List<BookProgress>();
+        if (data.version < 30)   // books bought before reading took time were read at once
+            foreach (var st in data.stock)
+                if (st != null && st.supplyId.StartsWith("book_") && !data.books.Exists(b => b.id == st.supplyId))
+                    data.books.Add(new BookProgress { id = st.supplyId, chapters = ShopDay.BookChapters });
+        if (data.version < 29) foreach (var p in data.patterns) if (p != null && p.copies < 1) p.copies = 1;   // your own copy of each
+        if (data.version < 28)   // hearts: anyone you were already seeing starts at five (dating), and romance is open
+            foreach (var r in data.relationships)
+                if (r != null && r.romance)
+                {
+                    r.heartPoints = System.Math.Max(r.heartPoints, 150);
+                    if (!data.flags.Contains(ShopDay.RomanceOpenFlag)) data.flags.Add(ShopDay.RomanceOpenFlag);
+                }
         if (data.version < 27)   // mastery is counted in orders now: start from the things made in each craft
             foreach (var m in data.itemsMade) if (m != null) data.craftOrders.Add(new CraftCount { craft = m.craft, count = m.count });   // the bell starts quiet: everything so far was already announced
         foreach (var o in data.orders)

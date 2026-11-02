@@ -7,7 +7,7 @@ public partial class ShopDay
 {
     public const string FurnitureOwnerId = "benji";
     public const string FurnitureFlag = "shop:furniture";
-    public const int FurnitureOpensDay = 6, FurnitureLevel = 2, MaxCharm = 25;
+    public const int FurnitureLevel = 3, MaxCharm = 25;
 
     public DecorDef Decor(string id) => string.IsNullOrEmpty(id) ? null : System.Array.Find(content.decor, d => d != null && d.decorId == id);
 

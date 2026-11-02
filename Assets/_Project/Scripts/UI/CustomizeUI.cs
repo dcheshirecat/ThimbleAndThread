@@ -17,6 +17,7 @@ public class CustomizeUI : MonoBehaviour
     public Text charmText;
     bool shopMode;
 
+    public static bool OpenAtShop;
     public void ShowLook() { shopMode = false; Show(); }
     public void ShowShop() { shopMode = true; Show(); }
 
@@ -47,7 +48,8 @@ public class CustomizeUI : MonoBehaviour
         if (id != ScreenId.Customize || GameManager.Instance.Save == null) return;
         nameField.text = P.name;
         messageText.text = P.created ? "Change anything you like." : "Welcome! Who's taking over the shop?";
-        shopMode = false;
+        shopMode = OpenAtShop;   // the shop's Decorate button opens on Your Shop
+        OpenAtShop = false;
         Show();
     }
 

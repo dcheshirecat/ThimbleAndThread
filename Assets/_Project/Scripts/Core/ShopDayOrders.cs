@@ -62,7 +62,7 @@ public partial class ShopDay
         else
         {
             int days = DeliveryDays(s.market);
-            Save.deliveries.Add(new Delivery { kind = "supply", id = supplyId, amount = 1, arrives = Save.day + days });
+            Save.deliveries.Add(new Delivery { kind = "supply", id = supplyId, amount = 1, arrives = Save.day + days, arrivesAt = Save.clock });
             GM.AddRelationshipPoints(MarketOwnerId, 1);
             boughtThisVisit = true;
             LastMessage = $"Ordered {s.displayName}. It arrives {(days == 1 ? "tomorrow morning" : $"in {days} days")}.";
@@ -92,7 +92,7 @@ public partial class ShopDay
         else
         {
             int days = DeliveryDays(d.rarity);
-            Save.deliveries.Add(new Delivery { kind = "pattern", id = patternId, amount = 1, arrives = Save.day + days });
+            Save.deliveries.Add(new Delivery { kind = "pattern", id = patternId, amount = 1, arrives = Save.day + days, arrivesAt = Save.clock });
             GM.AddRelationshipPoints(PatternShopOwnerId, 1);
             boughtThisVisit = true;
             LastMessage = $"Ordered the {d.displayName} pattern. It arrives {(days == 1 ? "tomorrow morning" : $"in {days} days")}.";
@@ -102,6 +102,39 @@ public partial class ShopDay
     }
 
     /// Morning: everything due today is on the doorstep. Returns what came, for the good-morning message.
+    /// Deliveries due by now arrive, each with its own pop-up. In the morning: anything from an earlier day, or due
+    /// first thing (on a weekend, the whole day's); during the day: each at the time of day it was ordered.
+    void DeliverDue(bool morning)
+    {
+        var due = Save.deliveries.FindAll(d => d.arrives < Save.day || d.arrives == Save.day
+            && (morning ? d.arrivesAt <= OpensAt || IsSaturday || IsSunday : Save.clock >= d.arrivesAt));
+        foreach (var d in due)
+        {
+            Save.deliveries.Remove(d);
+            string got = ReceiveOne(d);
+            if (got != null) Stamps.Announce("A delivery came!" + System.Environment.NewLine + $"<size=52>{got}</size>");
+        }
+    }
+
+    /// Puts one delivery in the cupboard (or the book); what it was, or null.
+    string ReceiveOne(Delivery d)
+    {
+        if (d.kind == "supply" && content.Supply(d.id) is SupplyDef s)
+        {
+            shop.Add(s.supplyId, Mathf.Max(1, s.perPack) * d.amount);
+            GM.Persist();
+            return s.displayName;
+        }
+        if (d.kind == "pattern" && System.Array.Find(content.patterns, x => x != null && x.patternId == d.id) is PatternDef p
+            && !Save.patterns.Exists(x => x.id == p.patternId))
+        {
+            Save.patterns.Add(new OwnedPattern { id = p.patternId, name = p.displayName, itemId = p.item.itemId, price = p.price, onShelf = false });
+            GM.Persist();
+            return $"the {p.displayName} pattern";
+        }
+        return null;
+    }
+
     string ReceiveDeliveries()
     {
         var came = new List<string>();
@@ -124,6 +157,6 @@ public partial class ShopDay
         }
         if (came.Count == 0) return "";
         came.Reverse();
-        return $"A delivery came!\n<size=40>{string.Join(", ", came)}</size>";
+        return $"A delivery came!\n<size=52>{string.Join(", ", came)}</size>";
     }
 }

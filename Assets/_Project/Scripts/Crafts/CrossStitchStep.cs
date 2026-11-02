@@ -81,8 +81,7 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPick
         if (Board != null && Board.Ready) { order.work = Board.Marks(); if (!Tent) order.carried = Board.Carried(); }   // before Ready the board is still empty
         if (Tent) order.StepState(stepIndex).progress = Done(order.work);
         if (Tent) return CrossStitchCanvas.TentScore(order.work, order.target);
-        float carries = target.cells.Count == 0 ? 0f : order.carried.Count / (float)target.cells.Count;
-        return CrossStitchCanvas.Score(order.work, order.target) * Mathf.Clamp01(1f - 0.5f * carries);
+        return CrossStitchCanvas.Score(order.work, order.target);
     }
 
     public void Undo()
@@ -121,8 +120,7 @@ public class CrossStitchStep : MonoBehaviour, ICraftStep, IMistakes, IStitchPick
             if (overHalf > 0) parts.Add(overHalf == 1 ? "1 half stitch done wrong (it's just the leg that lies on top of your crosses)" : $"{overHalf} half stitches done wrong (they're just the leg that lies on top of your crosses)");
             if (crossed > 0) parts.Add(crossed == 1 ? "1 cross lying the other way from the rest" : $"{crossed} crosses lying the other way from the rest");
             if (quarters > 0) parts.Add(quarters == 1 ? "1 three-quarter stitch done wrong (a long leg plus a quarter leg from the marked corner to the middle)" : $"{quarters} three-quarter stitches done wrong (a long leg plus a quarter leg from the marked corner to the middle)");
-            int carried = Board.Carried().Count;
-            if (carried > 0) parts.Add(carried == 1 ? "1 stitch reached by carrying the thread too far across the back (it shows through)" : $"{carried} stitches reached by carrying the thread too far across the back (they show through)");
+
             return parts.Count == 0 ? null : string.Join(" and ", parts);
         }
     }

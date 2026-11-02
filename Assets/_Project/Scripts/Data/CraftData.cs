@@ -38,6 +38,7 @@ public class Delivery
 {
     public string kind, id;
     public int amount = 1, arrives;
+    public int arrivesAt;   // the time of day it comes (the time it was ordered); 0 = first thing (older saves)
 }
 
 /// A piece made for the Sunday market stall, waiting to be sold.
@@ -99,6 +100,8 @@ public class OwnedPattern
     public int sold;                // copies of the pattern sold off the shelf
     public int ordered;             // orders taken for the finished item
     public int made;                // pieces made from it (new colourways open at MadeForColourway)
+    public int copies = 1;          // printed copies you hold (one is your own; the rest can be sold at the stall)
+    public bool fromMagazine;       // came in a magazine: shown as ??? until you can make it
     public Pattern design = new Pattern();
 }
 
@@ -108,6 +111,13 @@ public class CraftXp
 {
     public CraftType craft;
     public int xp;
+}
+
+[Serializable]
+public class BookProgress
+{
+    public string id;      // the book (SupplyDef id)
+    public int chapters;   // chapters read (ShopDay.BookChapters finishes it)
 }
 
 [Serializable]
@@ -131,7 +141,7 @@ public class MarketPurchase
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 27;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique). 20: the day clock (clock, nextArrival). 21: the Sunday market stall (stall). 22: special orders on their way (deliveries). 23: sales to other players (SentCode.price/paid), surpriseOwed. 24: furniture (decor, decorPlaced). 25: the notices bell (noticesSeen). 26: scarf stripes in every colour (Order.knitStyle). 27: craft mastery by orders handed over (craftOrders), bonusXp, pattern stamps (OwnedPattern.made)
+    public const int CurrentVersion = 30;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique). 20: the day clock (clock, nextArrival). 21: the Sunday market stall (stall). 22: special orders on their way (deliveries). 23: sales to other players (SentCode.price/paid), surpriseOwed. 24: furniture (decor, decorPlaced). 25: the notices bell (noticesSeen). 26: scarf stripes in every colour (Order.knitStyle). 27: craft mastery by orders handed over (craftOrders), bonusXp, pattern stamps (OwnedPattern.made). 28: hearts (CustomerRelationship.heartPoints). 29: pattern copies, the stall's patterns, magazines. 30: books read chapter by chapter
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
@@ -140,7 +150,8 @@ public class SaveData
     public bool night;                        // false = shop open (day), true = workroom (night)
     public int clock;                         // the time of day in minutes (ShopDay.OpensAt..ClosesAt; 0 = opening time)
     public int nextArrival;                   // when the next visitor reaches the door, in minutes (0 = not on their way yet)
-    public List<StallItem> stall = new List<StallItem>();   // pieces made for the Sunday market stall
+    public List<StallItem> stall = new List<StallItem>();
+    public List<string> stallPatterns = new List<string>();          // patterns on show at the stall (copies for sale)   // pieces made for the Sunday market stall
     public List<Delivery> deliveries = new List<Delivery>();   // special orders on their way
     public int surpriseOwed;                                    // Surprise Trades sent that haven't brought one back yet
     public List<string> decor = new List<string>();             // furniture and decorations owned (DecorDef ids)
@@ -167,7 +178,8 @@ public class SaveData
     public int totalPatternsSold;                                    // patterns sold, ever
     public int totalCommissions;                                     // commissions handed over, ever
     public List<CraftCount> itemsMade = new List<CraftCount>();
-    public List<CraftCount> craftOrders = new List<CraftCount>();    // orders handed over, per craft: mastery levels (Progression.Level)
+    public List<CraftCount> craftOrders = new List<CraftCount>();
+    public List<BookProgress> books = new List<BookProgress>();       // books being read, chapter by chapter    // orders handed over, per craft: mastery levels (Progression.Level)
     public int bonusXp;                                               // experience not tied to a craft (e.g. good days at the stall)      // things finished, per craft
     public List<string> questsClaimed = new List<string>();          // QuestDef ids whose reward was claimed
     public List<string> questsReady = new List<string>();            // reached and announced, not claimed yet
@@ -196,6 +208,7 @@ public class CustomerRelationship
     public int level;
     public int points;
     public bool romance;            // romanceable characters: you're seeing each other
+    public int heartPoints;         // the heart scale (ShopDay.Hearts): ten hearts, each a little dearer
 
     // Simple curve: each level needs more points than the last.
     public int PointsForNextLevel() => 50 + level * 25;

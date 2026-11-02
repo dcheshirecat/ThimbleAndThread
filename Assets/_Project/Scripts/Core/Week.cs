@@ -24,6 +24,17 @@ public static class Week
     public static bool IsSaturday(int day) => Index(day) == 5;
     public static bool IsSunday(int day) => Index(day) == 6;
 
+    // The year (owner, 2026-11-01: a calendar with birthdays): four seasons of four weeks, starting with spring.
+    public const int SeasonDays = 28, YearDays = SeasonDays * 4;
+    static readonly string[] Seasons = { "Spring", "Summer", "Autumn", "Winter" };
+    /// 1..112: the day within the year (birthdays are kept this way).
+    public static int DayOfYear(int day) => ((day - 1) % YearDays + YearDays) % YearDays + 1;
+    public static int DayOfSeason(int day) => (DayOfYear(day) - 1) % SeasonDays + 1;
+    public static string SeasonName(int day) => Seasons[(DayOfYear(day) - 1) / SeasonDays];
+    public static int Year(int day) => (day - 1) / YearDays + 1;
+    /// "Spring 14" for a day of the year (1..112).
+    public static string Date(int dayOfYear) => $"{Seasons[(dayOfYear - 1) / SeasonDays]} {(dayOfYear - 1) % SeasonDays + 1}";
+
     /// Which week of the game it is (the first is week 1).
     public static int Number(int day) => (day - 1) / 7 + 1;
 

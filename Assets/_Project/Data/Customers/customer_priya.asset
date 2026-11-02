@@ -50,4 +50,6 @@ MonoBehaviour:
   makes: 0000000002000000i
   shopOwner: 0
   romanceable: 0
+  birthday: 106
+  place: library
   inkName: priya

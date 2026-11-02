@@ -33,41 +33,23 @@ public partial class ShopDay
         var list = new List<CustomerDef>();
         foreach (var c in content.customers)
             if (c != null && Save.met.Contains(c.customerId) && !string.IsNullOrEmpty(c.inkName)
-                && (GM.GetRelationship(c.customerId).level >= VisitLevel || GM.GetRelationship(c.customerId).romance))
+                && (GM.GetRelationship(c.customerId).level >= VisitLevel || CanDate(c)))
                 list.Add(c);
         list.Sort((a, b) =>
         {
             var ra = GM.GetRelationship(a.customerId); var rb = GM.GetRelationship(b.customerId);
-            int r = rb.romance.CompareTo(ra.romance);
+            int r = CanDate(b).CompareTo(CanDate(a));
             return r != 0 ? r : rb.level.CompareTo(ra.level);
         });
         return list.GetRange(0, Mathf.Min(4, list.Count));
     }
 
+    /// Saturday: the town map opens (ShopDayTown.cs).
     public void StartSaturday()
     {
         if (Save.flags.Contains(SaturdayDoneFlag)) return;
-        Explainers.Explain(Save, "saturday", true,
-            "Saturdays\nThe shop is closed on Saturdays. Spend the day with a friend you've grown close to, or go on a date " +
-            "with someone you're seeing. Or stay in: the workroom's always there.");
-        var options = new List<(string, System.Action)>();
-        foreach (var c in SaturdayFriends())
-        {
-            var friend = c;
-            bool date = GM.GetRelationship(c.customerId).romance;
-            options.Add((date ? $"Go on a date with {c.displayName}" : $"Visit {c.displayName}", () => Visit(friend, date)));
-        }
-        options.Add(("Go to the craft circle at the tea room", CraftCircle));
-        options.Add(("Rummage at the church hall jumble sale", JumbleSale));
-        options.Add(("Walk along the harbour", () => Narrate(null,
-            Pick("Gulls, salt wind, a fishing boat coming in. You buy chips and eat them on the harbour wall.",
-                 "The tide's out. You find a piece of sea glass the colour of mint floss and keep it."),
-            ("Head home", EndSaturday))));
-        options.Add(("Stay in and craft", EndSaturday));
-        Narrate(null, options.Count > 4
-            ? "Saturday. The sign stays on CLOSED today. How will you spend it?"
-            : "Saturday. The sign stays on CLOSED today. No one's close enough to drop in on yet... maybe soon.",
-            options.ToArray());
+        if (OutingsDone == 0) Save.clock = OpensAt;
+        GM.ChangeScreen(ScreenId.TownMap);
     }
 
     /// A Saturday with a friend: their ink knot name_saturday* (name_date* when you're seeing each other), else a
@@ -79,15 +61,16 @@ public partial class ShopDay
         System.Action done = () =>
         {
             GM.AddRelationshipPoints(c.customerId, date ? 12 : 8);
+            if (date) AddHearts(c, 15);
             Progress.AddNews(date ? $"A Saturday date with {c.displayName}." : $"Spent Saturday with {c.displayName}.");
             Stamps.Earn(Save, date ? "weekend:date" : "weekend:visit", date ? "A Saturday date" : "A day with a friend", c.displayName,
                         date ? StampTheme.Romance : StampTheme.Friendship);
-            EndSaturday();
+            OutingDone();
         };
         if (knot != null) { Play(c, new List<string> { knot }, done); return; }
         Say(c, date ? Pick("I've been looking forward to this all week.", "Just us. No shop, no customers. Perfect.")
                     : Pick("Come in, come in! I'll put the kettle on.", "A whole Saturday? Brilliant. I know just the place."),
-            ("Continue", () => Narrate(c, date ? "The day goes by far too quickly." : "You talk until the afternoon light goes gold.", ("Head home", done))));
+            ("Continue", () => Narrate(c, date ? "The hours go by far too quickly." : "You talk and talk; the time flies.", ("Continue", done))));
     }
 
     // ---- More to do on a Saturday (owner, 2026-10-31: keep working on the weekends) ----
@@ -111,7 +94,7 @@ public partial class ShopDay
             : $"{string.Join(", ", there.ConvertAll(c => c.displayName).GetRange(0, there.Count - 1))} and {there[there.Count - 1].displayName} are already there, needles going.";
         Stamps.Earn(Save, "weekend:circle", "The craft circle", "Saturdays at the tea room.", StampTheme.Friendship);
         Narrate(null, $"{who}\n\nTea, cake, and a lot of {Progression.CraftName(craft).ToLower()}. (+{CircleXp} experience)" + (level != null ? $"\n{level}" : ""),
-            ("Head home", EndSaturday));
+            ("Continue", OutingDone));
     }
 
     /// The jumble sale: three odd lots of supplies, cheap. Buy one, or just enjoy the rummage.
@@ -129,16 +112,16 @@ public partial class ShopDay
             int price = Mathf.Max(1, s.price / 2);
             options.Add(($"{s.displayName} ({price} coin{(price == 1 ? "" : "s")})", () =>
             {
-                if (!GM.TrySpend(price)) { Narrate(null, "You count your coins. Not quite enough. Never mind.", ("Head home", EndSaturday)); return; }
+                if (!GM.TrySpend(price)) { Narrate(null, "You count your coins. Not quite enough. Never mind.", ("Continue", OutingDone)); return; }
                 shop.Add(s.supplyId, Mathf.Max(1, s.perPack));
                 GM.Persist();
                 Narrate(null, Pick($"A bargain! The {s.displayName.ToLower()} goes in your bag.", $"The lady at the till wraps the {s.displayName.ToLower()} in yesterday's paper."),
-                    ("Head home", EndSaturday));
+                    ("Continue", OutingDone));
             }));
         }
         options.Add(("Just enjoy the rummage", () => Narrate(null,
             Pick("You leave with nothing but a slice of lemon drizzle and a very good mood.", "A hand-knitted tea cosy shaped like a hen. You don't buy it. You'll think about it all week."),
-            ("Head home", EndSaturday))));
+            ("Continue", OutingDone))));
         Narrate(null, "Trestle tables, bric-a-brac and a tea urn. Under a pile of curtains you find a box of craft things, all half price:", options.ToArray());
     }
 
@@ -199,6 +182,43 @@ public partial class ShopDay
         public bool haggled;
         public int leavesAt;         // they wander off if no one serves them
         public CustomerDef friend;   // someone you know, come to see your stall
+        public string name;          // who they are ("A fisherman in oilskins", or a friend's name)
+        public Color face;           // a stranger's placeholder portrait colour
+        public bool chatted;
+    }
+
+    static readonly string[] Strangers =
+    {
+        "A fisherman in oilskins", "A woman with a pram", "A boy with a kite", "A tourist with a map", "An old man with a terrier",
+        "A girl in a yellow raincoat", "A couple holding hands", "A man with a paper bag of chips", "A woman in a sunhat", "A cyclist",
+    };
+
+    // ---- The stall's patterns (owner, 2026-11-01): choose which are on show; a copy sold is a copy gone (keep your own) ----
+    public const int StallPatternSpots = 4;
+    public List<OwnedPattern> StallShown() => Save.patterns.FindAll(p => Save.stallPatterns.Contains(p.id));
+    public static int CopiesToSell(OwnedPattern p) => Mathf.Max(0, p.copies - 1);
+
+    public void ToggleStallPattern(string id)
+    {
+        if (Save.stallPatterns.Remove(id)) { GM.Persist(); return; }
+        var p = Save.patterns.Find(x => x.id == id);
+        if (p == null || IsMystery(p) || Save.stallPatterns.Count >= StallPatternSpots) return;
+        Save.stallPatterns.Add(id);
+        GM.Persist();
+    }
+
+    /// A word with whoever's at the stall, buying or not (owner, 2026-11-01: anyone, not just friends).
+    public void StallChat()
+    {
+        var s = shopper;
+        if (s == null || s.chatted) return;
+        s.chatted = true;
+        Progress.AddBonusXp(2);
+        if (s.friend != null) GM.AddRelationshipPoints(s.friend.customerId, 3);
+        s.line = s.friend != null
+            ? Pick("Isn't it a lovely day for it? I'm so glad you've got a stall.", "I've told everyone at work about your shop, you know.", "You look like you were born behind a stall!")
+            : Pick("Lovely morning for it. Is all this your own work? Amazing.", "My gran used to knit like this. You've brought it all back.",
+                   "We're just visiting, but we'll come and find your shop.", "How long does something like that take you? Goodness.");
     }
 
     public Shopper CurrentShopper => shopper;
@@ -210,6 +230,7 @@ public partial class ShopDay
     /// Called by the stall screen every frame: the clock moves and shoppers come and go.
     public void StallTick()
     {
+        if (PauseMenu.Paused) return;
         if (Save == null || !IsSunday || Save.night) return;
         if (Save.clock < StallCloses)
         {
@@ -238,20 +259,21 @@ public partial class ShopDay
                             $"My daughter would love the {piece.name}. {price} coins?") });
             wants.Add(wants[wants.Count - 1]);   // finished pieces draw the eye: twice as likely
         }
-        foreach (var p in Save.patterns)
+        foreach (var p in StallShown())
         {
-            if (!PatternShown(p) || !Progress.CanMake(ItemFor(p.itemId))) continue;
-            stallSoldToday.TryGetValue(p.id, out int sold);
-            if (sold >= 2) continue;
+            if (IsMystery(p) || CopiesToSell(p) <= 0) continue;   // only copies you can spare
             wants.Add(new Shopper { pattern = p, offer = p.price,
                 line = Pick($"I make these myself. Could I buy a copy of your {p.name} pattern? {p.price} coins?",
                             $"That {p.name} chart is lovely. {p.price} for a copy?") });
         }
         int leaves = Save.clock + 20;
+        string stranger = Strangers[Random.Range(0, Strangers.Length)];
+        var face = Color.HSVToRGB(Random.value, 0.35f, 0.85f);
         if (wants.Count == 0 || Random.value < 0.15f)
-            return new Shopper { line = Pick("Just looking, thanks! Lovely stall.", "Gorgeous work. I'll come back when I've been paid.", "Ooh. Hmm. Maybe next week!"), leavesAt = Save.clock + 4 };
+            return new Shopper { line = Pick("Just looking, thanks! Lovely stall.", "Gorgeous work. I'll come back when I've been paid.", "Ooh. Hmm. Maybe next week!"),
+                                 leavesAt = Save.clock + 8, name = stranger, face = face };
         var s = wants[Random.Range(0, wants.Count)];
-        var picked = new Shopper { line = s.line, piece = s.piece, pattern = s.pattern, offer = s.offer, leavesAt = leaves };
+        var picked = new Shopper { line = s.line, piece = s.piece, pattern = s.pattern, offer = s.offer, leavesAt = leaves, name = stranger, face = face };
         // Now and then it's someone you know (owner, 2026-10-31: more to the weekends): a sale to a friend counts for friendship.
         var friends = new List<CustomerDef>();
         foreach (var c in content.customers)
@@ -260,7 +282,8 @@ public partial class ShopDay
         {
             picked.friend = friends[Random.Range(0, friends.Count)];
             Save.visitorsToday.Add(picked.friend.customerId);   // once each per Sunday
-            picked.line = $"{picked.friend.displayName}: " + Pick("Ooh, your stall! ", "There you are! ", "I came to see what you've made. ") + picked.line;
+            picked.name = picked.friend.displayName;
+            picked.line = Pick("Ooh, your stall! ", "There you are! ", "I came to see what you've made. ") + picked.line;
         }
         return picked;
     }
@@ -277,8 +300,7 @@ public partial class ShopDay
         if (s.piece != null) { Save.stall.Remove(s.piece); LastMessage = $"Sold the {s.piece.name} for {s.offer} coins."; }
         else
         {
-            stallSoldToday.TryGetValue(s.pattern.id, out int sold);
-            stallSoldToday[s.pattern.id] = sold + 1;
+            s.pattern.copies--;
             s.pattern.sold++;
             Save.patternsSoldToday++;
             Save.totalPatternsSold++;

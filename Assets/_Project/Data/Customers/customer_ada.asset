@@ -34,4 +34,6 @@ MonoBehaviour:
   makes: 05000000i
   shopOwner: 1
   romanceable: 0
+  birthday: 10
+  place: 
   inkName: ada

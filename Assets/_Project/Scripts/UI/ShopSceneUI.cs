@@ -164,70 +164,21 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     public void GoToFurniture() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.FurnitureOwnerId, ScreenId.Furniture); }
     public GameObject patternShopButton, furnitureButton;
 
-    // ---- Passing the time between customers (ShopDayPastime): the kettle, chores, the window ----
-    public GameObject pastimeLayer, pastimeButton;
-    public Button kettleButton, windowButton;
-    public Button[] choreButtons;        // ShopDay.Chores order
-    public RectTransform choreArea;      // where the dust, crumbs or loose threads appear
-    public Button speckTemplate;
-    readonly List<GameObject> specks = new List<GameObject>();
+    // ---- Things to do between customers (owner, 2026-11-02: real things, not minigames): read, decorate ----
+    public GameObject pastimeButton;      // the row of them under the counter
+    public Button readButton;
+    public GameObject decorateButton;
 
-    public void TogglePastime() { pastimeLayer.SetActive(!pastimeLayer.activeSelf); pastimeLayer.transform.SetAsLastSibling(); ShowPastimes(); }
-    public void PutKettleOn() { pastimeLayer.SetActive(false); day.PutKettleOn(); Refresh(); }
-    public void LookOutside() { pastimeLayer.SetActive(false); day.LookOutside(); Refresh(); }
+    public void Read() { day.ReadChapter(); Refresh(); }
+    public void Decorate() => day.Decorate();
 
     void ShowPastimes()
     {
-        bool can = day.CanPassTime;
         pastimeButton.SetActive(Page == 1);   // only by the counter, not over the pickup or display lists
-        pastimeButton.GetComponent<Button>().interactable = can;
-        if (!pastimeLayer.activeSelf) return;
-        kettleButton.interactable = can;
-        windowButton.interactable = day.CanLookOutside;
-        for (int i = 0; i < choreButtons.Length; i++)
-        {
-            var c = ShopDay.Chores[i];
-            bool done = day.ChoreDone(c.id);
-            choreButtons[i].interactable = can && !done && specks.Count == 0;
-            var label = choreButtons[i].GetComponentInChildren<Text>();
-            string text = done ? $"{c.name} (done)" : c.name;
-            if (label.text != text) label.text = text;
-        }
-    }
-
-    /// A chore: tap away every speck (dust on the shelves, crumbs on the floor, loose threads), then it's done.
-    public void StartChore(int i)
-    {
-        pastimeLayer.SetActive(false);
-        if (!day.CanPassTime || day.ChoreDone(ShopDay.Chores[i].id) || specks.Count > 0) return;
-        ShowPage(1);
-        var colors = i == 0 ? new[] { new Color(0.62f, 0.60f, 0.58f, 0.85f) } : i == 1 ? new[] { new Color(0.55f, 0.40f, 0.25f) }
-            : new[] { new Color(0.85f, 0.30f, 0.35f), new Color(0.30f, 0.50f, 0.80f), new Color(0.95f, 0.80f, 0.30f), new Color(0.40f, 0.70f, 0.45f) };
-        var area = choreArea.rect;
-        for (int n = 0; n < 8; n++)
-        {
-            var speck = Instantiate(speckTemplate, choreArea);
-            speck.gameObject.SetActive(true);
-            speck.name = $"Speck_{n}";
-            var rt = (RectTransform)speck.transform;
-            rt.anchorMin = rt.anchorMax = new Vector2(Random.Range(0.08f, 0.92f), Random.Range(0.1f, 0.9f));
-            rt.localRotation = Quaternion.Euler(0, 0, Random.Range(0f, 180f));
-            speck.GetComponent<Image>().color = colors[n % colors.Length];
-            var go = speck.gameObject;
-            speck.onClick.AddListener(() => Swept(go, i));
-            specks.Add(go);
-        }
-        statusText.text = i == 0 ? "Tap the dust away." : i == 1 ? "Tap the crumbs to sweep them up." : "Tap each loose skein to put it back in the drawer.";
-    }
-
-    void Swept(GameObject speck, int chore)
-    {
-        specks.Remove(speck);
-        Destroy(speck);
-        AudioManager.Play(Sfx.Click);
-        if (specks.Count > 0) return;
-        day.FinishChore(ShopDay.Chores[chore].id);
-        Refresh();
+        readButton.interactable = day.CanRead;
+        var label = readButton.GetComponentInChildren<Text>();
+        if (label.text != day.ReadLabel) label.text = day.ReadLabel;
+        decorateButton.SetActive(day.ShopOpen(ScreenId.Furniture));
     }
 
     // ---- Your furniture and decorations, in their spots (DecorSlot order) ----
@@ -254,7 +205,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         if (!entry.activeSelf) return;
         bool now = day.ShopOpenNow(shop);
         var label = entry.GetComponentInChildren<Text>();
-        string text = $"{name}\n<size=40>{day.HoursText(shop)}</size>";
+        string text = $"{name}\n<size=52>{day.HoursText(shop)}</size>";
         if (label.text != text) label.text = text;
         entry.GetComponent<Button>().interactable = now;
     }
@@ -363,11 +314,13 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
             var item = day.ItemFor(p.itemId);
             bool canMake = day.Progress.CanMake(item);
             string id = p.id;
-            var row = Row(displayTemplate, $"Choose_{id}", $"{p.name}\n{(item != null ? item.itemName : p.itemId)} · {p.price} coins" + (canMake ? "" : " · you can't make this yet"),
+            bool mystery = day.IsMystery(p);
+            var row = Row(displayTemplate, $"Choose_{id}", mystery ? "???\nyou can't make sense of this one yet"
+                          : $"{p.name}\n{(item != null ? item.itemName : p.itemId)} · {p.price} coins" + (canMake ? "" : " · you can't make this yet"),
                           () => ChooseFromBook(id));
             row.GetComponent<Button>().interactable = canMake;
             var preview = row.GetComponentInChildren<RawImage>(true);
-            if (preview != null) { preview.texture = PatternPreview.Make(day.DesignFor(p)); preview.gameObject.SetActive(true); }
+            if (preview != null) { preview.texture = mystery ? null : PatternPreview.Make(day.DesignFor(p)); preview.gameObject.SetActive(!mystery); }
             rows.Add(row);
         }
         var back = Row(displayTemplate, "Choose_Back", "Back to the display", () => { choosing = false; swapping = null; Refresh(); });

@@ -52,4 +52,6 @@ MonoBehaviour:
   makes: 0200000003000000i
   shopOwner: 0
   romanceable: 0
+  birthday: 84
+  place: park
   inkName: juno

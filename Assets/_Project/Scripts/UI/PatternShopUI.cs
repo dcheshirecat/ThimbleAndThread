@@ -10,13 +10,13 @@ public class PatternShopUI : MonoBehaviour
     public ShopDay day;
     public Text statusText;
     public Button rowTemplate;           // a pattern for sale: text and a RawImage preview
-    public Text orderLabel;              // "Order a Pattern": any pattern Ada can send for, delivered later
+    public Text orderLabel;              // "Magazines & Copies": a magazine of surprise patterns, or copies of your own
     bool ordering;
 
     public void ToggleOrdering()
     {
         ordering = !ordering;
-        orderLabel.text = ordering ? "Back to the Shelf" : "Order a Pattern";
+        orderLabel.text = ordering ? "Back to the Shelf" : "Magazines & Copies";
         day.ClearMessage();
         Show();
     }
@@ -35,7 +35,7 @@ public class PatternShopUI : MonoBehaviour
 
     void OnScreenChanged(ScreenId id)
     {
-        if (id != ScreenId.PatternShop) { if (ordering) { ordering = false; orderLabel.text = "Order a Pattern"; } return; }
+        if (id != ScreenId.PatternShop) { if (ordering) { ordering = false; orderLabel.text = "Magazines & Copies"; } return; }
         if (GameManager.Instance.Save == null) return;
         day.Met(ShopDay.PatternShopOwnerId);
         Show();
@@ -100,28 +100,25 @@ public class PatternShopUI : MonoBehaviour
         return row.gameObject;
     }
 
-    /// Any pattern Ada can send for: rarer ones take longer and need a higher level (ShopDayOrders).
+    /// A magazine (1 to 5 patterns, a surprise), and printed copies of your own patterns to sell at the stall.
     void ShowOrders(SaveData save)
     {
-        statusText.text = "Ada can send for any pattern. Rarer ones take longer to come, and need a higher level." +
-                          (string.IsNullOrEmpty(day.LastMessage) ? "" : $"\n{day.LastMessage}");
-        var list = day.OrderablePatterns();
-        if (list.Count == 0) { Row("PatternShop_NoOrders", "Nothing more to send for right now.").GetComponent<Button>().interactable = false; return; }
-        foreach (var d in list)
+        statusText.text = "No ordering particular patterns: a magazine has one to five, and you never know which. Copies of your own " +
+                          "patterns are for selling at the stall (you always keep one)." + (string.IsNullOrEmpty(day.LastMessage) ? "" : $"\n{day.LastMessage}");
+        var mag = Row("Buy Magazine", $"<b>Buy a magazine</b>  ·  {ShopDay.MagazinePrice} coins\n1 to 5 patterns: some you may not be able to make yet");
+        mag.GetComponent<Button>().onClick.AddListener(day.BuyMagazine);
+        mag.GetComponent<Image>().color = new Color(1f, 0.92f, 0.62f);
+        mag.GetComponent<Button>().interactable = save.coins >= ShopDay.MagazinePrice;
+        foreach (var p in save.patterns)
         {
-            var pattern = d.ToPattern();
-            string id = d.patternId;
-            bool level = day.CanOrderAtLevel(d.rarity);
-            int days = ShopDay.DeliveryDays(d.rarity);
-            var row = Row($"OrderPattern_{id}",
-                $"<b>{d.displayName}</b>  ·  {d.item.itemName}\n{RarityName(d.rarity)}  ·  complexity {Stars(ShopDay.Complexity(pattern))}  ·  " +
-                (level ? $"{d.shopPrice} coins  ·  {(days == 1 ? "arrives tomorrow" : $"takes {days} days")}" : $"from level {ShopDay.OrderLevel(d.rarity)}"));
-            row.GetComponent<Button>().onClick.AddListener(() => day.OrderPattern(id));
-            row.GetComponent<Image>().color = !level ? new Color(0.78f, 0.76f, 0.74f) : d.rarity == MarketSlot.Rare ? new Color(1f, 0.92f, 0.62f)
-                : d.rarity == MarketSlot.Rotating ? new Color(0.88f, 0.93f, 1f) : new Color(0.98f, 0.95f, 0.88f);
-            row.GetComponent<Button>().interactable = level && save.coins >= d.shopPrice;
+            if (!day.PatternShown(p) || day.IsMystery(p)) continue;
+            string id = p.id;
+            int price = day.CopyPrice(p);
+            var row = Row($"Copy_{id}", $"<b>A copy of {p.name}</b>  ·  {price} coins\nYou have {p.copies}");
+            row.GetComponent<Button>().onClick.AddListener(() => day.BuyCopy(id));
+            row.GetComponent<Button>().interactable = save.coins >= price;
             var preview = row.GetComponentInChildren<RawImage>(true);
-            if (preview != null) { preview.texture = PatternPreview.Make(pattern); preview.gameObject.SetActive(true); }
+            if (preview != null) { preview.texture = PatternPreview.Make(day.DesignFor(p)); preview.gameObject.SetActive(true); }
         }
     }
 }

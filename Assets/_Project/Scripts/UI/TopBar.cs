@@ -99,6 +99,9 @@ public class TopBar : MonoBehaviour
     }
     public void OpenPersonal() => GameManager.Instance.ChangeScreen(ScreenId.Customize);
 
+    /// The weekday badge: the calendar, with birthdays.
+    public void OpenCalendar() { var c = FindAnyObjectByType<CalendarUI>(); if (c != null) c.Toggle(); }
+
     /// The level and experience bar: how far to the next level, and your crafts and techniques (owner, 2026-11-01).
     public void ToggleSkills()
     {

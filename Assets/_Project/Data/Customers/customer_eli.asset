@@ -47,6 +47,9 @@ MonoBehaviour:
     text: lace
     likes: 0
     supply: {fileID: 11400000, guid: 7fc872e5ff1c0ec428c10a548c45479f, type: 2}
+  makes: 
   shopOwner: 0
   romanceable: 1
+  birthday: 103
+  place: cafe
   inkName: eli

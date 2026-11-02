@@ -7,8 +7,7 @@ using UnityEngine.EventSystems;
 ///  - Stitch: drag from one grid corner to the diagonal corner to make a half stitch;
 ///            drag the opposite diagonal to complete the X. A drag from a corner to the middle of a square is a
 ///            quarter stitch: with a long leg, it makes a three-quarter stitch (for rounded shapes).
-///            Confetti (single stitches scattered apart): carrying the thread more than LongCarry squares across the
-///            back shows through, a mistake; tapping the thread's colour again starts a fresh length.
+///            The back of the work doesn't count (owner, 2026-11-02): single stitches scattered apart (confetti) are fine.
 ///  - PatternFill: tap/drag cells to paint pixels (pattern-making mode).
 /// Each stitch uses the current thread colour. Undo steps back one drag at a time.
 /// Attach to an empty GameObject. Assign a Camera and a 1x1 square Sprite.
@@ -648,7 +647,6 @@ public class CrossStitchCanvas : MonoBehaviour
     {
         stitchProgress.TryGetValue(cell, out int done);
         if ((done & bit) != 0) return; // already stitched that diagonal
-        if (byHand && done == 0 && mode == Mode.Stitch && !tent) CheckCarry(cell, color);
         bool quarterLeg = bit >= 4;
         bool firstLegOfCell = (done & 3) == 0;
         if (!quarterLeg && firstLegOfCell) firstLeg[cell] = bit;

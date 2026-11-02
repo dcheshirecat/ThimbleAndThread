@@ -286,41 +286,14 @@ public static class TestSceneBuilder
         Button(sm, "Menu Close", shopScene.ToggleShops, 800).GetComponentInChildren<Text>().text = "Close";
         shopsLayer.SetActive(false);
         shopScene.shopsMenu = shopsLayer;
-        // Passing the time between customers: the kettle, chores, the window (ShopDayPastime)
-        shopScene.choreArea = Shape(mid, "Chore Area", new Vector2(0.5f, 0.5f), new Vector2(1800, 900), new Color(0, 0, 0, 0), null);
-        shopScene.choreArea.GetComponent<Image>().raycastTarget = false;
-        shopScene.speckTemplate = Button(shopScene.choreArea, "Speck", null, 90);
-        Place(shopScene.speckTemplate, new Vector2(0.5f, 0.5f), new Vector2(95, 70));
-        shopScene.speckTemplate.GetComponentInChildren<Text>().text = "";
-        shopScene.speckTemplate.gameObject.SetActive(false);
-        var pastime = Button(p, "Pass the Time", shopScene.TogglePastime, 600);
-        Place(pastime, new Vector2(0.5f, 0.118f), new Vector2(640, 110));
-        pastime.GetComponentInChildren<Text>().fontSize = 54;
-        var ptColors = pastime.colors;
-        ptColors.disabledColor = new Color(0.6f, 0.6f, 0.6f, 0.55f);
-        pastime.colors = ptColors;
-        shopScene.pastimeButton = pastime.gameObject;
-        var ptLayer = new GameObject("Pastime Layer", typeof(RectTransform), typeof(Image), typeof(Button));
-        ptLayer.transform.SetParent(p, false);
-        Stretch((RectTransform)ptLayer.transform);
-        ptLayer.GetComponent<Image>().color = new Color(0, 0, 0, 0.001f);   // a tap outside the menu closes it
-        UnityEventTools.AddPersistentListener(ptLayer.GetComponent<Button>().onClick, shopScene.TogglePastime);
-        var ptMenu = Shape(ptLayer.transform, "Pastime Menu", new Vector2(0.5f, 0.32f), new Vector2(1200, 900), new Color(1, 0.97f, 0.9f), uiSprite);
-        ptMenu.GetComponent<Image>().raycastTarget = true;
-        ptMenu.gameObject.AddComponent<ClickBlocker>();
-        var pm = Column(ptMenu, 0.5f, 0.5f);
-        shopScene.kettleButton = Button(pm, "Put the Kettle On", shopScene.PutKettleOn, 1000);
-        shopScene.choreButtons = new UnityEngine.UI.Button[ShopDay.Chores.Length];
-        for (int i = 0; i < ShopDay.Chores.Length; i++)
-        {
-            var cb = Button(pm, $"Chore {ShopDay.Chores[i].id}", null, 1000);
-            cb.GetComponentInChildren<Text>().text = ShopDay.Chores[i].name;
-            UnityEventTools.AddIntPersistentListener(cb.onClick, shopScene.StartChore, i);
-            shopScene.choreButtons[i] = cb;
-        }
-        shopScene.windowButton = Button(pm, "Look Out of the Window", shopScene.LookOutside, 1000);
-        ptLayer.SetActive(false);
-        shopScene.pastimeLayer = ptLayer;
+        // Things to do between customers: read a chapter of a book, decorate the shop
+        var things = Row(p, 0.5f, 0.118f);
+        shopScene.pastimeButton = things.gameObject;
+        shopScene.readButton = Button(things, "Read", shopScene.Read, 560);
+        var readColors = shopScene.readButton.colors;
+        readColors.disabledColor = new Color(0.6f, 0.6f, 0.6f, 0.55f);
+        shopScene.readButton.colors = readColors;
+        shopScene.decorateButton = Button(things, "Decorate", shopScene.Decorate, 560).gameObject;
         shopScene.pageLabel = Label(p, "PageName", new Vector2(0.2f, 0.778f), new Vector2(0.8f, 0.812f), 52, TextAnchor.MiddleCenter);
         shopScene.pageLabel.raycastTarget = false;   // the Shops button sits beside it
         var b = Row(p, 0.5f, 0.05f);
@@ -478,7 +451,7 @@ public static class TestSceneBuilder
         list.GetComponent<Image>().raycastTarget = true;
         ui.shoppingList = list.gameObject;
         var listScroll = ScrollList(list, 0.12f, 0.97f);
-        ui.shoppingListText = MakeText(listScroll, "ListText", "", 52);
+        ui.shoppingListText = MakeText(listScroll, "ListText", "", 64);
         ui.shoppingListText.alignment = TextAnchor.UpperLeft;
         ui.shoppingListText.horizontalOverflow = HorizontalWrapMode.Wrap;
         ui.shoppingListText.verticalOverflow = VerticalWrapMode.Overflow;
@@ -600,19 +573,49 @@ public static class TestSceneBuilder
         stall.keeper = Keeper(p, new Vector2(0.5f, 0.66f), content);
         stall.keeper.transform.localScale = Vector3.one * 0.7f;
         var table = Shape(p, "Table", new Vector2(0.5f, 0.5f), new Vector2(1800, 480), new Color(0.62f, 0.45f, 0.30f), uiSprite);
-        stall.tableText = Label(table, "OnTable", new Vector2(0.05f, 0.06f), new Vector2(0.95f, 0.94f), 46, TextAnchor.UpperLeft);
+        stall.tableText = Label(table, "OnTable", new Vector2(0.05f, 0.06f), new Vector2(0.95f, 0.94f), 54, TextAnchor.UpperLeft);
         stall.tableText.color = Color.white;
         var shopperCard = Shape(p, "Shopper", new Vector2(0.5f, 0.27f), new Vector2(1840, 560), new Color(1f, 0.98f, 0.92f), uiSprite);
-        stall.shopperText = Label(shopperCard, "Line", new Vector2(0.05f, 0.4f), new Vector2(0.95f, 0.95f), 54, TextAnchor.MiddleCenter);
+        stall.shopperText = Label(shopperCard, "Line", new Vector2(0.2f, 0.4f), new Vector2(0.97f, 0.95f), 54, TextAnchor.MiddleCenter);
+        // Talking heads (owner, 2026-11-01): a friend's portrait, or a placeholder face for someone from town
+        var sFace = Shape(shopperCard, "Face", new Vector2(0.11f, 0.74f), new Vector2(200, 200), Color.white, Knob());
+        stall.shopperFace = sFace.GetComponent<Image>();
+        stall.shopperFace.preserveAspect = true;
+        stall.shopperInitial = MakeText(sFace, "Initial", "", 110);
+        Stretch((RectTransform)stall.shopperInitial.transform);
+        stall.shopperInitial.color = Color.white;
+        stall.shopperInitial.alignment = TextAnchor.MiddleCenter;
+        stall.shopperName = Label(shopperCard, "Name", new Vector2(0.0f, 0.36f), new Vector2(0.23f, 0.56f), 40, TextAnchor.MiddleCenter);
+        stall.shopperName.color = Ink;
         b = Row(shopperCard, 0.5f, 0.2f);
-        stall.sellButton = Button(b, "Stall Sell", stall.Sell, 520).gameObject;
+        stall.sellButton = Button(b, "Stall Sell", stall.Sell, 380).gameObject;
         stall.sellButton.GetComponentInChildren<Text>().text = "Sell";
-        stall.haggleButton = Button(b, "Stall Haggle", stall.Haggle, 560).gameObject;
+        stall.haggleButton = Button(b, "Stall Haggle", stall.Haggle, 500).gameObject;
         stall.haggleButton.GetComponentInChildren<Text>().text = "Ask for More";
-        stall.declineLabel = Button(b, "Stall Decline", stall.Decline, 520).GetComponentInChildren<Text>();
+        stall.declineLabel = Button(b, "Stall Decline", stall.Decline, 380).GetComponentInChildren<Text>();
+        stall.chatButton = Button(b, "Stall Chat", stall.Chat, 330).gameObject;
+        stall.chatButton.GetComponentInChildren<Text>().text = "Chat";
         stall.shopperPanel = shopperCard.gameObject;
         stall.messageText = Label(p, "Message", new Vector2(0.05f, 0.1f), new Vector2(0.95f, 0.16f), 50, TextAnchor.MiddleCenter);
-        Button(Column(p, 0.5f, 0.05f), "Pack Up the Stall", stall.PackUp, 900);
+        b = Row(p, 0.5f, 0.05f);
+        Button(b, "Arrange the Stall", stall.ToggleArrange, 860);
+        Button(b, "Pack Up the Stall", stall.PackUp, 860);
+        var arrange = new GameObject("Arrange Layer", typeof(RectTransform), typeof(Image), typeof(Button));
+        arrange.transform.SetParent(p, false);
+        Stretch((RectTransform)arrange.transform);
+        arrange.GetComponent<Image>().color = new Color(0, 0, 0, 0.4f);
+        UnityEventTools.AddPersistentListener(arrange.GetComponent<Button>().onClick, stall.ToggleArrange);
+        var arrangeBox = Shape(arrange.transform, "Arrange Box", new Vector2(0.5f, 0.5f), new Vector2(1850, 2100), new Color(1, 0.97f, 0.9f), uiSprite);
+        arrangeBox.GetComponent<Image>().raycastTarget = true;
+        arrangeBox.gameObject.AddComponent<ClickBlocker>();
+        stall.arrangeInfo = Label(arrangeBox, "Info", new Vector2(0.05f, 0.88f), new Vector2(0.95f, 0.98f), 56, TextAnchor.MiddleCenter);
+        stall.arrangeInfo.color = Ink;
+        stall.arrangeTemplate = Button(ScrollList(arrangeBox, 0.1f, 0.87f), "Arrange Template", null, 1700);
+        var arrangeClose = Button(arrangeBox, "Arrange Close", stall.ToggleArrange, 500);
+        Place(arrangeClose, new Vector2(0.5f, 0.05f), new Vector2(500, 130));
+        arrangeClose.GetComponentInChildren<Text>().text = "Done";
+        arrange.SetActive(false);
+        stall.arrangeLayer = arrange;
 
         // Marsh's Workshop: furniture and decorations for your shop (FurnitureUI)
         p = Panel(ScreenId.Furniture, "Marsh's Workshop", new Color(0.86f, 0.78f, 0.66f));
@@ -644,7 +647,7 @@ public static class TestSceneBuilder
         var psPreview = Preview(pshop.rowTemplate.transform, new Vector2(0, 0.5f), 230);
         ((RectTransform)psPreview.transform).anchoredPosition = new Vector2(150, 0);
         b = Row(p, 0.5f, 0.04f);
-        pshop.orderLabel = Button(b, "Order a Pattern", pshop.ToggleOrdering, 640).GetComponentInChildren<Text>();
+        pshop.orderLabel = Button(b, "Magazines & Copies", pshop.ToggleOrdering, 640).GetComponentInChildren<Text>();
         Button(b, "Chat with Ada", pshop.Chat, 520).GetComponentInChildren<Text>().text = "Chat";
         Button(b, "Back", pshop.Leave, 520);
 
@@ -736,6 +739,91 @@ public static class TestSceneBuilder
         Button(b, "Cancel", designer.Cancel, 360);
 
         // The journal: a storybook overlay that slides in over any screen (JournalUI)
+        // The town map on Saturdays (UI/TownMapUI.cs): placeholder art, the places on a grid over land and sea
+        p = Panel(ScreenId.TownMap, "Saturday in Town", new Color(0.62f, 0.78f, 0.62f));
+        var sea = Shape(p, "Sea", new Vector2(0.5f, 0.08f), new Vector2(2048, 700), new Color(0.45f, 0.65f, 0.85f), uiSprite);
+        sea.GetComponent<Image>().raycastTarget = false;
+        var town = canvasGo.AddComponent<TownMapUI>();
+        town.day = day;
+        town.status = Label(p, "Status", new Vector2(0.05f, 0.84f), new Vector2(0.95f, 0.9f), 50, TextAnchor.MiddleCenter);
+        town.places = new Button[ShopDay.Places.Length];
+        for (int i = 0; i < ShopDay.Places.Length; i++)
+        {
+            int col = i % 3, row = i / 3;
+            var place = Button(p, "Place " + ShopDay.Places[i].id, null, 600);
+            Place(place, new Vector2(0.18f + col * 0.32f, 0.79f - row * 0.095f), new Vector2(620, 190));
+            var pt = place.GetComponentInChildren<Text>();
+            pt.fontSize = 44;
+            pt.horizontalOverflow = HorizontalWrapMode.Wrap;
+            bool shopPlace = ShopDay.Places[i].shop != ScreenId.Title;
+            place.GetComponent<Image>().color = shopPlace ? new Color(0.98f, 0.90f, 0.75f) : new Color(1, 1, 1, 0.92f);
+            UnityEventTools.AddIntPersistentListener(place.onClick, town.GoTo, i);
+            town.places[i] = place;
+        }
+        Button(Column(p, 0.5f, 0.05f), "Go Home", day.GoHomeSaturday, 800);
+
+        // The calendar (UI/CalendarUI.cs): this season's four weeks and the birthdays in them
+        var cal = canvasGo.AddComponent<CalendarUI>();
+        cal.day = day;
+        var calLayer = new GameObject("Calendar Layer", typeof(RectTransform), typeof(Image), typeof(Button));
+        calLayer.transform.SetParent(canvasGo.transform, false);
+        Stretch((RectTransform)calLayer.transform);
+        calLayer.GetComponent<Image>().color = new Color(0, 0, 0, 0.4f);
+        UnityEventTools.AddPersistentListener(calLayer.GetComponent<Button>().onClick, cal.Toggle);
+        var calBox = Shape(calLayer.transform, "Calendar", new Vector2(0.5f, 0.55f), new Vector2(1900, 1900), new Color(1, 0.97f, 0.9f), uiSprite);
+        calBox.GetComponent<Image>().raycastTarget = true;
+        calBox.gameObject.AddComponent<ClickBlocker>();
+        cal.heading = Label(calBox, "Heading", new Vector2(0.05f, 0.9f), new Vector2(0.95f, 0.98f), 72, TextAnchor.MiddleCenter);
+        cal.heading.color = Ink;
+        for (int i = 0; i < 7; i++)
+        {
+            var wd = Label(calBox, "Weekday " + i, new Vector2(0.03f + i * 0.134f, 0.85f), new Vector2(0.03f + (i + 1) * 0.134f, 0.9f), 40, TextAnchor.MiddleCenter);
+            wd.text = Week.Names[i].Substring(0, 3);
+            wd.color = Ink;
+        }
+        cal.cells = new Text[Week.SeasonDays];
+        cal.cellBacks = new Image[Week.SeasonDays];
+        for (int i = 0; i < Week.SeasonDays; i++)
+        {
+            int col = i % 7, row = i / 7;
+            var cellRt = Shape(calBox, "Day " + i, Vector2.zero, Vector2.zero, Color.white, uiSprite);
+            cellRt.anchorMin = new Vector2(0.03f + col * 0.134f + 0.004f, 0.84f - (row + 1) * 0.165f + 0.004f);
+            cellRt.anchorMax = new Vector2(0.03f + (col + 1) * 0.134f - 0.004f, 0.84f - row * 0.165f - 0.004f);
+            cellRt.offsetMin = cellRt.offsetMax = Vector2.zero;
+            cal.cellBacks[i] = cellRt.GetComponent<Image>();
+            var t = MakeText(cellRt, "Text", "", 44);
+            Stretch((RectTransform)t.transform);
+            ((RectTransform)t.transform).offsetMin = new Vector2(8, 8); ((RectTransform)t.transform).offsetMax = new Vector2(-8, -8);
+            t.alignment = TextAnchor.UpperCenter;
+            t.horizontalOverflow = HorizontalWrapMode.Wrap;
+            t.color = Ink;
+            cal.cells[i] = t;
+        }
+        cal.footer = Label(calBox, "Footer", new Vector2(0.05f, 0.1f), new Vector2(0.95f, 0.17f), 44, TextAnchor.MiddleCenter);
+        cal.footer.color = Ink;
+        var calClose = Button(calBox, "Calendar Close", cal.Toggle, 500);
+        Place(calClose, new Vector2(0.5f, 0.05f), new Vector2(500, 120));
+        calClose.GetComponentInChildren<Text>().text = "Close";
+        calLayer.SetActive(false);
+        cal.layer = calLayer;
+
+        // The pause menu: leaving the app pauses the game until you're back (UI/PauseMenu.cs)
+        var pause = canvasGo.AddComponent<PauseMenu>();
+        var pauseLayer = new GameObject("Pause Menu", typeof(RectTransform), typeof(Image));
+        pauseLayer.transform.SetParent(canvasGo.transform, false);
+        Stretch((RectTransform)pauseLayer.transform);
+        pauseLayer.GetComponent<Image>().color = new Color(0.1f, 0.08f, 0.12f, 0.85f);
+        var pauseBox = Shape(pauseLayer.transform, "Pause Box", new Vector2(0.5f, 0.5f), new Vector2(1300, 900), new Color(1, 0.97f, 0.9f), uiSprite);
+        var pauseTitle = MakeText(pauseBox, "Paused", "Paused", 96);
+        var ptr = (RectTransform)pauseTitle.transform;
+        ptr.anchorMin = new Vector2(0, 0.7f); ptr.anchorMax = new Vector2(1, 0.95f); ptr.offsetMin = ptr.offsetMax = Vector2.zero;
+        pauseTitle.alignment = TextAnchor.MiddleCenter; pauseTitle.color = Ink;
+        var pauseButtons = Column(pauseBox, 0.5f, 0.38f);
+        Button(pauseButtons, "Resume", pause.Resume, 900);
+        Button(pauseButtons, "Main Menu", pause.MainMenu, 900);
+        pauseLayer.SetActive(false);
+        pause.overlay = pauseLayer;
+
         var journal = canvasGo.AddComponent<JournalUI>();
         journal.day = day;
         journal.router = router;
@@ -786,7 +874,7 @@ public static class TestSceneBuilder
         jPageGo.GetComponent<Image>().color = new Color(1f, 0.985f, 0.94f);
         journal.page = jPage;
         var journalList = ScrollList(jPage, 0.02f, 0.98f);
-        journal.pageText = MakeText(journalList, "PageText", "", 52);
+        journal.pageText = MakeText(journalList, "PageText", "", 60);
         journal.pageText.alignment = TextAnchor.UpperLeft;
         journal.pageText.horizontalOverflow = HorizontalWrapMode.Wrap;
         journal.pageText.verticalOverflow = VerticalWrapMode.Overflow;
@@ -829,10 +917,10 @@ public static class TestSceneBuilder
         fBar.GetComponent<LayoutElement>().preferredHeight = 46;
         var fFill = Shape(fBar.transform, "Fill", Vector2.zero, Vector2.zero, new Color(0.88f, 0.58f, 0.25f), uiSprite);
         fFill.anchorMin = Vector2.zero; fFill.anchorMax = new Vector2(0.5f, 1); fFill.offsetMin = fFill.offsetMax = Vector2.zero;
-        var fLabel = MakeText(fBar.transform, "Label", "", 34);
+        var fLabel = MakeText(fBar.transform, "Label", "", 40);
         Stretch((RectTransform)fLabel.transform);
         fLabel.color = Ink;
-        var fBody = MakeText(friendCard.transform, "Body", "", 44);
+        var fBody = MakeText(friendCard.transform, "Body", "", 50);
         fBody.alignment = TextAnchor.UpperLeft; fBody.color = Ink;
         fBody.horizontalOverflow = HorizontalWrapMode.Wrap; fBody.verticalOverflow = VerticalWrapMode.Overflow;
         journal.friendTemplate = friendCard;
@@ -840,7 +928,7 @@ public static class TestSceneBuilder
         var gridGo = new GameObject("StampGrid", typeof(RectTransform), typeof(GridLayoutGroup), typeof(LayoutElement));
         gridGo.transform.SetParent(journalList, false);
         var grid = gridGo.GetComponent<GridLayoutGroup>();
-        grid.cellSize = new Vector2(380, 470);
+        grid.cellSize = new Vector2(380, 520);
         grid.spacing = new Vector2(30, 30);
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         grid.constraintCount = 4;
@@ -857,10 +945,10 @@ public static class TestSceneBuilder
         Stretch((RectTransform)word.transform);
         word.color = Color.white;
         word.fontStyle = FontStyle.Bold;
-        var st = Label(stampT.transform, "Title", new Vector2(0f, 0.26f), new Vector2(1f, 0.44f), 40, TextAnchor.MiddleCenter);
+        var st = Label(stampT.transform, "Title", new Vector2(0f, 0.26f), new Vector2(1f, 0.46f), 44, TextAnchor.MiddleCenter);
         st.fontStyle = FontStyle.Bold;
         st.color = Ink;
-        var sd = Label(stampT.transform, "Detail", new Vector2(0f, 0f), new Vector2(1f, 0.26f), 32, TextAnchor.UpperCenter);
+        var sd = Label(stampT.transform, "Detail", new Vector2(0f, -0.06f), new Vector2(1f, 0.26f), 40, TextAnchor.UpperCenter);
         sd.color = Ink;
         journal.stampTemplate = stampT;
         stampT.SetActive(false);
@@ -882,7 +970,7 @@ public static class TestSceneBuilder
         Stretch(popRt);
         popPanel.GetComponent<Image>().color = new Color(0, 0, 0, 0.25f);
         UnityEventTools.AddPersistentListener(popPanel.GetComponent<Button>().onClick, popup.Dismiss);   // tap anywhere
-        var popCard = Shape(popRt, "Card", new Vector2(0.5f, 0.62f), new Vector2(1500, 560), new Color(1f, 0.97f, 0.9f), uiSprite);
+        var popCard = Shape(popRt, "Card", new Vector2(0.5f, 0.62f), new Vector2(1800, 720), new Color(1f, 0.97f, 0.9f), uiSprite);
         popup.panel = popPanel;
         popup.card = popCard;
         popup.stamp = Shape(popCard, "Stamp", new Vector2(0.18f, 0.5f), new Vector2(300, 300), Color.gray, Knob()).GetComponent<Image>();
@@ -891,10 +979,10 @@ public static class TestSceneBuilder
         Stretch((RectTransform)popup.stampWord.transform);
         popup.stampWord.color = Color.white;
         popup.stampWord.fontStyle = FontStyle.Bold;
-        popup.titleText = Label(popCard, "Title", new Vector2(0.36f, 0.5f), new Vector2(0.96f, 0.92f), 64, TextAnchor.MiddleLeft);
+        popup.titleText = Label(popCard, "Title", new Vector2(0.3f, 0.45f), new Vector2(0.96f, 0.94f), 64, TextAnchor.MiddleLeft);
         popup.titleText.fontStyle = FontStyle.Bold;
         popup.titleText.color = Ink;
-        popup.detailText = Label(popCard, "Detail", new Vector2(0.36f, 0.08f), new Vector2(0.96f, 0.5f), 48, TextAnchor.UpperLeft);
+        popup.detailText = Label(popCard, "Detail", new Vector2(0.3f, 0.06f), new Vector2(0.96f, 0.45f), 54, TextAnchor.UpperLeft);
         popup.detailText.color = Ink;
         popPanel.SetActive(false);
 
@@ -1326,6 +1414,8 @@ public static class TestSceneBuilder
         fill.offsetMin = fill.offsetMax = Vector2.zero;
         track.GetComponent<Image>().raycastTarget = bar.xpFill.raycastTarget = false;
         var week = Shape(panel, "Weekday", new Vector2(weekdayX, y), new Vector2(470, 150), new Color(1, 1, 1, 0.85f), uiSprite);
+        week.GetComponent<Image>().raycastTarget = true;
+        UnityEventTools.AddPersistentListener(week.gameObject.AddComponent<Button>().onClick, bar.OpenCalendar);   // the calendar
         var badge = Shape(week, "Badge", new Vector2(0.16f, 0.5f), new Vector2(130, 130), Color.white, Knob());
         bar.weekdayBadge = badge.GetComponent<Image>();
         bar.weekdaySymbol = Shape(badge, "Symbol", new Vector2(0.5f, 0.5f), new Vector2(92, 92), Color.white, null).GetComponent<Image>();
@@ -1375,7 +1465,7 @@ public static class TestSceneBuilder
         hrt.sizeDelta = new Vector2(0, 120); hrt.anchoredPosition = new Vector2(0, -30);
         heading.alignment = TextAnchor.MiddleCenter;
         heading.color = Ink;
-        bar.noticesText = MakeText(list, "Notices Text", "", 48);
+        bar.noticesText = MakeText(list, "Notices Text", "", 58);
         var nrt = (RectTransform)bar.noticesText.transform;
         nrt.anchorMin = Vector2.zero; nrt.anchorMax = Vector2.one;
         nrt.offsetMin = new Vector2(70, 220); nrt.offsetMax = new Vector2(-70, -170);
@@ -1401,7 +1491,7 @@ public static class TestSceneBuilder
         skillsPanel.GetComponent<Image>().raycastTarget = true;
         skillsPanel.gameObject.AddComponent<ClickBlocker>();
         var skillsList = ScrollList(skillsPanel, 0.1f, 0.97f);
-        bar.skillsText = MakeText(skillsList, "Skills Text", "", 50);
+        bar.skillsText = MakeText(skillsList, "Skills Text", "", 58);
         bar.skillsText.alignment = TextAnchor.UpperLeft;
         bar.skillsText.horizontalOverflow = HorizontalWrapMode.Wrap;
         bar.skillsText.verticalOverflow = VerticalWrapMode.Overflow;
@@ -1489,6 +1579,8 @@ public static class TestSceneBuilder
         return img;
     }
 
+    const int MinFont = 40;   // the smallest text anywhere (owner, 2026-11-02: some text was far too small)
+
     static Text MakeText(Transform parent, string name, string value, int size)
     {
         var go = new GameObject(name, typeof(RectTransform), typeof(Text));
@@ -1496,7 +1588,7 @@ public static class TestSceneBuilder
         var t = go.GetComponent<Text>();
         t.text = value;
         t.font = font;
-        t.fontSize = size;
+        t.fontSize = Mathf.Max(size, MinFont);
         t.alignment = TextAnchor.MiddleCenter;
         t.color = Ink;
         t.raycastTarget = false;
