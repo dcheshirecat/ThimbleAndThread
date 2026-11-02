@@ -18,9 +18,9 @@ public static class PlaceholderGenerator
         string[] dirs = { "Art/Items", "Art/Supplies", "Art/Backgrounds", "Art/Characters/Customers", "Data/Items", "Data/Customers", "Data/Supplies", "Art/Upgrades", "Art/Cosmetics", "Data/Cosmetics" };
         foreach (var d in dirs) Directory.CreateDirectory($"{Root}/{d}");
 
-        MakeSprite($"{Root}/Art/Backgrounds/bg_shop_day.png", 2732, 2048, new Color(0.95f, 0.88f, 0.78f));
-        MakeSprite($"{Root}/Art/Backgrounds/bg_workbench.png", 2732, 2048, new Color(0.80f, 0.66f, 0.50f));
-        MakeSprite($"{Root}/Art/Backgrounds/bg_workroom_night.png", 2732, 2048, new Color(0.22f, 0.24f, 0.40f));
+        MakeSprite($"{Root}/Art/Backgrounds/bg_shop_day.png", 2048, 4440, new Color(0.95f, 0.88f, 0.78f));
+        MakeSprite($"{Root}/Art/Backgrounds/bg_workbench.png", 2048, 4440, new Color(0.80f, 0.66f, 0.50f));
+        MakeSprite($"{Root}/Art/Backgrounds/bg_workroom_night.png", 2048, 4440, new Color(0.22f, 0.24f, 0.40f));
         Symbols();
 
         // ---- Items ----

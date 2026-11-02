@@ -264,10 +264,10 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
   PNG, then view it. Use `timeout` so a hung editor can't block.
 - Move the owner's real save files aside before a test and restore them after.
 
-## Open questions for the owner
-- Replace the three landscape placeholder backgrounds with portrait-sized placeholders? (Ask first:
-  "do not regenerate art files".)
-- Player character customization: player only, or customers too? Separate colour drawings or tints?
+## Owner answers, 2026-11-02
+- The three background placeholders (bg_shop_day, bg_workroom_night, bg_workbench) are now portrait 2048 x 4440 (same
+  names, .meta kept; lines mark the middle 2048 x 2732 safe area). PlaceholderGenerator makes them that size too.
+- Character customization is for the PLAYER ONLY; customers keep their own fixed looks.
 
 ## Status
 Done and on main: project setup, save slots + autosave, order book with resumable work, day/night,
@@ -831,7 +831,7 @@ DONE batch B (deeper new crafts):
   piecing; PressQuiltSeams (QuiltPressStep) before the sandwich.
 - Weaving: the weft is bubbled (swipe across in a hill, >= 0.04 above straight; straight = pulled tight, edges draw in, point y
   + 2); TieOffWarps "Cut it off the loom and tie off the warps" before hanging.
-Still open: art; ci-lowmem; owner's questions above (landscape backgrounds; customer customization).
+Still open: art; ci-lowmem.
 
 ## Owner notes 2026-11-01 (38 notes) and 2026-11-02 additions (branch minigames)
 DONE batch 1-3 (merged): supplies a makeable recipe needs always show (pins, crochet hook); scarf stripes in every colour
@@ -856,7 +856,7 @@ on Fridays); Byte & Bobbin (ScreenId.TechShop, Ravi Sen they/them, level 9, Tech
 friendship) and the order inbox); expansions at Marsh's Workshop (attic level 7, basement level 9; SortThrough once a day ->
 SaveData.secondhand, sold to visitors in WhatTheyWant); DecorSlot CounterLeft, PickupWall, PickupShelf (the pickup corner has
 shelving and its own decor). Dialogue/jasper.ink, ravi.ink (drafts for the owner to edit). Romance options now include Jasper, Ravi.
-Open: art; ci-lowmem; owner's questions (landscape backgrounds; customer customization).
+Open: art; ci-lowmem.
 DONE (owner, 2026-11-02) Decorating by drag and drop: the pencil (Button_EditShop, right side near the bottom of the shop, shown once
 the workshop opens or you own a piece) replaces the Decorate button. UI/DecorEditor.cs: a tray of owned pieces along the bottom; drag one
 up and its spot (Spot_<slot> outlines) glows; dropping near it places it (swaps the old one back); drag a placed piece (UI/DecorPiece.cs on
