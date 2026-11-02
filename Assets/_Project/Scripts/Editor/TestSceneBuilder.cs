@@ -499,7 +499,7 @@ public static class TestSceneBuilder
         p = Panel(ScreenId.Gather, "Gather Supplies", new Color(0.88f, 0.80f, 0.68f));
         var gather = canvasGo.AddComponent<GatherUI>();
         gather.day = day;
-        gather.listText = Label(p, "List", new Vector2(0.06f, 0.63f), new Vector2(0.94f, 0.88f), 52, TextAnchor.UpperLeft);
+        gather.listText = Label(p, "List", new Vector2(0.06f, 0.63f), new Vector2(0.94f, 0.88f), 64, TextAnchor.UpperLeft);
         gather.messageText = Label(p, "Message", new Vector2(0.06f, 0.57f), new Vector2(0.94f, 0.63f), 50, TextAnchor.MiddleCenter);
         var cupboard = ScrollList(p, 0.13f, 0.565f);
         gather.shelf = Shelf(cupboard);
@@ -782,7 +782,7 @@ public static class TestSceneBuilder
         Coins(p);
         var pshop = canvasGo.AddComponent<PatternShopUI>();
         pshop.day = day;
-        pshop.statusText = Label(p, "Status", new Vector2(0.22f, 0.79f), new Vector2(0.96f, 0.92f), 52, TextAnchor.MiddleCenter);
+        pshop.statusText = Label(p, "Status", new Vector2(0.22f, 0.79f), new Vector2(0.76f, 0.92f), 52, TextAnchor.MiddleCenter);
         OwnerPortrait(p, content.Customer(ShopDay.PatternShopOwnerId), pshop.Chat);
         pshop.rowTemplate = Button(ScrollList(p, 0.12f, 0.77f), "PatternShop Template", null, 1840);
         TallRow(pshop.rowTemplate, 280, 48);
@@ -801,7 +801,7 @@ public static class TestSceneBuilder
         Coins(p);
         var boutique = canvasGo.AddComponent<BoutiqueUI>();
         boutique.day = day;
-        boutique.statusText = Label(p, "Status", new Vector2(0.22f, 0.82f), new Vector2(0.96f, 0.92f), 56, TextAnchor.MiddleCenter);
+        boutique.statusText = Label(p, "Status", new Vector2(0.22f, 0.82f), new Vector2(0.76f, 0.92f), 56, TextAnchor.MiddleCenter);
         OwnerPortrait(p, content.Customer(BoutiqueUI.OwnerId), boutique.Chat);
         boutique.preview = Keeper(p, new Vector2(0.5f, 0.64f), content);
         boutique.preview.transform.localScale = Vector3.one * 0.7f;
@@ -1150,6 +1150,7 @@ public static class TestSceneBuilder
         exPanel.SetActive(false);
 
         router.screens = entries.ToArray();
+        BiggerText(canvas.transform);
 
         Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
         EditorSceneManager.SaveScene(scene, ScenePath);
@@ -1725,6 +1726,37 @@ public static class TestSceneBuilder
     }
 
     const int MinFont = 40;   // the smallest text anywhere (owner, 2026-11-02: some text was far too small)
+
+    // Text sizes (owner, 2026-11-02, again: still too small, with plenty of room going spare). The sizes written in this
+    // builder are scaled up by TextScale at the end (BiggerText), so most body text is about 70 (= the 14sp of a phone's
+    // own text on a 1080-wide screen). Every text gets best fit: it's shown at that size, and only shrinks (down to
+    // ShrinkTo) where its box is too small for it. Big headings (90 and up) stay as they are.
+    const float TextScale = 1.3f;
+    const int ShrinkTo = 46, ScaledFloor = 56;
+
+    static int Scaled(int size) => size >= 90 ? size : Mathf.Max(ScaledFloor, Mathf.RoundToInt(size * TextScale));
+
+    static void BiggerText(Transform root)
+    {
+        foreach (var t in root.GetComponentsInChildren<Text>(true))
+        {
+            int was = t.fontSize;
+            t.fontSize = Scaled(t.fontSize);
+            if (t.GetComponentInParent<InputField>(true) != null) continue;   // typing boxes: bigger, but no best fit
+            if (t.horizontalOverflow == HorizontalWrapMode.Overflow) continue;
+            // Text that grows with a list (a layout sets its height) keeps spilling down; boxed text is kept in its box,
+            // never smaller than it was before the bump.
+            bool inList = t.GetComponent<LayoutElement>() != null || (t.transform.parent != null && t.transform.parent.GetComponent<LayoutGroup>() != null);
+            if (t.verticalOverflow == VerticalWrapMode.Overflow)
+            {
+                if (inList) continue;
+                t.verticalOverflow = VerticalWrapMode.Truncate;
+            }
+            t.resizeTextForBestFit = true;
+            t.resizeTextMaxSize = t.fontSize;
+            t.resizeTextMinSize = Mathf.Min(t.fontSize, Mathf.Max(MinFont, Mathf.Min(was, ShrinkTo)));
+        }
+    }
 
     static Text MakeText(Transform parent, string name, string value, int size)
     {

@@ -42,13 +42,13 @@ public partial class ShopDay
         entry.chapters++;
         Progress.AddBonusXp(ChapterXp);
         if (entry.chapters < BookChapters)
-            Stamps.Notice($"You read chapter {entry.chapters} of \"{book.displayName}\".\n<size=52>+{ChapterXp} experience. {BookChapters - entry.chapters} chapters to go.</size>");
+            Stamps.Notice($"You read chapter {entry.chapters} of \"{book.displayName}\".\n<size=68>+{ChapterXp} experience. {BookChapters - entry.chapters} chapters to go.</size>");
         else
         {
             Progress.AddBonusXp(BookXp);
             Stamps.Earn(Save, $"book:{book.supplyId}", $"Read \"{book.displayName}\"", "Cover to cover.", StampTheme.Skill);
             var learned = Progress.CheckUnlocks();
-            Stamps.Notice($"You finished \"{book.displayName}\"!\n<size=52>+{BookXp + ChapterXp} experience" +
+            Stamps.Notice($"You finished \"{book.displayName}\"!\n<size=68>+{BookXp + ChapterXp} experience" +
                           (learned.Count > 0 ? $", and you've learned {string.Join(", ", learned.ConvertAll(s => s.displayName))}." : ".") + "</size>");
         }
         GM.Persist();

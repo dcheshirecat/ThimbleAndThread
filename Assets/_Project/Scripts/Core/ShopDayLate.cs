@@ -104,7 +104,7 @@ public partial class ShopDay
             id = System.Guid.NewGuid().ToString("N"), customerId = OnlineId, itemId = item.itemId, item = item, dayPlaced = Save.day,
             target = DesignFor(p), agreedPrice = offer.price,
         });
-        if (!quiet) Stamps.Notice($"Online order taken: {item.itemName.ToLower()} ({p.name}).\n<size=52>It goes out with Friday's courier.</size>");
+        if (!quiet) Stamps.Notice($"Online order taken: {item.itemName.ToLower()} ({p.name}).\n<size=68>It goes out with Friday's courier.</size>");
         GM.Persist();
     }
 
@@ -125,7 +125,7 @@ public partial class ShopDay
         }
         GM.AddCoins(coins);
         Stamps.Earn(Save, "online:courier", "The first courier", "Your parcels are going all over the country.", StampTheme.Shop);
-        Stamps.Announce($"Friday: the courier came\n<size=52>{parcels.Count} parcel{(parcels.Count == 1 ? "" : "s")} collected: +{coins} coins.</size>");
+        Stamps.Announce($"Friday: the courier came\n<size=68>{parcels.Count} parcel{(parcels.Count == 1 ? "" : "s")} collected: +{coins} coins.</size>");
         GM.Persist();
     }
 
@@ -259,7 +259,7 @@ public partial class ShopDay
             got.Add(f.name);
         }
         PassMinutes(60);
-        Stamps.Notice($"An hour in the {id}.\n<size=52>You found {string.Join(", ", got)}. They're on your second-hand shelf.</size>");
+        Stamps.Notice($"An hour in the {id}.\n<size=68>You found {string.Join(", ", got)}. They're on your second-hand shelf.</size>");
         GM.Persist();
     }
 

@@ -25,7 +25,7 @@ public class CalendarUI : MonoBehaviour
             int d = first + i;
             var who = day.BirthdaysOn(d);
             var sb = new StringBuilder($"<b>{Week.DayOfSeason(d)}</b>");
-            foreach (var c in who) sb.Append($"\n<size=34>{c.displayName.Split(' ')[0]}'s birthday</size>");
+            foreach (var c in who) sb.Append($"\n<size=56>{c.displayName.Split(' ')[0]}'s birthday</size>");
             cells[i].text = sb.ToString();
             bool today = d == save.day, weekend = Week.IsSaturday(d) || Week.IsSunday(d);
             cellBacks[i].color = today ? new Color(1f, 0.85f, 0.45f) : who.Count > 0 ? new Color(0.98f, 0.80f, 0.85f)

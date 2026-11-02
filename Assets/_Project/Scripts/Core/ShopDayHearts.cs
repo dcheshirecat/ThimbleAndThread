@@ -108,7 +108,7 @@ public partial class ShopDay
         if (p == null || IsSaturday || IsSunday) return;
         var chore = Chores[Random.Range(0, Chores.Length)];
         Save.flags.Add($"chore:{chore.id}:{Save.day}");
-        Stamps.Notice($"{p.displayName} was up early: {chore.name.ToLower()}, done.\n<size=52>{chore.done}</size>");
+        Stamps.Notice($"{p.displayName} was up early: {chore.name.ToLower()}, done.\n<size=68>{chore.done}</size>");
     }
 
     // ---- Birthdays ----

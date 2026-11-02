@@ -33,7 +33,7 @@ public partial class ShopDay
         var c = System.Array.Find(Chores, x => x.id == id);
         Save.flags.Add($"chore:{id}:{Save.day}");
         PassMinutes(ChoreMinutes);
-        Stamps.Notice($"{c.done}\n<size=52>Charm +{ChoreCharm} today.</size>");
+        Stamps.Notice($"{c.done}\n<size=68>Charm +{ChoreCharm} today.</size>");
         GM.Persist();
     }
 
@@ -61,7 +61,7 @@ public partial class ShopDay
     {
         int before = Save.clock;
         Save.clock = Mathf.Min(ClosesAt, Mathf.Max(Save.clock, OpensAt) + minutes);
-        if (before < ClosesAt && Save.clock >= ClosesAt) Stamps.Notice("Six o'clock: closing time.\n<size=52>Flip the sign when you're ready.</size>");
+        if (before < ClosesAt && Save.clock >= ClosesAt) Stamps.Notice("Six o'clock: closing time.\n<size=68>Flip the sign when you're ready.</size>");
     }
 
     // ---- The window: the town going by, once an hour ----

@@ -270,7 +270,7 @@ public class OrderFlowUI : MonoBehaviour
             var missing = day.ShortOf(order);
             var row = AddRow(orderTemplate, $"Order_{id}",
                 $"{order.item.itemName}{kind} for {day.NameFor(order.customerId)}  ·  {state}" +
-                (missing.Count > 0 ? $"\n<size=44>Missing: {string.Join(", ", missing)}</size>" : ""),
+                (missing.Count > 0 ? $"\n<size=57>Missing: {string.Join(", ", missing)}</size>" : ""),
                 () => day.SelectOrder(id));
             if (missing.Count > 0) row.GetComponent<Image>().color = new Color(0.85f, 0.85f, 0.85f);   // greyed: not yet
             orderRows.Add(row);

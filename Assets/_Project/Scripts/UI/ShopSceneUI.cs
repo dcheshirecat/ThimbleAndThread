@@ -248,7 +248,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         if (!entry.activeSelf) return;
         bool now = day.ShopOpenNow(shop);
         var label = entry.GetComponentInChildren<Text>();
-        string text = $"{name}\n<size=52>{day.HoursText(shop)}</size>";
+        string text = $"{name}\n<size=68>{day.HoursText(shop)}</size>";
         if (label.text != text) label.text = text;
         entry.GetComponent<Button>().interactable = now;
     }

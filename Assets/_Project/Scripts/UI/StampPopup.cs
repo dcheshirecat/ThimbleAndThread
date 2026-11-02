@@ -91,7 +91,7 @@ public class StampPopup : MonoBehaviour
             stamp.color = Stamps.ColorOf(s.theme);
             stampWord.text = Stamps.Word(s.theme);
             titleText.text = s.title;
-            detailText.text = s.detail + "\n<size=52>Stamped in your journal.</size>";
+            detailText.text = s.detail + "\n<size=68>Stamped in your journal.</size>";
             AudioManager.Play(Sfx.StepDone);
         }
         else

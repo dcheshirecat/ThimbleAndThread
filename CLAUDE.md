@@ -864,3 +864,6 @@ each Decor_<slot>) down to the tray to put it away; pickup-corner pieces switch 
 Customize's Your Shop tab still works too.
 Owner, 2026-11-02: customers come more often: gaps 8-20 game minutes in the busy hours, else 18-40 (ShopDay.Gap); DailyVisits starts at 5.
 Online orders (level 7) and the attic (level 7) / basement (level 9, after the attic) stay locked until then; their buttons only show once open/bought.
+Owner, 2026-11-02 (fonts again): TestSceneBuilder.BiggerText runs over every Text at the end of the build: sizes under 90 x1.3 (at least 56),
+best fit on (shrinks only where the box is too small, never below the old size or 46); boxed labels (Label, TileText) now truncate instead of
+spilling so best fit works; list texts that grow with a layout keep overflowing. Runtime <size=N> tags scaled the same. Shop header text ends at 0.76 (clear of the coins).

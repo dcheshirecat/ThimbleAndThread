@@ -34,7 +34,7 @@ public class TownMapUI : MonoBehaviour
             var people = day.PeopleAt(p.id);
             string who = people.Count == 0 ? "" : string.Join(", ", people.ConvertAll(c => c.displayName.Split(' ')[0] + (day.IsBirthday(c, save.day) ? " (birthday!)" : "")));
             bool shut = p.shop != ScreenId.Title && !day.ShopOpen(p.shop);
-            places[i].GetComponentInChildren<Text>().text = $"<b>{p.name}</b>" + (shut ? "\n<size=36>not open yet</size>" : who.Length > 0 ? $"\n<size=36>{who}</size>" : "");
+            places[i].GetComponentInChildren<Text>().text = $"<b>{p.name}</b>" + (shut ? "\n<size=56>not open yet</size>" : who.Length > 0 ? $"\n<size=56>{who}</size>" : "");
         }
     }
 

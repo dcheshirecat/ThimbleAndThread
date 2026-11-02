@@ -112,7 +112,7 @@ public partial class ShopDay
         {
             Save.deliveries.Remove(d);
             string got = ReceiveOne(d);
-            if (got != null) Stamps.Announce("A delivery came!" + System.Environment.NewLine + $"<size=52>{got}</size>");
+            if (got != null) Stamps.Announce("A delivery came!" + System.Environment.NewLine + $"<size=68>{got}</size>");
         }
     }
 
@@ -157,6 +157,6 @@ public partial class ShopDay
         }
         if (came.Count == 0) return "";
         came.Reverse();
-        return $"A delivery came!\n<size=52>{string.Join(", ", came)}</size>";
+        return $"A delivery came!\n<size=68>{string.Join(", ", came)}</size>";
     }
 }

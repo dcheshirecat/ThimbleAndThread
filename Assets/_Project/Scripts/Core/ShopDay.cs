@@ -149,8 +149,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         clockCarry -= whole;
         Save.clock = Mathf.Min(ClosesAt, Save.clock + whole);
         if (Save.clock == ClosesAt)
-            Stamps.Notice(CustomersWaiting > 0 ? "Six o'clock: closing time.\n<size=52>Anyone who didn't make it will come another day.</size>"
-                                                : "Six o'clock: closing time.\n<size=52>Flip the sign when you're ready.</size>");
+            Stamps.Notice(CustomersWaiting > 0 ? "Six o'clock: closing time.\n<size=68>Anyone who didn't make it will come another day.</size>"
+                                                : "Six o'clock: closing time.\n<size=68>Flip the sign when you're ready.</size>");
     }
 
     /// Whether the player is in one of the town's shops right now.
@@ -689,7 +689,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         {
             var c = who != null && Speaks(who, speaker) ? who : System.Array.Find(content.customers, x => x != null && Speaks(x, speaker));
             if (c != null && !Save.met.Contains(c.customerId)) speaker = "???";
-            else if (c != null && ShowsHearts(c)) speaker = $"{speaker}  <size=34>{HeartScale(c)}</size>";
+            else if (c != null && ShowsHearts(c)) speaker = $"{speaker}  <size=56>{HeartScale(c)}</size>";
         }
         if (previewTexture != null) Destroy(previewTexture);
         previewTexture = preview != null ? PatternPreview.Make(preview) : null;
@@ -946,13 +946,13 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     {
         int tomorrow = Save.day + 1;
         if (Week.IsSaturday(tomorrow))
-            Stamps.Announce("Tomorrow is Saturday\n<size=52>The shop stays closed. Spend the day with a friend, go to the craft circle " +
+            Stamps.Announce("Tomorrow is Saturday\n<size=68>The shop stays closed. Spend the day with a friend, go to the craft circle " +
                             "or the jumble sale, or stay in and craft. Tonight's a good night to finish something.</size>");
         else if (Week.IsSunday(tomorrow))
             Stamps.Announce(StallOpen || CanHaveStall
-                ? $"Tomorrow is Sunday: market day\n<size=52>Your stall on the square, 10 till 4. Ready to sell: {Save.stall.Count} " +
+                ? $"Tomorrow is Sunday: market day\n<size=68>Your stall on the square, 10 till 4. Ready to sell: {Save.stall.Count} " +
                   $"piece{(Save.stall.Count == 1 ? "" : "s")}. Tonight you can still craft something for it (Craft for the Stall).</size>"
-                : "Tomorrow is Sunday\n<size=52>A day of rest: the shop stays closed.</size>");
+                : "Tomorrow is Sunday\n<size=68>A day of rest: the shop stays closed.</size>");
     }
 
     /// For the end-of-day summary: what's coming, so there's something to look forward to. Never how the story
