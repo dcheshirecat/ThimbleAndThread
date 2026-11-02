@@ -874,8 +874,10 @@ birthday); your own shop is a red pin (Go Home). Tapping a pin opens a card (blu
 
 ## Owner list, 2026-11-02 (DONE, branch minigames; save version 32)
 - Docs/ART_LIST.md: every screen to design and every picture to draw (with filenames); ART_SIZES.md has the sRGB rules.
-  The owner made a Google Drive folder "Game Art - Thimble and Thread"; the Drive connector isn't authorized in Claude's
-  sessions yet (claude.ai > Settings > Connectors), so art still comes in by file or Google Drive for desktop.
+  The owner made a Google Drive folder "Game Art - Thimble and Thread" (id 1nzpobfcTdlXUGfO__hjRQx9JhhFc_J0c).
+  Claude CAN read it via the Google Drive connector (checked 2026-11-02). Subfolders: UI, Character Art - Finished,
+  Character Art - Sketches, Guidelines, הוראות ("Instructions"); Finished has Full Body and Talking Heads. No files yet
+  when checked.
 - Journal notes once each: ShopDay.SameFact (80% of the shorter note's words in the longer); the ink note command keeps the
   fuller one; JournalUI hides older duplicates. Mara's two daughter notes now use the same words.
 - Town map access (ShopDayTown): ShopDay.Shut(place) greys pins and explains: homes only for friends whose house you know
