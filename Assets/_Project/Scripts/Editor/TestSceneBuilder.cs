@@ -590,12 +590,11 @@ public static class TestSceneBuilder
         var trade = canvasGo.AddComponent<TradeUI>();
         trade.day = day;
         var tabRow = Row(p, 0.5f, 0.865f);
-        var tabNames = new[] { "Give", "Sell", "Surprise", "Patterns", "Open", "My Codes" };
+        var tabNames = new[] { "Send", "Open a Code", "Surprise" };   // TradeUI.Tab order (owner, 2026-11-02: simpler)
         trade.tabs = new Image[tabNames.Length];
         for (int i = 0; i < tabNames.Length; i++)
         {
-            var tab = Button(tabRow, tabNames[i], null, 305);
-            tab.GetComponentInChildren<Text>().fontSize = 46;
+            var tab = Button(tabRow, tabNames[i], null, 580);
             UnityEventTools.AddIntPersistentListener(tab.onClick, trade.ShowTab, i);
             trade.tabs[i] = tab.GetComponent<Image>();
         }
@@ -603,7 +602,7 @@ public static class TestSceneBuilder
         trade.rowTemplate = Button(ScrollList(p, 0.33f, 0.68f), "Trade Row Template", null, 1840);
         trade.rowTemplate.GetComponentInChildren<Text>().fontSize = 54;
         trade.codeField = CodeField(p, new Vector2(0.5f, 0.235f));
-        var priceRow = Row(p, 0.5f, 0.295f);   // Sell: the asking price
+        var priceRow = Row(p, 0.5f, 0.295f);   // Send: the price (Free = a gift)
         Button(priceRow, "Trade Price Down", trade.PriceDown, 300).GetComponentInChildren<Text>().text = "Price -";
         trade.priceLabel = RowLabel(priceRow, 500);
         trade.priceLabel.color = Ink;

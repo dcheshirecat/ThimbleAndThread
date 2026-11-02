@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// Trade with other players: give supplies, sell them for coins, send some off in a Surprise Trade, share a
-/// pattern, open someone's code, and copy codes made before. Codes are text to copy and send any way the player
+/// Trade with other players, simplified (owner, 2026-11-02): three tabs. Send = fill a parcel (supplies), set a price
+/// (Free = a gift) and make one code; your designs share with a tap; codes you've made are listed below. Open = paste a
+/// code. Surprise = swap a parcel with a stranger. Codes are text to copy and send any way the player
 /// likes (see Core/Trading.cs); six-character ones go through the trading service (Core/TradeServer.cs).
 /// Selling supplies happens here, with other players, not at the market (owner, 2026-10-31).
 public class TradeUI : MonoBehaviour
 {
-    public enum Tab { Give, Sell, Surprise, Patterns, Open, MyCodes }
+    public enum Tab { Send, Open, Surprise }
 
     public ShopDay day;
     public Image[] tabs;                 // tab buttons, in Tab order
@@ -21,12 +22,12 @@ public class TradeUI : MonoBehaviour
     public GameObject priceRow;          // Sell: the asking price, with - and +
     public Text priceLabel;
 
-    Tab tab = Tab.Give;
+    Tab tab = Tab.Send;
     Trading trading;
     readonly List<SupplyStock> parcel = new List<SupplyStock>();
     readonly List<GameObject> rows = new List<GameObject>();
     string message;
-    int price = -1;                      // Sell: -1 until the parcel suggests one
+    int price;                           // 0 = a gift; more = for sale
 
     SaveData Save => GameManager.Instance.Save;
     Trading Trade => trading ??= new Trading(day.content, day.shop, day.Progress);
@@ -45,9 +46,9 @@ public class TradeUI : MonoBehaviour
     {
         if (id != ScreenId.Trade) return;
         parcel.Clear();
-        price = -1;
+        price = 0;
         message = null;
-        ShowTab((int)Tab.Give);
+        ShowTab((int)Tab.Send);
         if (TradeServer.Ready && !busy) StartCoroutine(CollectSales());
     }
 
@@ -57,6 +58,7 @@ public class TradeUI : MonoBehaviour
         message = null;
         codeField.text = "";
         codeField.readOnly = tab != Tab.Open;
+        if (codeField.placeholder is Text hint) hint.text = tab == Tab.Open ? "A friend's code goes here" : "Your code will appear here";
         Show();
     }
 
@@ -67,53 +69,27 @@ public class TradeUI : MonoBehaviour
         foreach (var r in rows) Destroy(r);
         rows.Clear();
         rowTemplate.gameObject.SetActive(false);
-        if (priceRow != null) priceRow.SetActive(tab == Tab.Sell);
+        if (priceRow != null) priceRow.SetActive(tab == Tab.Send);
 
         string info;
         string inParcel = parcel.Count == 0 ? "The parcel is empty." : $"<b>In the parcel:</b> {Trade.Describe(parcel)}";
         switch (tab)
         {
-            case Tab.Give:
-                info = "Tap a supply to put one pack in the parcel, then make a gift code and send it to a friend. "
-                     + "The supplies leave your cupboard when the code is made.\n" + inParcel;
+            case Tab.Send:
+                if (priceLabel != null) priceLabel.text = price > 0 ? $"Price: {price} coins" : "Price: Free (a gift)";
+                info = "Tap supplies to put them in the parcel, choose a price (Free makes it a gift), then Make Code and send "
+                     + "the code to a friend.\n" + inParcel;
+                if (price > 0 && !TradeServer.Ready) info += "\nSelling needs the online trading service: set the price to Free to give it.";
                 Cupboard();
-                SetActions("Make Gift Code", "Empty Parcel");
-                break;
-            case Tab.Sell:
-                if (price < 0) price = Suggested();
-                if (priceLabel != null) priceLabel.text = $"{price} coins";
-                info = "Sell supplies to another player: fill the parcel, set your price and put it up for sale. Send them the code; "
-                     + "they pay when they open it, and the coins come to you next time you open Trade.\n" + inParcel;
-                if (!TradeServer.Ready) info += "\nSelling needs the online trading service.";
-                Cupboard();
-                SetActions("Put Up for Sale", "Empty Parcel");
-                break;
-            case Tab.Surprise:
-                info = "Surprise Trade: send a parcel off to the trading post, and get back whatever another player sent. "
-                     + "You won't know what it is until it arrives!\n" + inParcel
-                     + (Save.surpriseOwed > 0 ? $"\n<b>{Save.surpriseOwed} surprise{(Save.surpriseOwed == 1 ? "" : "s")} still to come:</b> check the trading post." : "");
-                Cupboard();
-                SetActions("Send It Off", Save.surpriseOwed > 0 ? "Check the Post" : "Empty Parcel");
-                break;
-            case Tab.Patterns:
-                info = "Tap one of your own designs to make a code for a copy of it. You keep yours.";
-                foreach (var p in Save.patterns)
+                foreach (var p in Save.patterns)   // your designs: a tap shares a copy (you keep yours)
                 {
                     if (!p.designed || !day.PatternShown(p)) continue;
                     var item = day.ItemFor(p.itemId);
                     var pattern = p;
-                    AddRow($"{p.name}  ·  {(item != null ? item.itemName : p.itemId)}", () => Share(Trade.SharePattern(pattern), "Code made and copied. Send it to a friend!"));
+                    AddRow($"<b>Share your pattern:</b> {p.name}  ·  {(item != null ? item.itemName : p.itemId)}",
+                           () => Share(Trade.SharePattern(pattern), "Pattern code made and copied. Send it to a friend!"));
                 }
-                if (rows.Count == 0) info += "\nYou haven't designed any patterns yet. Design one in the Pattern Studio at night.";
-                SetActions("Copy Code", null);
-                break;
-            case Tab.Open:
-                info = TradeServer.Ready ? "Type or paste the six-letter code someone sent you (or a long code), then open it. Supplies for sale are paid for when you open them."
-                                         : "Paste a code a friend sent you, then open it.";
-                SetActions("Paste", "Open It");
-                break;
-            default:
-                info = "Codes you've made, newest first. Tap one to copy it again.";
+                if (Save.sentCodes.Count > 0) AddRow("<b>Codes you've made</b> (tap one to copy it again)", () => { });
                 foreach (var c in Save.sentCodes)
                 {
                     var code = c.code;
@@ -122,8 +98,19 @@ public class TradeUI : MonoBehaviour
                     AddRow($"Day {c.day}: {c.summary}" + (string.IsNullOrEmpty(shortCode) ? "" : $"  ·  {shortCode}") + status,
                            () => ShowCode(string.IsNullOrEmpty(shortCode) ? code : shortCode, "Copied."));
                 }
-                if (rows.Count == 0) info += "\nNone yet.";
-                SetActions("Copy Code", null);
+                SetActions("Make Code", parcel.Count > 0 ? "Empty Parcel" : null);
+                break;
+            case Tab.Surprise:
+                info = "Surprise Trade: send a parcel off to the trading post, and get back whatever another player sent. "
+                     + "You won't know what it is until it arrives!\n" + inParcel
+                     + (Save.surpriseOwed > 0 ? $"\n<b>{Save.surpriseOwed} surprise{(Save.surpriseOwed == 1 ? "" : "s")} still to come:</b> check the trading post." : "");
+                Cupboard();
+                SetActions("Send It Off", Save.surpriseOwed > 0 ? "Check the Post" : "Empty Parcel");
+                break;
+            default:
+                info = TradeServer.Ready ? "Type or paste the code someone sent you, then open it. Supplies for sale are paid for when you open them."
+                                         : "Paste a code a friend sent you, then open it.";
+                SetActions("Paste", "Open It");
                 break;
         }
         infoText.text = message != null ? $"{message}\n\n{info}" : info;
@@ -152,8 +139,8 @@ public class TradeUI : MonoBehaviour
         return Mathf.Max(1, coins);
     }
 
-    public void PriceUp() { price = Mathf.Min(9999, price + (price >= 50 ? 5 : 1)); Show(); }
-    public void PriceDown() { price = Mathf.Max(1, price - (price > 50 ? 5 : 1)); Show(); }
+    public void PriceUp() { price = price == 0 ? Suggested() : Mathf.Min(9999, price + (price >= 50 ? 5 : 1)); Show(); }
+    public void PriceDown() { price = Mathf.Max(0, price - (price > 50 ? 5 : 1)); Show(); }   // down to 0 = Free
 
     void SetActions(string a, string b)
     {
@@ -187,7 +174,6 @@ public class TradeUI : MonoBehaviour
         if (p == null) parcel.Add(p = new SupplyStock { supplyId = supplyId });
         p.amount += Mathf.Min(Mathf.Max(1, s.perPack), left);
         message = null;
-        if (tab == Tab.Sell) price = Suggested();
         Show();
     }
 
@@ -211,15 +197,15 @@ public class TradeUI : MonoBehaviour
         if (busy) return;
         switch (tab)
         {
-            case Tab.Give:
+            case Tab.Send when price == 0:
             {
                 string code = Trade.MakeSupplyGift(parcel, out string error);
                 if (code == null) { message = error; Show(); return; }
                 parcel.Clear();
-                Share(code, "Gift code made and copied. Send it to a friend! (It's also kept under My Codes.)");
+                Share(code, "Gift code made and copied. Send it to a friend!");
                 break;
             }
-            case Tab.Sell:
+            case Tab.Send:
             {
                 if (!TradeServer.Ready) { message = "Selling needs the online trading service."; Show(); return; }
                 string code = Trade.MakeSupplyGift(parcel, out string error, price);
@@ -231,7 +217,7 @@ public class TradeUI : MonoBehaviour
                 StartCoroutine(TradeServer.Upload(code, (shortCode, err) =>
                 {
                     busy = false;
-                    price = -1;
+                    price = 0;
                     if (shortCode == null) { Trade.TakeBack(code); message = $"{err} Your supplies are back in the cupboard."; Show(); return; }
                     Trade.SetShortCode(code, shortCode);
                     ShowCode(shortCode, $"For sale! The code is {shortCode} (copied): send it to the buyer. You'll get the coins once they open it.");
@@ -247,14 +233,8 @@ public class TradeUI : MonoBehaviour
                 StartCoroutine(SurpriseTrade(code));
                 break;
             }
-            case Tab.Open:
-                codeField.text = GUIUtility.systemCopyBuffer;
-                break;
             default:
-                if (string.IsNullOrEmpty(codeField.text)) { message = "Tap a row first."; Show(); return; }
-                Copy(codeField.text);
-                message = "Copied.";
-                Show();
+                codeField.text = GUIUtility.systemCopyBuffer;
                 break;
         }
     }
@@ -291,10 +271,9 @@ public class TradeUI : MonoBehaviour
         if (busy) return;
         switch (tab)
         {
-            case Tab.Give:
-            case Tab.Sell:
+            case Tab.Send:
                 parcel.Clear();
-                price = -1;
+                price = 0;
                 message = null;
                 Show();
                 break;
