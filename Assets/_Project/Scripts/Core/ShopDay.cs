@@ -502,6 +502,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     void TheirIdea(CustomerDef c)
     {
         var commission = CommissionFor(c);
+        if (MaybeBulkOrder(c)) return;   // a business job (ShopDayBulk)
         if (commission != null && Random.value < CommissionChance)
         {
             Offer = NewCommission(commission);
@@ -2052,6 +2053,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
                 if (LastAccuracy * 100f >= pct - 0.01f && (pct == 100 ? LastAccuracy >= 0.9999f : true))
                     Stamps.Earn(Save, $"score:{pid}:{pct}", $"{word}: {pname}", pct == 100 ? "100%, not a stitch out of place." : $"Over {pct}%.", StampTheme.Craft, craft: Selected.item.craft.ToString());
         }
+        if (NextCopy(Selected, LastAccuracy)) { Selected = null; GM.ChangeScreen(ScreenId.OrderBook); return; }   // more copies to make
+        if (Selected.copies > 1) LastAccuracy = Selected.copyScores / Selected.copies;   // the batch's quality: the average
         Selected.finished = true;
         Selected.accuracy = LastAccuracy;
         foreach (var id in new List<string>(Selected.extras))   // the special touches go on now
@@ -2104,8 +2107,10 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         string name = customer != null ? customer.displayName : Selected.customerId;
         int level = GM.GetRelationship(Selected.customerId).level;
         int price = PricingCalculator.Compute(Selected.item, Selected.accuracy, TierOf(Selected), level, Selected.patternOnly);
+        if (Selected.copies > 1) price = Mathf.RoundToInt(price * Selected.copies * BulkDiscount);   // a bulk order: per copy, a little off
         price += Mathf.RoundToInt(price * Charm / 100f);   // a charming shop (furniture and decorations)
         int points = PricingCalculator.RelationshipReward(Selected.accuracy);
+        if (Selected.copies > 1) points += 4 * Selected.copies;
         if (Selected.fit == 2) points = Mathf.RoundToInt(points * 1.5f);   // exactly what they hoped for
         var commission = CommissionOf(Selected);
         if (commission != null)

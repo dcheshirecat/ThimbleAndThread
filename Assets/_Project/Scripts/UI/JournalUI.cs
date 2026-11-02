@@ -157,7 +157,7 @@ public class JournalUI : MonoBehaviour
         {
             var customer = day.CustomerFor(order.customerId);
             string kind = order.patternOnly ? " (pattern)" : !string.IsNullOrEmpty(order.commissionId) ? " (commission)" : "";
-            string state = order.finished ? "ready for pickup" : $"{Mathf.RoundToInt(order.Progress() * 100)}% done";
+            string state = (order.finished ? "ready for pickup" : $"{Mathf.RoundToInt(order.Progress() * 100)}% done") + ShopDay.CopiesText(order);
             if (!order.finished && day.ShortOf(order).Count > 0) state += ", missing supplies";
             string id = order.id;
             var row = Instantiate(rowTemplate, rowTemplate.transform.parent);

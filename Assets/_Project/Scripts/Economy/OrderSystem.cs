@@ -37,6 +37,9 @@ public class Order
 
     /// How it's made. A pattern-only order is just the design step.
     public int agreedPrice;           // online orders: what the buyer agreed to pay
+    public int copies;                // bulk orders: how many to make (0 or 1 = one)
+    public int copiesDone;            // bulk orders: copies finished so far
+    public float copyScores;          // bulk orders: the finished copies' scores added up (the average is the order's quality)
     public int knitStyle = 1;         // 0: started before stripes cycled through every colour (save version 26); 1: now
     public bool legacyKnit;           // started before garments (save version 13): knitted as one square, on the old recipe
     public RecipeStep[] Steps => item == null || patternOnly ? DesignOnly : legacyKnit ? LegacyKnitSteps(item) : item.Steps;
@@ -64,6 +67,19 @@ public class Order
     /// Recipes grow in updates (new steps in the middle). An order remembers the steps it had; when the item's
     /// recipe has changed, its saved progress moves to the matching steps, and new steps before the one being
     /// worked on count as done (scored like the steps already done), so nobody is sent back.
+    /// Bulk orders: clear the work for the next copy (its materials are taken when it starts, like the first).
+    public void ResetForNextCopy()
+    {
+        step = 0;
+        steps.Clear();
+        work.Clear();
+        backgroundWork.Clear();
+        carried.Clear();
+        materialsUsed = false;
+        gathered = false;
+        finished = false;
+    }
+
     public void KeepUpWithRecipe()
     {
         var now = Steps;

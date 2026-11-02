@@ -268,7 +268,7 @@ public class OrderFlowUI : MonoBehaviour
         {
             var customer = day.CustomerFor(order.customerId);
             string kind = order.patternOnly ? " (pattern)" : !string.IsNullOrEmpty(order.commissionId) ? " (commission)" : "";
-            string state = order.finished ? "Ready to hand over" : $"{Mathf.RoundToInt(order.Progress() * 100)}%";
+            string state = (order.finished ? "Ready to hand over" : $"{Mathf.RoundToInt(order.Progress() * 100)}%") + ShopDay.CopiesText(order);
             string id = order.id;
             var missing = day.ShortOf(order);
             var row = AddRow(orderTemplate, $"Order_{id}",
