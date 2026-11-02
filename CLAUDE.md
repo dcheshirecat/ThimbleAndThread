@@ -268,6 +268,11 @@ pattern), Juno (teen, wants knitwear that doesn't look grandma-made).
 - The three background placeholders (bg_shop_day, bg_workroom_night, bg_workbench) are now portrait 2048 x 4440 (same
   names, .meta kept; lines mark the middle 2048 x 2732 safe area). PlaceholderGenerator makes them that size too.
 - Character customization is for the PLAYER ONLY; customers keep their own fixed looks.
+- Hand-lettered buttons (owner: every button has its own handwritten label): UI/ButtonArt.cs on every builder Button()
+  looks up Art/UI/Buttons/btn_<words>.png (+ _pressed, optional _disabled) by the label's CURRENT text (ButtonArt.Key:
+  lowercase, underscores, & = and, + = plus, lone - = minus), via ContentLibrary.buttonArt (ContentLibraryRefresher fills
+  it and imports that folder as sprites). Found: sprite swap, preserveAspect, typed label hidden; else the plain button.
+  Changing words (names, prices) stay typed. The list of 136 is in Docs/ART_LIST.md 1b+ (320 px tall).
 
 ## Status
 Done and on main: project setup, save slots + autosave, order book with resumable work, day/night,

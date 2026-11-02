@@ -68,7 +68,7 @@ width all round. Tell Claude the border width (e.g. "48 px").
 | [ ] | `ui_panel_popup.png` | Pop-up card (explainers, Goal reached, notices) (9-slice) | 512 x 512 |
 | [ ] | `ui_panel_dialogue.png` | Dialogue box (9-slice) | 512 x 512 |
 | [ ] | `ui_nameplate.png` | Nameplate on the dialogue box (9-slice) | 512 x 160 |
-| [ ] | `ui_button_normal.png` | Button (9-slice) | 512 x 192 |
+| [ ] | `ui_button_normal.png` | Button (9-slice), for buttons whose words change (names, prices); the rest get their own drawing, see 1b+ | 512 x 192 |
 | [ ] | `ui_button_pressed.png` | Button, pressed | 512 x 192 |
 | [ ] | `ui_button_disabled.png` | Button, greyed out | 512 x 192 |
 | [ ] | `ui_button_round.png` | Small round button (pencil, map pins, close) | 256 x 256 |
@@ -87,6 +87,188 @@ width all round. Tell Claude the border width (e.g. "48 px").
 
 Fonts: send the `.ttf` / `.otf` files as they are (e.g. `font_headings.ttf`, `font_body.ttf`); check the licence allows a
 game you sell.
+
+### 1b+. Hand-lettered buttons (folder `Art/UI/Buttons/`)
+Every button can have its own hand-lettered drawing. The file name comes from the words on the button: `btn_` +
+the words in lowercase, joined with underscores, punctuation left out (`&` = `and`, `+` = `plus`, a lone `-` = `minus`).
+Each one needs two files, an optional third:
+- `btn_<words>.png`: how it normally looks
+- `btn_<words>_pressed.png`: while a finger is on it (same size and position, so it doesn't jump)
+- `btn_<words>_disabled.png` (optional): greyed out. Without it the normal one is shown faded.
+
+Size: **320 px tall**, as wide as the words need (about 600 to 1600 px), transparent around the button. The drawing
+is fitted inside the button's space without stretching. A button with the same words uses the same files
+everywhere (one `btn_done` covers every Done). Until a drawing exists the button keeps the plain one with typed words,
+so they can be drawn a few at a time. Buttons whose words change with the game (people's names, prices, counts,
+item names) stay typed. Any other button you spot: same rule, or ask Claude for its name.
+
+**Title, saves and settings**
+| | Words on the button | Files |
+|---|---|---|
+| [ ] | Play | `btn_play.png`, `btn_play_pressed.png` |
+| [ ] | How to Play | `btn_how_to_play.png`, `btn_how_to_play_pressed.png` |
+| [ ] | New Game | `btn_new_game.png`, `btn_new_game_pressed.png` |
+| [ ] | Continue | `btn_continue.png`, `btn_continue_pressed.png` |
+| [ ] | Delete | `btn_delete.png`, `btn_delete_pressed.png` |
+| [ ] | Cancel | `btn_cancel.png`, `btn_cancel_pressed.png` |
+| [ ] | Resume | `btn_resume.png`, `btn_resume_pressed.png` |
+| [ ] | Main Menu | `btn_main_menu.png`, `btn_main_menu_pressed.png` |
+| [ ] | Save and Quit to Title | `btn_save_and_quit_to_title.png`, `btn_save_and_quit_to_title_pressed.png` |
+| [ ] | Vibration: On | `btn_vibration_on.png`, `btn_vibration_on_pressed.png` |
+| [ ] | Vibration: Off | `btn_vibration_off.png`, `btn_vibration_off_pressed.png` |
+| [ ] | Skip | `btn_skip.png`, `btn_skip_pressed.png` |
+| [ ] | Next | `btn_next.png`, `btn_next_pressed.png` |
+| [ ] | Got it | `btn_got_it.png`, `btn_got_it_pressed.png` |
+| [ ] | OK | `btn_ok.png`, `btn_ok_pressed.png` |
+| [ ] | Back | `btn_back.png`, `btn_back_pressed.png` |
+| [ ] | Close | `btn_close.png`, `btn_close_pressed.png` |
+| [ ] | Done | `btn_done.png`, `btn_done_pressed.png` |
+
+**The shop by day**
+| | Words on the button | Files |
+|---|---|---|
+| [ ] | OPEN | `btn_open.png`, `btn_open_pressed.png` |
+| [ ] | < Pickups | `btn_pickups.png`, `btn_pickups_pressed.png` |
+| [ ] | Display > | `btn_display.png`, `btn_display_pressed.png` |
+| [ ] | Journal | `btn_journal.png`, `btn_journal_pressed.png` |
+| [ ] | Shops | `btn_shops.png`, `btn_shops_pressed.png` |
+| [ ] | Close the Shop | `btn_close_the_shop.png`, `btn_close_the_shop_pressed.png` |
+| [ ] | Stay Open | `btn_stay_open.png`, `btn_stay_open_pressed.png` |
+| [ ] | Hand Over | `btn_hand_over.png`, `btn_hand_over_pressed.png` |
+| [ ] | Not quite yet | `btn_not_quite_yet.png`, `btn_not_quite_yet_pressed.png` |
+| [ ] | Price + | `btn_price_plus.png`, `btn_price_plus_pressed.png` |
+| [ ] | Price - | `btn_price_minus.png`, `btn_price_minus_pressed.png` |
+| [ ] | Put It Back | `btn_put_it_back.png`, `btn_put_it_back_pressed.png` |
+| [ ] | Read | `btn_read.png`, `btn_read_pressed.png` |
+| [ ] | Online Orders | `btn_online_orders.png`, `btn_online_orders_pressed.png` |
+
+**Visitors and dialogue**
+| | Words on the button | Files |
+|---|---|---|
+| [ ] | See what they're after | `btn_see_what_theyre_after.png`, `btn_see_what_theyre_after_pressed.png` |
+| [ ] | Suggest a pattern on display | `btn_suggest_a_pattern_on_display.png`, `btn_suggest_a_pattern_on_display_pressed.png` |
+| [ ] | Offer to make something special | `btn_offer_to_make_something_special.png`, `btn_offer_to_make_something_special_pressed.png` |
+| [ ] | Take the Order | `btn_take_the_order.png`, `btn_take_the_order_pressed.png` |
+| [ ] | Take the Commission | `btn_take_the_commission.png`, `btn_take_the_commission_pressed.png` |
+| [ ] | Not Today | `btn_not_today.png`, `btn_not_today_pressed.png` |
+| [ ] | Never mind | `btn_never_mind.png`, `btn_never_mind_pressed.png` |
+| [ ] | Goodbye! | `btn_goodbye.png`, `btn_goodbye_pressed.png` |
+| [ ] | Stop for a chat | `btn_stop_for_a_chat.png`, `btn_stop_for_a_chat_pressed.png` |
+| [ ] | Chat a while first | `btn_chat_a_while_first.png`, `btn_chat_a_while_first_pressed.png` |
+| [ ] | Say goodbye | `btn_say_goodbye.png`, `btn_say_goodbye_pressed.png` |
+| [ ] | Give them a present | `btn_give_them_a_present.png`, `btn_give_them_a_present_pressed.png` |
+| [ ] | Wish them a happy birthday | `btn_wish_them_a_happy_birthday.png`, `btn_wish_them_a_happy_birthday_pressed.png` |
+
+**Shops**
+| | Words on the button | Files |
+|---|---|---|
+| [ ] | Supply Market | `btn_supply_market.png`, `btn_supply_market_pressed.png` |
+| [ ] | The Boutique | `btn_the_boutique.png`, `btn_the_boutique_pressed.png` |
+| [ ] | The Pattern Shop | `btn_the_pattern_shop.png`, `btn_the_pattern_shop_pressed.png` |
+| [ ] | The Workshop | `btn_the_workshop.png`, `btn_the_workshop_pressed.png` |
+| [ ] | The Curiosity Shop | `btn_the_curiosity_shop.png`, `btn_the_curiosity_shop_pressed.png` |
+| [ ] | The Repair Shop | `btn_the_repair_shop.png`, `btn_the_repair_shop_pressed.png` |
+| [ ] | Chat | `btn_chat.png`, `btn_chat_pressed.png` |
+| [ ] | Buy It | `btn_buy_it.png`, `btn_buy_it_pressed.png` |
+| [ ] | Special Order | `btn_special_order.png`, `btn_special_order_pressed.png` |
+| [ ] | Shopping List | `btn_shopping_list.png`, `btn_shopping_list_pressed.png` |
+| [ ] | Magazines & Copies | `btn_magazines_and_copies.png`, `btn_magazines_and_copies_pressed.png` |
+| [ ] | Back to the Shelf | `btn_back_to_the_shelf.png`, `btn_back_to_the_shelf_pressed.png` |
+| [ ] | Back to the Shelves | `btn_back_to_the_shelves.png`, `btn_back_to_the_shelves_pressed.png` |
+| [ ] | Attic | `btn_attic.png`, `btn_attic_pressed.png` |
+| [ ] | Basement | `btn_basement.png`, `btn_basement_pressed.png` |
+| [ ] | Your Look | `btn_your_look.png`, `btn_your_look_pressed.png` |
+| [ ] | Your Shop | `btn_your_shop.png`, `btn_your_shop_pressed.png` |
+| [ ] | Makes | `btn_makes.png`, `btn_makes_pressed.png` |
+| [ ] | she/her | `btn_she_her.png`, `btn_she_her_pressed.png` |
+| [ ] | he/him | `btn_he_him.png`, `btn_he_him_pressed.png` |
+| [ ] | they/them | `btn_they_them.png`, `btn_they_them_pressed.png` |
+
+**Journal and trading**
+| | Words on the button | Files |
+|---|---|---|
+| [ ] | Orders | `btn_orders.png`, `btn_orders_pressed.png` |
+| [ ] | Story | `btn_story.png`, `btn_story_pressed.png` |
+| [ ] | Friends | `btn_friends.png`, `btn_friends_pressed.png` |
+| [ ] | Goals | `btn_goals.png`, `btn_goals_pressed.png` |
+| [ ] | Stamps | `btn_stamps.png`, `btn_stamps_pressed.png` |
+| [ ] | Supplies | `btn_supplies.png`, `btn_supplies_pressed.png` |
+| [ ] | Skills | `btn_skills.png`, `btn_skills_pressed.png` |
+| [ ] | See Goals | `btn_see_goals.png`, `btn_see_goals_pressed.png` |
+| [ ] | Trade | `btn_trade.png`, `btn_trade_pressed.png` |
+| [ ] | Give | `btn_give.png`, `btn_give_pressed.png` |
+| [ ] | Sell | `btn_sell.png`, `btn_sell_pressed.png` |
+| [ ] | Surprise | `btn_surprise.png`, `btn_surprise_pressed.png` |
+| [ ] | Patterns | `btn_patterns.png`, `btn_patterns_pressed.png` |
+| [ ] | My Codes | `btn_my_codes.png`, `btn_my_codes_pressed.png` |
+| [ ] | Copy Code | `btn_copy_code.png`, `btn_copy_code_pressed.png` |
+| [ ] | Send It Off | `btn_send_it_off.png`, `btn_send_it_off_pressed.png` |
+
+**The workroom and crafting**
+| | Words on the button | Files |
+|---|---|---|
+| [ ] | Order Book | `btn_order_book.png`, `btn_order_book_pressed.png` |
+| [ ] | Pattern Studio | `btn_pattern_studio.png`, `btn_pattern_studio_pressed.png` |
+| [ ] | Craft for the Stall | `btn_craft_for_the_stall.png`, `btn_craft_for_the_stall_pressed.png` |
+| [ ] | Go to Bed | `btn_go_to_bed.png`, `btn_go_to_bed_pressed.png` |
+| [ ] | Go to the Workroom | `btn_go_to_the_workroom.png`, `btn_go_to_the_workroom_pressed.png` |
+| [ ] | Start Crafting | `btn_start_crafting.png`, `btn_start_crafting_pressed.png` |
+| [ ] | Keep Working | `btn_keep_working.png`, `btn_keep_working_pressed.png` |
+| [ ] | Done for Now | `btn_done_for_now.png`, `btn_done_for_now_pressed.png` |
+| [ ] | Finish | `btn_finish.png`, `btn_finish_pressed.png` |
+| [ ] | Finish Anyway | `btn_finish_anyway.png`, `btn_finish_anyway_pressed.png` |
+| [ ] | Fix It | `btn_fix_it.png`, `btn_fix_it_pressed.png` |
+| [ ] | Set Aside | `btn_set_aside.png`, `btn_set_aside_pressed.png` |
+| [ ] | Undo | `btn_undo.png`, `btn_undo_pressed.png` |
+| [ ] | Stitch Picker | `btn_stitch_picker.png`, `btn_stitch_picker_pressed.png` |
+| [ ] | Zoom In | `btn_zoom_in.png`, `btn_zoom_in_pressed.png` |
+| [ ] | Zoom Out | `btn_zoom_out.png`, `btn_zoom_out_pressed.png` |
+| [ ] | Turn | `btn_turn.png`, `btn_turn_pressed.png` |
+| [ ] | Reset View | `btn_reset_view.png`, `btn_reset_view_pressed.png` |
+
+**Pattern Studio**
+| | Words on the button | Files |
+|---|---|---|
+| [ ] | New Pattern | `btn_new_pattern.png`, `btn_new_pattern_pressed.png` |
+| [ ] | New Colourway | `btn_new_colourway.png`, `btn_new_colourway_pressed.png` |
+| [ ] | Edit Design | `btn_edit_design.png`, `btn_edit_design_pressed.png` |
+| [ ] | Keep Designing | `btn_keep_designing.png`, `btn_keep_designing_pressed.png` |
+| [ ] | Back to Studio | `btn_back_to_studio.png`, `btn_back_to_studio_pressed.png` |
+| [ ] | Back to Order Book | `btn_back_to_order_book.png`, `btn_back_to_order_book_pressed.png` |
+| [ ] | Save to Book | `btn_save_to_book.png`, `btn_save_to_book_pressed.png` |
+| [ ] | Make One for Me | `btn_make_one_for_me.png`, `btn_make_one_for_me_pressed.png` |
+| [ ] | Make One for the Stall | `btn_make_one_for_the_stall.png`, `btn_make_one_for_the_stall_pressed.png` |
+| [ ] | Cloth | `btn_cloth.png`, `btn_cloth_pressed.png` |
+| [ ] | Size | `btn_size.png`, `btn_size_pressed.png` |
+| [ ] | Shelf | `btn_shelf.png`, `btn_shelf_pressed.png` |
+| [ ] | Clear | `btn_clear.png`, `btn_clear_pressed.png` |
+| [ ] | Stitch: Full | `btn_stitch_full.png`, `btn_stitch_full_pressed.png` |
+| [ ] | Stitch: Half | `btn_stitch_half.png`, `btn_stitch_half_pressed.png` |
+| [ ] | Stitch: 3/4 | `btn_stitch_3_4.png`, `btn_stitch_3_4_pressed.png` |
+| [ ] | Price Up | `btn_price_up.png`, `btn_price_up_pressed.png` |
+| [ ] | Price Down | `btn_price_down.png`, `btn_price_down_pressed.png` |
+| [ ] | + | `btn_plus.png`, `btn_plus_pressed.png` |
+| [ ] | - | `btn_minus.png`, `btn_minus_pressed.png` |
+
+**Weekends and the town map**
+| | Words on the button | Files |
+|---|---|---|
+| [ ] | Arrange the Stall | `btn_arrange_the_stall.png`, `btn_arrange_the_stall_pressed.png` |
+| [ ] | Ask for More | `btn_ask_for_more.png`, `btn_ask_for_more_pressed.png` |
+| [ ] | Keep It | `btn_keep_it.png`, `btn_keep_it_pressed.png` |
+| [ ] | Pack Up the Stall | `btn_pack_up_the_stall.png`, `btn_pack_up_the_stall_pressed.png` |
+| [ ] | Go There | `btn_go_there.png`, `btn_go_there_pressed.png` |
+| [ ] | Go inside | `btn_go_inside.png`, `btn_go_inside_pressed.png` |
+| [ ] | Go Home | `btn_go_home.png`, `btn_go_home_pressed.png` |
+| [ ] | Back to the map | `btn_back_to_the_map.png`, `btn_back_to_the_map_pressed.png` |
+| [ ] | Head home | `btn_head_home.png`, `btn_head_home_pressed.png` |
+| [ ] | Have a look around | `btn_have_a_look_around.png`, `btn_have_a_look_around_pressed.png` |
+| [ ] | Stay in and craft | `btn_stay_in_and_craft.png`, `btn_stay_in_and_craft_pressed.png` |
+| [ ] | Spend the day together | `btn_spend_the_day_together.png`, `btn_spend_the_day_together_pressed.png` |
+| [ ] | Ask them out for the day | `btn_ask_them_out_for_the_day.png`, `btn_ask_them_out_for_the_day_pressed.png` |
+| [ ] | Stop for a cup of tea | `btn_stop_for_a_cup_of_tea.png`, `btn_stop_for_a_cup_of_tea_pressed.png` |
+| [ ] | Wander round the market | `btn_wander_round_the_market.png`, `btn_wander_round_the_market_pressed.png` |
+| [ ] | Just enjoy the rummage | `btn_just_enjoy_the_rummage.png`, `btn_just_enjoy_the_rummage_pressed.png` |
 
 ### 1c. Top bar and shop furniture UI (folder `Art/UI/`)
 | | File name | What | Size (px) |
@@ -970,6 +1152,7 @@ Shop furniture (folder `Art/Shop/`, new, transparent):
 |---|---|
 | UI mock-ups | 38 |
 | UI pieces, icons, pins, stamps, logo | about 90 |
+| Hand-lettered buttons | 136 buttons x 2 (normal + pressed) |
 | Animations | 7 short flipbooks |
 | Backgrounds | 18 (+15 optional) |
 | Characters | 150 (+ 4 fair regulars, 8 strangers) |

@@ -11,17 +11,30 @@ public class ContentLibraryRefresher : AssetPostprocessor
     public const string LibraryPath = "Assets/_Project/Data/ContentLibrary.asset";
     const string DataRoot = "Assets/_Project/Data";
     const string DialogueRoot = "Assets/_Project/Dialogue";
+    public const string ButtonArtRoot = "Assets/_Project/Art/UI/Buttons";
 
     static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
     {
         foreach (var list in new[] { imported, deleted, moved, movedFrom })
             foreach (var path in list)
                 if (path.StartsWith(DataRoot) && path.EndsWith(".asset") && path != LibraryPath
-                    || path.StartsWith(DialogueRoot) && path.EndsWith(".ink"))
+                    || path.StartsWith(DialogueRoot) && path.EndsWith(".ink")
+                    || path.StartsWith(ButtonArtRoot) && path.EndsWith(".png"))
                 {
                     EditorApplication.delayCall += () => Refresh();   // after the import finishes
                     return;
                 }
+    }
+
+    // Hand-lettered buttons: import every PNG in Art/UI/Buttons as a crisp sprite.
+    void OnPreprocessTexture()
+    {
+        if (!assetPath.StartsWith(ButtonArtRoot)) return;
+        var imp = (TextureImporter)assetImporter;
+        imp.textureType = TextureImporterType.Sprite;
+        imp.spriteImportMode = SpriteImportMode.Single;
+        imp.mipmapEnabled = false;
+        imp.alphaIsTransparency = true;
     }
 
     [MenuItem("Tools/Thimble & Thread/Refresh Content Library")]
@@ -45,6 +58,7 @@ public class ContentLibraryRefresher : AssetPostprocessor
         lib.upgrades = Find<UpgradeDef>();
         lib.quests = Find<QuestDef>();
         lib.dialogue = Find<TextAsset>(DialogueRoot);
+        lib.buttonArt = Find<Sprite>(ButtonArtRoot);
         var tutorials = Find<TutorialDef>();
         lib.tutorial = tutorials.Length > 0 ? tutorials[0] : null;
         EditorUtility.SetDirty(lib);

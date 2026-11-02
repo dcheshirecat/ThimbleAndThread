@@ -18,6 +18,7 @@ public class ContentLibrary : ScriptableObject
     public DecorDef[] decor = new DecorDef[0];
     public QuestDef[] quests = new QuestDef[0];
     public TextAsset[] dialogue = new TextAsset[0];   // the .ink files in Assets/_Project/Dialogue
+    public Sprite[] buttonArt = new Sprite[0];         // hand-lettered buttons in Art/UI/Buttons (UI/ButtonArt.cs)
 
     InkLite ink;
     /// All the dialogue, read once.

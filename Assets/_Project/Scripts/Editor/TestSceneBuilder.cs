@@ -28,6 +28,7 @@ public static class TestSceneBuilder
 
     static Font font;
     static Sprite uiSprite;
+    static ContentLibrary library;   // for ButtonArt (hand-lettered buttons)
 
     [MenuItem("Tools/Thimble & Thread/Build Test Scene")]
     public static void Build()
@@ -74,6 +75,7 @@ public static class TestSceneBuilder
 
         // ---- Game systems ----
         var content = ContentLibraryRefresher.Refresh();
+        library = content;
         var shop = new GameObject("ShopManager").AddComponent<ShopManager>();
         shop.content = content;
 
@@ -1420,6 +1422,7 @@ public static class TestSceneBuilder
         Stretch((RectTransform)text.transform);
 
         go.AddComponent<ButtonSound>();
+        go.AddComponent<ButtonArt>().content = library;
         var button = go.GetComponent<Button>();
         if (onClick != null) UnityEventTools.AddPersistentListener(button.onClick, onClick);
         return button;
