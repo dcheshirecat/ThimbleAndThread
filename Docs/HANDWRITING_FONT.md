@@ -11,12 +11,13 @@ Three sheets, 115 characters in all. Each box says what goes in it.
 3. `* [ ] \ _ ~ |`, curly quotes ‘ ’ “ ”, ellipsis …, middle dot ·, times ×, heart, filled and empty dots, star,
    flower, tick, four arrows, and seven little drawings: coin, needle, spool, button, thimble, yarn, scissors.
 
-The templates are `Tools/HandwritingFont/handwriting_template_1.png`, `_2.png` and `_3.png` (on GitHub in that
-folder, or ask Claude to send them).
+The templates: **`handwriting_templates.pdf` in the Drive folder's `Guidelines`** (one page per sheet), or the PNGs
+`Tools/HandwritingFont/handwriting_template_1.png`, `_2.png` and `_3.png` on GitHub.
 
 ## In Procreate
-1. **New canvas 2048 x 2732 px, sRGB.** (Or import the template as a new canvas: it's already that size.)
-2. **Insert the template** as the bottom layer (Actions > Add > Insert a photo) and lock it. Don't move or resize it.
+1. **New canvas 2048 x 2732 px, sRGB.**
+2. **Insert the template** as the bottom layer (Actions > Add > Insert a file and pick the PDF's page, or Insert a
+   photo for a PNG), make it fill the canvas exactly, and lock it. Don't move or resize it after that.
 3. **Add a new layer above it** and write in that layer. Use the brush you want the game's text to look like.
    - Sit every letter on the **red** line.
    - Small letters (a, c, e, m, n, o...) reach the **blue** line.
