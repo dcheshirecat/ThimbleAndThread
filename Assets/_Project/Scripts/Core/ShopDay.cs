@@ -294,6 +294,16 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         return list;
     }
 
+    /// Every special touch that would suit this order's item, owned or not.
+    public List<SupplyDef> TouchesFor(Order o)
+    {
+        var list = new List<SupplyDef>();
+        if (o == null || o.patternOnly || o.item == null) return list;
+        foreach (var s in content.supplies)
+            if (s != null && s.decorates != null && System.Array.IndexOf(s.decorates, o.item) >= 0 && s.market != MarketSlot.NotSold) list.Add(s);
+        return list;
+    }
+
     /// Adds or removes a special touch (used from the cupboard when the piece is set aside).
     public void ToggleExtra(string supplyId)
     {
@@ -1227,9 +1237,10 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     /// The designer is swapping a pattern's colours (a new colourway): a tap recolours every square of that colour.
     public bool Recolouring { get; private set; }
 
-    /// Your own designs any time (owner, 2026-11-02); other patterns once you've made them MadeForColourway times.
-    public bool CanMakeColourway(OwnedPattern p) => p != null && (p.designed || p.made >= MadeForColourway) && Save.patterns.Contains(p)
-        && Progress.CanDesign(ItemFor(p.itemId));
+    /// Any pattern in your book, pre-made ones too, can be made in other colours as well as the original (owner,
+    /// 2026-11-02): once you know Pattern Design and can make the item. The colourway is a new entry; the original stays.
+    public bool CanMakeColourway(OwnedPattern p) => p != null && Save.patterns.Contains(p) && !IsMystery(p)
+        && Progress.Knows(PatternDesignSkill) && Progress.CanMake(ItemFor(p.itemId));
 
     /// A copy of a pattern made ten times, to make in other colours (owner, 2026-11-01). It goes in the book as your own
     /// once saved.
@@ -2018,7 +2029,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             {
                 owned.made++;
                 if (owned.made == MadeForColourway)
-                    Stamps.Earn(Save, $"colourway:{owned.id}", $"New colourways: {owned.name}", $"Made {MadeForColourway} times: you can make it in other colours now (Pattern Studio).", StampTheme.Craft, craft: Selected.item.craft.ToString());
+                    Stamps.Earn(Save, $"colourway:{owned.id}", $"{owned.name}, ten times over", $"Made {MadeForColourway} times.", StampTheme.Craft, craft: Selected.item.craft.ToString());
             }
             // Fine work (owner, 2026-11-01): stamps for over 80%, over 90% and a perfect 100% on each pattern
             string pname = Selected.target != null ? Selected.target.displayName : Selected.item.itemName;

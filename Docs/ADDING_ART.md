@@ -17,6 +17,9 @@ assets (yarns, customers...) are in [ADDING_CONTENT.md](ADDING_CONTENT.md).
 
 ## Getting files onto the PC and into the repo
 
+The easy way: put the PNG in the Google Drive folder "Game Art - Thimble and Thread" and tell Claude (see
+[ART_SWAP.md](ART_SWAP.md); file names are in [ART_LIST.md](ART_LIST.md)). By hand:
+
 1. Move the PNG to the PC (AirDrop, iCloud Drive, a USB cable...).
 2. Put it in the right `Assets/_Project/Art/` folder (table below) with the right filename.
    - **Replacing a placeholder:** overwrite the existing PNG, same filename, same size. Don't delete

@@ -47,7 +47,7 @@ public class PatternDesignerUI : MonoBehaviour
         nameField.text = p.name;
         if (namePopup != null) namePopup.SetActive(false);
         itemIndex = Mathf.Max(0, System.Array.FindIndex(day.content.items, i => i != null && i.itemId == p.itemId));
-        if (day.DesigningFor == null && !Allowed(itemIndex)) StepItem();   // only things you've learned to make
+        if (day.DesigningFor == null && !day.Recolouring && !Allowed(itemIndex)) StepItem();   // a colourway keeps its item   // only things you've learned to make
         price = p.price;
         threads = PaletteFor(day.content.items[itemIndex]);
         cloth = p.design.fabricId;
@@ -212,7 +212,7 @@ public class PatternDesignerUI : MonoBehaviour
 
     public void NextItem()
     {
-        if (day.DesigningFor != null) return;   // a commission decides what it makes
+        if (day.DesigningFor != null || day.Recolouring) return;   // a commission or a colourway decides what it makes
         var before = CrossStitchCanvas.FrameFor(day.content.items[itemIndex]);
         var beforeColours = threads;
         StepItem();

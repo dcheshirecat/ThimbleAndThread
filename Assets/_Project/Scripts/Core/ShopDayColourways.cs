@@ -54,7 +54,7 @@ public partial class ShopDay
     string MaybeColourWish(CustomerDef c, Order o)
     {
         if (o == null || o.item == null || o.target == null || o.target.cells.Count == 0) return "";
-        if (!Progress.Knows(PatternDesignSkill) || !Progress.CanDesign(o.item)) return "";
+        if (!Progress.Knows(PatternDesignSkill)) return "";   // recolouring needs the designer; any pattern, pre-made too
         if (Random.value >= ColourWishChance) return "";
         var choices = new List<int>();
         for (int i = 0; i < ColourFamilies.Length; i++)

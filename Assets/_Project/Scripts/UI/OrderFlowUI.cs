@@ -132,8 +132,12 @@ public class OrderFlowUI : MonoBehaviour
                            : order.customerId == ShopDay.StallId ? "Set it aside for the Sunday stall."
                            : "Set it aside: they'll come by for it one of these days.");
         var extras = day.ExtrasFor(order);
-        if (extras.Count > 0 && order.customerId != PlayerProfile.SelfId && order.customerId != ShopDay.StallId)
+        bool forCustomer = order.customerId != PlayerProfile.SelfId && order.customerId != ShopDay.StallId;
+        if (extras.Count > 0 && forCustomer)
             resultText.text += "\n\nAdd a special touch? They might love the surprise... or not.";
+        else if (forCustomer && day.TouchesFor(order).Count > 0)   // none in the cupboard: say where they come from
+            resultText.text += $"\n\nA special touch ({string.Join(", ", day.TouchesFor(order).ConvertAll(s => s.displayName.ToLower()))}) could go on this. " +
+                               "They're sold at the Supply Market; they might love the surprise, or not.";
         for (int i = 0; i < extraButtons.Length; i++)
         {
             bool used = i < extras.Count;
@@ -166,8 +170,7 @@ public class OrderFlowUI : MonoBehaviour
         if (makeForMeButton != null) makeForMeButton.SetActive(PlayerProfile.Wearable(p.itemId));
         if (makeForStallButton != null) makeForStallButton.SetActive(day.StallOpen && day.Progress.CanMake(day.ItemFor(p.itemId)));
         if (colourwayButton != null) colourwayButton.SetActive(day.CanMakeColourway(p));
-        if (!day.CanMakeColourway(p) && day.Progress.Knows(ShopDay.PatternDesignSkill) && p.made > 0)
-            patternText.text += $"\n\nMade {p.made} of {ShopDay.MadeForColourway} times: then you can make it in new colours.";
+        if (day.CanMakeColourway(p)) patternText.text += "\n\nNew Colourway: the same pattern in other colours, kept alongside this one.";
         deleteButton.SetActive(p.designed);
         deleteLabel.text = day.ConfirmingDelete ? "Tap Again to Delete" : "Delete";
         SetPreview(patternPreview, day.DesignFor(p));

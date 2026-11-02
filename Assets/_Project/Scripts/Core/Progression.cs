@@ -33,7 +33,11 @@ public class Progression
     /// Whether the market shows this supply: only once a craft that uses it is learned, so the shelves don't
     /// give away what's still to come (owner, 2026-10-31). Yarn serves knitting and crochet; stuffing and
     /// eyes serve sewing and crochet; hoops and tapestry needles serve cross stitch as well.
-    public bool SupplyShown(SupplyDef s) => s != null && (CraftShown(s) || NeededByMakeable(s));
+    public bool SupplyShown(SupplyDef s) => s != null && (CraftShown(s) || NeededByMakeable(s) || DecoratesMakeable(s));
+
+    /// Special touches (lace, ribbon, buttons) for something you can already make. They're filed under sewing, which
+    /// comes late, so without this the market hid them and the risk/reward extras never came up (owner, 2026-11-02).
+    bool DecoratesMakeable(SupplyDef s) => s.decorates != null && System.Array.Exists(s.decorates, i => i != null && CanMake(i));
 
     /// Tools and materials a recipe you can already make calls for, whatever craft they belong to (e.g. pins for mitring
     /// a tablecloth's corners, a crochet hook for knotting a scarf's fringe).
