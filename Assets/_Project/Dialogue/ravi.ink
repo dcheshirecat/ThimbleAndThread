@@ -69,3 +69,22 @@ Ravi takes you to a car-boot sale and buys a broken radio "for parts", then fixe
 === ravi_date ===
 Ravi has built a tiny planetarium out of a colander and a torch. You lie on their workshop floor and watch the holes shine. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== ravi_visit_fix ===
+Ravi: Fixed a toaster, two phones and a hearing aid before lunch. The hearing aid belonged to the old postman. He says he liked the quiet. # happy
+-> END
+=== ravi_visit_bobbin ===
+Ravi: Bobbin sorted every screw in the loft by size, then by colour, then by how happy they looked. I didn't program the last one. # surprised
+-> END
+=== ravi_visit_3_city ===
+Ravi: In the city nobody mended anything. You just bought another. # thoughtful
+Ravi: Here people bring me things their parents owned. It feels like I'm keeping something going.
+-> END
+=== ravi_saturday_radio ===
+Ravi lets you help rebuild an old valve radio. When it crackles on, it's playing a shipping forecast. Ravi looks delighted. # happy
+Ravi: Perfect. Exactly what I hoped for. # happy
+-> END
+=== ravi_gift ===
+Ravi: Handmade? No circuit boards at all? I love it. I'm going to put it where Bobbin can admire it. # happy
+-> END

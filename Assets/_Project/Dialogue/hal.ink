@@ -115,3 +115,22 @@ Hal: I wore the scarf. For luck. Don't make a thing of it.
 Hal lets you release Duchess from the clifftop and time her flight home. She beats you both. # happy
 Hal: Never underestimate a bird with something to prove. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== hal_visit_letter ===
+Hal: Saw a lad posting a letter yesterday. A real letter! With a stamp! I nearly shook his hand. # surprised
+-> END
+=== hal_visit_knees ===
+Hal: Forty years of hills on a bike. These knees could tell you every street in town by how much they ache. # thoughtful
+-> END
+=== hal_visit_3_letters ===
+Hal: Those unclaimed letters I kept. I've started delivering them. Fifty years late, some of them. # thoughtful
+Hal: One woman read hers on the doorstep and laughed till she cried. Worth the wait, she said.
+-> END
+=== hal_saturday_round ===
+Hal walks you his old round, every street of it, and tells you who lived behind every door in 1984. # happy
+Hal: That one had a parrot that swore at me. Every day. Lovely bird. # happy
+-> END
+=== hal_gift ===
+Hal: Well I never. Nobody's given me a parcel in years. Usually I was the one carrying them. # happy
+-> END

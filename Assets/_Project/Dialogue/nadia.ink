@@ -105,3 +105,21 @@ Nadia: I told her where it came from. You're going to be very busy.
 You and Nadia sleep through most of Saturday in deckchairs on the beach. It's glorious. # happy
 Nadia: Best date I've had in years, and I'm not even dating you. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== nadia_visit_sleep ===
+Nadia: I've been awake so long I can hear colours. Sell me something soothing. # thoughtful
+-> END
+=== nadia_visit_scarf ===
+Nadia: I finished a scarf! It's eleven feet long. I forgot to stop. # happy
+-> END
+=== nadia_visit_3_night ===
+Nadia: Three in the morning, new baby, everyone crying, me included. # thoughtful
+Nadia: Best job in the world. Don't tell anyone; they'll want it.
+-> END
+=== nadia_saturday_beach ===
+Nadia sleeps on a beach towel for most of the afternoon while you knit beside her. She wakes up, says "lovely day," and goes back to sleep. # happy
+-> END
+=== nadia_gift ===
+Nadia: For me? Something I didn't have to knit myself? I might actually cry. I'm tired, it doesn't take much. # happy
+-> END

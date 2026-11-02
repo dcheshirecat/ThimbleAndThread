@@ -116,3 +116,23 @@ Benji: See you! Tell people about the chairs. If they ask. # happy
 === benji_thanks ===
 Benji: Thank you! I'll carry it over myself. Well, my dad will. I'll supervise. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== benji_visit_measure ===
+Benji: I measured the church doorway three times this morning. In case the cake doesn't fit. # thoughtful
+Benji: Sam says cakes don't need measuring. Sam is very calm. I love that about them. I don't understand it, but I love it.
+-> END
+=== benji_visit_splinter ===
+Benji: Don't mind the plaster. Occupational hazard. Twenty years and I still forget which end of the chisel's sharp. # happy
+-> END
+=== benji_visit_3_vows ===
+Benji: I've written my vows. Nine drafts. The ninth one's just "I'll build you anything." # thoughtful
+Benji: Is that enough? It feels like it might be enough.
+-> END
+=== benji_saturday_bench ===
+Benji shows you the bench he's building for the church porch, so people can sit and wait for weddings. You sand the arms smooth together. # happy
+Benji: Every bench is a promise someone'll have somewhere to rest. That's what my dad said, anyway. # thoughtful
+-> END
+=== benji_gift ===
+Benji: For me? Oh, I'm going to put this somewhere nobody can get sawdust on it. Which is nowhere. But I'll try. # happy
+-> END

@@ -161,3 +161,9 @@ Mara: This is the first Saturday in months I haven't felt like a zombie. Thank y
 You push the pram round the harbour park while Mara finally drinks a hot coffee, start to finish. # happy
 Mara: Look at that. It's still hot. I'd forgotten coffee was supposed to be hot. # surprised
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== mara_gift ===
+Mara: For me? Not for Poppy, for ME? # surprised
+Mara: Sorry. I'm going to cry a bit. Nobody makes things for me any more. Thank you.
+-> END

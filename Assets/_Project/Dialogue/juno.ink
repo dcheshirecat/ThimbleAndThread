@@ -151,3 +151,8 @@ Juno: Don't post the bad ones. Okay, post one bad one. People like a bit of fail
 You and Juno go through every charity shop in town. They find a jacket and a plan to cover it in patches. # happy
 Juno: You're doing the embroidery, obviously. I'll pay you in chips. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== juno_gift ===
+Juno: Wait, you MADE this? For me? This is actually so cool. I'm not even being sarcastic. # surprised
+-> END

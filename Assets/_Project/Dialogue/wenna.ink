@@ -92,3 +92,24 @@ Wenna: Seventy years on my finger. It wants a new finger. # happy
 You spend Saturday at Wenna's, sorting her fabric stash by colour. It takes all day. She has a lot of blue. # happy
 Wenna: Never throw anything away. That's the other secret of life. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== wenna_visit_seams ===
+Wenna: A quarter-inch seam is a quarter-inch seam. Not "about" a quarter. I said this to a grown man on Thursday. He cried. # thoughtful
+-> END
+=== wenna_visit_dot ===
+Wenna: Dot brought scones to the bee. Again. Crumbs on the quilt. AGAIN. # neutral
+Wenna: They were very good scones.
+-> END
+=== wenna_visit_3_win ===
+Wenna: Win's quilts are still in half the houses in town. You can tell hers. Every corner meets. # thoughtful
+Wenna: Yours are getting there, you know.
+-> END
+=== wenna_saturday_frame ===
+Wenna puts you on the big quilting frame with the bee. You stitch in silence while she corrects everyone else, and then she says nothing about yours. # happy
+Wenna: Silence is a compliment, dear. Take it. # thoughtful
+-> END
+=== wenna_gift ===
+Wenna: Let me see the back. # thoughtful
+Wenna: ...Tidy. Very tidy. Thank you, dear. I'll keep it.
+-> END

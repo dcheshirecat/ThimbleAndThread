@@ -90,3 +90,22 @@ Felix: It needs sun and someone to talk to. You'll manage both. # happy
 === felix_saturday ===
 You spend Saturday at the flower market with Felix, before dawn. He buys far too much and gives half of it away on the way home. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== felix_visit_rain ===
+Felix: The hydrangeas love this weather. Blue as anything. I told them they're showing off. # happy
+-> END
+=== felix_visit_wedding ===
+Felix: The carpenter down the lane has asked me to do his wedding flowers. I've drawn forty sketches and they all look like his fiancé. Is that strange? # thoughtful
+-> END
+=== felix_visit_3_lagos ===
+Felix: I dreamed about my mum's stall last night. The smell of the fabric, and the frangipani. # thoughtful
+Felix: Your shop smells a little like it. Cotton and something sweet. That's why I keep coming in.
+-> END
+=== felix_saturday_market ===
+You help Felix at the flower auction before dawn: buckets everywhere, everyone shouting numbers. He bids on the ugliest dahlias in the hall. # happy
+Felix: Nobody else wanted them. Now they're ours. # happy
+-> END
+=== felix_gift ===
+Felix: You made this? I'm putting it by the window, with the orchids. They'll be jealous. Good. # happy
+-> END

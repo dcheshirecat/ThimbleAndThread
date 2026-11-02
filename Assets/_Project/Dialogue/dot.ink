@@ -108,3 +108,22 @@ Dot: Ask around. You'd be surprised who's been keeping a page safe.
 Dot teaches you her scone recipe in the tea room kitchen. The secret, she says, is cold hands and a warm heart. # happy
 Dot: And a ridiculous amount of butter. Don't tell the doctor. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== dot_visit_gossip ===
+Dot: The new vicar's bees got into the bakery on Tuesday. Nobody's admitted it, but the custard slices were never the same. # thoughtful
+-> END
+=== dot_visit_dance ===
+Dot: I went dancing at the Legion on Friday. Eighty-one and I can still do the cha-cha. Badly. # happy
+-> END
+=== dot_visit_3_photo ===
+Dot: I found a photo of me and Win at the 1966 regatta. Matching dresses. We made them ourselves, the night before. # thoughtful
+Dot: She sewed hers better. She always did. Don't tell her I said that, wherever she is.
+-> END
+=== dot_saturday_tea ===
+Dot teaches you her scone recipe, which is mostly butter and a stern talking-to. You burn the first batch. She eats one anyway. # happy
+Dot: Character. That's what that is. # happy
+-> END
+=== dot_gift ===
+Dot: Oh, my dear. Win would be so proud of you. I'm going to put this right where she used to sit. # happy
+-> END

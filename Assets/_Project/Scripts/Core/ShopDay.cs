@@ -824,7 +824,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         return int.TryParse(first, out int n) ? n : 0;
     }
 
-    const int RecentMemory = 40;   // knots remembered, so a regular doesn't say the same thing twice in a row
+    const int RecentMemory = 200;   // knots remembered: everyone works through all their lines before any comes round again (owner, 2026-11-02)
 
     /// Picks one of the options, preferring ones not heard lately (else the one heard longest ago), and remembers it.
     string Fresh(List<string> options)

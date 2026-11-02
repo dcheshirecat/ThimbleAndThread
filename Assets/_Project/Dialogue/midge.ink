@@ -90,3 +90,23 @@ Midge: I know it was you who told them. Don't deny it.
 Midge closes the bookshop for an afternoon and you both read in the window seat while the rain comes down. # happy
 Midge: Best kind of Saturday. Nobody wants anything from you. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== midge_visit_review ===
+Midge: Someone tried to sell me forty copies of the same diet book. I told them to keep it for the doorstop market. # thoughtful
+-> END
+=== midge_visit_quiet ===
+Midge: The shop's been quiet. Me, the cat, and a man who's been reading the same atlas for three weeks. # neutral
+-> END
+=== midge_visit_3_letters ===
+Midge: I found letters in a book of sonnets last week. Love letters, from 1951. # thoughtful
+Midge: I'm not crying about it. Don't look at me like that.
+-> END
+=== midge_saturday_stacks ===
+Midge lets you sort the new arrivals. You find a 1930s knitting manual in the poetry pile, and she gives it to you with a sniff. # happy
+Midge: Don't tell anyone I'm soft. # thoughtful
+-> END
+=== midge_gift ===
+Midge: Hm. It's very well made. I'm going to put it somewhere the cat can't sleep on it. # thoughtful
+Midge: ...Thank you. Really.
+-> END

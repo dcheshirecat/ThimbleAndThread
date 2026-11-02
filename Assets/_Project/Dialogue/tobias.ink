@@ -162,3 +162,9 @@ Tobias: She'd have liked you. Elsa. She liked people who listened. # happy
 You help Tobias mend nets on the quay. It's not so different from darning. # thoughtful
 Tobias: Over, under, pull it snug. Same knot my grandad taught me. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== tobias_gift ===
+Tobias: Hm. # thoughtful
+Tobias: Elsa would've hung that in the front window so the whole street could see it. I might do the same.
+-> END

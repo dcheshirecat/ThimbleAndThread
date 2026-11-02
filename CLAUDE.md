@@ -871,3 +871,27 @@ DONE (owner, 2026-11-02) Interactive town map: UI/TownMapUI.cs. A scrolling map 
 placeholder drawn by PlaceholderGenerator.TownMap with roads ShopDay.MapRoads), anchored at its bottom so it opens on the seafront. A pin per
 place at ShopDay.MapSpot (gold = shop, grey = not open yet) with its name plaque and the face of someone you know there (+N more, pink ring =
 birthday); your own shop is a red pin (Go Home). Tapping a pin opens a card (blurb, who's here, what to do; Go There / Go Inside) -> ShopDay.GoTo.
+
+## Owner list, 2026-11-02 (DONE, branch minigames; save version 32)
+- Docs/ART_LIST.md: every screen to design and every picture to draw (with filenames); ART_SIZES.md has the sRGB rules.
+  The owner made a Google Drive folder "Game Art - Thimble and Thread"; the Drive connector isn't authorized in Claude's
+  sessions yet (claude.ai > Settings > Connectors), so art still comes in by file or Google Drive for desktop.
+- Journal notes once each: ShopDay.SameFact (80% of the shorter note's words in the longer); the ink note command keeps the
+  fuller one; JournalUI hides older duplicates. Mara's two daughter notes now use the same words.
+- Town map access (ShopDayTown): ShopDay.Shut(place) greys pins and explains: homes only for friends whose house you know
+  (KnowsHome: friendship 1+ or dating) who are in today; Fore Street lists their doors (Homes -> AtHome); hospital, school and
+  Kit's studio only when someone you know is there; library shut in the evening. Presents (CanGift: friendship 3+ or dating):
+  a piece from the stall pile (Save.stall), once a day, +8 (+14 if it's an item they'd ask for, noted as a Like), hearts; ink
+  name_gift*.
+- Colourways (Core/ShopDayColourways.cs): own designs any time (book patterns after 10 made). A customer ordering a displayed
+  pattern may ask for other colours (30%, once you can design that craft): Order.colourWish (blue/green/pink/purple/autumn/
+  neutral by hue, FamilyOf), needsDesign; the designer opens in recolour mode; the colourway goes in the book; at pickup the
+  share of stitches in that family decides the reaction (+6 / nothing / -3).
+- Sunday market goals (Core/ShopDayFair.cs, SaveData.stallStats): 10 pieces, 5 pattern copies, 150 coins in a Sunday, 3 sales to
+  friends, 3 bargains. All met -> flag stall:fair, the Harbour Fair: shoppers every 4-10 minutes, out-of-towners +25%, 6 pattern
+  spots, four regulars (Marguerite, Tam, Mr Achterberg, Bea; ShopDay.FairRegulars) with their own lines and prices.
+- Zoom and turn while crafting: MinigameHost moves the CAMERA (zoom 1-4, quarter turns, pan), so ScreenToWorldPoint input keeps
+  working; buttons Zoom In / Zoom Out / Turn / Reset View, two-finger pinch/twist/drag, mouse wheel. PointerInput.Down ignores
+  two-finger touches. The loupe turns with the camera. Reset on Open/Close.
+- More dialogue: 3 visit lines + a second Saturday + a gift reaction for the 15 quieter characters; gift reactions for the rest;
+  ShopDay.RecentMemory 200.

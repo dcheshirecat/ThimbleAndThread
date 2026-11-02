@@ -90,3 +90,23 @@ Owen: Don't tell the Mothers' Union, they each only got half a jar.
 Owen shows you his beehives behind the church. You're given a veil and absolutely no instructions. # happy
 Owen: They know you're a friend. Bees always know. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== owen_visit_joke ===
+Owen: Why did the bee get married? Because he found his honey. # happy
+Owen: I'll see myself out. No, I won't, I've come to buy thread.
+-> END
+=== owen_visit_bells ===
+Owen: The bell-ringers want new bell-rope sallies. The fluffy bits. Could anyone knit those, do you think? # thoughtful
+-> END
+=== owen_visit_3_doubt ===
+Owen: People think vicars have all the answers. # thoughtful
+Owen: Mostly I have tea and a willingness to sit with people. It goes further than you'd think.
+-> END
+=== owen_saturday_honey ===
+You help Owen spin the honey out of the frames in the vestry. Everything is sticky for the rest of the day, including the hymn books. # happy
+Owen: The Lord provides. Also the bees. Mainly the bees. # happy
+-> END
+=== owen_gift ===
+Owen: For me? That's... Bless you. Truly. I'll keep it in the vestry, where I can see it on long Sundays. # happy
+-> END

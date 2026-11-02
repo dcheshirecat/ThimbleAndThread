@@ -184,3 +184,9 @@ Rowan: Don't tell anyone we're friends. It's bad for the rivalry. # happy
 Rowan takes you to the open-air cinema on the beach. You share a blanket they crocheted. # happy
 Rowan: I made the blanket two-person-sized. That was... on purpose. # thoughtful
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== rowan_gift ===
+Rowan: You're giving your rival a present? That's either very kind or very clever. # thoughtful
+Rowan: I'll assume kind. Thank you. It's beautiful work, and I don't say that often.
+-> END

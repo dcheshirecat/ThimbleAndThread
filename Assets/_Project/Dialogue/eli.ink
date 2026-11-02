@@ -167,3 +167,8 @@ Eli: That's a very confident potato. I'm putting it on the menu. # happy
 Eli closes the café early and cooks for you: a pie that's mostly crust and entirely love. # happy
 Eli: I'll be honest, I only know how to cook pie. Lucky you like pie. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== eli_gift ===
+Eli: For me? I'm hanging it in the café. No, wait, I'm keeping it upstairs. No, the café. I'll decide later. # happy
+-> END

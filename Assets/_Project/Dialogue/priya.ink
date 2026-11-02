@@ -144,3 +144,8 @@ Priya: Every single one of them is a masterpiece. Don't tell the other twenty-ni
 A long walk on the cliff path with Priya, a flask of tea and a tin of her mum's shortbread. # happy
 Priya: Saturdays are for walking until your legs complain. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== priya_gift ===
+Priya: Oh, it's gorgeous! I'm going to show the class. "This is what patience looks like," I'll tell them. They won't listen. # happy
+-> END

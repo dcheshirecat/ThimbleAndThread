@@ -91,3 +91,22 @@ His first scarf is wonky, full of holes, and he wears it every single day.
 Theo takes you out on the Elsa May. Tobias waves from the harbour wall the whole way out, and the whole way back. # happy
 Theo: He's pretending he isn't proud. He's terrible at pretending. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== theo_visit_hands ===
+Theo: Look at my hands. Blisters on blisters. Grandad says that means it's working. # thoughtful
+-> END
+=== theo_visit_knots ===
+Theo: I can tie a bowline with my eyes shut now. Took me a month. Grandad did it in his sleep, apparently, literally. # happy
+-> END
+=== theo_visit_3_stay ===
+Theo: My mates in the city keep asking when I'm coming back. # thoughtful
+Theo: I keep saying "soon." I don't think I mean it any more.
+-> END
+=== theo_saturday_nets ===
+Theo shows you how to mend a net, and how to swear quietly when the needle slips. You get very good at the second one. # happy
+Theo: Don't tell Grandad I taught you the words. # happy
+-> END
+=== theo_gift ===
+Theo: For me? Gran would have loved this. She'd have said it was too good to use and then used it every day. # happy
+-> END

@@ -75,3 +75,19 @@ Jasper takes you rock-pooling and names every creature after a Victorian explore
 === jasper_date ===
 Jasper rows you out to watch the lighthouse come on, and tells you a story about every star he can name. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== jasper_visit_key ===
+Jasper: I found a lock that fits one of my orphan keys. Forty years in the drawer and it opened a biscuit tin. # surprised
+Jasper: Empty. Of course. But still.
+-> END
+=== jasper_visit_storm ===
+Jasper: Storm coming. The barometer in the shop's been sulking all morning. It's older than me and far more reliable. # thoughtful
+-> END
+=== jasper_saturday_charts ===
+Jasper unrolls his oldest charts on the customs house floor. You find your great-aunt's handwriting in a margin, marking a fishing spot. # surprised
+Jasper: She got around, your aunt. # happy
+-> END
+=== jasper_gift ===
+Jasper: Something new for a man who sells old things. I'll keep it for a hundred years, and then it'll be an antique. # happy
+-> END

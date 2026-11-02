@@ -187,6 +187,11 @@ The game looks for knots by name (the character's **Ink Name**, set on the custo
   Add variants the same way (`mara_handover_good_hug`); one not heard lately is picked.
 - Requests are picked the same way, so a character with several `mara_request_...` knots varies too.
 - `mara_scene_1`, `_scene_2`...: a scene played once, when friendship reaches that level.
+- `mara_saturday...` (a day together on a Saturday) and `mara_gift...` (how they take a present you made, given at
+  their home on a Saturday): variants work the same way. Lines are remembered across all characters (the last 200), so
+  everyone works through all their lines before one comes round again.
+- `~ note(...)`: something they've told you, listed once in the Journal. If two notes say the same thing in other
+  words, the game keeps only the fuller one, but it's tidier to use exactly the same words.
 - `mara_suggest_yes`, `_buy`, `_no` (plus variants like `mara_suggest_no_rain`): how they react when you
   suggest a pattern on display. Which one plays follows the character, not chance: _yes for things they'd
   want (their Requestable items), _buy for crafts they do themselves (**Makes** on the customer asset), else _no.

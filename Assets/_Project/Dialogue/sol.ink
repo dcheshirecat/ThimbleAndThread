@@ -104,3 +104,22 @@ Sol: For the shop window. For luck.
 Sol takes you surfing. You stand up exactly once, for about a second. They cheer like you've won a medal. # happy
 Sol: That's it! That's all surfing is! Standing up for a second! # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== sol_visit_dawn ===
+Sol: Caught a wave at sunrise this morning. Fell off it immediately. Still counts. # happy
+-> END
+=== sol_visit_flags ===
+Sol: Red flags up today. Rip current by the rocks. Spread the word, would you? # thoughtful
+-> END
+=== sol_visit_3_scared ===
+Sol: Everyone thinks lifeguards aren't scared of the sea. # thoughtful
+Sol: We're the most scared of all. That's why we watch it so carefully.
+-> END
+=== sol_saturday_glass ===
+You go sea-glass hunting with Sol along the tideline. They find three blues; you find a bottle cap and a very confused crab. # happy
+Sol: The crab counts. # happy
+-> END
+=== sol_gift ===
+Sol: No way. For me? This is going on the hut wall, next to the good sea glass. Highest honour there is. # happy
+-> END

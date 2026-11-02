@@ -89,3 +89,22 @@ Sam: First audience. Be kind. # thoughtful
 === sam_saturday ===
 You spend Saturday helping Sam and Benji test wedding cake. Purely for research. A great deal of research. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== sam_visit_choir ===
+Sam: Thirty seven-year-olds singing "Sea Shanty No. 2" in four different keys. I've never been happier. # happy
+-> END
+=== sam_visit_benji ===
+Sam: Benji's measuring things again. If he comes in and measures your counter, just let him. It helps. # thoughtful
+-> END
+=== sam_visit_3_nerves ===
+Sam: Can I tell you something? I'm not nervous about the wedding. # thoughtful
+Sam: I'm nervous about the first dance. I teach music. Everyone's going to expect me to be able to dance.
+-> END
+=== sam_saturday_piano ===
+Sam plays you the song they're writing for the wedding, on the school hall's out-of-tune piano. It's lovely even with the sticky F. # happy
+Sam: Don't tell Benji. It's a surprise. # happy
+-> END
+=== sam_gift ===
+Sam: Oh, that's lovely. I'm going to hide it from Benji, or he'll build a cabinet just to keep it in. # happy
+-> END

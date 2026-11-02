@@ -90,3 +90,22 @@ Kit: I kept the sketch for you.
 Kit sets up two easels on the cliff and makes you paint the sea. Yours looks like soup. They frame it anyway. # happy
 Kit: That's the most honest sea I've ever seen. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== kit_visit_blue ===
+Kit: I've found a new blue! It's the sea at half past four on a Tuesday. Nobody believes me. # surprised
+-> END
+=== kit_visit_mess ===
+Kit: Is that paint on my ear? It's always paint on my ear. I've given up. # happy
+-> END
+=== kit_visit_3_doubt ===
+Kit: Some days I think every painting I've done is rubbish. # sad
+Kit: Then I come in here and look at all the colours on your shelves and I want to try again. So, thank you, I suppose.
+-> END
+=== kit_saturday_sketch ===
+You sit with Kit on the harbour steps and they teach you to draw boats with three lines each. Yours look like teapots. # happy
+Kit: Teapots that float! That's a whole series! # happy
+-> END
+=== kit_gift ===
+Kit: Oh, the stitches! Look at the stitches! I'm going to paint it. Can I paint it? I'm painting it. # surprised
+-> END

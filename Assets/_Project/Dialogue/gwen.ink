@@ -91,3 +91,22 @@ Gwen: I want them from your shop. Win's shop. It's only right.
 Gwen takes you round the harbour in her launch, pointing out every boat and its owner's worst secret. # happy
 Gwen: That one's never been out. Fifteen years. Polished every Sunday. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== gwen_visit_fog ===
+Gwen: Fog's in. Foghorn's on. You'll hear it all night. Sorry in advance. # neutral
+-> END
+=== gwen_visit_gulls ===
+Gwen: A gull stole a whole pasty off the harbour wall this morning. Out of a tourist's HAND. I gave it a round of applause. # happy
+-> END
+=== gwen_visit_3_husband ===
+Gwen: My Alan used to say the sea gives back what it takes, eventually. # sad
+Gwen: Thirty years I've been waiting. Still. It gave me this job, and a town to look after. That's something.
+-> END
+=== gwen_saturday_boat ===
+Gwen takes you out in the harbour launch to check the buoys. She lets you steer for exactly four minutes. # happy
+Gwen: Not bad. You only nearly hit one thing. # happy
+-> END
+=== gwen_gift ===
+Gwen: Well, look at that. Hand-made. I'll keep it in the harbour office where the lads can't spill tea on it. # happy
+-> END

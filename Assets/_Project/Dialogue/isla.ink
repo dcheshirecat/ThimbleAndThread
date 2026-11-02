@@ -191,3 +191,8 @@ Isla: I count the ships. Old habit. Today it's eleven. # thoughtful
 Isla takes you up the lighthouse after dark. The beam sweeps over the water, again and again. # thoughtful
 Isla: I've watched this light for nine years. It's better with you here. # happy
 -> END
+
+// ---- More lines (2026-11-02: so nobody repeats themselves), and how they take a present ----
+=== isla_gift ===
+Isla: I'll take it up to the lamp room. It gets lonely up there at night. This'll help. # happy
+-> END
