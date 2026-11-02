@@ -183,6 +183,9 @@ public class Progression
 
     // ---- Experience ----
 
+    /// Extra experience from the shop's decorations (ShopDay.XpBoost), in percent.
+    public System.Func<int> ExtraXpPercent;
+
     public int Xp(CraftType craft) => Save.craftXp.Find(x => x.craft == craft)?.xp ?? 0;
 
     // ---- Mastery (owner, 2026-11-01): a craft's level comes from orders handed over in it, ten levels, each further
@@ -261,7 +264,7 @@ public class Progression
     /// Adds experience (more with a better lamp). Returns a message if it was a level up, else null.
     public string AddXp(CraftType craft, int amount)
     {
-        amount = Mathf.RoundToInt(amount * (1f + UpgradeAmount(UpgradeEffect.CraftLamp) / 100f));
+        amount = Mathf.RoundToInt(amount * (1f + (UpgradeAmount(UpgradeEffect.CraftLamp) + (ExtraXpPercent?.Invoke() ?? 0)) / 100f));
         var entry = Save.craftXp.Find(x => x.craft == craft);
         if (entry == null) Save.craftXp.Add(entry = new CraftXp { craft = craft });
         int playerBefore = PlayerLevel;

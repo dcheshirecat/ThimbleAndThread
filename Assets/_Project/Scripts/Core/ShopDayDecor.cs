@@ -50,12 +50,13 @@ public partial class ShopDay
     {
         var d = Decor(decorId);
         if (d == null || Save.night || Save.decor.Contains(decorId)) return;
-        if (Progress.PlayerLevel < d.minLevel) LastMessage = $"Benji's still making that one. (From level {d.minLevel}.)";
+        var where = d.shop == "curios" ? ScreenId.Curios : ScreenId.Furniture;
+        if (Progress.PlayerLevel < d.minLevel) LastMessage = $"Not for sale to you yet. (From level {d.minLevel}.)";
         else if (!GM.TrySpend(d.price)) LastMessage = $"The {d.displayName.ToLower()} is {d.price} coins.";
         else
         {
             Save.decor.Add(decorId);
-            GM.AddRelationshipPoints(FurnitureOwnerId, 3);
+            GM.AddRelationshipPoints(OwnerOf(where), 3);
             boughtThisVisit = true;
             bool placed = Placed(d.slot) == null;
             if (placed) Place(d.slot, decorId);
@@ -63,7 +64,7 @@ public partial class ShopDay
             if (Save.decor.Count == 1) Stamps.Earn(Save, "decor:first", "Making it yours", d.displayName, StampTheme.Shop);
             GM.Persist();
         }
-        GM.ChangeScreen(ScreenId.Furniture);
+        GM.ChangeScreen(where);
     }
 
     public void LeaveFurniture() => LeaveShop(FurnitureOwnerId);

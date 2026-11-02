@@ -10,6 +10,8 @@ public class FurnitureUI : MonoBehaviour
     public Text statusText;
     public RectTransform shelf;
     public Button tileTemplate;          // children Icon, Name, Info
+    public ScreenId screen = ScreenId.Furniture;   // Marsh's Workshop, or Quill's Curiosities
+    public string shopKey = "";                    // DecorDef.shop sold here
 
     readonly List<GameObject> tiles = new List<GameObject>();
 
@@ -25,19 +27,22 @@ public class FurnitureUI : MonoBehaviour
 
     void OnScreenChanged(ScreenId id)
     {
-        if (id != ScreenId.Furniture || GameManager.Instance.Save == null) return;
-        day.Met(ShopDay.FurnitureOwnerId);
+        if (id != screen || GameManager.Instance.Save == null) return;
+        day.Met(ShopDay.OwnerOf(screen));
         Show();
     }
 
-    public void Chat() => day.ChatWithFurnitureOwner();
-    public void Leave() => day.LeaveFurniture();
+    public void Chat() => day.ChatWith(ShopDay.OwnerOf(screen), screen);
+    public void Leave() => day.LeaveShop(ShopDay.OwnerOf(screen));
 
     static string SpotName(DecorSlot s) => s switch
     {
         DecorSlot.Wall => "on the wall",
         DecorSlot.Counter => "on the counter",
         DecorSlot.Floor => "on the floor",
+        DecorSlot.CounterLeft => "on the counter",
+        DecorSlot.PickupWall => "on the pickup corner's wall",
+        DecorSlot.PickupShelf => "on the pickup shelf",
         _ => "by the door",
     };
 
@@ -50,7 +55,7 @@ public class FurnitureUI : MonoBehaviour
         tiles.Clear();
         tileTemplate.gameObject.SetActive(false);
         var list = new List<DecorDef>(day.content.decor);
-        list.RemoveAll(d => d == null);
+        list.RemoveAll(d => d == null || (d.shop ?? "") != shopKey);
         list.Sort((a, b) => a.minLevel != b.minLevel ? a.minLevel.CompareTo(b.minLevel) : a.price.CompareTo(b.price));
         foreach (var d in list)
         {
@@ -67,7 +72,22 @@ public class FurnitureUI : MonoBehaviour
             if (!level) icon.color *= new Color(0.6f, 0.6f, 0.6f, 0.6f);
             tile.transform.Find("Name").GetComponent<Text>().text = d.displayName;
             tile.transform.Find("Info").GetComponent<Text>().text = owned ? "Yours" : !level ? $"From level {d.minLevel}"
-                : $"{d.price} coins  ·  charm +{d.charm}\nGoes {SpotName(d.slot)}";
+                : $"{d.price} coins  ·  charm +{d.charm}" + (d.boost != DecorBoost.None ? $"\n{ShopDay.BoostText(d)}" : "") + $"\nGoes {SpotName(d.slot)}";
+            tiles.Add(tile.gameObject);
+        }
+        if (shopKey != "") return;
+        foreach (var e in ShopDay.Expansions)   // Benji builds the expansions too
+        {
+            string id = e.id;
+            bool have = day.HasExpansion(id), level = day.Progress.PlayerLevel >= e.level;
+            var tile = Instantiate(tileTemplate, shelf);
+            tile.gameObject.SetActive(true);
+            tile.name = $"Expansion_{id}";
+            tile.onClick.AddListener(() => day.BuyExpansion(id));
+            tile.GetComponent<Image>().color = have ? new Color(0.75f, 0.92f, 0.75f) : level ? new Color(1f, 0.92f, 0.65f) : new Color(0.7f, 0.68f, 0.66f);
+            tile.transform.Find("Icon").GetComponent<Image>().color = new Color(0.55f, 0.45f, 0.35f);
+            tile.transform.Find("Name").GetComponent<Text>().text = e.name;
+            tile.transform.Find("Info").GetComponent<Text>().text = have ? "Done" : !level ? $"From level {e.level}" : $"{e.price} coins\n{e.what}";
             tiles.Add(tile.gameObject);
         }
     }

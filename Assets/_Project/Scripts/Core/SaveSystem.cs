@@ -97,6 +97,10 @@ public static class SaveSystem
         data.craftOrders ??= new System.Collections.Generic.List<CraftCount>();
         data.stallPatterns ??= new System.Collections.Generic.List<string>();
         data.books ??= new System.Collections.Generic.List<BookProgress>();
+        data.onlineOffers ??= new System.Collections.Generic.List<OnlineOffer>();
+        data.automations ??= new System.Collections.Generic.List<string>();
+        data.expansions ??= new System.Collections.Generic.List<string>();
+        data.secondhand ??= new System.Collections.Generic.List<SecondHand>();
         if (data.version < 30)   // books bought before reading took time were read at once
             foreach (var st in data.stock)
                 if (st != null && st.supplyId.StartsWith("book_") && !data.books.Exists(b => b.id == st.supplyId))

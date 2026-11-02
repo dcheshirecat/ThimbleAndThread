@@ -162,12 +162,51 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     public void GoToBoutique() { shopsMenu.SetActive(false); day.EnterShop(BoutiqueUI.OwnerId, ScreenId.Boutique); }
     public void GoToPatternShop() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.PatternShopOwnerId, ScreenId.PatternShop); }
     public void GoToFurniture() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.FurnitureOwnerId, ScreenId.Furniture); }
-    public GameObject patternShopButton, furnitureButton;
+    public GameObject patternShopButton, furnitureButton, curiosButton, techButton;
+    public void GoToCurios() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.CuriosOwnerId, ScreenId.Curios); }
+    public void GoToTech() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.TechOwnerId, ScreenId.TechShop); }
 
     // ---- Things to do between customers (owner, 2026-11-02: real things, not minigames): read, decorate ----
     public GameObject pastimeButton;      // the row of them under the counter
     public Button readButton;
-    public GameObject decorateButton;
+    public GameObject decorateButton, onlineButton, computer, onlineLayer;
+    public Button atticButton, basementButton, onlineTemplate;
+    public Text onlineInfo;
+    readonly List<GameObject> onlineRows = new List<GameObject>();
+
+    public void SortAttic() { day.SortThrough("attic"); Refresh(); }
+    public void SortBasement() { day.SortThrough("basement"); Refresh(); }
+
+    /// Today's online orders: accept the ones you'd like to make.
+    public void ToggleOnline()
+    {
+        bool show = !onlineLayer.activeSelf;
+        onlineLayer.SetActive(show);
+        if (show) { onlineLayer.transform.SetAsLastSibling(); BuildOnline(); }
+    }
+
+    void BuildOnline()
+    {
+        foreach (var r in onlineRows) Destroy(r);
+        onlineRows.Clear();
+        onlineTemplate.gameObject.SetActive(false);
+        int waiting = Save.orders.FindAll(o => o.customerId == ShopDay.OnlineId && o.finished).Count;
+        onlineInfo.text = $"Today's online orders. The courier comes on Fridays" + (waiting > 0 ? $" ({waiting} parcel{(waiting == 1 ? "" : "s")} packed)." : ".");
+        for (int i = 0; i < Save.onlineOffers.Count; i++)
+        {
+            var o = Save.onlineOffers[i];
+            var p = Save.patterns.Find(x => x.id == o.patternId);
+            var item = day.ItemFor(o.itemId);
+            int index = i;
+            var row = Instantiate(onlineTemplate, onlineTemplate.transform.parent);
+            row.gameObject.SetActive(true);
+            row.name = $"Online_{i}";
+            row.GetComponentInChildren<Text>().text = $"<b>{(item != null ? item.itemName : o.itemId)}</b> ({(p != null ? p.name : "?")})  ·  pays about {o.price} coins\nTap to accept";
+            row.onClick.AddListener(() => { day.AcceptOnline(index); BuildOnline(); });
+            onlineRows.Add(row.gameObject);
+        }
+        if (Save.onlineOffers.Count == 0) onlineInfo.text += "\nNothing new today: more come tomorrow morning.";
+    }
 
     public void Read() { day.ReadChapter(); Refresh(); }
     public void Decorate() => day.Decorate();
@@ -179,6 +218,12 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         var label = readButton.GetComponentInChildren<Text>();
         if (label.text != day.ReadLabel) label.text = day.ReadLabel;
         decorateButton.SetActive(day.ShopOpen(ScreenId.Furniture));
+        onlineButton.SetActive(day.OnlineOpen);
+        computer.SetActive(day.OnlineOpen);   // the computer appears on the counter once online orders open
+        atticButton.gameObject.SetActive(day.HasExpansion("attic"));
+        atticButton.interactable = day.CanSort("attic");
+        basementButton.gameObject.SetActive(day.HasExpansion("basement"));
+        basementButton.interactable = day.CanSort("basement");
     }
 
     // ---- Your furniture and decorations, in their spots (DecorSlot order) ----
@@ -225,6 +270,8 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         ShopEntry(boutiqueButton, ScreenId.Boutique, "The Boutique");
         ShopEntry(patternShopButton, ScreenId.PatternShop, "The Pattern Shop");
         ShopEntry(furnitureButton, ScreenId.Furniture, "The Workshop");
+        ShopEntry(curiosButton, ScreenId.Curios, "The Curiosity Shop");
+        ShopEntry(techButton, ScreenId.TechShop, "The Repair Shop");
         if (!day.AnyShopOpen && shopsMenu.activeSelf) shopsMenu.SetActive(false);
     }
 
@@ -289,7 +336,8 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
             ready++;
             var c = day.CustomerFor(order.customerId);
             string id = order.id;
-            rows.Add(Row(pickupTemplate, $"Pickup_{id}", $"{order.item.itemName} for {(c != null ? c.displayName : order.customerId)}\nWrapped and waiting", () => day.SelectOrder(id)));
+            bool online = order.customerId == ShopDay.OnlineId;
+            rows.Add(Row(pickupTemplate, $"Pickup_{id}", $"{order.item.itemName} for {day.NameFor(order.customerId)}\n" + (online ? "Packed for Friday's courier" : "Wrapped and waiting"), () => day.SelectOrder(id)));
         }
         int working = Save.orders.Count - ready;
         pickupEmpty.text = ready == 0

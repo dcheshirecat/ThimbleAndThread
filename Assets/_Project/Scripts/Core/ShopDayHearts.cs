@@ -52,6 +52,7 @@ public partial class ShopDay
     /// Every friendship point with someone romanceable you're close to fills the hearts a little too.
     void OnFriendshipPoints(string customerId, int points)
     {
+        FriendshipBoost(customerId, points);
         var c = content.Customer(customerId);
         if (c == null || !c.romanceable || points <= 0) return;
         var r = GM.GetRelationship(customerId);

@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af2bf79f2df3bdf48932578e82012d62, type: 3}
+  m_Name: customer_ravi
+  m_EditorClassIdentifier: Assembly-CSharp::CustomerDef
+  customerId: ravi
+  displayName: Ravi Sen
+  bio: Runs Byte & Bobbin, the repair shop in the chandlery loft (they/them). Fixes anything, builds gadgets.
+  fullBody: {fileID: 21300000, guid: 9bfed6de9792db942865b4444b7a2693, type: 3}
+  portraits:
+  - expression: 0
+    sprite: {fileID: 21300000, guid: 53c74b657a6eb7a40a4a73796da95b93, type: 3}
+  - expression: 1
+    sprite: {fileID: 21300000, guid: 9ec98f0743f4ba640ab79da174c9fdb3, type: 3}
+  - expression: 2
+    sprite: {fileID: 21300000, guid: 5e671d84e651b1a44a226c07c7257b1a, type: 3}
+  - expression: 3
+    sprite: {fileID: 21300000, guid: 3389d7155308b6441bda7a501ed044b5, type: 3}
+  - expression: 4
+    sprite: {fileID: 21300000, guid: 03bdf0b007b58054f8b30da3087c0e0b, type: 3}
+  requestable: []
+  firstChapter: 1
+  likesSurprises: 0.65
+  preferences: []
+  makes: 
+  shopOwner: 1
+  romanceable: 1
+  birthday: 0
+  place: 
+  inkName: ravi

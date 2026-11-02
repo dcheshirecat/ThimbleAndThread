@@ -387,6 +387,12 @@ public static class PlaceholderGenerator
         Decor("umbrella_stand", "Umbrella Stand", DecorSlot.Corner, 45, 2, 1, new Color(0.35f, 0.40f, 0.45f));
         Decor("fern", "Tall Fern", DecorSlot.Corner, 70, 4, 2, new Color(0.30f, 0.60f, 0.35f));
         Decor("dress_form", "Dress Form", DecorSlot.Corner, 150, 6, 3, new Color(0.92f, 0.85f, 0.75f));
+        // The second counter spot and the pickup corner (owner, 2026-11-01: decorate the counter and the pickup area)
+        Decor("counter_bell", "Brass Counter Bell", DecorSlot.CounterLeft, 35, 2, 1, new Color(0.88f, 0.72f, 0.30f));
+        Decor("ribbon_reel", "Ribbon Reel Stand", DecorSlot.CounterLeft, 70, 3, 2, new Color(0.85f, 0.45f, 0.55f));
+        Decor("pickup_bunting", "Pickup Bunting", DecorSlot.PickupWall, 40, 2, 1, new Color(0.95f, 0.60f, 0.55f));
+        Decor("parcel_basket", "Wicker Parcel Basket", DecorSlot.PickupShelf, 50, 2, 1, new Color(0.80f, 0.65f, 0.40f));
+        Decor("string_spool", "Big Spool of Parcel String", DecorSlot.PickupShelf, 90, 4, 3, new Color(0.85f, 0.80f, 0.65f));
         Cosmetic("hair_curly", "Big Curls", CosmeticSlot.Hair, 4, 30, new Color(0.40f, 0.26f, 0.18f));
         Cosmetic("top_cardigan", "Cosy Cardigan", CosmeticSlot.Top, 2, 35, new Color(0.60f, 0.45f, 0.70f));
         Cosmetic("acc_glasses", "Round Glasses", CosmeticSlot.Accessory, 0, 20, new Color(0.20f, 0.18f, 0.20f));
@@ -613,6 +619,24 @@ public static class PlaceholderGenerator
                     EditorUtility.SetDirty(people[i]);
                 }
         }
+        // Later shops (owner, 2026-11-01): Jasper Quill's curiosities (level 6) and Ravi Sen's repair shop (level 9). Both
+        // run shops (never come in as customers) and both can be befriended or romanced.
+        var jasper = Customer("jasper", "Jasper Quill", "Runs Quill's Curiosities in the old customs house (he/him). Dry, kind, collects stories along with the objects.",
+                 new Color(0.45f, 0.40f, 0.55f), new (CraftItemDef, int)[0]);
+        var ravi = Customer("ravi", "Ravi Sen", "Runs Byte & Bobbin, the repair shop in the chandlery loft (they/them). Fixes anything, builds gadgets.",
+                 new Color(0.35f, 0.55f, 0.65f), new (CraftItemDef, int)[0]);
+        Character(jasper, "jasper", 1, true);
+        Character(ravi, "ravi", 1, true);
+        ShopOwner(jasper); ShopOwner(ravi);
+        Curio("reading_lamp", "Green Reading Lamp", DecorSlot.Counter, 120, 3, 6, new Color(0.30f, 0.55f, 0.35f), DecorBoost.Experience, 10);
+        Curio("sewing_box", "Victorian Sewing Box", DecorSlot.CounterLeft, 160, 4, 6, new Color(0.55f, 0.35f, 0.25f), DecorBoost.Experience, 15);
+        Curio("ships_bell", "Ship's Bell", DecorSlot.Wall, 140, 3, 6, new Color(0.80f, 0.65f, 0.30f), DecorBoost.Visitors, 30, 11, 14);
+        Curio("grandfather_clock", "Grandfather Clock", DecorSlot.Corner, 200, 5, 7, new Color(0.45f, 0.30f, 0.20f), DecorBoost.Visitors, 25, 15, 18);
+        Curio("shell_mobile", "Seashell Mobile", DecorSlot.PickupShelf, 90, 3, 6, new Color(0.95f, 0.85f, 0.80f), DecorBoost.Visitors, 20, 9, 11);
+        Curio("lighthouse_painting", "Lighthouse Painting", DecorSlot.PickupWall, 110, 3, 6, new Color(0.85f, 0.35f, 0.30f), DecorBoost.Friendship, 25, friend: AssetDatabase.LoadAssetAtPath<CustomerDef>($"{Root}/Data/Customers/customer_isla.asset"));
+        Curio("tide_chart", "Old Tide Chart", DecorSlot.Wall, 100, 3, 6, new Color(0.65f, 0.75f, 0.80f), DecorBoost.Friendship, 25, friend: AssetDatabase.LoadAssetAtPath<CustomerDef>($"{Root}/Data/Customers/customer_tobias.asset"));
+        Curio("teapot_set", "Teapot Collection", DecorSlot.Floor, 130, 4, 7, new Color(0.90f, 0.85f, 0.95f), DecorBoost.Friendship, 25, friend: AssetDatabase.LoadAssetAtPath<CustomerDef>($"{Root}/Data/Customers/customer_dot.asset"));
+
         // Deeper new crafts (owner, 2026-11-01): tape the canvas edges; lay out and press the quilt top; tie off the weaving.
         InsertBefore(cushion, StepKind.MountCanvas, Step(StepKind.BindCanvas, "Tape the canvas edges", materials: Need("masking_tape", 1)));
         InsertBefore(quilt, StepKind.SewRows, Step(StepKind.LayoutPatches, "Lay out the patches"));
@@ -1080,6 +1104,17 @@ public static class PlaceholderGenerator
         def.decorId = id; def.displayName = name; def.slot = slot; def.price = price; def.charm = charm; def.minLevel = level; def.color = c;
         def.icon = MakeSprite($"{Root}/Art/Decor/decor_{id}.png", 256, 256, c);
         AssetDatabase.CreateAsset(def, assetPath);
+    }
+
+    /// A piece from Quill's Curiosities: it does something (DecorDef.boost). Set once; edit freely.
+    static void Curio(string id, string name, DecorSlot slot, int price, int charm, int level, Color c, DecorBoost boost, int amount,
+                      int from = 0, int to = 0, CustomerDef friend = null)
+    {
+        Decor(id, name, slot, price, charm, level, c);
+        var def = AssetDatabase.LoadAssetAtPath<DecorDef>($"{Root}/Data/Decor/decor_{id}.asset");
+        if (def == null || def.shop == "curios") return;
+        def.shop = "curios"; def.boost = boost; def.boostAmount = amount; def.boostFrom = from; def.boostTo = to; def.boostFriend = friend;
+        EditorUtility.SetDirty(def);
     }
 
     static void Likes(CustomerDef c, float chance)

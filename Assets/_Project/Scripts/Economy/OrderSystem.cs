@@ -35,6 +35,7 @@ public class Order
     [NonSerialized] public CraftItemDef item;   // looked up from itemId after loading
 
     /// How it's made. A pattern-only order is just the design step.
+    public int agreedPrice;           // online orders: what the buyer agreed to pay
     public int knitStyle = 1;         // 0: started before stripes cycled through every colour (save version 26); 1: now
     public bool legacyKnit;           // started before garments (save version 13): knitted as one square, on the old recipe
     public RecipeStep[] Steps => item == null || patternOnly ? DesignOnly : legacyKnit ? LegacyKnitSteps(item) : item.Steps;

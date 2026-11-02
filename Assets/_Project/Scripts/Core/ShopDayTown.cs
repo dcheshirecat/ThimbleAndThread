@@ -37,6 +37,8 @@ public partial class ShopDay
         new TownPlace("boutique", "Moreau's Boutique", "Clothes, hair and accessories.", null, ScreenId.Boutique),
         new TownPlace("patterns", "Finch's Pattern Parlour", "Patterns, and magazines full of them.", null, ScreenId.PatternShop),
         new TownPlace("workshop", "Marsh's Workshop", "Furniture and decorations for the shop.", null, ScreenId.Furniture),
+        new TownPlace("curios", "Quill's Curiosities", "Antiques and oddments in the old customs house.", null, ScreenId.Curios),
+        new TownPlace("tech", "Byte & Bobbin", "Repairs and gadgets, up in the chandlery loft.", null, ScreenId.TechShop),
     };
 
     public const int OutingsPerSaturday = 3;
@@ -75,9 +77,7 @@ public partial class ShopDay
         if (place.shop != ScreenId.Title)
         {
             if (!ShopOpen(place.shop)) { Narrate(null, $"{place.name}. {place.blurb}\n\nIt isn't open to you yet.", ("Back to the map", BackToMap)); return; }
-            var owner = System.Array.Find(content.customers, c => c != null && c.shopOwner && ShopOf(c.customerId) == place.shop)
-                        ?? (place.shop == ScreenId.Furniture ? content.Customer(FurnitureOwnerId) : null);
-            options.Add(("Go inside", () => EnterShop(owner != null ? owner.customerId : "", place.shop)));
+            options.Add(("Go inside", () => EnterShop(OwnerOf(place.shop), place.shop)));
         }
         foreach (var c in people)
         {

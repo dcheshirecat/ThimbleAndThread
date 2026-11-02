@@ -114,6 +114,20 @@ public class CraftXp
 }
 
 [Serializable]
+public class OnlineOffer
+{
+    public string patternId, itemId;
+    public int price;
+}
+
+[Serializable]
+public class SecondHand
+{
+    public string name;
+    public int price;
+}
+
+[Serializable]
 public class BookProgress
 {
     public string id;      // the book (SupplyDef id)
@@ -141,7 +155,7 @@ public class MarketPurchase
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 30;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique). 20: the day clock (clock, nextArrival). 21: the Sunday market stall (stall). 22: special orders on their way (deliveries). 23: sales to other players (SentCode.price/paid), surpriseOwed. 24: furniture (decor, decorPlaced). 25: the notices bell (noticesSeen). 26: scarf stripes in every colour (Order.knitStyle). 27: craft mastery by orders handed over (craftOrders), bonusXp, pattern stamps (OwnedPattern.made). 28: hearts (CustomerRelationship.heartPoints). 29: pattern copies, the stall's patterns, magazines. 30: books read chapter by chapter
+    public const int CurrentVersion = 31;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique). 20: the day clock (clock, nextArrival). 21: the Sunday market stall (stall). 22: special orders on their way (deliveries). 23: sales to other players (SentCode.price/paid), surpriseOwed. 24: furniture (decor, decorPlaced). 25: the notices bell (noticesSeen). 26: scarf stripes in every colour (Order.knitStyle). 27: craft mastery by orders handed over (craftOrders), bonusXp, pattern stamps (OwnedPattern.made). 28: hearts (CustomerRelationship.heartPoints). 29: pattern copies, the stall's patterns, magazines. 30: books read chapter by chapter. 31: online orders, automations, expansions, second-hand
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
@@ -179,7 +193,11 @@ public class SaveData
     public int totalCommissions;                                     // commissions handed over, ever
     public List<CraftCount> itemsMade = new List<CraftCount>();
     public List<CraftCount> craftOrders = new List<CraftCount>();
-    public List<BookProgress> books = new List<BookProgress>();       // books being read, chapter by chapter    // orders handed over, per craft: mastery levels (Progression.Level)
+    public List<BookProgress> books = new List<BookProgress>();
+    public List<OnlineOffer> onlineOffers = new List<OnlineOffer>();  // today's online orders, waiting for a yes
+    public List<string> automations = new List<string>();            // bought at Byte & Bobbin
+    public List<string> expansions = new List<string>();             // the attic, the basement
+    public List<SecondHand> secondhand = new List<SecondHand>();      // finds waiting on the second-hand shelf       // books being read, chapter by chapter    // orders handed over, per craft: mastery levels (Progression.Level)
     public int bonusXp;                                               // experience not tied to a craft (e.g. good days at the stall)      // things finished, per craft
     public List<string> questsClaimed = new List<string>();          // QuestDef ids whose reward was claimed
     public List<string> questsReady = new List<string>();            // reached and announced, not claimed yet

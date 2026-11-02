@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bffa215d851694a41b91596c5cef0392, type: 3}
+  m_Name: decor_lighthouse_painting
+  m_EditorClassIdentifier: Assembly-CSharp::DecorDef
+  decorId: lighthouse_painting
+  displayName: Lighthouse Painting
+  slot: 5
+  price: 110
+  charm: 3
+  minLevel: 6
+  color: {r: 0.85, g: 0.35, b: 0.3, a: 1}
+  icon: {fileID: 21300000, guid: 1b706e01d4580574ea8b4393683b8f86, type: 3}
+  shop: curios
+  boost: 3
+  boostAmount: 25
+  boostFrom: 0
+  boostTo: 0
+  boostFriend: {fileID: 11400000, guid: 0929323ae57ef9d4b8b8d714fa2ab694, type: 2}

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bffa215d851694a41b91596c5cef0392, type: 3}
+  m_Name: decor_teapot_set
+  m_EditorClassIdentifier: Assembly-CSharp::DecorDef
+  decorId: teapot_set
+  displayName: Teapot Collection
+  slot: 2
+  price: 130
+  charm: 4
+  minLevel: 7
+  color: {r: 0.9, g: 0.85, b: 0.95, a: 1}
+  icon: {fileID: 21300000, guid: 8debb65471a70504a9d9eb086e365696, type: 3}
+  shop: curios
+  boost: 3
+  boostAmount: 25
+  boostFrom: 0
+  boostTo: 0
+  boostFriend: {fileID: 11400000, guid: cacf8fedda1365e459edcaae7491d1f9, type: 2}

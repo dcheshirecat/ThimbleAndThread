@@ -120,7 +120,7 @@ public class CustomizeUI : MonoBehaviour
         if (lookTab != null) { lookTab.color = shopMode ? Color.white : new Color(1f, 0.92f, 0.7f); shopTab.color = shopMode ? new Color(1f, 0.92f, 0.7f) : Color.white; }
         if (shopMode && decorLabels != null)
         {
-            string[] spots = { "Wall", "Counter", "Floor", "By the door" };
+            string[] spots = { "Wall", "Counter", "Floor", "By the door", "Counter, left", "Pickup wall", "Pickup shelf" };
             for (int i = 0; i < decorLabels.Length; i++)
             {
                 var d = day.Placed((DecorSlot)i);
@@ -128,7 +128,7 @@ public class CustomizeUI : MonoBehaviour
                 decorLabels[i].text = $"{spots[i]}: " + (d != null ? d.displayName : owned > 0 ? "nothing" : "nothing yet");
             }
             charmText.text = day.content.decor.Length == 0 ? "" :
-                $"Charm {day.Charm}: customers pay {day.Charm}% more. Buy furniture and decorations at the workshop (Shops, by day).";
+                $"Charm {day.Charm}: customers pay {day.Charm}% more. Buy pieces at the workshop and the curiosity shop (Shops, by day).";
         }
     }
 }

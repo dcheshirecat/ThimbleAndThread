@@ -849,5 +849,11 @@ fromMagazine ??? until makeable) + copies at the pattern shop (no ordering patte
 teaches SkillDef.book) and Decorate replace Pass the Time; no long-carry mistakes; workshop at level 3; introduction after choosing a
 slot (TutorialUI returns to Customize); first-day guide (ShopDayGuide, flag guide:on); MinFont 40 in TestSceneBuilder.MakeText.
 Save version 30.
-TO DO (batch 4): 7 a second decor shop with boosts + romanceable owner; 21 decoratable pickup area; 36 counter decor + automatic
-computer; 9 online orders (Friday courier); 19 tech shop automations; 22 expansions (attic, basement, second-hand).
+DONE batch 4 (Core/ShopDayLate.cs; save version 31): Quill's Curiosities (ScreenId.Curios, Jasper Quill, level 6; FurnitureUI with
+shopKey "curios"; DecorDef.shop/boost: Experience %, Visitors % in hours, Friendship % with one person); online orders (level 7,
+flag online:open: computer on the counter, Online Orders panel, SaveData.onlineOffers each morning, Order.agreedPrice, Courier()
+on Fridays); Byte & Bobbin (ScreenId.TechShop, Ravi Sen they/them, level 9, TechShopUI: the door-answering bell (AutoServe: no
+friendship) and the order inbox); expansions at Marsh's Workshop (attic level 7, basement level 9; SortThrough once a day ->
+SaveData.secondhand, sold to visitors in WhatTheyWant); DecorSlot CounterLeft, PickupWall, PickupShelf (the pickup corner has
+shelving and its own decor). Dialogue/jasper.ink, ravi.ink (drafts for the owner to edit). Romance options now include Jasper, Ravi.
+Open: art; ci-lowmem; owner's questions (landscape backgrounds; customer customization).

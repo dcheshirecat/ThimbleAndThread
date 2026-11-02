@@ -43,7 +43,7 @@ public class StampPopup : MonoBehaviour
         var gm = GameManager.Instance;
         if (gm == null || gm.Save == null) return false;
         return gm.Current is ScreenId.Shop or ScreenId.Workroom or ScreenId.OrderBook or ScreenId.Workbench or ScreenId.Result
-            or ScreenId.DaySummary or ScreenId.Market or ScreenId.Boutique or ScreenId.PatternStudio or ScreenId.Furniture or ScreenId.PatternShop;
+            or ScreenId.DaySummary or ScreenId.Market or ScreenId.Boutique or ScreenId.PatternStudio or ScreenId.Furniture or ScreenId.PatternShop or ScreenId.Curios or ScreenId.TechShop or ScreenId.TownMap;
     }
 
     void Update() { if (!showing && queue.Count > 0) Next(); }   // a calm moment can come without a screen change
