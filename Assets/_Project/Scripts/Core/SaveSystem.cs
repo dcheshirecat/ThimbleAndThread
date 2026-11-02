@@ -49,6 +49,7 @@ public static class SaveSystem
         data.deliveries ??= new System.Collections.Generic.List<Delivery>();
         data.decor ??= new System.Collections.Generic.List<string>();
         data.decorPlaced ??= new System.Collections.Generic.List<string>();
+        data.letters ??= new System.Collections.Generic.List<Letter>();
         data.visitorsToday ??= new System.Collections.Generic.List<string>();
         data.ownedSupplies ??= new System.Collections.Generic.List<string>();
         data.unlockedItems ??= new System.Collections.Generic.List<string>();

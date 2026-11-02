@@ -48,6 +48,15 @@ public class StallStats
     public int piecesSold, patternsSold, bestSunday, friendSales, bargains;
 }
 
+/// A letter from a friend (ShopDayLetters): posted one day, in the morning post the next.
+[Serializable]
+public class Letter
+{
+    public string from, kind, text;
+    public int posted, arrives;
+    public bool read;
+}
+
 /// A piece made for the Sunday market stall, waiting to be sold.
 [Serializable]
 public class StallItem
@@ -162,7 +171,7 @@ public class MarketPurchase
 [Serializable]
 public class SaveData
 {
-    public const int CurrentVersion = 32;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique). 20: the day clock (clock, nextArrival). 21: the Sunday market stall (stall). 22: special orders on their way (deliveries). 23: sales to other players (SentCode.price/paid), surpriseOwed. 24: furniture (decor, decorPlaced). 25: the notices bell (noticesSeen). 26: scarf stripes in every colour (Order.knitStyle). 27: craft mastery by orders handed over (craftOrders), bonusXp, pattern stamps (OwnedPattern.made). 28: hearts (CustomerRelationship.heartPoints). 29: pattern copies, the stall's patterns, magazines. 30: books read chapter by chapter. 31: online orders, automations, expansions, second-hand. 32: colourways customers ask for (Order.colourWish), Sunday market goals (stallStats)
+    public const int CurrentVersion = 33;   // 2: added night. 3: added patterns. 4: counted stock. 5: recipe steps per order. 6: commissions. 7: display spots, market sell-outs. 8: chapters, skills, upgrades. 9: dialogue flags, romance. 10: trade codes. 11: unannounced pickups (Order.pickupDay), recentLines. 12: player profile, known preferences. 13: knitted garments (sweaters and scarves in progress restart their knitting). 14: things made for yourself. 15: stamps (achievements). 16: things learned about people (notes), who you've met, old knitting kept. 17: cross stitch fabric in pieces. 18: achievement quests, things made per craft, commissions counted. 19: shops open over time (flags shop:market, shop:boutique). 20: the day clock (clock, nextArrival). 21: the Sunday market stall (stall). 22: special orders on their way (deliveries). 23: sales to other players (SentCode.price/paid), surpriseOwed. 24: furniture (decor, decorPlaced). 25: the notices bell (noticesSeen). 26: scarf stripes in every colour (Order.knitStyle). 27: craft mastery by orders handed over (craftOrders), bonusXp, pattern stamps (OwnedPattern.made). 28: hearts (CustomerRelationship.heartPoints). 29: pattern copies, the stall's patterns, magazines. 30: books read chapter by chapter. 31: online orders, automations, expansions, second-hand. 32: colourways customers ask for (Order.colourWish), Sunday market goals (stallStats). 33: letters from friends
 
     public int version = CurrentVersion;
     public string lastPlayed;                 // ISO 8601, for the save select screen
@@ -216,6 +225,7 @@ public class SaveData
     public List<string> knownPrefs = new List<string>();
     public int noticesSeen;                                           // stamps already seen in the notices list (the top bar's bell)
     public List<Stamp> stamps = new List<Stamp>();                   // achievements, stamped in the Journal
+    public List<Letter> letters = new List<Letter>();                // letters from friends (version 33)
     public List<string> notes = new List<string>();                  // "customerId|what you learned" from their dialogue (~ note)
     public List<string> met = new List<string>();                    // customers who've come in (or whose shop you've visited)             // "customerId:preferenceId" the player has been told
     public List<string> recentLines = new List<string>();            // dialogue knots heard lately, newest first (to avoid repeats)

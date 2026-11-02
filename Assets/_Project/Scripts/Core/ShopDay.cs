@@ -51,6 +51,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
 
     void FriendshipLevelUp(string customerId, int level)
     {
+        LetterForLevel(customerId, level);
         var who = CustomerFor(customerId);
         if (who != null) Stamps.Earn(Save, $"friend:{customerId}:{level}", who.displayName, $"Friendship level {level}", StampTheme.Friendship);
         if (who != null && level >= CommissionOfferLevel && Progress.Knows(PatternDesignSkill) && !who.shopOwner)
@@ -373,6 +374,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             var knots = ScenesDue(customer);
             var hello = VisitKnot(customer);
             if (hello != null) knots.Add(hello);
+            var pal = PalFor(customer);   // now and then another friend's in too, and they chat (ShopDayMeetings)
+            if (pal != null) { FriendsMeet(customer, pal, () => Play(customer, knots, () => WhatTheyWant(customer))); return; }
             Play(customer, knots, () => WhatTheyWant(customer));
             return;
         }
@@ -1053,6 +1056,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         Courier();
         NewOnlineOffers();
         InviteVisitors();
+        MorningPost();
         GM.Persist();
         LastMessage = "";
         if (IsSaturday || IsSunday) { StartWeekendDay(); return; }
@@ -2160,6 +2164,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
 
         GM.AddCoins(price);
         GM.AddRelationshipPoints(Selected.customerId, points);
+        if (Selected.customerId != PlayerProfile.SelfId) PostLetter(Selected.customerId, "first");   // a thank-you, the first time
         Save.orders.Remove(Selected);
         Save.deliveredToday++;
         Save.totalDelivered++;

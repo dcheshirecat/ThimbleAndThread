@@ -11,7 +11,7 @@ using UnityEngine.UI;
 /// bottom go to Trade (Settings is the gear on the top bar). Turning a page flips it over at the spine.
 public class JournalUI : MonoBehaviour
 {
-    public enum Page { Orders, Story, Friends, Skills, Supplies, Stamps, Goals }   // no News tab (owner, 2026-10-31)
+    public enum Page { Orders, Story, Friends, Skills, Supplies, Stamps, Goals, Letters }   // Letters: owner, 2026-11-02   // no News tab (owner, 2026-10-31)
 
     public ShopDay day;
     public ScreenRouter router;
@@ -145,6 +145,7 @@ public class JournalUI : MonoBehaviour
             Page.Skills => Progress.SkillsReport(),
             Page.Supplies => Supplies(),
             Page.Stamps => StampsPage(),
+            Page.Letters => day.LettersPage(),
             _ => Goals(),
         });
     }

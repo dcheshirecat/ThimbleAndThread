@@ -352,6 +352,13 @@ public partial class ShopDay
     {
         shopper = null;
         LastMessage = StallSales > 0 ? $"A good Sunday at the market: {StallSales} sold." : "A quiet Sunday at the market.";
+        if (FestivalToday != null && StallSales > 0)   // a friend who saw your festival stall writes
+        {
+            CustomerRelationship best = null;
+            foreach (var r in Save.relationships)
+                if (Save.met.Contains(r.customerId) && CustomerFor(r.customerId) is CustomerDef c && !c.shopOwner && (best == null || r.points + r.level * 1000 > best.points + best.level * 1000)) best = r;
+            if (best != null) PostLetter(best.customerId, "fair");
+        }
         StallSales = 0;
         CloseShop();
     }

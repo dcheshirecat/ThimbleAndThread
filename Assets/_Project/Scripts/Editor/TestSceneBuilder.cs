@@ -1069,11 +1069,11 @@ public static class TestSceneBuilder
         spine.offsetMin = spine.offsetMax = Vector2.zero;
         Label(paper, "BookTitle", new Vector2(0.05f, 0.93f), new Vector2(0.95f, 0.985f), 84, TextAnchor.MiddleCenter).text = "Journal";
         var jTabRows = new[] { Row(paper, 0.5f, 0.9f), Row(paper, 0.5f, 0.853f) };   // two rows (four, then three), inside the page
-        var jTabNames = new[] { "Orders", "Story", "Friends", "Skills", "Supplies", "Stamps", "Goals" };
+        var jTabNames = new[] { "Orders", "Story", "Friends", "Skills", "Supplies", "Stamps", "Goals", "Letters" };
         journal.tabs = new Image[jTabNames.Length];
         for (int i = 0; i < jTabNames.Length; i++)
         {
-            var tab = Button(jTabRows[i < 4 ? 0 : 1], "Tab " + jTabNames[i], null, 390);
+            var tab = Button(jTabRows[i < 5 ? 0 : 1], "Tab " + jTabNames[i], null, 390);   // Skills is hidden: four a row
             tab.GetComponent<LayoutElement>().preferredHeight = 110;
             tab.GetComponentInChildren<Text>().text = jTabNames[i];
             tab.GetComponentInChildren<Text>().fontSize = 46;
