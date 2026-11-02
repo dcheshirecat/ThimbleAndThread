@@ -918,3 +918,20 @@ birthday); your own shop is a red pin (Go Home). Tapping a pin opens a card (blu
   Drive folder workflow ("Game Art - Thimble and Thread"; Mockups/ and Masters/ subfolders).
 - More dialogue: 3 visit lines + a second Saturday + a gift reaction for the 15 quieter characters; gift reactions for the rest;
   ShopDay.RecentMemory 200.
+
+## Owner list, 2026-11-02 evening (branch minigames; build in batches, commit + push each, merge solid batches)
+Picked from Claude's ideas list, plus three of the owner's own:
+1. Commissions with real constraints (e.g. "no more than 3 colours", "must use the alpaca"), judged at pickup.
+2. Repairs: customers bring things to mend (darning, patching) - a new kind of minigame.
+3. Seasonal supplies (autumn colours, winter metallics...) tied to the calendar's seasons.
+4. A shop window you dress each week; what's in it changes who stops by.
+5. Bulk orders (12 coasters for the café...): bigger jobs over several evenings.
+6. Letters in the post from friends after milestones, kept in the journal.
+7. Friends who visit each other in your shop and chat while you watch.
+8. Weather that changes who visits and what they want.
+9. Festivals through the year (harvest fair, winter market...), each with its own stall rules.
+10. Pets for the shop, bought at a PET STORE (a new shop): pet it, name it, it naps on things.
+11. Cloud save sync.
+12. Trade options easier and more simplified.
+13. Move decorations anywhere in the shop (free placement), not just in and out of fixed spots.
+14. Read a book / pass-the-time options live in the COMPUTER ON THE COUNTER, not the button at the bottom of the shop.
