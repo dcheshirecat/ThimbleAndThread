@@ -167,6 +167,39 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     public GameObject patternShopButton, furnitureButton, curiosButton, techButton;
     public void GoToCurios() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.CuriosOwnerId, ScreenId.Curios); }
     public void GoToTech() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.TechOwnerId, ScreenId.TechShop); }
+    public GameObject petShopButton;
+    public void GoToPetShop() { shopsMenu.SetActive(false); day.EnterShop(ShopDay.PetOwnerId, ScreenId.PetShop); }
+
+    // ---- Shop pets (ShopDayPets): tap to stroke; the first time, name them ----
+    public GameObject petNameLayer;
+    public InputField petNameField;
+    public Text petNameTitle;
+    string namingPet;
+
+    public void TapPet(DecorPiece piece)
+    {
+        var pet = piece.GetComponent<DecorPet>();
+        if (pet != null) pet.Wake();
+        if (day.PetName(piece.decorId) == null)
+        {
+            namingPet = piece.decorId;
+            petNameTitle.text = $"What will you call your {day.Decor(piece.decorId)?.displayName.ToLower()}?";
+            petNameField.text = "";
+            petNameLayer.SetActive(true);
+            petNameLayer.transform.SetAsLastSibling();
+            return;
+        }
+        Stamps.Notice(day.StrokePet(piece.decorId));
+        AudioManager.Play(Sfx.Click);
+    }
+
+    public void ConfirmPetName()
+    {
+        if (namingPet != null && !string.IsNullOrWhiteSpace(petNameField.text)) day.SetPetName(namingPet, petNameField.text);
+        petNameLayer.SetActive(false);
+        if (namingPet != null && day.PetName(namingPet) != null) Stamps.Notice(day.StrokePet(namingPet));
+        namingPet = null;
+    }
 
     // ---- Things to do between customers (owner, 2026-11-02: real things, not minigames): read (decorating: DecorEditor) ----
     public GameObject pastimeButton;      // the row of them in the computer's panel
@@ -336,7 +369,8 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
             piece.decorId = p.def.decorId;
             piece.slot = -1;
             piece.placed = true;
-            img.raycastTarget = decorEditor != null && decorEditor.Editing;
+            img.raycastTarget = p.def.pet || (decorEditor != null && decorEditor.Editing);   // pets can always be stroked
+            if (p.def.pet && img.GetComponent<DecorPet>() == null) img.gameObject.AddComponent<DecorPet>().scene = this;
             DecorShown.Add(piece);
         }
     }
@@ -403,6 +437,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         ShopEntry(furnitureButton, ScreenId.Furniture, "The Workshop");
         ShopEntry(curiosButton, ScreenId.Curios, "The Curiosity Shop");
         ShopEntry(techButton, ScreenId.TechShop, "The Repair Shop");
+        ShopEntry(petShopButton, ScreenId.PetShop, "The Pet Shop");
         if (!day.AnyShopOpen && shopsMenu.activeSelf) shopsMenu.SetActive(false);
     }
 

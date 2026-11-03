@@ -39,6 +39,7 @@ public partial class ShopDay
         new TownPlace("workshop", "Marsh's Workshop", "Furniture and decorations for the shop.", null, ScreenId.Furniture),
         new TownPlace("curios", "Quill's Curiosities", "Antiques and oddments in the old customs house.", null, ScreenId.Curios),
         new TownPlace("tech", "Byte & Bobbin", "Repairs and gadgets, up in the chandlery loft.", null, ScreenId.TechShop),
+        new TownPlace("pets", "Wren's Pet Emporium", "Kittens in the window, a parrot by the door.", null, ScreenId.PetShop),
     };
 
     /// Where each place sits on the town map (owner, 2026-11-02: an interactive map of points, not a list), as fractions of the
@@ -52,6 +53,7 @@ public partial class ShopDay
         "cafe" => new Vector2(0.28f, 0.25f),
         "home" => new Vector2(0.50f, 0.27f),       // Thimble & Thread
         "curios" => new Vector2(0.74f, 0.22f),
+        "pets" => new Vector2(0.34f, 0.34f),
         "tech" => new Vector2(0.88f, 0.34f),
         "studio" => new Vector2(0.66f, 0.38f),
         "boutique" => new Vector2(0.16f, 0.40f),

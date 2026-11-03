@@ -296,6 +296,21 @@ public static class TestSceneBuilder
         windowClose.GetComponentInChildren<Text>().text = "Done";
         windowLayer.SetActive(false);
         shopScene.windowLayer = windowLayer;
+        // Naming a shop pet (the first time it's tapped)
+        var petLayer = new GameObject("Pet Name Layer", typeof(RectTransform), typeof(Image));
+        petLayer.transform.SetParent(p, false);
+        Stretch((RectTransform)petLayer.transform);
+        petLayer.GetComponent<Image>().color = new Color(0, 0, 0, 0.4f);
+        var petBox = Shape(petLayer.transform, "Pet Name Box", new Vector2(0.5f, 0.55f), new Vector2(1600, 700), new Color(0.97f, 0.95f, 0.90f), uiSprite);
+        petBox.GetComponent<Image>().raycastTarget = true;
+        shopScene.petNameTitle = Label(petBox, "Title", new Vector2(0.05f, 0.7f), new Vector2(0.95f, 0.95f), 64, TextAnchor.MiddleCenter);
+        shopScene.petNameTitle.color = Ink;
+        shopScene.petNameField = NameField(petBox, new Vector2(0.5f, 0.5f));
+        var petOk = Button(petBox, "Pet Name OK", shopScene.ConfirmPetName, 500);
+        Place(petOk, new Vector2(0.5f, 0.15f), new Vector2(500, 140));
+        petOk.GetComponentInChildren<Text>().text = "OK";
+        petLayer.SetActive(false);
+        shopScene.petNameLayer = petLayer;
         var bubble = Shape(mid, "Bubble", new Vector2(0.5f, 0.745f), new Vector2(1500, 170), Color.white, uiSprite);
         shopScene.bubble = bubble.gameObject;
         shopScene.bubbleText = MakeText(bubble, "Text", "", 56);
@@ -359,6 +374,9 @@ public static class TestSceneBuilder
         var menuTech = Button(sm, "Menu Tech", shopScene.GoToTech, 800);
         menuTech.GetComponentInChildren<Text>().text = "The Repair Shop";
         shopScene.techButton = menuTech.gameObject;
+        var menuPets = Button(sm, "Menu Pets", shopScene.GoToPetShop, 800);
+        menuPets.GetComponentInChildren<Text>().text = "The Pet Shop";
+        shopScene.petShopButton = menuPets.gameObject;
         Button(sm, "Menu Close", shopScene.ToggleShops, 800).GetComponentInChildren<Text>().text = "Close";
         shopsLayer.SetActive(false);
         shopScene.shopsMenu = shopsLayer;
@@ -795,6 +813,21 @@ public static class TestSceneBuilder
         b = Row(p, 0.5f, 0.04f);
         Button(b, "Chat with Benji", furniture.Chat, 860).GetComponentInChildren<Text>().text = "Chat";
         Button(b, "Back", furniture.Leave, 860);
+
+        // Wren's Pet Emporium (owner, 2026-11-02): shop pets (FurnitureUI, shopKey "pets")
+        p = Panel(ScreenId.PetShop, "Wren's Pet Emporium", new Color(0.82f, 0.90f, 0.78f));
+        Coins(p);
+        var pets = canvasGo.AddComponent<FurnitureUI>();
+        pets.day = day; pets.screen = ScreenId.PetShop; pets.shopKey = "pets";
+        pets.statusText = Label(p, "Status", new Vector2(0.21f, 0.79f), new Vector2(0.745f, 0.92f), 52, TextAnchor.MiddleCenter);
+        OwnerPortrait(p, content.Customer(ShopDay.PetOwnerId), pets.Chat);
+        pets.shelf = Shelf(ScrollList(p, 0.12f, 0.77f));
+        pets.shelf.name = "Pet Shelves";
+        pets.tileTemplate = SupplyTile(pets.shelf);
+        pets.tileTemplate.name = "Pet Template";
+        b = Row(p, 0.5f, 0.04f);
+        Button(b, "Chat with Poppy", pets.Chat, 860).GetComponentInChildren<Text>().text = "Chat";
+        Button(b, "Back", pets.Leave, 860);
 
         // Quill's Curiosities: decorations that do something (FurnitureUI, shopKey "curios")
         p = Panel(ScreenId.Curios, "Quill's Curiosities", new Color(0.78f, 0.74f, 0.84f));

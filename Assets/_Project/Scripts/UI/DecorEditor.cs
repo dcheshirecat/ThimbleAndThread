@@ -146,7 +146,8 @@ public class DecorEditor : MonoBehaviour
     void SetSpotsDraggable(bool on)
     {
         if (scene == null) return;
-        foreach (var piece in scene.DecorShown) if (piece != null) piece.GetComponent<Image>().raycastTarget = on;
+        foreach (var piece in scene.DecorShown)
+            if (piece != null) piece.GetComponent<Image>().raycastTarget = on || (day.Decor(piece.decorId) is DecorDef d && d.pet);   // pets can always be stroked
     }
 
 

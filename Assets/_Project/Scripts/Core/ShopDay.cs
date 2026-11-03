@@ -84,13 +84,13 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
 
     public static (int opens, int closes) HoursOf(ScreenId shop) =>
         shop == ScreenId.Boutique ? (10 * 60, 18 * 60) : shop == ScreenId.PatternShop ? (11 * 60, 17 * 60)
-        : shop == ScreenId.Furniture ? (8 * 60, 16 * 60) : shop == ScreenId.Curios ? (10 * 60, 17 * 60) : (9 * 60, 17 * 60);
+        : shop == ScreenId.Furniture ? (8 * 60, 16 * 60) : shop == ScreenId.Curios ? (10 * 60, 17 * 60) : shop == ScreenId.PetShop ? (9 * 60, 16 * 60) : (9 * 60, 17 * 60);
 
     /// What a shop's called before you've met its owner.
     public static string ShopName(ScreenId shop) => shop switch
     {
         ScreenId.Market => "The Supply Market", ScreenId.Boutique => "The boutique", ScreenId.Furniture => "The workshop",
-        ScreenId.Curios => "The curiosity shop", ScreenId.TechShop => "The repair shop", _ => "The pattern shop",
+        ScreenId.Curios => "The curiosity shop", ScreenId.TechShop => "The repair shop", ScreenId.PetShop => "The pet shop", _ => "The pattern shop",
     };
 
     /// Open today and within its hours.
@@ -156,7 +156,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
 
     /// Whether the player is in one of the town's shops right now.
     public bool InAShop => GM.Current == ScreenId.Market || GM.Current == ScreenId.Boutique || GM.Current == ScreenId.PatternShop || GM.Current == ScreenId.Furniture
-                           || GM.Current == ScreenId.Curios || GM.Current == ScreenId.TechShop;
+                           || GM.Current == ScreenId.Curios || GM.Current == ScreenId.TechShop || GM.Current == ScreenId.PetShop;
 
     void RingBell()
     {
@@ -1439,19 +1439,19 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     public static ScreenId ShopOf(string ownerId) =>
         ownerId == MarketOwnerId ? ScreenId.Market : ownerId == PatternShopOwnerId ? ScreenId.PatternShop
         : ownerId == FurnitureOwnerId ? ScreenId.Furniture : ownerId == CuriosOwnerId ? ScreenId.Curios
-        : ownerId == TechOwnerId ? ScreenId.TechShop : ScreenId.Boutique;
+        : ownerId == TechOwnerId ? ScreenId.TechShop : ownerId == PetOwnerId ? ScreenId.PetShop : ScreenId.Boutique;
 
     public static string OwnerOf(ScreenId shop) => shop switch
     {
         ScreenId.Market => MarketOwnerId, ScreenId.PatternShop => PatternShopOwnerId, ScreenId.Furniture => FurnitureOwnerId,
-        ScreenId.Curios => CuriosOwnerId, ScreenId.TechShop => TechOwnerId, _ => BoutiqueUI.OwnerId,
+        ScreenId.Curios => CuriosOwnerId, ScreenId.TechShop => TechOwnerId, ScreenId.PetShop => PetOwnerId, _ => BoutiqueUI.OwnerId,
     };
 
     public static string FlagOf(ScreenId shop) => shop == ScreenId.Market ? MarketFlag : shop == ScreenId.Boutique ? BoutiqueFlag
-        : shop == ScreenId.Furniture ? FurnitureFlag : shop == ScreenId.Curios ? CuriosFlag : shop == ScreenId.TechShop ? TechFlag : PatternShopFlag;
+        : shop == ScreenId.Furniture ? FurnitureFlag : shop == ScreenId.Curios ? CuriosFlag : shop == ScreenId.TechShop ? TechFlag : shop == ScreenId.PetShop ? PetFlag : PatternShopFlag;
     public bool ShopOpen(ScreenId shop) => Save != null && Save.flags.Contains(FlagOf(shop));
     public bool AnyShopOpen => ShopOpen(ScreenId.Market) || ShopOpen(ScreenId.Boutique) || ShopOpen(ScreenId.PatternShop) || ShopOpen(ScreenId.Furniture)
-                               || ShopOpen(ScreenId.Curios) || ShopOpen(ScreenId.TechShop);
+                               || ShopOpen(ScreenId.Curios) || ShopOpen(ScreenId.TechShop) || ShopOpen(ScreenId.PetShop);
 
     public void CheckShops()
     {
@@ -1463,6 +1463,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             OpenShop(PatternShopFlag, "The Pattern Shop", "Ready-made patterns to sell in your shop, from simple to rare and fancy.");
         if (Progress.PlayerLevel >= FurnitureLevel)
             OpenShop(FurnitureFlag, "The Workshop", "Furniture and decorations for your shop, made by the carpenter down the lane.");
+        if (Progress.PlayerLevel >= PetLevel)
+            OpenShop(PetFlag, "The Pet Shop", "A pet shop on Harbour Lane: a cat, a dog or a rabbit to keep you company behind the counter.");
         if (Progress.PlayerLevel >= CuriosLevel)
             OpenShop(CuriosFlag, "The Curiosity Shop", "Antiques and oddments in the old customs house: pieces that make your shop work better.");
         if (Progress.PlayerLevel >= OnlineLevel && !Save.flags.Contains(OnlineFlag))
@@ -1491,6 +1493,9 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             : flag == FurnitureFlag
             ? $"{name} is open\nBy day, tap Shops at the top right. Furniture and decorations for your shop: a charming shop earns a little more " +
               "from every order. Put pieces out with the pencil on the right of your shop."
+            : flag == PetFlag
+            ? $"{name} is open\nBy day, tap Shops. Pick a pet for your shop and put it out with the pencil. It'll wander off to nap on " +
+              "your furniture; tap it to give it a stroke (and, the first time, a name)."
             : flag == CuriosFlag
             ? $"{name} is open\nBy day, tap Shops. Antiques and oddments that make your shop work better: more experience, more " +
               "visitors at certain hours, closer friendships. Put them out with the pencil in your shop."

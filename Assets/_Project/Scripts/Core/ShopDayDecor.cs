@@ -103,7 +103,7 @@ public partial class ShopDay
     {
         var d = Decor(decorId);
         if (d == null || Save.night || Save.decor.Contains(decorId)) return;
-        var where = d.shop == "curios" ? ScreenId.Curios : ScreenId.Furniture;
+        var where = d.shop == "curios" ? ScreenId.Curios : d.shop == "pets" ? ScreenId.PetShop : ScreenId.Furniture;
         if (Progress.PlayerLevel < d.minLevel) LastMessage = $"Not for sale to you yet. (From level {d.minLevel}.)";
         else if (!GM.TrySpend(d.price)) LastMessage = $"The {d.displayName.ToLower()} is {d.price} coins.";
         else

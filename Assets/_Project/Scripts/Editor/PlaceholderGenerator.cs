@@ -664,6 +664,16 @@ public static class PlaceholderGenerator
         Character(jasper, "jasper", 1, true);
         Character(ravi, "ravi", 1, true);
         ShopOwner(jasper); ShopOwner(ravi);
+        // Wren's Pet Emporium (owner, 2026-11-02): pets for the shop, sold by Poppy Wren (a shop owner, friendship only).
+        var poppy = Customer("poppy", "Poppy Wren", "Runs Wren's Pet Emporium on Harbour Lane (she/her). Brisk, warm, always has a creature about her.",
+                 new Color(0.55f, 0.70f, 0.45f), new (CraftItemDef, int)[0]);
+        Character(poppy, "poppy", 1, false);
+        ShopOwner(poppy);
+        Pet("pet_tabby_cat", "Tabby Cat", 80, 4, new Color(0.65f, 0.50f, 0.30f));
+        Pet("pet_grey_cat", "Grey Cat", 90, 4, new Color(0.60f, 0.62f, 0.66f));
+        Pet("pet_terrier", "Wire-haired Terrier", 110, 5, new Color(0.75f, 0.65f, 0.45f));
+        Pet("pet_lop_rabbit", "Lop-eared Rabbit", 70, 3, new Color(0.90f, 0.86f, 0.80f));
+        Pet("pet_canary", "Canary in a Cage", 60, 3, new Color(0.98f, 0.85f, 0.25f), DecorSlot.Counter);
         Curio("reading_lamp", "Green Reading Lamp", DecorSlot.Counter, 120, 3, 6, new Color(0.30f, 0.55f, 0.35f), DecorBoost.Experience, 10);
         Curio("sewing_box", "Victorian Sewing Box", DecorSlot.CounterLeft, 160, 4, 6, new Color(0.55f, 0.35f, 0.25f), DecorBoost.Experience, 15);
         Curio("ships_bell", "Ship's Bell", DecorSlot.Wall, 140, 3, 6, new Color(0.80f, 0.65f, 0.30f), DecorBoost.Visitors, 30, 11, 14);
@@ -1202,6 +1212,16 @@ public static class PlaceholderGenerator
         def.decorId = id; def.displayName = name; def.slot = slot; def.price = price; def.charm = charm; def.minLevel = level; def.color = c;
         def.icon = MakeSprite($"{Root}/Art/Decor/decor_{id}.png", 256, 256, c);
         AssetDatabase.CreateAsset(def, assetPath);
+    }
+
+    /// A shop pet from Wren's Pet Emporium (DecorDef.pet). Set once; edit freely.
+    static void Pet(string id, string name, int price, int charm, Color c, DecorSlot slot = DecorSlot.Floor)
+    {
+        Decor(id, name, slot, price, charm, 1, c);
+        var def = AssetDatabase.LoadAssetAtPath<DecorDef>($"{Root}/Data/Decor/decor_{id}.asset");
+        if (def == null || def.shop == "pets") return;
+        def.shop = "pets"; def.pet = true;
+        EditorUtility.SetDirty(def);
     }
 
     /// A piece from Quill's Curiosities: it does something (DecorDef.boost). Set once; edit freely.

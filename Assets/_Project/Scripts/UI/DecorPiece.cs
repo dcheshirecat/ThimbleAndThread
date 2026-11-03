@@ -36,6 +36,8 @@ public class DecorPiece : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     public void OnPointerClick(PointerEventData e)
     {
-        if (!e.dragging) editor.Tapped(this);
+        if (e.dragging) return;
+        if (placed && !editor.Editing && editor.scene.day.Decor(decorId) is DecorDef d && d.pet) { editor.scene.TapPet(this); return; }
+        editor.Tapped(this);
     }
 }

@@ -19,7 +19,8 @@ public class DecorDef : ScriptableObject
     public Color color = Color.white;    // the placeholder's colour until there's art
     public Sprite icon;                  // shown in the workshop and in your shop (512 x 512)
     [Header("Where it's sold, and what it does (owner, 2026-11-01)")]
-    public string shop = "";             // "" = Marsh's Workshop, "curios" = Quill's Curiosities
+    public string shop = "";             // "" = Marsh's Workshop, "curios" = Quill's Curiosities, "pets" = Wren's Pet Emporium
+    public bool pet;                     // a shop pet (ShopDayPets): wanders off to nap, can be stroked and named
     public DecorBoost boost;
     public int boostAmount;              // percent
     public int boostFrom, boostTo;       // Visitors: the hours it works (e.g. 11 to 13)
