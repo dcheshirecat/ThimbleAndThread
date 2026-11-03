@@ -331,7 +331,7 @@ public class OrderFlowUI : MonoBehaviour
         marketTemplate.gameObject.SetActive(false);
         int restock = day.shop.DaysUntilRestock;
         var bram = GameManager.Instance.GetRelationship(ShopDay.MarketOwnerId);
-        marketStatus.text = $"Bram's market · friendship {bram.level}{(bram.romance ? " ♥" : "")} · {save.coins} coins.  " +
+        marketStatus.text = (save.met.Contains(ShopDay.MarketOwnerId) ? $"Bram's market · friendship {bram.level}{(bram.romance ? " ♥" : "")}.  " : "The Supply Market.  ") +
                             (restock == 1 ? "New stock tomorrow." : $"New stock in {restock} days.") + $"\n{day.LastMessage}";
 
         if (ordering) { BuildOrderList(save); return; }
@@ -586,7 +586,7 @@ public class OrderFlowUI : MonoBehaviour
         StepKind.ClipCurves => "Snip a notch into the seam allowance at each curve, so it turns out smooth. Don't cut into the stitching.",
         StepKind.BoxCorners => "Sew straight across each flattened bottom corner, so the bag stands up.",
         StepKind.MitreCorners => "Fold each corner in along the dashed diagonal, so the hem meets in a neat mitre.",
-        StepKind.Fringe => "Tap each mark along both ends to hook a bundle of yarn through and knot it.",
+        StepKind.Fringe => "Tap each mark along both ends to fold a bundle of yarn through and knot it.",
         StepKind.SewUp => "Lay the pieces together and sew up both side seams, from the cuff to the hem.",
         StepKind.CastOff => "Drag along the top edge to cast off, so it can't unravel.",
         StepKind.MagicRing => "Wrap the yarn round: drag along the dashed circle to make a magic ring.",

@@ -264,10 +264,10 @@ public static class TestSceneBuilder
         shopWindow.GetComponentInChildren<Text>().text = "";
         var swRt = (RectTransform)shopWindow.transform;
         Object.DestroyImmediate(shopWindow.GetComponent<LayoutElement>());
-        swRt.anchorMin = swRt.anchorMax = new Vector2(0.15f, 0.5f);
-        swRt.sizeDelta = new Vector2(380, 430);
+        swRt.anchorMin = swRt.anchorMax = new Vector2(0.13f, 0.64f);
+        swRt.sizeDelta = new Vector2(360, 400);
         shopWindow.GetComponent<Image>().color = new Color(0.55f, 0.38f, 0.25f);   // the frame
-        var glass = Shape(swRt, "Glass", new Vector2(0.5f, 0.5f), new Vector2(330, 380), new Color(0.80f, 0.90f, 0.97f), uiSprite);
+        var glass = Shape(swRt, "Glass", new Vector2(0.5f, 0.5f), new Vector2(310, 350), new Color(0.80f, 0.90f, 0.97f), uiSprite);
         glass.GetComponent<Image>().raycastTarget = false;
         shopScene.windowSlots = new Image[3];
         for (int i = 0; i < 3; i++)
@@ -376,7 +376,7 @@ public static class TestSceneBuilder
         Label(onlineBox, "Computer Title", new Vector2(0.05f, 0.92f), new Vector2(0.95f, 0.98f), 80, TextAnchor.MiddleCenter).text = "The Computer";
         var things = Row(onlineBox, 0.5f, 0.86f);
         shopScene.pastimeButton = things.gameObject;
-        shopScene.readButton = Button(things, "Read", shopScene.Read, 420);
+        shopScene.readButton = Button(things, "Read", shopScene.Read, 600);
         var readColors = shopScene.readButton.colors;
         readColors.disabledColor = new Color(0.6f, 0.6f, 0.6f, 0.55f);
         shopScene.readButton.colors = readColors;
@@ -597,7 +597,7 @@ public static class TestSceneBuilder
 
         // Side screens
         p = Panel(ScreenId.Market, "Supply Market", new Color(0.85f, 0.70f, 0.60f));
-        ui.marketStatus = Label(p, "Status", new Vector2(0.22f, 0.82f), new Vector2(0.76f, 0.92f), 56, TextAnchor.MiddleCenter);
+        ui.marketStatus = Label(p, "Status", new Vector2(0.21f, 0.82f), new Vector2(0.745f, 0.92f), 56, TextAnchor.MiddleCenter);
         Coins(p);
         OwnerPortrait(p, content.Customer(ShopDay.MarketOwnerId), day.ChatWithMarketOwner);
         var shelves = ScrollList(p, 0.14f, 0.81f);
@@ -786,7 +786,7 @@ public static class TestSceneBuilder
         Coins(p);
         var furniture = canvasGo.AddComponent<FurnitureUI>();
         furniture.day = day;
-        furniture.statusText = Label(p, "Status", new Vector2(0.22f, 0.79f), new Vector2(0.76f, 0.92f), 52, TextAnchor.MiddleCenter);
+        furniture.statusText = Label(p, "Status", new Vector2(0.21f, 0.79f), new Vector2(0.745f, 0.92f), 52, TextAnchor.MiddleCenter);
         OwnerPortrait(p, content.Customer(ShopDay.FurnitureOwnerId), furniture.Chat);
         furniture.shelf = Shelf(ScrollList(p, 0.12f, 0.77f));
         furniture.shelf.name = "Workshop Floor";
@@ -801,7 +801,7 @@ public static class TestSceneBuilder
         Coins(p);
         var curios = canvasGo.AddComponent<FurnitureUI>();
         curios.day = day; curios.screen = ScreenId.Curios; curios.shopKey = "curios";
-        curios.statusText = Label(p, "Status", new Vector2(0.22f, 0.79f), new Vector2(0.76f, 0.92f), 52, TextAnchor.MiddleCenter);
+        curios.statusText = Label(p, "Status", new Vector2(0.21f, 0.79f), new Vector2(0.745f, 0.92f), 52, TextAnchor.MiddleCenter);
         OwnerPortrait(p, content.Customer(ShopDay.CuriosOwnerId), curios.Chat);
         curios.shelf = Shelf(ScrollList(p, 0.12f, 0.77f));
         curios.shelf.name = "Curio Shelves";
@@ -816,7 +816,7 @@ public static class TestSceneBuilder
         Coins(p);
         var tech = canvasGo.AddComponent<TechShopUI>();
         tech.day = day;
-        tech.statusText = Label(p, "Status", new Vector2(0.22f, 0.79f), new Vector2(0.76f, 0.92f), 52, TextAnchor.MiddleCenter);
+        tech.statusText = Label(p, "Status", new Vector2(0.21f, 0.79f), new Vector2(0.745f, 0.92f), 52, TextAnchor.MiddleCenter);
         OwnerPortrait(p, content.Customer(ShopDay.TechOwnerId), tech.Chat);
         tech.rowTemplate = Button(ScrollList(p, 0.12f, 0.77f), "Automation Template", null, 1840);
         TallRow(tech.rowTemplate, 300, 52);
@@ -829,12 +829,12 @@ public static class TestSceneBuilder
         Coins(p);
         var pshop = canvasGo.AddComponent<PatternShopUI>();
         pshop.day = day;
-        pshop.statusText = Label(p, "Status", new Vector2(0.22f, 0.79f), new Vector2(0.76f, 0.92f), 52, TextAnchor.MiddleCenter);
+        pshop.statusText = Label(p, "Status", new Vector2(0.21f, 0.79f), new Vector2(0.745f, 0.92f), 52, TextAnchor.MiddleCenter);
         OwnerPortrait(p, content.Customer(ShopDay.PatternShopOwnerId), pshop.Chat);
         pshop.rowTemplate = Button(ScrollList(p, 0.12f, 0.77f), "PatternShop Template", null, 1840);
-        TallRow(pshop.rowTemplate, 280, 48);
+        TallRow(pshop.rowTemplate, 320, 48);
         var psText = pshop.rowTemplate.GetComponentInChildren<Text>();
-        ((RectTransform)psText.transform).offsetMin = new Vector2(300, 0);
+        ((RectTransform)psText.transform).offsetMin = new Vector2(300, 12);
         psText.alignment = TextAnchor.MiddleLeft;
         var psPreview = Preview(pshop.rowTemplate.transform, new Vector2(0, 0.5f), 230);
         ((RectTransform)psPreview.transform).anchoredPosition = new Vector2(150, 0);
@@ -848,7 +848,7 @@ public static class TestSceneBuilder
         Coins(p);
         var boutique = canvasGo.AddComponent<BoutiqueUI>();
         boutique.day = day;
-        boutique.statusText = Label(p, "Status", new Vector2(0.22f, 0.82f), new Vector2(0.76f, 0.92f), 56, TextAnchor.MiddleCenter);
+        boutique.statusText = Label(p, "Status", new Vector2(0.21f, 0.82f), new Vector2(0.745f, 0.92f), 56, TextAnchor.MiddleCenter);
         OwnerPortrait(p, content.Customer(BoutiqueUI.OwnerId), boutique.Chat);
         boutique.preview = Keeper(p, new Vector2(0.5f, 0.64f), content);
         boutique.preview.transform.localScale = Vector3.one * 0.7f;
@@ -1795,7 +1795,11 @@ public static class TestSceneBuilder
     static void TallRow(Button row, float height, int fontSize)
     {
         row.GetComponent<LayoutElement>().preferredHeight = height;
-        row.GetComponentInChildren<Text>().fontSize = fontSize;
+        var text = row.GetComponentInChildren<Text>();
+        text.fontSize = fontSize;
+        var rt = (RectTransform)text.transform;   // a little room from the row's edges, so lines don't touch them
+        rt.offsetMin = new Vector2(Mathf.Max(rt.offsetMin.x, 30), 12);
+        rt.offsetMax = new Vector2(Mathf.Min(rt.offsetMax.x, -30), -12);
     }
 
     static Text Label(Transform panel, string name, Vector2 min, Vector2 max, int size, TextAnchor align)

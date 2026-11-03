@@ -81,7 +81,8 @@ public static class PlaceholderGenerator
         InsertBefore(tablecloth, StepKind.Hem, Step(StepKind.MitreCorners, "Mitre the corners", tools: Tool("pins", "Pins")));
         AddStep(scarf, Step(StepKind.WeaveEnds, "Weave in the ends", tools: Tool("tapestry_needle", "Tapestry needle")));
         AddStep(scarf, Step(StepKind.Press, "Block it"));
-        AddStep(scarf, Step(StepKind.Fringe, "Add the fringe", pieces: 30, tools: hook));   // knotted on last, as knitters do
+        AddStep(scarf, Step(StepKind.Fringe, "Add the fringe", pieces: 30));   // knotted on by hand, last, as knitters do
+        // (Owner, 2026-11-03: no crochet hook needed: it made knitting put crochet hooks on sale.)
         AddStep(sweater, Step(StepKind.WeaveEnds, "Weave in the ends", tools: Tool("tapestry_needle", "Tapestry needle")));
         AddStep(sweater, Step(StepKind.Press, "Block it"));
         // Knitted like a real sweater (owner, 2026-10-31): back, front with the pattern as colourwork, two

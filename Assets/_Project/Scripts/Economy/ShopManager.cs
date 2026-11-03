@@ -97,7 +97,7 @@ public class ShopManager : MonoBehaviour
     public const int SoldOutDays = 2;   // once the last pack is bought, it's gone for the next two days
 
     /// Common (always stocked), Uncommon (in the rotation) or Rare (now and then).
-    public static string Rarity(SupplyDef s) => s.market == MarketSlot.Rare ? "Rare" : s.market == MarketSlot.Rotating ? "Uncommon" : "Common";
+    public static string Rarity(SupplyDef s) => s.season != 0 ? "Seasonal" : s.market == MarketSlot.Rare ? "Rare" : s.market == MarketSlot.Rotating ? "Uncommon" : "Common";
 
     /// Packs the market has on its shelf at a time: plenty of basics, a few of the rotation, one rare find.
     public static int ShelfPacks(SupplyDef s) => s.market == MarketSlot.Rare ? 1 : s.market == MarketSlot.Rotating ? 3 : 6;
