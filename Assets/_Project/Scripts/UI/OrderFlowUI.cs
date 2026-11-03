@@ -588,7 +588,7 @@ public class OrderFlowUI : MonoBehaviour
         StepKind.PinPattern => "Pin the paper pattern to the fabric: tap each mark, in the seam allowance between the cutting line and the seam line.",
         StepKind.ClipCurves => "Snip a notch into the seam allowance at each curve, so it turns out smooth. Don't cut into the stitching.",
         StepKind.BoxCorners => "Sew straight across each flattened bottom corner, so the bag stands up.",
-        StepKind.MitreCorners => "Fold each corner in along the dashed diagonal, so the hem meets in a neat mitre.",
+        StepKind.MitreCorners => "Fold each corner in: grab a gold corner and drag it inward until the crease lands on the dashed line, so the hem meets in a neat mitre.",
         StepKind.Fringe => "Tap each mark along both ends to fold a bundle of yarn through and knot it.",
         StepKind.SewUp => "Lay the pieces together and sew up both side seams, from the cuff to the hem.",
         StepKind.CastOff => "Drag along the top edge to cast off, so it can't unravel.",

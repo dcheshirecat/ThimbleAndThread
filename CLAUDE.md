@@ -966,3 +966,8 @@ DONE so far (2026-11-02 evening list):
   Until it's added, backups are refused (401) and Settings says "The cloud said no".
 - Fixes 2026-11-03: knitting no longer puts crochet hooks on sale (the scarf fringe needs no hook); shop headers end at 0.745
   (clear of the coins); TallRow pads text; parlour rows taller; "Seasonal" rarity; market doesn't name Bram before meeting him.
+- Owner, 2026-11-03: the tablecloth had three line-tracing steps in a row. MitreCornersStep is now real FOLDING (no longer a
+  TracingStep): grab a corner, drag it inward; the flap folds with its crease on the perpendicular bisector of corner->finger;
+  aim the crease at the dashed line (green = on it). Points: (100 + 10 x corner + x, y) = where the corner was laid; older
+  traced points (< 100) are ignored. Off by > half = a mistake.
+- Calendar: no "year N"; arrows (Calendar Previous / Next) flip through all four seasons at any time.

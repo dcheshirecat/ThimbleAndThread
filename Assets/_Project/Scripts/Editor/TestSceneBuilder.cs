@@ -1057,7 +1057,7 @@ public static class TestSceneBuilder
         town.card = placeCard.gameObject;
         Button(Column(p, 0.5f, 0.05f), "Go Home", day.GoHomeSaturday, 800);
 
-        // The calendar (UI/CalendarUI.cs): this season's four weeks and the birthdays in them
+        // The calendar (UI/CalendarUI.cs): a season's four weeks, its birthdays and festivals; arrows flip through the year
         var cal = canvasGo.AddComponent<CalendarUI>();
         cal.day = day;
         var calLayer = new GameObject("Calendar Layer", typeof(RectTransform), typeof(Image), typeof(Button));
@@ -1070,6 +1070,12 @@ public static class TestSceneBuilder
         calBox.gameObject.AddComponent<ClickBlocker>();
         cal.heading = Label(calBox, "Heading", new Vector2(0.05f, 0.9f), new Vector2(0.95f, 0.98f), 72, TextAnchor.MiddleCenter);
         cal.heading.color = Ink;
+        var calPrev = Button(calBox, "Calendar Previous", cal.Previous, 200);
+        Place(calPrev, new Vector2(0.1f, 0.94f), new Vector2(200, 120));
+        calPrev.GetComponentInChildren<Text>().text = "<";
+        var calNext = Button(calBox, "Calendar Next", cal.Next, 200);
+        Place(calNext, new Vector2(0.9f, 0.94f), new Vector2(200, 120));
+        calNext.GetComponentInChildren<Text>().text = ">";
         for (int i = 0; i < 7; i++)
         {
             var wd = Label(calBox, "Weekday " + i, new Vector2(0.03f + i * 0.134f, 0.85f), new Vector2(0.03f + (i + 1) * 0.134f, 0.9f), 40, TextAnchor.MiddleCenter);
