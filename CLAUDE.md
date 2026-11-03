@@ -971,3 +971,7 @@ DONE so far (2026-11-02 evening list):
   aim the crease at the dashed line (green = on it). Points: (100 + 10 x corner + x, y) = where the corner was laid; older
   traced points (< 100) are ignored. Off by > half = a mistake.
 - Calendar: no "year N"; arrows (Calendar Previous / Next) flip through all four seasons at any time.
+- Owner, 2026-11-03 ("I bought the rug and tried to move it, it stayed in a fixed place"): pieces only moved with the pencil.
+  Now any piece out in the shop moves directly: press and hold (DecorPiece.HoldTime 0.35 s, it pops up 10%) then drag; a quick
+  swipe over it still turns the page (passed to ShopSceneUI), a tap passes to the button under it (DecorPiece.PassClick); placed
+  pieces are always raycast targets. Buying a piece says so.

@@ -142,12 +142,13 @@ public class DecorEditor : MonoBehaviour
         }
     }
 
-    /// Pieces already out in the shop can be picked up while editing (and only then: otherwise taps pass through).
+    /// Pieces out in the shop can always be picked up: right away while editing, by pressing and holding otherwise
+    /// (DecorPiece passes quick swipes and taps through to the shop).
     void SetSpotsDraggable(bool on)
     {
         if (scene == null) return;
         foreach (var piece in scene.DecorShown)
-            if (piece != null) piece.GetComponent<Image>().raycastTarget = on || (day.Decor(piece.decorId) is DecorDef d && d.pet);   // pets can always be stroked
+            if (piece != null) piece.GetComponent<Image>().raycastTarget = true;
     }
 
 
@@ -173,7 +174,7 @@ public class DecorEditor : MonoBehaviour
 
     public void BeginDrag(DecorPiece piece, Vector2 screenPos)
     {
-        if (!Editing) return;
+        if (!Editing && !(piece.placed && CanEdit)) return;   // out of editing, only a piece in the shop (held down) moves
         held = day.Decor(piece.decorId);
         heldPiece = piece.placed ? piece : null;
         if (held == null) return;
@@ -204,7 +205,7 @@ public class DecorEditor : MonoBehaviour
 
     public void EndDrag(Vector2 screenPos)
     {
-        bool onTray = OverTray(screenPos);
+        bool onTray = Editing && OverTray(screenPos);
         bool onPage = scene.PagePoint(screenPos, Cam, out int page, out var pos);
         Drop(onTray, onPage, page, pos);
     }
@@ -231,7 +232,7 @@ public class DecorEditor : MonoBehaviour
         }
         else note = "";
         scene.RefreshDecor();
-        Build();
+        if (Editing) Build();
     }
 
     void DropGhost()

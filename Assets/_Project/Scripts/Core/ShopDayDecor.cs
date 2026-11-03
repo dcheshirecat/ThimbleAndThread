@@ -113,7 +113,7 @@ public partial class ShopDay
             boughtThisVisit = true;
             bool placed = Placed(d.slot) == null;
             if (placed) Place(d.slot, decorId);
-            LastMessage = $"Bought the {d.displayName.ToLower()}!" + (placed ? " It's in your shop already." : " Tap the pencil in your shop to put it out.");
+            LastMessage = $"Bought the {d.displayName.ToLower()}!" + (placed ? " It's in your shop already: press and hold it there to move it wherever you like." : " Tap the pencil in your shop to put it out.");
             if (Save.decor.Count == 1) Stamps.Earn(Save, "decor:first", "Making it yours", d.displayName, StampTheme.Shop);
             GM.Persist();
         }

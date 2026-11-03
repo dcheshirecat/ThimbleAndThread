@@ -369,7 +369,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
             piece.decorId = p.def.decorId;
             piece.slot = -1;
             piece.placed = true;
-            img.raycastTarget = p.def.pet || (decorEditor != null && decorEditor.Editing);   // pets can always be stroked
+            img.raycastTarget = true;   // press and hold to move it; pets are stroked; taps and swipes pass through (DecorPiece)
             if (p.def.pet && img.GetComponent<DecorPet>() == null) img.gameObject.AddComponent<DecorPet>().scene = this;
             DecorShown.Add(piece);
         }
