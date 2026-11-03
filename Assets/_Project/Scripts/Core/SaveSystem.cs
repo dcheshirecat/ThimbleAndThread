@@ -52,6 +52,13 @@ public static class SaveSystem
         data.letters ??= new System.Collections.Generic.List<Letter>();
         data.window ??= new System.Collections.Generic.List<string>();
         data.visitorsToday ??= new System.Collections.Generic.List<string>();
+        data.cameToday ??= new System.Collections.Generic.List<string>();
+        if (data.version < 35)   // before the sun dial, someone could come twice: once each now
+        {
+            var once = new System.Collections.Generic.List<string>();
+            foreach (var id in data.visitorsToday) if (!once.Contains(id)) once.Add(id);
+            data.visitorsToday = once;
+        }
         data.ownedSupplies ??= new System.Collections.Generic.List<string>();
         data.unlockedItems ??= new System.Collections.Generic.List<string>();
         data.relationships ??= new System.Collections.Generic.List<CustomerRelationship>();

@@ -240,7 +240,7 @@ public partial class ShopDay
         if (Save == null || !IsSunday || Save.night) return;
         if (Save.clock < StallCloses)
         {
-            clockCarry += Time.unscaledDeltaTime * MinutesPerSecond;
+            clockCarry += Time.unscaledDeltaTime * StallMinutesPerSecond;
             int whole = (int)clockCarry;
             if (whole > 0) { clockCarry -= whole; Save.clock = Mathf.Min(StallCloses, Save.clock + whole); }
         }

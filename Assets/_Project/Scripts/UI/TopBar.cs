@@ -15,6 +15,10 @@ public class TopBar : MonoBehaviour
     public Sprite[] symbols = new Sprite[7];   // Monday first
     public GameObject bellBadge, noticesLayer, goalsButton, skillsLayer;
     public Text skillsText;
+    public GameObject sunDial;           // the day as a sun crossing the sky (ShopDay.SunProgress), not a clock
+    public Image dialSky, dialPassed;
+    public RectTransform sun;
+    float sunShown = -1;
     public Text bellCount, noticesText;
     int shownNotices = -1;
 
@@ -35,6 +39,7 @@ public class TopBar : MonoBehaviour
             bellBadge.SetActive(notices > 0);
             bellCount.text = notices > 9 ? "9+" : notices.ToString();
         }
+        ShowSun(save);
         string chapter = day != null && day.Progress.Chapter is ChapterDef ch ? $"Chapter {ch.number}: {ch.title}" : "";
         int xp = day != null ? day.Progress.TotalXp : 0;
         if (save.day == shownDay && save.coins == shownCoins && chapter == shownChapter && save.night == shownNight && save.clock == shownClock && xp == shownXp) return;
@@ -52,9 +57,24 @@ public class TopBar : MonoBehaviour
         weekdaySymbol.sprite = symbols != null && w < symbols.Length ? symbols[w] : null;
         weekdaySymbol.enabled = weekdaySymbol.sprite != null;
         weekdayName.text = Week.Names[w];
-        string time = save.night ? "Night" : save.clock >= ShopDay.ClosesAt ? "Closing time" : ShopDay.TimeText(Mathf.Max(ShopDay.OpensAt, save.clock));
-        dayText.text = $"<b>Day {save.day}  ·  {time}</b>  ·  {ShopDay.WeatherWord(day.Today)}";   // the day's weather (owner, 2026-11-02)   // the chapter is in the Journal's Story page (owner, 2026-11-01)
+        dayText.text = save.night ? $"<b>Day {save.day}  ·  Night</b>" : $"<b>Day {save.day}</b>  ·  {ShopDay.WeatherWord(day.Today)}";   // the time is the sun dial now (owner, 2026-11-03)   // the day's weather (owner, 2026-11-02)   // the chapter is in the Journal's Story page (owner, 2026-11-01)
         coinText.text = save.coins.ToString();
+    }
+
+    /// The sun glides along its arc (the day moves in whole minutes, so it's eased between them).
+    void ShowSun(SaveData save)
+    {
+        if (sunDial == null || day == null) return;
+        bool show = !save.night;
+        if (sunDial.activeSelf != show) sunDial.SetActive(show);
+        if (!show) { sunShown = -1; return; }
+        float target = day.SunProgress;
+        sunShown = sunShown < 0 || Mathf.Abs(target - sunShown) > 0.2f ? target : Mathf.MoveTowards(sunShown, target, Time.unscaledDeltaTime * 0.05f);
+        dialPassed.fillAmount = sunShown * 0.5f;   // from the left, over the top, to the right
+        float a = Mathf.PI * (1f - sunShown);
+        float r = ((RectTransform)dialSky.transform).sizeDelta.x * 0.5f - sun.sizeDelta.x * 0.5f;
+        sun.anchoredPosition = new Vector2(Mathf.Cos(a) * r, Mathf.Sin(a) * r);
+        dialSky.color = Color.Lerp(new Color(0.75f, 0.87f, 0.97f), new Color(0.98f, 0.70f, 0.55f), Mathf.InverseLerp(0.75f, 1f, sunShown));   // evening glow
     }
 
     public void OpenSettings() => GameManager.Instance.ChangeScreen(ScreenId.Settings);

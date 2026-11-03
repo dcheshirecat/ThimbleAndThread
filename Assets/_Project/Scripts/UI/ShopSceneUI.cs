@@ -89,6 +89,7 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     void Update()
     {
         if (!OnShop || Save == null) return;
+        if (day.DayOver && closeConfirm != null && !closeConfirm.activeSelf && !Ringing) ShowClose(true);   // sunset: the day is done
         ShowShops();
         ShowDecor();   // only rebuilds when what's out changes
         ShowWindow();
@@ -145,8 +146,24 @@ public class ShopSceneUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
     // ---- The OPEN sign ----
 
-    public void TapSign() => closeConfirm.SetActive(true);
-    public void KeepOpen() => closeConfirm.SetActive(false);
+    public void TapSign() => ShowClose(false);
+    public void KeepOpen() { if (!day.DayOver) closeConfirm.SetActive(false); }
+
+    /// The OPEN sign's question, or at sunset (owner, 2026-11-03) the game saying the day is done, with only Close Up.
+    void ShowClose(bool sunset)
+    {
+        var question = closeConfirm.transform.Find("Question")?.GetComponent<Text>();
+        if (question != null)
+            question.text = sunset ? "The sun's going down, and that was everyone for today.\nTime to flip the sign and close up."
+                                   : "Flip the sign to CLOSED and end the day?\nAnyone who hasn't come in yet will visit another day.";
+        foreach (var b in closeConfirm.GetComponentsInChildren<Button>(true))
+        {
+            if (b.name == "Button_StayOpen") b.gameObject.SetActive(!sunset);
+            if (b.name == "Button_ClosetheShop") { var t = b.GetComponentInChildren<Text>(); if (t != null) t.text = sunset ? "Close Up" : "Close the Shop"; }
+        }
+        closeConfirm.transform.SetAsLastSibling();
+        closeConfirm.SetActive(true);
+    }
     public void CloseShop()
     {
         closeConfirm.SetActive(false);

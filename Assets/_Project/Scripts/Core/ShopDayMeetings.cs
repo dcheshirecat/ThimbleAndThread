@@ -55,6 +55,7 @@ public partial class ShopDay
         foreach (var other in content.customers)
         {
             if (other == null || other == c || other.shopOwner || !Save.met.Contains(other.customerId) || other.firstChapter > Save.chapter) continue;
+            if (Save.visitorsToday.Contains(other.customerId) || Save.cameToday.Contains(other.customerId)) continue;   // one visit a day each
             if (PairLines(c.customerId, other.customerId) != null) known.Add(other);
             else anyone.Add(other);
         }

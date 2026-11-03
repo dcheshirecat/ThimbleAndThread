@@ -105,11 +105,12 @@ public class OrderFlowUI : MonoBehaviour
         bool stitching = step.kind == StepKind.CrossStitch;
         minigameHint.text = order.patternOnly ? "Tap or drag over the faint squares to fill them in."
             : stitching ? "Drag corner to corner for one leg of the X, then along the other diagonal to cross it. Either leg can go on top, but keep every X crossing the same way (Undo unpicks one). Half stitches (a printed dash) are just the top leg of your crosses. Match each square's thread colour." + (order.target != null && order.target.cells.Exists(c => c.quarter > 0) ? " Three-quarter stitches: one long leg, then drag from the printed corner to the middle of the square." : "")
+            : HemFoldStep.Applies(order) ? HemFoldStep.Hint
             : StepHint(step.kind);
         if (order.Steps.Length > 1) minigameHint.text = $"{step.label}. {minigameHint.text}";
         if (screen == ScreenId.Minigame && !string.IsNullOrEmpty(day.LastMessage)) minigameHint.text += $"\n{day.LastMessage}";
         baseHint = minigameHint.text; liveHint = null;
-        if (screen == ScreenId.Minigame && !order.patternOnly) ExplainStep(step);
+        if (screen == ScreenId.Minigame && !order.patternOnly) ExplainStep(order, step);
         if (stitching && order.item.craft != CraftType.CrossStitch && order.Steps.Length == 1)
             minigameHint.text += $" (The {CraftName(order.item.craft)} minigame is coming soon; cross stitch stands in.)";
         bool board = stitching || step.kind == StepKind.TentStitch || step.kind == StepKind.BackgroundFill;   // needlepoint uses the board too
@@ -528,10 +529,11 @@ public class OrderFlowUI : MonoBehaviour
     }
 
     /// The first time a kind of step is opened, a short explainer (the first cross stitch gets a few pages).
-    static void ExplainStep(RecipeStep step)
+    static void ExplainStep(Order order, RecipeStep step)
     {
         var save = GameManager.Instance.Save;
-        if (step.kind == StepKind.CrossStitch)
+        if (HemFoldStep.Applies(order)) Explainers.Explain(save, "step:HemFold", true, $"{step.label}\n{HemFoldStep.Hint}");
+        else if (step.kind == StepKind.CrossStitch)
             Explainers.Explain(save, "step:CrossStitch", true,
                 "Your first cross stitch\nThe faint squares are the chart, printed on the fabric. Each square gets one X, in the thread colour it shows. Pick the thread from the colours under the work.",
                 "Making an X\nDrag from one corner of a square to the opposite corner: that's the first leg. Then drag along the other diagonal to cross over it. " +

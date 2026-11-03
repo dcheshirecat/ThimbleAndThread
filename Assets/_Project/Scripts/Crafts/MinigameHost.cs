@@ -35,6 +35,7 @@ public class MinigameHost : MonoBehaviour
         stepObject.transform.SetParent(transform, false);
         step = order.item != null && order.item.craft == CraftType.Crochet && order.CurrentStep.kind == StepKind.Stuff ? stepObject.AddComponent<CrochetStuffStep>()
              : order.item != null && order.item.craft == CraftType.Crochet && order.CurrentStep.kind == StepKind.AttachEyes ? stepObject.AddComponent<CrochetEyesStep>()
+             : HemFoldStep.Applies(order) ? stepObject.AddComponent<HemFoldStep>()   // the tablecloth's hem is folded, then stitched
              : Create(order.CurrentStep.kind, stepObject);
         step.Begin(order, Mathf.Clamp(order.step, 0, order.Steps.Length - 1), area);
     }

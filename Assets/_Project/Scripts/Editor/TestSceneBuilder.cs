@@ -1805,8 +1805,35 @@ public static class TestSceneBuilder
         skillsClose.GetComponentInChildren<Text>().text = "Close";
         skillsLayer.SetActive(false);
         bar.skillsLayer = skillsLayer;
-        bar.dayText = Label(panel, "DayChapter", new Vector2(0.04f, 0.812f), new Vector2(0.68f, 0.862f), 54, TextAnchor.MiddleLeft);
+        bar.dayText = Label(panel, "DayChapter", new Vector2(0.04f, 0.812f), new Vector2(0.46f, 0.862f), 54, TextAnchor.MiddleLeft);
         bar.dayText.color = textColor;
+        // The sun dial (owner, 2026-11-03: no clock): the sun crosses a half-circle of sky from sunup to sunset as the day's
+        // visitors come. A mask hides the lower half of the sky disc, so the sun rises from and sets behind the ground line.
+        var dial = Shape(panel, "Sun Dial", new Vector2(0.56f, 0.815f), new Vector2(320, 160), Color.white, null);
+        dial.pivot = new Vector2(0.5f, 0f);
+        dial.anchoredPosition = Vector2.zero;
+        Object.DestroyImmediate(dial.GetComponent<Image>());
+        dial.gameObject.AddComponent<RectMask2D>();
+        var sky = Shape(dial, "Sky", new Vector2(0.5f, 0f), new Vector2(320, 320), new Color(0.75f, 0.87f, 0.97f), Knob());
+        sky.GetComponent<Image>().raycastTarget = false;
+        var passed = Shape(dial, "Day Gone By", new Vector2(0.5f, 0f), new Vector2(320, 320), new Color(1f, 0.80f, 0.45f), Knob());
+        var passedImg = passed.GetComponent<Image>();
+        passedImg.type = Image.Type.Filled;
+        passedImg.fillMethod = Image.FillMethod.Radial360;
+        passedImg.fillOrigin = (int)Image.Origin360.Left;
+        passedImg.fillClockwise = true;
+        passedImg.fillAmount = 0f;
+        passedImg.raycastTarget = false;
+        var sunGo = Shape(dial, "Sun", new Vector2(0.5f, 0f), new Vector2(70, 70), new Color(1f, 0.72f, 0.15f), Knob());
+        sunGo.GetComponent<Image>().raycastTarget = false;
+        var ground = Shape(dial, "Ground", new Vector2(0.5f, 0f), new Vector2(320, 8), new Color(0.35f, 0.28f, 0.22f), null);
+        ground.pivot = new Vector2(0.5f, 0f);
+        ground.anchoredPosition = Vector2.zero;
+        ground.GetComponent<Image>().raycastTarget = false;
+        bar.sunDial = dial.gameObject;
+        bar.dialSky = sky.GetComponent<Image>();
+        bar.dialPassed = passedImg;
+        bar.sun = sunGo;
         return bar;
     }
 

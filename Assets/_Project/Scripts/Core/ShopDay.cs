@@ -60,25 +60,38 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
 
     // ---- The doorbell: rings on any screen, with a buzz, until someone opens the door ----
 
-    // Visitors come now and then, not one after another (owner, 2026-10-31: time to do other things between).
-    // The day has a clock (owner, 2026-10-31): the shop opens at 9 and it's closing time at 6. Time passes on
-    // any screen but a conversation or Settings, about an hour a minute; visitors follow a real day, busier
-    // around lunch and late afternoon. The player can still close up at any time, and stay open past six
-    // (no one new comes then; whoever didn't make it comes another day).
+    // The day is a sun dial, not a clock (owner, 2026-11-03: like the Papa's games). Each day has a set number of
+    // visitors (DailyVisits: more as you level up and the shop gains charm), each a different person. The sun crosses
+    // the sky from sunup to sunset as they come: every visitor gets an equal slice of what's left of the day, so the more
+    // people are coming, the slower the sun moves. It stands still while someone's at the door or talking to you. When the
+    // last one has gone, the sun sets and the game closes the shop (DayOver; ShopSceneUI shows it).
+    // Inside, the day still runs in minutes from OpensAt to ClosesAt, so the town's shop hours work; nothing shows a time.
     public const int OpensAt = 9 * 60, ClosesAt = 18 * 60;
-    const float MinutesPerSecond = 1f;                     // game minutes per real second
+    const float StallMinutesPerSecond = 1f;               // the Sunday stall keeps a steady pace of its own
+    const float SecondsPerVisitor = 15f;                   // real seconds from one visitor to the next, about
     const float BellRepeat = 45f;                          // rings again while no one answers (real seconds)
-    float bellTimer = -1f, clockCarry;
+    float bellTimer = -1f, clockCarry, minutesPerSecond;
+    int pacedFor = -1;                                     // how many were still to come when the sun's pace was set
 
     public static string TimeText(int minutes) => $"{(minutes / 60 + 11) % 12 + 1}:{minutes % 60:00} {(minutes < 12 * 60 ? "am" : "pm")}";
     public bool ClosingTime => Save != null && Save.clock >= ClosesAt;
 
-    /// Minutes until the next visitor: shorter in the busy hours.
-    static int Gap(int clock)
-    {
-        bool busy = (clock >= 11 * 60 + 30 && clock < 13 * 60 + 30) || (clock >= 15 * 60 && clock < 17 * 60);
-        return busy ? Random.Range(4, 11) : Random.Range(9, 21);   // owner, 2026-11-02 (twice): more often (was 8-20 and 18-40)
-    }
+    /// The sun's way across the sky: 0 at sunup, 1 at sunset.
+    public float SunProgress => Save == null ? 0f : Mathf.Clamp01((Save.clock - OpensAt) / (float)(ClosesAt - OpensAt));
+
+    /// The sun has set and everyone has been: the shop closes (weekdays; Saturdays and Sundays go their own way).
+    public bool DayOver => Save != null && !Save.night && !IsSaturday && !IsSunday && Save.clock >= ClosesAt && CustomersWaiting == 0
+                           && GM.Current != ScreenId.Dialogue;
+
+    /// A time of day in words (the town's shops say when they open by these).
+    public static string PartOfDay(int minutes) => minutes < 10 * 60 ? "early morning" : minutes < 12 * 60 ? "morning" : minutes < 14 * 60 ? "midday"
+                                                 : minutes < 16 * 60 ? "afternoon" : minutes < 17 * 60 + 30 ? "late afternoon" : "sunset";
+
+    /// Each visitor still to come gets this much of what's left of the day (in minutes); half a slice is left at the end
+    /// for the sun to set.
+    float Slice => (ClosesAt - Mathf.Max(Save.clock, OpensAt)) / (CustomersWaiting + 0.5f);
+    void Pace() { pacedFor = CustomersWaiting; minutesPerSecond = Mathf.Max(0.5f, Slice / SecondsPerVisitor); }
+    int NextGap() => Mathf.Max(3, Mathf.RoundToInt(Slice * Random.Range(0.75f, 1.25f)));
 
     // ---- Shop hours (owner, 2026-10-31: the other shops open at set hours) ----
 
@@ -104,7 +117,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     public string HoursText(ScreenId shop)
     {
         var (opens, closes) = HoursOf(shop);
-        return Save.clock < opens ? $"opens at {TimeText(opens)}" : Save.clock >= closes ? $"closed (open {TimeText(opens)} to {TimeText(closes)})" : $"open until {TimeText(closes)}";
+        return Save.clock < opens ? $"opens later in the {PartOfDay(opens)}" : Save.clock >= closes ? $"closed now (open {PartOfDay(opens)} to {PartOfDay(closes)})" : $"open till {PartOfDay(closes)}";
     }
     public bool BellRinging { get; private set; }
     public event System.Action OnBell;
@@ -119,19 +132,19 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             Progress.CheckQuests();
             CheckShops();
         }
-        if (Save == null || Save.night || IsSunday) { BellRinging = false; return; }   // Sundays: the stall keeps its own time
+        if (Save == null || Save.night || IsSunday || IsSaturday) { BellRinging = false; return; }   // Sundays: the stall keeps its own time; Saturdays go by outings
         if (GM.Current == ScreenId.Dialogue || GM.Current == ScreenId.Title || GM.Current == ScreenId.SaveSelect || GM.Current == ScreenId.Customize
             || GM.Current == ScreenId.Tutorial || GM.Current == ScreenId.Settings || !Save.player.created || PauseMenu.Paused) return;   // the day waits
-        Tick();
         if (Save.deliveries.Count > 0) DeliverDue(false);
-        if (CustomersWaiting == 0) { BellRinging = false; return; }
-        if (BellRinging)   // no one's answered: ring again now and then
+        if (CustomersWaiting == 0) { BellRinging = false; Tick(); return; }   // that was everyone: the sun goes down
+        if (BellRinging)   // no one's answered: ring again now and then (the sun waits)
         {
             if ((bellTimer -= Time.unscaledDeltaTime) <= 0) { bellTimer = BellRepeat; RingBell(); }
             return;
         }
-        if (Save.nextArrival <= 0) Save.nextArrival = Save.clock + NextGap(Save.clock);   // someone's on their way...
-        if (Save.clock >= Save.nextArrival && !ClosingTime)
+        if (Save.nextArrival <= 0) Save.nextArrival = Mathf.Min(ClosesAt - 1, Save.clock + NextGap());   // someone's on their way...
+        Tick();
+        if (Save.clock >= Save.nextArrival)
         {
             Save.nextArrival = 0;
             if (AutoServe()) return;   // the door-answering bell got it
@@ -139,19 +152,32 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         }
     }
 
-    /// The clock moves on, up to closing time.
+    /// The sun moves on: towards the next visitor, or, once everyone has been, down to sunset.
     void Tick()
     {
         if (Save.clock < OpensAt) Save.clock = OpensAt;
-        if (Save.clock >= ClosesAt) return;
-        clockCarry += Time.unscaledDeltaTime * MinutesPerSecond;
+        if (Save.clock >= ClosesAt)
+        {
+            if (CustomersWaiting == 0) return;
+            Save.clock = ClosesAt - 1;   // an older save at closing time with people still to come: they come first
+        }
+        if (pacedFor != CustomersWaiting || minutesPerSecond <= 0) Pace();
+        clockCarry += Time.unscaledDeltaTime * minutesPerSecond;
         int whole = (int)clockCarry;
         if (whole <= 0) return;
         clockCarry -= whole;
-        Save.clock = Mathf.Min(ClosesAt, Save.clock + whole);
-        if (Save.clock == ClosesAt)
-            Stamps.Notice(CustomersWaiting > 0 ? "Six o'clock: closing time.\n<size=68>Anyone who didn't make it will come another day.</size>"
-                                                : "Six o'clock: closing time.\n<size=68>Flip the sign when you're ready.</size>");
+        Save.clock = Mathf.Min(SunCap, Save.clock + whole);
+        if (Save.clock >= ClosesAt) Sunset();
+    }
+
+    /// How far the sun may go: not past the next visitor's arrival, nor down while anyone's still to come.
+    int SunCap => CustomersWaiting == 0 ? ClosesAt : Mathf.Min(ClosesAt - 1, Save.nextArrival > 0 ? Save.nextArrival : ClosesAt - 1);
+
+    void Sunset()
+    {
+        GM.Persist();
+        if (GM.Current != ScreenId.Shop)
+            Stamps.Notice("The sun's going down, and that was everyone for today.\n<size=68>Head back to the shop to close up.</size>");
     }
 
     /// Whether the player is in one of the town's shops right now.
@@ -170,7 +196,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     }
 
     /// The door's been opened: the bell stops until the next visitor arrives.
-    public void AnswerDoor() { BellRinging = false; bellTimer = -1f; Save.nextArrival = Save.clock + NextGap(Save.clock); }
+    public void AnswerDoor() { BellRinging = false; bellTimer = -1f; Save.nextArrival = 0; }   // the next one is timed after this visit
 
     void OnDestroy()
     {
@@ -235,31 +261,43 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         else LastMessage = Save.night ? $"Welcome back! Night of day {Save.day}." : $"Welcome back! Day {Save.day}.";
     }
 
-    /// Who drops by today, in a random order: everyone without an open order, and anyone whose finished
-    /// order they've decided to collect today (the player only finds out when the bell rings).
+    /// Who drops by today, in a random order (owner, 2026-11-03): anyone collecting a finished order, then a handful of
+    /// the rest, each person once at most. Closer friends are likelier to come, and so are people today's weather or
+    /// the shop window draws in. The player only finds out who when the bell rings.
     void InviteVisitors()
     {
         bellTimer = -1f;
+        pacedFor = -1;
         Save.clock = OpensAt;
-        Save.nextArrival = OpensAt + Random.Range(3, 9);   // the day's first visitor comes soon after opening
+        Save.cameToday.Clear();
         var list = Save.visitorsToday;
         list.Clear();
+        var others = new List<string>();
         foreach (var c in content.customers)
-            if (c != null && !c.shopOwner && c.firstChapter <= Save.chapter && (!Save.orders.Exists(o => o.customerId == c.customerId) || PickupFor(c) != null))
-                list.Add(c.customerId);
-        // How many come grows with the shop (owner, 2026-11-01): anyone collecting today always comes; the rest are a
-        // random few, and once there are more visits than people, some drop by twice.
-        Shuffle(list);
-        // Pickups first, then people who love today's weather (owner, 2026-11-02: weather changes who visits).
+        {
+            if (c == null || c.shopOwner || c.firstChapter > Save.chapter) continue;
+            if (PickupFor(c) != null) list.Add(c.customerId);
+            else if (!Save.orders.Exists(o => o.customerId == c.customerId)) others.Add(c.customerId);
+        }
         var weather = Today;
-        int Rank(string id) => (PickupFor(content.Customer(id)) != null ? 4 : 0) + (DrawnByWindow(id) ? 2 : 0) + (LikesWeather(id, weather) ? 1 : 0);
-        list.Sort((a, b) => Rank(b).CompareTo(Rank(a)));
+        float Weight(string id)
+        {
+            var r = Save.relationships.Find(x => x.customerId == id);
+            return (1 + (r != null ? r.level : 0)) * (DrawnByWindow(id) ? 2f : 1f) * (LikesWeather(id, weather) ? 1.5f : 1f);
+        }
         int visits = DailyVisits;
-        int pickups = list.FindAll(id => PickupFor(content.Customer(id)) != null).Count;
-        if (list.Count > Mathf.Max(visits, pickups)) list.RemoveRange(Mathf.Max(visits, pickups), list.Count - Mathf.Max(visits, pickups));
-        int people = list.Count;
-        for (int i = 0; list.Count < visits && i < people; i++) list.Add(list[i]);
+        while (list.Count < visits && others.Count > 0)
+        {
+            float total = 0;
+            foreach (var id in others) total += Weight(id);
+            float roll = Random.value * total;
+            int pick = others.Count - 1;
+            for (int i = 0; i < others.Count; i++) { roll -= Weight(others[i]); if (roll <= 0) { pick = i; break; } }
+            list.Add(others[pick]);
+            others.RemoveAt(pick);
+        }
         Shuffle(list);
+        Save.nextArrival = OpensAt + Mathf.Max(3, Mathf.RoundToInt(Slice * Random.Range(0.3f, 0.6f)));   // the first comes soon after sunup
     }
 
     static void Shuffle(List<string> list)
@@ -271,14 +309,14 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         }
     }
 
-    /// Visits in a day (owner, 2026-11-02: up from 3, then 5): 8, one more for every level after the first and for every friend at level 2 or more, and
-    /// the sign out front's extra.
+    /// Visitors in a day (owner, 2026-11-03): 6, one more for every level after the first and for every 4 charm, plus the
+    /// sign out front, the weather, a fresh shop window and pieces that draw people in. Never more than the people in town.
     public int DailyVisits
     {
         get
         {
-            int friends = Save.relationships.FindAll(r => r.level >= 2).Count;
-            return Mathf.Max(3, 8 + (Progress.PlayerLevel - 1) + friends + Progress.UpgradeAmount(UpgradeEffect.ExtraVisitor) + WeatherVisits + WindowVisits);
+            int n = 6 + (Progress.PlayerLevel - 1) + Charm / 4 + Progress.UpgradeAmount(UpgradeEffect.ExtraVisitor) + WeatherVisits + WindowVisits;
+            return Mathf.Max(3, n * (100 + VisitorBoost()) / 100);
         }
     }
 
@@ -345,7 +383,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         {
             var customer = CustomerFor(Save.visitorsToday[0]);
             Save.visitorsToday.RemoveAt(0);
-            if (customer == null) continue;
+            if (customer == null || Save.cameToday.Contains(customer.customerId)) continue;   // never twice in a day
+            Save.cameToday.Add(customer.customerId);
             Visitor = customer;
             GM.Persist();
             // A first visit: they introduce themselves (owner, 2026-10-31), then say what they're after.

@@ -975,3 +975,17 @@ DONE so far (2026-11-02 evening list):
   Now any piece out in the shop moves directly: press and hold (DecorPiece.HoldTime 0.35 s, it pops up 10%) then drag; a quick
   swipe over it still turns the page (passed to ShopSceneUI), a tap passes to the button under it (DecorPiece.PassClick); placed
   pieces are always raycast targets. Buying a piece says so.
+- Owner, 2026-11-03 (like the Papa's games): NO CLOCK. The top bar shows a sun dial (TopBar.sunDial: a masked sky half-disc, the part of
+  the day gone by filled in, the sun on the arc; ShopDay.SunProgress). Each weekday has DailyVisits visitors (6 + (level-1) + charm/4 +
+  upgrades + weather + window, x placed Visitors boosts, which now mean "+X% visitors a day"), each a DIFFERENT person (SaveData.cameToday,
+  save v35; friends meeting in the shop never pick someone coming or already in today). Pickups always come; the rest are drawn weighted by
+  (1 + friendship level) x window x weather. Every visitor gets an equal slice of what's left of the day (ShopDay.Slice, about 15 real s
+  each: SecondsPerVisitor), so more visitors = a slower sun; it stands still while the bell rings or in conversation. After the last
+  visitor the sun sets (ShopDay.DayOver) and the shop screen shows the close pop-up with only "Close Up" (this REVERSES round 3 item 4,
+  "don't tell the player everyone has come"). Save.clock (minutes 9:00-18:00) still runs inside for the town's shop hours, which are
+  shown in words (ShopDay.PartOfDay: "open till late afternoon"). Saturdays don't tick (outings move the day); the Sunday stall keeps its
+  own steady pace (StallMinutesPerSecond) and shows the part of the day, not a time.
+- Owner, 2026-11-03: the tablecloth's hem is real hemming (Crafts/HemFoldStep.cs, picked by MinigameHost when HemFoldStep.Applies: item
+  tablecloth, StepKind.Hem; other items' Hem steps unchanged): per edge, fold under (crease at 0.04), fold again (crease 0.06 further in;
+  the cloth shrinks as it folds), then tap 6 slip stitches along the folded edge, evenly spaced. Mistakes: a crease off its line, a
+  stitch off the fold, bunched stitches. Points: fold (100 + 10 x edge + n, finger depth), stitch (1000 x (edge + 1) + along, depth).

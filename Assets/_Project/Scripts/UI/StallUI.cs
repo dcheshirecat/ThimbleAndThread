@@ -93,8 +93,8 @@ public class StallUI : MonoBehaviour
         if (save == null) return;
         shown = day.CurrentShopper; shownStall = save.stall.Count; shownClock = save.clock; shownMessage = day.LastMessage;
         bool over = save.clock >= ShopDay.StallCloses;
-        clockText.text = over ? "Four o'clock: the market's winding down. Pack up when you're ready."
-                              : $"{day.MarketName}  ·  {ShopDay.TimeText(save.clock)}  ·  open till 4 pm";
+        clockText.text = over ? "The market's winding down. Pack up when you're ready."
+                              : $"{day.MarketName}  ·  {char.ToUpper(ShopDay.PartOfDay(save.clock)[0])}{ShopDay.PartOfDay(save.clock).Substring(1)}  ·  packs up in the afternoon";
         var counts = new Dictionary<string, int>();
         foreach (var s in save.stall) { counts.TryGetValue(s.name, out int n); counts[s.name] = n + 1; }
         var lines = new List<string>();

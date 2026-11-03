@@ -31,16 +31,14 @@ public partial class ShopDay
         return n;
     }
 
-    /// How much sooner visitors come at this time of day, in percent.
-    int VisitorBoost(int clock)
+    /// How many more visitors come in a day thanks to placed pieces, in percent (owner, 2026-11-03: the day is a number
+    /// of visitors now, not hours, so these add visitors).
+    int VisitorBoost()
     {
         int n = 0;
-        foreach (var d in PlacedDecor())
-            if (d.boost == DecorBoost.Visitors && clock >= d.boostFrom * 60 && clock < d.boostTo * 60) n += d.boostAmount;
+        foreach (var d in PlacedDecor()) if (d.boost == DecorBoost.Visitors) n += d.boostAmount;
         return Mathf.Min(n, 60);
     }
-
-    int NextGap(int clock) => Mathf.Max(3, Gap(clock) * (100 - VisitorBoost(clock)) / 100);
 
     bool boosting;
     /// Friendship points with someone a placed piece is about count for more.
@@ -61,7 +59,7 @@ public partial class ShopDay
     public static string BoostText(DecorDef d) => d.boost switch
     {
         DecorBoost.Experience => $"+{d.boostAmount}% experience",
-        DecorBoost.Visitors => $"visitors come {d.boostAmount}% sooner, {TimeText(d.boostFrom * 60)} to {TimeText(d.boostTo * 60)}",
+        DecorBoost.Visitors => $"+{d.boostAmount}% visitors a day",
         DecorBoost.Friendship => d.boostFriend != null ? $"+{d.boostAmount}% friendship with {d.boostFriend.displayName.Split(' ')[0]}" : "",
         _ => "",
     };

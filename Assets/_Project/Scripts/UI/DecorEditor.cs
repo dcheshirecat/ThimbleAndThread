@@ -165,7 +165,7 @@ public class DecorEditor : MonoBehaviour
     string BoostText(DecorDef d) => d.boost switch
     {
         DecorBoost.Experience => $", +{d.boostAmount}% experience",
-        DecorBoost.Visitors => $", +{d.boostAmount}% visitors {d.boostFrom}:00-{d.boostTo}:00",
+        DecorBoost.Visitors => $", +{d.boostAmount}% visitors a day",
         DecorBoost.Friendship => $", +{d.boostAmount}% friendship" + (d.boostFriend != null ? $" with {day.NameFor(d.boostFriend.customerId)}" : ""),
         _ => "",
     };

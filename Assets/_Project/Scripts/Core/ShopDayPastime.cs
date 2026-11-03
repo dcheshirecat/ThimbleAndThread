@@ -59,9 +59,8 @@ public partial class ShopDay
 
     void PassMinutes(int minutes)
     {
-        int before = Save.clock;
-        Save.clock = Mathf.Min(ClosesAt, Mathf.Max(Save.clock, OpensAt) + minutes);
-        if (before < ClosesAt && Save.clock >= ClosesAt) Stamps.Notice("Six o'clock: closing time.\n<size=68>Flip the sign when you're ready.</size>");
+        Save.clock = Mathf.Min(SunCap, Mathf.Max(Save.clock, OpensAt) + minutes);   // the sun only sets once everyone's been
+        if (Save.clock >= ClosesAt) Sunset();
     }
 
     // ---- The window: the town going by, once an hour ----
