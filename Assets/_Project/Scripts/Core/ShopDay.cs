@@ -435,8 +435,9 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
             commissionId = OwnCommissionPrefix + System.Guid.NewGuid().ToString("N"), needsDesign = true, fit = 2,
             target = new Pattern { displayName = $"{c.displayName}'s {item.itemName}", craft = item.craft, width = 8, height = 8 },
         };
+        string brief = AddBrief(Offer);   // often with a condition (ShopDayBriefs)
         Say(c, Pick($"Something just for me? Then... a {item.itemName.ToLower()}. One nobody else has.",
-                    $"Oh, I'd love that. A {item.itemName.ToLower()}, maybe? Surprise me with the design."),
+                    $"Oh, I'd love that. A {item.itemName.ToLower()}, maybe? Surprise me with the design.") + brief,
             ("Take the Commission", AcceptOffer), ("Not Today", DeclineOffer));
     }
 
@@ -2141,6 +2142,8 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         var surprises = new List<string>();
         string colourLine = ColourReaction(Selected, ref points);   // the colours they asked for
         if (colourLine != null) surprises.Add(colourLine);
+        string briefLine = BriefReaction(Selected, ref price, ref points);   // a commission's brief, kept or not
+        if (briefLine != null) surprises.Add(briefLine);
         foreach (var id in Selected.extras)
         {
             var s = content.Supply(id);

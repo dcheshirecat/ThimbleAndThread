@@ -37,6 +37,9 @@ public class Order
 
     /// How it's made. A pattern-only order is just the design step.
     public int agreedPrice;           // online orders: what the buyer agreed to pay
+    public string brief = "";         // a commission's condition: "colours", "small", "mustuse" (ShopDayBriefs), or empty
+    public int briefValue;            // colours: at most this many; small: no bigger than this square
+    public string briefSupply = "";   // mustuse: the supply it must be made with
     public int copies;                // bulk orders: how many to make (0 or 1 = one)
     public int copiesDone;            // bulk orders: copies finished so far
     public float copyScores;          // bulk orders: the finished copies' scores added up (the average is the order's quality)

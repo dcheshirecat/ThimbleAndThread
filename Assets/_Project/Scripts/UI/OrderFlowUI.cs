@@ -466,8 +466,10 @@ public class OrderFlowUI : MonoBehaviour
         if (!string.IsNullOrEmpty(order.colourWish))
             return $"They'd like it in {ShopDay.WishWords(order.colourWish)}." + (order.needsDesign
                 ? " Recolour the pattern first: pick a colour, then tap a square to swap every square of its colour.\n\n" : "\n\n");
+        string brief = day.BriefText(order);
         if (c == null)
-            return order.needsDesign ? "A commission you offered: design a brand-new pattern for it first (it isn't judged).\n\n" : "";
+            return (order.needsDesign ? "A commission you offered: design a brand-new pattern for it first (it isn't judged).\n" : "")
+                 + (brief != "" ? brief + " They'll notice.\n" : "") + (order.needsDesign || brief != "" ? "\n" : "");
         var text = $"Commission: \"{c.request}\"\n";
         if (c.requiredSupply != null) text += $"Must be made with {c.requiredSupply.displayName}.\n";
         if (order.needsDesign) text += "First, design a brand-new pattern for it (it isn't judged).\n";
