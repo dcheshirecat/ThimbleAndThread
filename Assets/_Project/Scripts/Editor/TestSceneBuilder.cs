@@ -689,6 +689,15 @@ public static class TestSceneBuilder
         Button(b, "How to Play", router.GoToTutorial, 1100);
         Button(b, "Save and Quit to Title", gm.QuitToTitle, 1100);
         Button(b, "Back", router.GoToHub, 1100);
+        // Cloud save (owner, 2026-11-02): a private code backs the game up each night, and restores it on another phone
+        settings.cloudLabel = Label(p, "Cloud Info", new Vector2(0.06f, 0.21f), new Vector2(0.94f, 0.31f), 48, TextAnchor.MiddleCenter);
+        settings.cloudLabel.color = Ink;
+        settings.cloudField = CodeField(p, new Vector2(0.5f, 0.16f));
+        settings.cloudField.name = "CloudCodeField";
+        if (settings.cloudField.placeholder is Text cloudHint) cloudHint.text = "A cloud code from another phone";
+        b = Row(p, 0.5f, 0.08f);
+        settings.cloudActionLabel = Button(b, "Cloud Action", settings.CloudAction, 820).GetComponentInChildren<Text>();
+        Button(b, "Restore From Code", settings.CloudRestore, 820);
 
         // Customization: name, pronouns, look (CustomizeUI)
         p = Panel(ScreenId.Customize, "", new Color(0.93f, 0.85f, 0.80f));   // the tabs sit where a title would

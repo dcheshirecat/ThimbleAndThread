@@ -948,3 +948,21 @@ DONE so far (2026-11-02 evening list):
   day 21 (a Sunday): Blossom Fair (patterns x1.5), Regatta Day (busy; totes/hoops/hangings x1.4), Harvest Fair (pieces x1.3,
   warm things x1.6), Winter Market (all x1.3); calendar shows them; TomorrowNote; first time = stamp + explainer.
 - Test harness: Editor/TempSmokeTest.cs + TempSmokeSteps.cs (excluded in .git/info/exclude, never commit).
+- 7, 6: letters (Core/ShopDayLetters.cs, SaveData.letters, Journal Letters tab; save v33) and friends meeting in the shop
+  (Core/ShopDayMeetings.cs: once a day max, 12 pairs with history + general chats, notes "Friends with X").
+- 4: shop window (Core/ShopDayWindow.cs; SaveData.window/windowDay; up to 3 stall pieces or patterns; fresh within 7 days =
+  +1/+2 visitors and DrawnByWindow customers first; Monday nudge). The window sits on the wall left of the counter.
+- 5: bulk orders (Core/ShopDayBulk.cs; Order.copies/copiesDone/copyScores; 9 business jobs; per copy x0.9; average quality).
+- 1: commission briefs (Core/ShopDayBriefs.cs; Order.brief "colours"/"small"/"mustuse"; own commissions 60%; +20% / -15%).
+- 2: repairs (Core/ShopDayRepairs.cs; CraftItemDef.repair, never designed; repair_darn "Darned Jumper" with the new
+  StepKind.Darn (Crafts/DarnStep.cs: long threads then alternating rows) and repair_patch "Patched Tote").
+- 10: pets (Core/ShopDayPets.cs, UI/DecorPet.cs; ScreenId.PetShop "Wren's Pet Emporium", Poppy Wren (Dialogue/poppy.ink,
+  she/her, friendship only), level 4; DecorDef.pet/shop "pets"; 5 pets; names in flags "petname:<id>=<name>"; tap = stroke).
+- 11: cloud save (Core/CloudSave.cs; SaveData.cloudCode/cloudSavedAt, save v34; Settings: Turn On / Back Up Now / Restore From
+  Code; nightly backup in GoToBed). NEEDS A FIREBASE RULE from the owner (Claude never edits the database settings):
+    "saves": { "$code": { ".read": "$code.matches(/^[A-HJ-NP-Z2-9]{16}$/)",
+                          ".write": "$code.matches(/^[A-HJ-NP-Z2-9]{16}$/) && newData.child('data').isString()
+                                     && newData.child('data').val().length < 3000000" } }
+  Until it's added, backups are refused (401) and Settings says "The cloud said no".
+- Fixes 2026-11-03: knitting no longer puts crochet hooks on sale (the scarf fringe needs no hook); shop headers end at 0.745
+  (clear of the coins); TallRow pads text; parlour rows taller; "Seasonal" rarity; market doesn't name Bram before meeting him.

@@ -1059,6 +1059,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
         Courier();
         NewOnlineOffers();
         InviteVisitors();
+        if (!string.IsNullOrEmpty(Save.cloudCode)) StartCoroutine(CloudSave.Upload(Save, null));   // the nightly cloud backup
         MorningPost();
         WindowReminder();
         GM.Persist();
