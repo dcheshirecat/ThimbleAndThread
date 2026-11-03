@@ -504,6 +504,7 @@ public partial class ShopDay : MonoBehaviour   // weekends: ShopDayWeekend.cs
     {
         var commission = CommissionFor(c);
         if (MaybeBulkOrder(c)) return;   // a business job (ShopDayBulk)
+        if (MaybeRepair(c)) return;      // something to mend (ShopDayRepairs)
         if (commission != null && Random.value < CommissionChance)
         {
             Offer = NewCommission(commission);

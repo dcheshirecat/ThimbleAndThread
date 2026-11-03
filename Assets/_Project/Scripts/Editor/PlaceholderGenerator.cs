@@ -592,6 +592,23 @@ public static class PlaceholderGenerator
         Supply("weaving_yarn", "Weaving Yarn Bundle", SupplyKind.Notion, wv, 8, 1, new Color(0.80f, 0.55f, 0.50f), 1, "bundles", A);
         Supply("dowel", "Wooden Dowel", SupplyKind.Notion, wv, 3, 1, new Color(0.65f, 0.50f, 0.32f), 1, "dowels", A);
         var weaveBook = Supply("book_weaving", "Weaving on a Frame Loom", SupplyKind.Book, cs, 30, 1, new Color(0.45f, 0.55f, 0.40f), 1, "book", R);
+        // Repairs (owner, 2026-11-02): mending, not making. Brought in by customers (ShopDayRepairs), never designed.
+        var darned = Item("repair_darn", "Darned Jumper", CraftType.Knitting, 22, 0, new Color(0.35f, 0.45f, 0.65f));
+        if (!darned.repair) { darned.repair = true; EditorUtility.SetDirty(darned); }
+        Recipe(darned,
+            Step(StepKind.ChooseYarn, "Pick a yarn to match", pieces: 40),
+            Step(StepKind.Darn, "Darn the hole", tools: Tool("tapestry_needle", "Tapestry needle")),
+            Step(StepKind.WeaveEnds, "Weave in the ends", tools: Tool("tapestry_needle", "Tapestry needle")),
+            Step(StepKind.Press, "Steam it flat"));
+        var patched = Item("repair_patch", "Patched Tote", CraftType.Sewing, 24, 0, new Color(0.85f, 0.45f, 0.40f));
+        if (!patched.repair) { patched.repair = true; EditorUtility.SetDirty(patched); }
+        Recipe(patched,
+            Step(StepKind.ChooseFabric, "Choose the patch fabric", pieces: 1),
+            Step(StepKind.CutPieces, "Cut the patch", pieces: 1, tools: Tool("scissors", "Fabric scissors")),
+            Step(StepKind.Pin, "Pin it over the tear", tools: Tool("pins", "Pins")),
+            Step(StepKind.Hem, "Stitch the patch on", tools: Tool("sewing_needle", "Hand sewing needle")),
+            Step(StepKind.Press, "Press it"));
+
         var hanging = Item("wall_hanging", "Woven Wall Hanging", wv, 50, 14, new Color(0.80f, 0.55f, 0.50f));
         Recipe(hanging,
             Step(StepKind.WarpLoom, "Warp the loom", materials: Need("warp_cotton", 1), tools: Tool("loom", "Frame loom")),

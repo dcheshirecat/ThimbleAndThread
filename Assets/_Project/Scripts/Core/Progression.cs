@@ -231,7 +231,7 @@ public class Progression
     /// at least three orders in that craft handed over.
     public const int OrdersToDesign = 3;
     public bool CanDesign(CraftType craft) => Knows(ShopDay.PatternDesignSkill) && OrdersIn(craft) >= OrdersToDesign;
-    public bool CanDesign(CraftItemDef item) => item != null && CanMake(item) && CanDesign(item.craft);
+    public bool CanDesign(CraftItemDef item) => item != null && !item.repair && CanMake(item) && CanDesign(item.craft);
 
     // Your own level (owner, 2026-10-31: an XP bar and a level, top left): all your experience together. Each level
     // takes a little longer than the last: level L starts at 30 * L * (L - 1) (60, 180, 360, 600...).

@@ -71,6 +71,7 @@ public class MinigameHost : MonoBehaviour
         StepKind.QuiltIt => go.AddComponent<QuiltItStep>(),
         StepKind.WarpLoom => go.AddComponent<WarpLoomStep>(),
         StepKind.WeaveRows => go.AddComponent<WeaveRowsStep>(),
+        StepKind.Darn => go.AddComponent<DarnStep>(),
         StepKind.HangWeaving => go.AddComponent<HangWeavingStep>(),
         StepKind.PressSeams => go.AddComponent<PressSeamsStep>(),
         StepKind.BindCanvas => go.AddComponent<BindCanvasStep>(),

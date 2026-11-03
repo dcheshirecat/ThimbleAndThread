@@ -1,0 +1,99 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c7901b20ad305e48a66e74441e500f0, type: 3}
+  m_Name: item_repair_patch
+  m_EditorClassIdentifier: Assembly-CSharp::CraftItemDef
+  itemId: repair_patch
+  itemName: Patched Tote
+  craft: 3
+  icon: {fileID: 21300000, guid: c6db3b642fa2e2b4da44c216d10d60f7, type: 3}
+  requiredPattern:
+    id: 
+    displayName: 
+    craft: 0
+    width: 0
+    height: 0
+    palette: []
+    threads: []
+    cells: []
+    fabricId: 
+  basePrice: 24
+  patternPrice: 0
+  requiredSupplyIds: []
+  steps:
+  - kind: 2
+    label: Choose the patch fabric
+    tools: []
+    materials: []
+    fabricPieces: 1
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 3
+    label: Cut the patch
+    tools:
+    - toolType: scissors
+      minSize: 0
+      label: Fabric scissors
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 1
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 4
+    label: Pin it over the tear
+    tools:
+    - toolType: pins
+      minSize: 0
+      label: Pins
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 1
+    label: Stitch the patch on
+    tools:
+    - toolType: sewing_needle
+      minSize: 0
+      label: Hand sewing needle
+      exactSize: 0
+      matchYarn: 0
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  - kind: 23
+    label: Press it
+    tools: []
+    materials: []
+    fabricPieces: 0
+    requiredSkill: 
+    perPatternSquare: 0
+    patternThread: 0
+    threadAmount: 0
+    piece: 
+  repair: 1
+  garment: 0

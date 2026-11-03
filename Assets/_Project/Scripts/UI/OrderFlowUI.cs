@@ -551,6 +551,7 @@ public class OrderFlowUI : MonoBehaviour
         StepKind.QuiltSandwich => "Smooth the backing, the wadding and the top together, and tap each mark to put in a safety pin.",
         StepKind.QuiltIt => "Quilt through all three layers: running stitch along each diagonal line.",
         StepKind.WarpLoom => "Wind the warp: drag the thread up and down round the pegs, all the way across the loom.",
+        StepKind.Darn => "First lay long threads straight down across the hole, one on each glowing line. Then weave across them row by row, over one and under the next, each row going back the other way.",
         StepKind.WeaveRows => "For each row: tap the shed stick under the loom so the other half of the warps lifts, swipe across in a gentle hill to pass the shuttle (straight across pulls the edges in), then swipe down to beat the row into place.",
         StepKind.BindCanvas => "Drag the masking tape along all four edges of the canvas, so the cut mesh can't fray or catch the yarn.",
         StepKind.LayoutPatches => "Lay the patches out like the chart: tap a pile along the bottom to pick that fabric up, then tap or drag over the squares where it goes.",
